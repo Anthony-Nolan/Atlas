@@ -21,6 +21,9 @@ variable "AZURE_CLIENT_ID" {
   description = "Client ID used for authenticating to manage Azure resources from code."
 }
 
+// No longer consumed by any resource: the apps read this value from the hand-seeded "azure-client-secret" Key Vault
+// secret instead. Kept declared because every environment's tfvars still sets it, and it is the source the secret is
+// seeded from - see "Key Vault bootstrap" in README_Deployment.md.
 variable "AZURE_CLIENT_SECRET" {
   type        = string
   sensitive   = true

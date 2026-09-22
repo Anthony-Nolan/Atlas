@@ -7,7 +7,7 @@ locals {
     "AzureFunctionsJobHost__extensions__serviceBus__messageHandlerOptions__maxConcurrentCalls" = var.MAX_CONCURRENT_SERVICEBUS_FUNCTIONS
 
     "AzureManagement:Authentication:ClientId"     = var.AZURE_CLIENT_ID
-    "AzureManagement:Authentication:ClientSecret" = var.AZURE_CLIENT_SECRET
+    "AzureManagement:Authentication:ClientSecret" = var.key_vault.secret_refs["azure-client-secret"]
     "AzureManagement:Authentication:OAuthBaseUrl" = var.AZURE_OAUTH_BASEURL
     "AzureManagement:Authentication:TenantId"     = var.AZURE_TENANT_ID
 
@@ -15,24 +15,24 @@ locals {
 
     "AzureAppConfiguration:ConnectionString" = var.azure_app_configuration.primary_read_key[0].connection_string
 
-    "AzureStorage:ConnectionString"           = var.azure_storage.primary_connection_string
+    "AzureStorage:ConnectionString"           = var.key_vault.secret_refs["azure-storage-connection-string"]
     "AzureStorage:SearchResultsBlobContainer" = azurerm_storage_container.search_matching_results_blob_container.name
     "AzureStorage:SearchResultsBatchSize"     = var.RESULTS_BATCH_SIZE
 
     "AzureWebJobs.GCCollect.Disabled" = var.MAINTENANCE_GCCOLLECT_DISABLED
 
-    "HlaMetadataDictionary:AzureStorageConnectionString"                          = var.azure_storage.primary_connection_string,
+    "HlaMetadataDictionary:AzureStorageConnectionString"                          = var.key_vault.secret_refs["azure-storage-connection-string"],
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl"                              = var.WMDA_FILE_URL,
     "HlaMetadataDictionary:SearchRelatedMetadata:CacheSlidingExpirationInSeconds" = var.SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC
 
-    "MacDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string
+    "MacDictionary:AzureStorageConnectionString" = var.key_vault.secret_refs["azure-storage-connection-string"]
     "MacDictionary:TableName"                    = var.mac_import_table.name,
 
     "Maintenance:GCCollect:CronSchedule" = var.MAINTENANCE_GCCOLLECT_CRON_SCHEDULE
 
     "MatchingConfiguration:MatchingBatchSize" = var.MATCHING_BATCH_SIZE,
 
-    "MessagingServiceBus:ConnectionString"               = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
+    "MessagingServiceBus:ConnectionString"               = var.key_vault.secret_refs["servicebus-read-write-connection-string"]
     "MessagingServiceBus:SearchRequestsMaxDeliveryCount" = azurerm_servicebus_subscription.matching-requests-matching-algorithm.max_delivery_count
     "MessagingServiceBus:SearchRequestsSubscription"     = azurerm_servicebus_subscription.matching-requests-matching-algorithm.name
     "MessagingServiceBus:SearchRequestsTopic"            = azurerm_servicebus_topic.matching-requests.name
@@ -41,13 +41,13 @@ locals {
     "MessagingServiceBus:SendRetryCount"                 = var.SERVICE_BUS_SEND_RETRY_COUNT
     "MessagingServiceBus:SendRetryCooldownSeconds"       = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
-    "NotificationsServiceBus:ConnectionString"         = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
+    "NotificationsServiceBus:ConnectionString"         = var.key_vault.secret_refs["servicebus-write-only-connection-string"]
     "NotificationsServiceBus:AlertsTopic"              = var.servicebus_topics.alerts.name
     "NotificationsServiceBus:NotificationsTopic"       = var.servicebus_topics.notifications.name
     "NotificationsServiceBus:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
     "NotificationsServiceBus:SendRetryCooldownSeconds" = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
-    "SearchTrackingServiceBus:ConnectionString"         = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
+    "SearchTrackingServiceBus:ConnectionString"         = var.key_vault.secret_refs["servicebus-write-only-connection-string"]
     "SearchTrackingServiceBus:SearchTrackingTopic"      = var.servicebus_topics.search_tracking.name
     "SearchTrackingServiceBus:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
     "SearchTrackingServiceBus:SendRetryCooldownSeconds" = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
@@ -71,6 +71,15 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_function" {
   functions_extension_version = "~4"
   storage_account_access_key  = azurerm_storage_account.matching_function_storage.primary_access_key
   storage_account_name        = azurerm_storage_account.matching_function_storage.name
+
+  // Used to resolve the @Microsoft.KeyVault app settings and connection strings below. The role assignment that lets
+  // this identity read the vault lives in the root module, so it is ordered by the depends_on on the module block.
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [var.key_vault.function_apps_identity_id]
+  }
+
+  key_vault_reference_identity_id = var.key_vault.function_apps_identity_id
 
   site_config {
     application_insights_key = var.application_insights.instrumentation_key
@@ -106,23 +115,23 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_function" {
   connection_string {
     name  = "SqlA"
     type  = "SQLAzure"
-    value = local.matching_transient_database_a_connection_string
+    value = local.sql_kv_ref["matching-transient-a-sql-connection-string"]
   }
   connection_string {
     name  = "SqlB"
     type  = "SQLAzure"
-    value = local.matching_transient_database_b_connection_string
+    value = local.sql_kv_ref["matching-transient-b-sql-connection-string"]
   }
   connection_string {
     name  = "PersistentSql"
     type  = "SQLAzure"
-    value = local.matching_persistent_database_connection_string
+    value = local.sql_kv_ref["matching-persistent-sql-connection-string"]
   }
 
   connection_string {
     name  = "DonorSql"
     type  = "SQLAzure"
-    value = local.matching_donor_database_connection_string
+    value = local.sql_kv_ref["matching-donor-sql-connection-string"]
   }
 
   lifecycle {
