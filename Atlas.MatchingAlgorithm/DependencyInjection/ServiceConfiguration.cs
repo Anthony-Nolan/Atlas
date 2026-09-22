@@ -31,6 +31,7 @@ using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
+using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 using Atlas.MatchingAlgorithm.Services.Debug;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Services.Donors;
@@ -46,6 +47,7 @@ using Atlas.MatchingAlgorithm.Services.Utility;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
+using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Azure.Identity;
 using Microsoft.Extensions.Azure;
@@ -314,6 +316,14 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
             services.AddScoped<IHlaProcessor, HlaProcessor>();
             services.AddScoped<IDonorImporter, DonorImporter>();
+        }
+
+        /// <summary>
+        /// Register the genotype set precompute service.
+        /// </summary>
+        public static void RegisterSubjectGenotypeSetPrecompute(this IServiceCollection services)
+        {
+            services.AddScoped<ISubjectGenotypeSetPrecomputeService, SubjectGenotypeSetPrecomputeService>();
         }
 
         /// <summary>

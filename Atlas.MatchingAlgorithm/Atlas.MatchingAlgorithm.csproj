@@ -38,6 +38,10 @@
         <ProjectReference Include="..\Atlas.MatchingAlgorithm.Data\Atlas.MatchingAlgorithm.Data.csproj"/>
         <ProjectReference Include="..\Atlas.MatchingAlgorithm.Common\Atlas.MatchingAlgorithm.Common.csproj"/>
         <ProjectReference Include="..\Atlas.MatchingAlgorithm.Data.Persistent\Atlas.MatchingAlgorithm.Data.Persistent.csproj"/>
+        <!-- The data refresh precomputes each donor's imputed genotype set, which is match prediction's own pipeline
+             (IGenotypeSetService) and its payload encoder. Acyclic: Atlas.MatchPrediction references only Common,
+             Client.Models, the HLA Metadata Dictionary and its own Data project. -->
+        <ProjectReference Include="..\Atlas.MatchPrediction\Atlas.MatchPrediction.csproj"/>
         <ProjectReference Include="..\Atlas.MultipleAlleleCodeDictionary\Atlas.MultipleAlleleCodeDictionary.csproj"/>
         <ProjectReference Include="..\Atlas.SearchTracking.Common\Atlas.SearchTracking.Common.csproj"/>
         <ProjectReference Include="..\Atlas.SearchTracking\Atlas.SearchTracking.csproj"/>
