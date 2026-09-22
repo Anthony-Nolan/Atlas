@@ -84,14 +84,47 @@ If request replay fails and Application Insights shows the exception: "Exception
 then find the record for your data refresh attempt with the shared db table, `[MatchingAlgorithmPersistent].[DataRefreshHistory]` and set value of `[RefreshLastContinuedUtc]` to `NULL`.
 This will allow the job to continue from where it left off.
 
-##### Clearing a stale lease
+##### Stale leases, and how they clear themselves
 
 Only one invocation may process a refresh record at a time, enforced by a lease held on the record. A replayed
 message is refused while that lease is held, and completes without running any stage. If the server died, the
 lease was never released, so it remains valid for up to `DataRefresh:LeaseDurationMinutes` (30 by default)
 after the last renewal.
 
-Either wait for it to expire, or - **only if you are certain the original process is gone** - clear it:
+**This recovers on its own, and normally needs no intervention.** The `RecoverStalledDataRefreshes` timer
+function sweeps for records that are still open, hold no live lease, and have shown no sign of life for
+`DataRefresh:WatchdogGraceDurationMinutes` (60 by default), and publishes a fresh request for each. Whichever
+invocation then claims the record resumes it from its last completed stage. At the default settings a record
+abandoned by a dead worker is picked back up within roughly 90 to 105 minutes of its last lease renewal: the
+30 minute lease expiry, plus the 60 minute grace, plus up to one sweep interval
+(`DataRefresh:WatchdogCronSchedule`, every 15 minutes by default).
+
+It also covers the two cases a redelivery cannot. A replay refused by the lease is *consumed* - completed, not
+dead-lettered - so there may be nothing left to replay; and a request message can be lost before it is ever
+delivered. Neither leaves a live lease behind, so both look the same to the sweep as any other stall.
+
+Each recovery logs an Application Insights **event** named `Data refresh stall auto-recovered`, carrying the
+record id. Nothing else emits it, so it is worth alerting on: a record recovered repeatedly is failing for some
+reason the retry cannot fix, and wants investigating rather than leaving to the sweep.
+
+##### Intervening before the watchdog does
+
+Only needed if you cannot wait out the grace period, or if the watchdog itself is not running. To check the
+latter, look at the `RecoverStalledDataRefreshes` function's own invocation and exception telemetry in
+Application Insights. Do not go by the recovery event above: it fires only when a stall is actually found, so
+its absence is the ordinary healthy state and says nothing about whether the sweep is running.
+
+Publish a request to the `data-refresh-requests` topic yourself:
+
+```json
+{ "DataRefreshRecordId": <record id> }
+```
+
+The job then continues from its last completed stage, unlike (b), which marks the record failed so that the
+next refresh starts from scratch.
+
+If the record still holds a live lease, that request will be refused, and - **only if you are certain the
+original process is gone** - the lease has to be cleared first:
 
 ```sql
 UPDATE [MatchingAlgorithmPersistent].[DataRefreshHistory]
@@ -102,15 +135,9 @@ WHERE Id = <record id>
 Clearing a live lease lets two refreshes run against one record and the same transient database, each
 independently deciding which stages to skip.
 
-Note that a refused replay is *consumed* - the message is completed, not dead-lettered - so there may be
-nothing left to replay. If so, publish one to the `data-refresh-requests` topic:
-
-```json
-{ "DataRefreshRecordId": <record id> }
-```
-
-The job then continues from its last completed stage, unlike (b), which marks the record failed so that the
-next refresh starts from scratch.
+Note that clearing the lease alone does not hand the record to the watchdog any sooner: the sweep also requires
+the record to have been idle for the whole grace period, measured from `RefreshLastContinuedUtc`. Publishing the
+request is what recovers it immediately.
 
 #### (b) Manual cleanup
  

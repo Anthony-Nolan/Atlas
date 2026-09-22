@@ -59,5 +59,33 @@ namespace Atlas.MatchingAlgorithm.Settings
         /// </summary>
         /// <inheritdoc cref="LeaseDurationMinutes" path="/remarks"/>
         public int LeaseRenewalIntervalSeconds { get; set; } = 60;
+
+        /// <summary>
+        /// How long a refresh record must have shown no sign of life before the watchdog re-requests it. Must be longer
+        /// than <see cref="LeaseDurationMinutes"/>; see DataRefreshWatchdog for the exact rule.
+        /// </summary>
+        /// <remarks>
+        /// A margin on top of the lease rather than the thing that detects the stall, which an expired lease has
+        /// already done. It covers what the lease cannot: the expiry is stamped by the clock of the host that ran the
+        /// refresh and read here by another, so a shorter grace would let skew between the two decide whether a live
+        /// run is re-requested. It also leaves a new record time for its request message to arrive.
+        ///
+        /// Defaulted here rather than relying on configuration, for the reason given on <see cref="LeaseDurationMinutes"/>.
+        /// </remarks>
+        public int WatchdogGraceDurationMinutes { get; set; } = 60;
+
+        /// <summary>
+        /// A crontab determining how often the watchdog sweeps for stalled refresh records. Recovering a leased record
+        /// therefore takes up to <see cref="LeaseDurationMinutes"/> - the lease has to lapse before the grace period
+        /// starts counting - plus <see cref="WatchdogGraceDurationMinutes"/>, plus one sweep interval.
+        /// </summary>
+        /// <remarks>
+        /// Unlike the other lease and watchdog settings, this one cannot be defaulted here: the Functions host reads it
+        /// to resolve the TimerTrigger binding. Without the app setting the host still starts and every other function
+        /// in the app runs normally - only this one fails to index, and then never fires. A missing value therefore
+        /// presents as a healthy app whose stalled refreshes are silently never recovered.
+        /// </remarks>
+        // ReSharper disable once UnusedMember.Global This property is only used in the Function TimerTrigger binding. Listed here for increased discoverability.
+        public string WatchdogCronSchedule { get; set; }
     }
 }
