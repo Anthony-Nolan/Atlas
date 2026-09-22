@@ -23,6 +23,7 @@ variable "AZURE_CLIENT_ID" {
 
 variable "AZURE_CLIENT_SECRET" {
   type        = string
+  sensitive   = true
   description = "Client secret used for authenticating to manage Azure resources from code."
 }
 
@@ -210,6 +211,24 @@ variable "IP_RESTRICTION_SETTINGS" {
   type        = list(string)
   default     = []
   description = "List of IP addresses that are whitelisted for functions app access. If none are provided the resources will publicly available. Note that if using this feature, Azure Devops build agents will need to be whitelisted for setting up webhooks - follow the Azure documentation on how to find said IP ranges. Warning that they change weekly - as such a lot of maintenance would be necessary to use whitelisted function apps, and as such using this feature is not recommended."
+}
+
+variable "KEY_VAULT_ADMINISTRATOR_OBJECTID" {
+  type        = string
+  default     = null
+  description = "Object ID of the AD group granted 'Key Vault Secrets Officer' on the Atlas Key Vault, so that secrets which are deliberately not managed by Terraform can be seeded and rotated by hand. Leave unset to skip the role assignment."
+}
+
+variable "KEY_VAULT_PURGE_PROTECTION_ENABLED" {
+  type        = bool
+  default     = false
+  description = "Whether purge protection is enabled on the Atlas Key Vault. Note that this cannot be turned off again once enabled, so it is left off until the vault has been proven in live."
+}
+
+variable "KEY_VAULT_SOFT_DELETE_RETENTION_DAYS" {
+  type        = number
+  default     = 7
+  description = "Number of days a deleted Key Vault secret remains recoverable. The minimum of 7 keeps vault and secret names re-usable in lower environments."
 }
 
 variable "LOCATION" {
