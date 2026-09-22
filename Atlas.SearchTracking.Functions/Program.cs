@@ -38,7 +38,6 @@ var host = new HostBuilder()
         });
 
         services.AddScoped<ISearchTrackingEventProcessor, SearchTrackingEventProcessor>();
-        services.AddScoped<ISearchTrackingDebugService, SearchTrackingDebugService>();
         services.AddScoped<ISearchRequestRepository, SearchRequestRepository>();
         services.AddScoped<IMatchPredictionRepository, MatchPredictionRepository>();
         services.AddScoped<ISearchRequestMatchingAlgorithmAttemptsRepository, SearchRequestMatchingAlgorithmAttemptsRepository>();

@@ -5,8 +5,6 @@ using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Debug.Client.Models.ApplicationInsights;
-using Atlas.Debug.Client.Models.DonorImport;
-using Atlas.Debug.Client.Models.MatchingAlgorithm;
 using Atlas.Debug.Client.Models.SearchResults;
 using Atlas.Debug.Client.Models.ServiceBus;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
@@ -18,11 +16,6 @@ namespace Atlas.Debug.Client.Clients
     /// </summary>
     public interface IMatchingAlgorithmFunctionsClient : ICommonAtlasFunctions
     {
-        /// <summary>
-        /// Check for presence or absence of donors in the active copy of the matching algorithm database.
-        /// </summary>
-        Task<DebugDonorsResult> CheckDonors(IEnumerable<string> externalDonorCodes);
-
         /// <summary>
         /// Peek messages from the `debug` subscription of the `matching-results` service bus topic.
         /// </summary>
@@ -41,21 +34,11 @@ namespace Atlas.Debug.Client.Clients
         Task<IEnumerable<HlaExpansionFailure>> GetHlaExpansionFailures(int daysToQuery = 14);
 
         /// <summary>
-        /// Sets donors as unavailable for search in the active matching algorithm db.
-        /// </summary>
-        Task SetDonorsAsUnavailableForSearch(IEnumerable<string> externalDonorCodes);
-
-        /// <summary>
         /// Scores a batch of donors via production endpoint on the matching algorithm app.
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
         Task<IEnumerable<DonorScoringResult>> ScoreBatch(BatchScoringRequest request);
-
-        /// <summary>
-        /// Retrieves a composite audit of the matching algorithm state for the given donors.
-        /// </summary>
-        Task<MatchingAuditResult> GetMatchingAudit(MatchingAuditRequest request);
     }
 
     /// <inheritdoc cref="IMatchingAlgorithmFunctionsClient" />
@@ -64,12 +47,6 @@ namespace Atlas.Debug.Client.Clients
         /// <inheritdoc />
         public MatchingAlgorithmFunctionsClient(HttpClient client) : base(client)
         {
-        }
-
-        /// <inheritdoc />
-        public async Task<DebugDonorsResult> CheckDonors(IEnumerable<string> externalDonorCodes)
-        {
-            return await PostRequest<IEnumerable<string>, DebugDonorsResult>("debug/donors/active", externalDonorCodes);
         }
 
         /// <inheritdoc />
@@ -91,21 +68,9 @@ namespace Atlas.Debug.Client.Clients
         }
 
         /// <inheritdoc />
-        public async Task SetDonorsAsUnavailableForSearch(IEnumerable<string> externalDonorCodes)
-        {
-            await PostRequest("debug/donors/makeUnavailableForSearch", externalDonorCodes);
-        }
-
-        /// <inheritdoc />
         public async Task<IEnumerable<DonorScoringResult>> ScoreBatch(BatchScoringRequest request)
         {
             return await PostRequest<BatchScoringRequest, IEnumerable<DonorScoringResult>>("ScoreBatch", request);
-        }
-
-        /// <inheritdoc />
-        public async Task<MatchingAuditResult> GetMatchingAudit(MatchingAuditRequest request)
-        {
-            return await PostRequest<MatchingAuditRequest, MatchingAuditResult>("debug/audit/matching", request);
         }
     }
 }

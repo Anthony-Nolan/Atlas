@@ -18,45 +18,15 @@ namespace Atlas.Debug.Client.Clients
         Task ImportFile(DonorImportRequest request);
 
         /// <summary>
-        /// Check for presence or absence of donors in donor import database (a.k.a. "Atlas donor store").
-        /// </summary>
-        Task<DebugDonorsResult> CheckDonors(IEnumerable<string> externalDonorCodes);
-
-        /// <summary>
         /// Peek messages from the `debug` subscription of the donor-import-results service bus topic.
         /// </summary>
         Task<PeekServiceBusMessagesResponse<DonorImportMessage>> PeekDonorImportResultMessages(PeekServiceBusMessagesRequest request);
-
-        /// <summary>
-        /// Retrieves donor import failures by file name.
-        /// </summary>
-        /// <param name="fileName"></param>
-        /// <returns></returns>
-        Task<DonorImportFailureInfo> GetDonorImportFailuresByFileName(string fileName);
 
         /// <summary>
         /// Check if full mode import is allowed.
         /// </summary>
         /// <returns></returns>
         Task<bool> IsFullModeImportAllowed();
-
-        /// <summary>
-        /// Get external donor codes by registry.
-        /// <paramref name="updatedBeforeDate"/> must be encoded as "yyyyMMdd".
-        /// </summary>
-        Task<IEnumerable<string>> GetExternalDonorCodesByRegistry(string registryCode, string updatedBeforeDate);
-
-        /// <summary>
-        /// Delete donors from donor store by external donor codes.
-        /// Note: this change will NOT be propagated to the matching algorithm db.
-        /// Donors have to be made unavailable for search by calling <see cref="MatchingAlgorithmFunctionsClient.SetDonorsAsUnavailableForSearch"/>.
-        /// </summary>
-        Task DeleteDonors(IEnumerable<string> externalDonorCodes);
-
-        /// <summary>
-        /// Retrieves a composite audit of the donor import pipeline state for the given donors and file.
-        /// </summary>
-        Task<DonorImportAuditResult> GetDonorImportAudit(DonorImportAuditRequest request);
     }
 
     /// <inheritdoc cref="IDonorImportFunctionsClient" />
@@ -74,45 +44,15 @@ namespace Atlas.Debug.Client.Clients
         }
 
         /// <inheritdoc />
-        public async Task<DebugDonorsResult> CheckDonors(IEnumerable<string> externalDonorCodes)
-        {
-            return await PostRequest<IEnumerable<string>, DebugDonorsResult>("debug/donors", externalDonorCodes);
-        }
-
-        /// <inheritdoc />
         public async Task<PeekServiceBusMessagesResponse<DonorImportMessage>> PeekDonorImportResultMessages(PeekServiceBusMessagesRequest request)
         {
             return await PostRequest<PeekServiceBusMessagesRequest, PeekServiceBusMessagesResponse<DonorImportMessage>>("debug/donorImport/results", request);
         }
 
         /// <inheritdoc />
-        public async Task<DonorImportFailureInfo> GetDonorImportFailuresByFileName(string fileName)
-        {
-            return await GetRequest<DonorImportFailureInfo>($"debug/donorUpdates/failures/{fileName}");
-        }
-
-        /// <inheritdoc />
         public async Task<bool> IsFullModeImportAllowed()
         {
             return await GetRequest<bool>("debug/donorImport/isFullModeImportAllowed");
-        }
-
-        /// <inheritdoc />
-        public async Task<IEnumerable<string>> GetExternalDonorCodesByRegistry(string registryCode, string updatedBeforeDate)
-        {
-            return await GetRequest<IEnumerable<string>>($"debug/donors/{registryCode}/externalDonorCodes/{updatedBeforeDate}");
-        }
-
-        /// <inheritdoc />
-        public async Task DeleteDonors(IEnumerable<string> externalDonorCodes)
-        {
-            await PostRequest("debug/donors/delete", externalDonorCodes);
-        }
-
-        /// <inheritdoc />
-        public async Task<DonorImportAuditResult> GetDonorImportAudit(DonorImportAuditRequest request)
-        {
-            return await PostRequest<DonorImportAuditRequest, DonorImportAuditResult>("debug/audit/donorImport", request);
         }
     }
 }
