@@ -162,20 +162,20 @@ Once terraform has created ATLAS resources for the first time, certain actions m
 
       ```bash
       # bash / Git Bash
-      openssl rand -base64 64 | tr -dc 'A-Za-z0-9' | head -c 16; echo
+      openssl rand -base64 64 | tr -dc 'A-Za-z0-9' | head -c 64; echo
       ```
 
       ```powershell
       # PowerShell (works in both Windows PowerShell 5.1 and PowerShell 7+)
       $bytes = [byte[]]::new(64)
       [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
-      ([Convert]::ToBase64String($bytes) -replace '[^A-Za-z0-9]', '').Substring(0, 16)
+      ([Convert]::ToBase64String($bytes) -replace '[^A-Za-z0-9]', '').Substring(0, 64)
       ```
 
       Both reduce the base64 alphabet to `A-Za-z0-9`, so every surviving character stays uniformly distributed (no modulo bias), and take the
-      first 16. The constraints they satisfy, and why those constraints exist:
+      first 64. The constraints they satisfy, and why those constraints exist:
 
-      - **16+ characters.** 16 characters drawn from a 62-character alphabet is ~95 bits of entropy.
+      - **64 characters.** 64 characters drawn from a 62-character alphabet is ~381 bits of entropy.
       - **Upper, lower and numbers only — no special characters.** The password is interpolated through three layers before it reaches SQL
         Server, and each is broken by a different character:
         - the ADO.NET connection string assembled by terraform (`;`, `=`, `"`);
@@ -184,8 +184,8 @@ Once terraform has created ATLAS resources for the first time, certain actions m
       - **Check the generated value contains at least one digit, and re-run if it does not.** Azure SQL enforces password complexity: characters
         from at least three of upper / lower / digits / symbols, and the password must not contain the account name
         (see [Password policy](https://learn.microsoft.com/sql/relational-databases/security/password-policy#password-complexity)). With symbols
-        ruled out, all three of upper, lower and digits are required, and a random 16-character alphanumeric string happens to contain no digit
-        roughly one time in seventeen.
+        ruled out, all three of upper, lower and digits are required, and a random 64-character alphanumeric string contains no digit only about
+        one time in 77,000 — rare, but still worth checking.
     - By default, `db_datareader` and `db_datawriter` will be necessary for a given component to access its corresponding database(s)  
     - Note that the user for the matching component to access the *transient matching databases* (a and b) will need to be granted `db_owner` permission, as a `truncate table` command is used in the full data refresh, which requires elevated permissions
 
