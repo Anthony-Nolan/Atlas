@@ -130,5 +130,49 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface.Dependenc
             name.Should().NotBeNullOrWhiteSpace();
             name.Length.Should().BeLessThanOrEqualTo(50);
         }
+
+        /// <summary>
+        /// Service Bus rejects an auto-delete-on-idle window under five minutes, and the [Range] annotation on the
+        /// settings class never runs on this path - so an unchecked value would stop every worker starting, with an
+        /// error naming neither the setting nor the limit.
+        /// </summary>
+        [TestCase("4")]
+        [TestCase("0")]
+        [TestCase("-1")]
+        public void ReadAutoDeleteOnIdle_BelowServiceBusMinimum_ThrowsNamingTheSetting(string configured)
+        {
+            Action read = () => HlaMetadataDictionaryCacheInvalidationConfiguration.ReadAutoDeleteOnIdle(configured);
+
+            read.Should().Throw<InvalidOperationException>()
+                .WithMessage("*SubscriptionAutoDeleteOnIdleMinutes*")
+                .WithMessage("*5*");
+        }
+
+        [TestCase("not-a-number")]
+        [TestCase("5.5")]
+        public void ReadAutoDeleteOnIdle_NotAWholeNumberOfMinutes_Throws(string configured)
+        {
+            Action read = () => HlaMetadataDictionaryCacheInvalidationConfiguration.ReadAutoDeleteOnIdle(configured);
+
+            read.Should().Throw<InvalidOperationException>();
+        }
+
+        [TestCase("5", 5)]
+        [TestCase("60", 60)]
+        public void ReadAutoDeleteOnIdle_AtOrAboveTheMinimum_IsUsed(string configured, int expectedMinutes)
+        {
+            HlaMetadataDictionaryCacheInvalidationConfiguration.ReadAutoDeleteOnIdle(configured)
+                .Should().Be(TimeSpan.FromMinutes(expectedMinutes));
+        }
+
+        /// <summary>Absent is not a misconfiguration - nothing sets this, and the default clears the minimum.</summary>
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase("   ")]
+        public void ReadAutoDeleteOnIdle_WhenNotConfigured_FallsBackToTheDefault(string configured)
+        {
+            HlaMetadataDictionaryCacheInvalidationConfiguration.ReadAutoDeleteOnIdle(configured)
+                .Should().Be(TimeSpan.FromMinutes(60));
+        }
     }
 }
