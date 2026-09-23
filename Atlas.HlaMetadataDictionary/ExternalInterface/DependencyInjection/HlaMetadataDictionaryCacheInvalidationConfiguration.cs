@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
@@ -23,6 +23,9 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
         private const string AutoDeleteOnIdleMinutesKey = ConfigurationSection + ":SubscriptionAutoDeleteOnIdleMinutes";
 
         private const int DefaultAutoDeleteOnIdleMinutes = 60;
+
+        /// <summary>Service Bus rejects an auto-delete-on-idle window shorter than this.</summary>
+        private const int MinimumAutoDeleteOnIdleMinutes = 5;
 
         /// <summary>Keeps the added start-up delay to at most ~15s on a sustained failure.</summary>
         private const int MaxSubscriptionCreationRetries = 4;
@@ -68,10 +71,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
             }
 
             var subscription = BuildSubscriptionNameForThisInstance();
-            var autoDeleteOnIdle = TimeSpan.FromMinutes(
-                int.TryParse(configuration[AutoDeleteOnIdleMinutesKey], out var configuredMinutes)
-                    ? configuredMinutes
-                    : DefaultAutoDeleteOnIdleMinutes);
+            var autoDeleteOnIdle = ReadAutoDeleteOnIdle(configuration[AutoDeleteOnIdleMinutesKey]);
 
             EnsureSubscriptionExists(connectionString, topic, subscription, autoDeleteOnIdle);
 
@@ -79,6 +79,37 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
             {
                 new KeyValuePair<string, string>(UpdatedSubscriptionKey, subscription)
             });
+        }
+
+        /// <summary>
+        /// How long an unused instance subscription may sit before Service Bus deletes it.
+        /// </summary>
+        /// <remarks>
+        /// Validated here rather than left to the <c>[Range]</c> annotation on
+        /// <see cref="Settings.HlaMetadataDictionaryNotificationSettings"/>: that annotation only runs when the
+        /// settings are bound as options, which happens after the host is built - and the subscribing apps never bind
+        /// that type at all, since they reach this configuration through their trigger binding. So a value below the
+        /// minimum would reach Service Bus, be rejected, and stop every worker starting with an error that says
+        /// nothing about which setting was wrong.
+        /// </remarks>
+        internal static TimeSpan ReadAutoDeleteOnIdle(string configuredValue)
+        {
+            // Absent is not a misconfiguration - neither Terraform nor the settings templates set this, and the
+            // default is deliberately well clear of the minimum.
+            if (string.IsNullOrWhiteSpace(configuredValue))
+            {
+                return TimeSpan.FromMinutes(DefaultAutoDeleteOnIdleMinutes);
+            }
+
+            if (!int.TryParse(configuredValue, out var minutes) || minutes < MinimumAutoDeleteOnIdleMinutes)
+            {
+                throw new InvalidOperationException(
+                    $"'{AutoDeleteOnIdleMinutesKey}' must be a whole number of minutes and no less than " +
+                    $"{MinimumAutoDeleteOnIdleMinutes}, which is the shortest auto-delete-on-idle window Service Bus " +
+                    $"accepts, but was '{configuredValue}'.");
+            }
+
+            return TimeSpan.FromMinutes(minutes);
         }
 
         /// <remarks>
