@@ -10,6 +10,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using AutoFixture;
 using AwesomeAssertions;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -35,6 +36,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute;
 public class SubjectGenotypeSetRepositoryTests
 {
     private const int LargePayloadSizeInBytes = 400_000;
+
+    /// <summary>SQL Server's error for a duplicate key in a unique index, as against a primary key or a constraint.</summary>
+    private const int DuplicateKeyInUniqueIndexErrorNumber = 2601;
 
     private Fixture fixture;
     private string transientConnectionString;
@@ -262,6 +266,23 @@ public class SubjectGenotypeSetRepositoryTests
         await act.Should().NotThrowAsync();
     }
 
+    [Test]
+    public async Task WriteDonorAssignments_WhenTheUniqueIndexRejectsARow_KeepsNoRowFromTheCall()
+    {
+        // The rejected row is the last one, after more rows than a StagingChunkSize batch holds. A write committed
+        // batch by batch would keep the rows before it, and the same assignments sent again would collide with them.
+        var valueId = fixture.Create<int>();
+        var assignments = Enumerable.Range(1, SubjectGenotypeSetRepository.StagingChunkSize)
+            .SelectMany(donorId => AllowedLociKeyExtensions.All
+                .Select(allowedLociKey => new DonorSubjectGenotypeSetAssignment(donorId, allowedLociKey, valueId)))
+            .ToList();
+
+        var act = () => repository.WriteDonorAssignments([..assignments, assignments[0]]);
+
+        await act.Should().ThrowAsync<SqlException>().Where(exception => exception.Number == DuplicateKeyInUniqueIndexErrorNumber);
+        (await StoredAssignmentCount()).Should().Be(0);
+    }
+
     private static ISubjectGenotypeSetRepository NewRepository() =>
         Injection.Provider.GetService<IActiveRepositoryFactory>().GetSubjectGenotypeSetRepository();
 
@@ -278,6 +299,12 @@ public class SubjectGenotypeSetRepositoryTests
     {
         await using var context = new ContextFactory().Create(transientConnectionString);
         return await context.SubjectGenotypeSetValues.CountAsync();
+    }
+
+    private async Task<int> StoredAssignmentCount()
+    {
+        await using var context = new ContextFactory().Create(transientConnectionString);
+        return await context.DonorSubjectGenotypeSets.CountAsync();
     }
 
     private async Task<SubjectGenotypeSetValue> StoredValue(int id)
