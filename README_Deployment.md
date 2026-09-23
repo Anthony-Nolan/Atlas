@@ -135,10 +135,11 @@ az keyvault secret set \
   --value "<the AZURE_CLIENT_SECRET release variable for that environment>"
 ```
 
-To be able to run this you must be a member of the AD group whose object ID is set in the
-`KEY_VAULT_ADMINISTRATOR_OBJECTID` terraform variable; that group is granted Key Vault Secrets Officer on the vault. If
-the variable is left unset, no such role assignment is created and only the Terraform service principal can write
-secrets.
+To be able to run this, your object ID - or that of an AD group you belong to - must be listed in the
+`KEY_VAULT_SECRETS_OFFICER_OBJECTIDS` terraform variable; everything listed there is granted Key Vault Secrets Officer
+on the vault. The same applies if you want to run a `terraform plan` locally: the plan refreshes the secrets Terraform
+manages, and fails with a 403 if you cannot read them. If the list is left empty, only the deploy service principal
+that runs Terraform can write secrets.
 
 Rotating a hand-seeded secret is a matter of running the command above again. The platform caches resolved Key Vault
 references for up to 24 hours, so restart the function apps if the new value is needed immediately. Secrets that

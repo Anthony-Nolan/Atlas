@@ -141,19 +141,19 @@ resource "azurerm_windows_function_app" "atlas_function" {
   connection_string {
     name  = "Matching:Sql:Persistent"
     type  = "SQLAzure"
-    value = module.matching_algorithm.sql_database.persistent_database_connection_string
+    value = module.matching_algorithm.sql_database.persistent_database_kv_ref
   }
 
   connection_string {
     name  = "Matching:Sql:A"
     type  = "SQLAzure"
-    value = module.matching_algorithm.sql_database.transient_a_database_connection_string
+    value = module.matching_algorithm.sql_database.transient_a_database_kv_ref
   }
 
   connection_string {
     name  = "Matching:Sql:B"
     type  = "SQLAzure"
-    value = module.matching_algorithm.sql_database.transient_b_database_connection_string
+    value = module.matching_algorithm.sql_database.transient_b_database_kv_ref
   }
 
   connection_string {

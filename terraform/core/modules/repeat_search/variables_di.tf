@@ -40,15 +40,15 @@ variable "mac_import_table" {
   })
 }
 
-variable "matching_persistent_database_connection_string" {
+variable "matching_persistent_database_kv_ref" {
   type = string
 }
 
-variable "matching_transient_a_database_connection_string" {
+variable "matching_transient_a_database_kv_ref" {
   type = string
 }
 
-variable "matching_transient_b_database_connection_string" {
+variable "matching_transient_b_database_kv_ref" {
   type = string
 }
 

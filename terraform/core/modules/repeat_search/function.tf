@@ -13,6 +13,15 @@ resource "azurerm_windows_function_app" "atlas_repeat_search_function" {
   storage_account_access_key  = var.shared_function_storage.primary_access_key
   storage_account_name        = var.shared_function_storage.name
 
+  // Resolves the matching algorithm's @Microsoft.KeyVault connection strings below. The role assignment granting this
+  // identity access lives in the root module, so it is ordered by the depends_on on this module's block.
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [var.key_vault.function_apps_identity_id]
+  }
+
+  key_vault_reference_identity_id = var.key_vault.function_apps_identity_id
+
   tags = var.general.common_tags
 
   app_settings = {
@@ -97,19 +106,19 @@ resource "azurerm_windows_function_app" "atlas_repeat_search_function" {
   connection_string {
     name  = "MatchingPersistentSql"
     type  = "SQLAzure"
-    value = var.matching_persistent_database_connection_string
+    value = var.matching_persistent_database_kv_ref
   }
 
   connection_string {
     name  = "MatchingSqlA"
     type  = "SQLAzure"
-    value = var.matching_transient_a_database_connection_string
+    value = var.matching_transient_a_database_kv_ref
   }
 
   connection_string {
     name  = "MatchingSqlB"
     type  = "SQLAzure"
-    value = var.matching_transient_b_database_connection_string
+    value = var.matching_transient_b_database_kv_ref
   }
 
   connection_string {
