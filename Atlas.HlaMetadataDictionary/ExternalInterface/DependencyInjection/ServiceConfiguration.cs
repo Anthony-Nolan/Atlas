@@ -2,6 +2,8 @@ using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.Common.ServiceBus;
+using Atlas.Common.ServiceBus.DependencyInjection;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Repositories;
@@ -15,6 +17,7 @@ using Atlas.HlaMetadataDictionary.Services.DataGeneration.MatchedHlaConversion;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
 using Atlas.HlaMetadataDictionary.Services.HlaValidation;
+using Atlas.HlaMetadataDictionary.Services.Notifications;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
@@ -41,6 +44,30 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
             services.RegisterServices();
             services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
             services.RegisterMacDictionary(fetchApplicationInsightsSettings, fetchMacDictionarySettings);
+        }
+
+        /// <summary>
+        /// Opt-in, for the apps that can recreate the dictionary. Registered after
+        /// <see cref="RegisterHlaMetadataDictionary"/>, so that the real publisher displaces the non-publishing
+        /// default registered there.
+        /// </summary>
+        public static void RegisterHlaMetadataDictionaryUpdateNotifications(
+            this IServiceCollection services,
+            Func<IServiceProvider, HlaMetadataDictionaryNotificationSettings> fetchNotificationSettings)
+        {
+            services.MakeSettingsAvailableForUse(fetchNotificationSettings);
+
+            // Keyed on this settings type rather than sharing an app's existing Service Bus registration: the apps
+            // that publish this notification key their buses differently from one another, and the dictionary should
+            // not have to know which of them it has been composed into.
+            services.RegisterServiceBusAsKeyedServices(
+                typeof(HlaMetadataDictionaryNotificationSettings),
+                sp => fetchNotificationSettings(sp).ConnectionString);
+
+            services.AddScoped<IHlaMetadataDictionaryUpdateNotifier>(sp => new ServiceBusHlaMetadataDictionaryUpdateNotifier(
+                sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(HlaMetadataDictionaryNotificationSettings)),
+                sp.GetRequiredService<HlaMetadataDictionaryNotificationSettings>(),
+                sp.GetRequiredService<IAtlasLogger>()));
         }
 
         private static void RegisterStorageTypes(this IServiceCollection services)
@@ -81,6 +108,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
             services.AddScoped<IHlaToScoringMetaDataConverter, HlaToScoringMetaDataConverter>();
 
             services.AddScoped<IRecreateHlaMetadataService, RecreateHlaMetadataService>();
+            services.AddScoped<IHlaMetadataDictionaryUpdateNotifier, NonPublishingHlaMetadataDictionaryUpdateNotifier>();
         }
 
         private static void RegisterServices(this IServiceCollection services)
@@ -99,6 +127,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
             services.AddScoped<ISmallGGroupMetadataService, SmallGGroupMetadataService>();
             services.AddScoped<ISerologyToAllelesMetadataService, SerologyToAllelesMetadataService>();
             services.AddScoped<ISmallGGroupToPGroupMetadataService, SmallGGroupToPGroupMetadataService>();
+            services.AddScoped<IHlaMetadataCacheInvalidator, HlaMetadataCacheInvalidator>();
         }
     }
 }

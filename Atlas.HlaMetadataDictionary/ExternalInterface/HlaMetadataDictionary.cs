@@ -12,6 +12,7 @@ using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
 using Atlas.HlaMetadataDictionary.Services.HlaValidation;
+using Atlas.HlaMetadataDictionary.Services.Notifications;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 
 namespace Atlas.HlaMetadataDictionary.ExternalInterface
@@ -106,6 +107,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly ISerologyToAllelesMetadataService serologyToAllelesMetadataService;
         private readonly IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
+        private readonly IHlaMetadataDictionaryUpdateNotifier updateNotifier;
         private readonly IAtlasLogger logger;
 
         public HlaMetadataDictionary(
@@ -122,6 +124,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             ISerologyToAllelesMetadataService serologyToAllelesMetadataService,
             IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator,
             IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
+            IHlaMetadataDictionaryUpdateNotifier updateNotifier,
             IAtlasLogger logger)
         {
             this.hlaNomenclatureVersionOrDefault = hlaNomenclatureVersionOrDefault;
@@ -137,6 +140,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.serologyToAllelesMetadataService = serologyToAllelesMetadataService;
             this.hlaMetadataGenerationOrchestrator = hlaMetadataGenerationOrchestrator;
             this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
+            this.updateNotifier = updateNotifier;
             this.logger = logger;
         }
 
@@ -161,6 +165,12 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
                 logger.SendTrace($"HLA-METADATA-DICTIONARY REFRESH: Recreating HLA Metadata dictionary for desired HLA Nomenclature version.");
                 await recreateMetadataService.RefreshAllHlaMetadata(version);
                 logger.SendTrace($"HLA-METADATA-DICTIONARY REFRESH: HLA Metadata dictionary recreated at HLA Nomenclature version: {version}");
+
+                // Only on the branch that actually rewrote storage, and only once storage has been rewritten: a
+                // consumer that clears its cache before the new data is in place would simply re-cache the old data.
+                // Both recreation routes pass through here, which is what keeps the forced same-version refresh and a
+                // normal version-changing data refresh behaving identically.
+                await updateNotifier.NotifyOfUpdate(version);
             }
             else
             {

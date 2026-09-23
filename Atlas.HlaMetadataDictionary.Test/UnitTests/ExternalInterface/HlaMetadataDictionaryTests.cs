@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using AwesomeAssertions;
 using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
@@ -6,6 +7,7 @@ using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
 using Atlas.HlaMetadataDictionary.Services.HlaValidation;
+using Atlas.HlaMetadataDictionary.Services.Notifications;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using NSubstitute;
 using NUnit.Framework;
@@ -29,6 +31,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
         private ISerologyToAllelesMetadataService serologyToAllelesMetadataService;
         private IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
+        private IHlaMetadataDictionaryUpdateNotifier updateNotifier;
         private IAtlasLogger logger;
 
         private IHlaMetadataDictionary hlaMetadataDictionary;
@@ -48,6 +51,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
             serologyToAllelesMetadataService = Substitute.For<ISerologyToAllelesMetadataService>();
             hlaMetadataGenerationOrchestrator = Substitute.For<IHlaMetadataGenerationOrchestrator>();
             wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
+            updateNotifier = Substitute.For<IHlaMetadataDictionaryUpdateNotifier>();
             logger = Substitute.For<IAtlasLogger>();
 
             hlaMetadataDictionary = new HlaMetadataDictionary.ExternalInterface.HlaMetadataDictionary(
@@ -64,6 +68,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
                 serologyToAllelesMetadataService,
                 hlaMetadataGenerationOrchestrator,
                 wmdaHlaNomenclatureVersionAccessor,
+                updateNotifier,
                 logger);
         }
 
@@ -105,6 +110,58 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
             await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Specific("different-version"));
 
             await recreateMetadataService.ReceivedWithAnyArgs().RefreshAllHlaMetadata(null);
+        }
+
+        [Test]
+        public async Task RecreateHlaMetadataDictionary_WhenDictionaryIsRecreated_NotifiesOfUpdate()
+        {
+            wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().Returns("newer-version");
+
+            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
+
+            await updateNotifier.Received().NotifyOfUpdate("newer-version");
+        }
+
+        [Test]
+        public async Task RecreateHlaMetadataDictionary_WhenDictionaryIsNotRecreated_DoesNotNotifyOfUpdate()
+        {
+            wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().Returns(DefaultVersion);
+
+            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
+
+            await updateNotifier.DidNotReceiveWithAnyArgs().NotifyOfUpdate(null);
+        }
+
+        /// <summary>
+        /// The case ATL-395 was raised for: a forced recreation at the version that is already active changes the
+        /// stored data without changing anything a consumer keys its cache on, so the notification is the only signal
+        /// there is.
+        /// </summary>
+        [Test]
+        public async Task RecreateHlaMetadataDictionary_ForSpecificVersionMatchingActiveVersion_NotifiesOfUpdate()
+        {
+            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Specific(DefaultVersion));
+
+            await updateNotifier.Received().NotifyOfUpdate(DefaultVersion);
+        }
+
+        [Test]
+        public async Task RecreateHlaMetadataDictionary_NotifiesOnlyAfterDataHasBeenRewritten()
+        {
+            var notifiedBeforeDataWasRewritten = false;
+            var dataWasRewritten = false;
+
+            recreateMetadataService
+                .When(s => s.RefreshAllHlaMetadata(Arg.Any<string>()))
+                .Do(_ => dataWasRewritten = true);
+            updateNotifier
+                .When(n => n.NotifyOfUpdate(Arg.Any<string>()))
+                .Do(_ => notifiedBeforeDataWasRewritten = !dataWasRewritten);
+
+            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Specific(DefaultVersion));
+
+            // A consumer that clears its cache before the new data is in place would just re-cache the old data.
+            notifiedBeforeDataWasRewritten.Should().BeFalse();
         }
     }
 }

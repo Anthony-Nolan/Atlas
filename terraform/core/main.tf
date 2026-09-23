@@ -133,6 +133,10 @@ module "matching_algorithm" {
     alerts                    = module.support.general.alerts_servicebus_topic
     notifications             = module.support.general.notifications_servicebus_topic
     search_tracking           = module.search_tracking.service_bus.search_tracking_topic
+    hla_metadata_dictionary_updated = {
+      name                     = azurerm_servicebus_topic.hla-metadata-dictionary-updated.name
+      manage_connection_string = azurerm_servicebus_topic_authorization_rule.hla-metadata-dictionary-updated-manage.primary_connection_string
+    }
   }
 
   // Release variables
