@@ -152,7 +152,7 @@ public class SubjectGenotypeSetPrecomputeServiceTests
         await precomputeService.Precompute([NewSubject()], HlaNomenclatureVersion);
 
         await genotypeSetService.DidNotReceiveWithAnyArgs().GetGenotypeSet(default, default);
-        await repository.Received(1).GetOrCreateValueIds(Arg.Is<IReadOnlyCollection<SubjectGenotypeSetValueToStore>>(values => values.Count == 0));
+        await repository.DidNotReceiveWithAnyArgs().GetOrCreateValueIds(default);
     }
 
     [Test]
@@ -196,6 +196,34 @@ public class SubjectGenotypeSetPrecomputeServiceTests
             repository.GetOrCreateValueIds(Arg.Any<IReadOnlyCollection<SubjectGenotypeSetValueToStore>>());
             repository.WriteDonorAssignments(Arg.Any<IReadOnlyCollection<DonorSubjectGenotypeSetAssignment>>());
         });
+    }
+
+    [Test]
+    public async Task Precompute_ForMoreValuesThanOneChunk_StoresEachChunkBeforeComputingTheNext()
+    {
+        // Each store gets only the values computed since the store before it. That is what limits the payloads held
+        // in memory, and what keeps the stored part of a batch when a crash stops the rest.
+        var subjects = SubjectsNeedingTwoChunks();
+        var computationsAtEachStore = new List<int>();
+        repository
+            .When(r => r.GetOrCreateValueIds(Arg.Any<IReadOnlyCollection<SubjectGenotypeSetValueToStore>>()))
+            .Do(_ => computationsAtEachStore.Add(genotypeSetService.ReceivedCalls().Count()));
+
+        await precomputeService.Precompute(subjects, HlaNomenclatureVersion);
+
+        const int chunkSize = SubjectGenotypeSetPrecomputeService.ValueChunkSize;
+        var valueCount = subjects.Count * AllowedLociKeyExtensions.All.Count;
+        computationsAtEachStore.Should().Equal(chunkSize, valueCount);
+        StoreCalls().Select(values => values.Count).Should().Equal(chunkSize, valueCount - chunkSize);
+    }
+
+    [Test]
+    public async Task Precompute_ForMoreValuesThanOneChunk_AssignsDonorsToTheIdsFromEveryChunk()
+    {
+        await precomputeService.Precompute(SubjectsNeedingTwoChunks(), HlaNomenclatureVersion);
+
+        WrittenAssignments().Select(assignment => assignment.SubjectGenotypeSetValueId)
+            .Should().BeEquivalentTo(createdIds.Values);
     }
 
     [Test]
@@ -311,11 +339,15 @@ public class SubjectGenotypeSetPrecomputeServiceTests
     private IEnumerable<MatchPredictionParameters> ComputedParameters() =>
         genotypeSetService.ReceivedCalls().Select(call => (MatchPredictionParameters) call.GetArguments()[1]);
 
-    private IReadOnlyCollection<SubjectGenotypeSetValueToStore> StoredValues() =>
-        (IReadOnlyCollection<SubjectGenotypeSetValueToStore>) repository
+    private IReadOnlyCollection<SubjectGenotypeSetValueToStore> StoredValues() => StoreCalls().SelectMany(values => values).ToList();
+
+    /// <summary>What each call to <see cref="ISubjectGenotypeSetRepository.GetOrCreateValueIds"/> was given, in call order.</summary>
+    private IReadOnlyList<IReadOnlyCollection<SubjectGenotypeSetValueToStore>> StoreCalls() =>
+        repository
             .ReceivedCalls()
-            .Single(call => call.GetMethodInfo().Name == nameof(ISubjectGenotypeSetRepository.GetOrCreateValueIds))
-            .GetArguments()[0];
+            .Where(call => call.GetMethodInfo().Name == nameof(ISubjectGenotypeSetRepository.GetOrCreateValueIds))
+            .Select(call => (IReadOnlyCollection<SubjectGenotypeSetValueToStore>) call.GetArguments()[0])
+            .ToList();
 
     private IReadOnlyCollection<DonorSubjectGenotypeSetAssignment> WrittenAssignments() =>
         (IReadOnlyCollection<DonorSubjectGenotypeSetAssignment>) repository
@@ -329,6 +361,21 @@ public class SubjectGenotypeSetPrecomputeServiceTests
 
     private static PrecomputeSubject NewSubject(int donorId = 1, PhenotypeInfo<string> typing = null, int frequencySetId = FrequencySetId) =>
         new(donorId, typing ?? TypedAtEveryLocus(), new HaplotypeFrequencySet { Id = frequencySetId });
+
+    /// <summary>
+    /// One subject more than fits in one chunk of values. Each subject has a typing of its own, so each is four new
+    /// values, and the last subject's four go to a second chunk.
+    /// </summary>
+    private IReadOnlyCollection<PrecomputeSubject> SubjectsNeedingTwoChunks()
+    {
+        var subjectCount = SubjectGenotypeSetPrecomputeService.ValueChunkSize / AllowedLociKeyExtensions.All.Count + 1;
+
+        return fixture.CreateMany<int>(subjectCount)
+            .Select(donorId => NewSubject(donorId, new PhenotypeInfoBuilder<string>(TypedAtEveryLocus())
+                .WithDataAt(Locus.A, fixture.Create<string>(), fixture.Create<string>())
+                .Build()))
+            .ToList();
+    }
 
     private static PhenotypeInfo<string> TypedAtEveryLocus() =>
         new PhenotypeInfoBuilder<string>()

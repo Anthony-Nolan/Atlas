@@ -39,9 +39,10 @@ public interface ISubjectGenotypeSetRepository
     /// Writes the per-donor mapping rows pointing donors at the values they resolve to.
     /// </summary>
     /// <remarks>
-    /// A plain insert. <c>IX_DonorSubjectGenotypeSets_DonorId_AllowedLociKey</c> is unique, so writing a donor that
-    /// already has a row for that combination throws - which is correct while the only caller is a refresh running
-    /// against freshly cleared tables.
+    /// A plain insert, and all or nothing. <c>IX_DonorSubjectGenotypeSets_DonorId_AllowedLociKey</c> is unique, so
+    /// writing a donor that already has a row for that combination throws - which is correct while the only caller is
+    /// a refresh running against freshly cleared tables. When the write throws, it keeps no row, so the caller can send
+    /// the same assignments again.
     /// </remarks>
     Task WriteDonorAssignments(IReadOnlyCollection<DonorSubjectGenotypeSetAssignment> assignments);
 }
@@ -255,10 +256,14 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
             dataTable.Rows.Add(0, assignment.DonorId, assignment.AllowedLociKey.ToString(), assignment.SubjectGenotypeSetValueId);
         }
 
+        // No BatchSize, deliberately. Zero makes the whole write one batch, and UseInternalTransaction makes one batch
+        // one transaction. With a batch size, each batch commits on its own: a failure part way through - the unique
+        // index rejecting a row, a dropped connection - keeps the batches before it, and the same assignments sent
+        // again then collide with those rows. At a donor batch's 8,000 rows, SQL Server can escalate to a table lock;
+        // that costs nothing while a refresh is this table's only writer.
         using (var bulkCopy = new SqlBulkCopy(ConnectionStringProvider.GetConnectionString(), SqlBulkCopyOptions.UseInternalTransaction))
         {
             bulkCopy.BulkCopyTimeout = CommandTimeoutInSeconds;
-            bulkCopy.BatchSize = StagingChunkSize;
             bulkCopy.DestinationTableName = AssignmentsTableName;
             AddColumnMappings(bulkCopy, AssignmentColumnNames);
 

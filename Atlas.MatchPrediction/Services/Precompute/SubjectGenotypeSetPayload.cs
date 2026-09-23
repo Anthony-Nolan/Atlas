@@ -52,8 +52,8 @@ namespace Atlas.MatchPrediction.Services.Precompute;
 ///
 /// <para>
 /// <b>Failure contract.</b> Every malformed payload throws <see cref="InvalidDataException"/> - truncated, not gzip,
-/// a flipped byte, an unknown version, an out-of-range pool id, a reserved flag bit, a malformed length prefix.
-/// Callers need one catch, not seven.
+/// a flipped byte, an unknown version, an out-of-range pool id, a reserved flag bit, a malformed length prefix,
+/// bytes after the last field. Callers need one catch, not eight.
 /// </para>
 /// </summary>
 public static class SubjectGenotypeSetPayload
@@ -150,6 +150,15 @@ public static class SubjectGenotypeSetPayload
             var pool = HlaStringPool.FromOrderedEntries(ReadPoolEntries(reader, poolCount));
             var genotypes = ReadGenotypes(reader, genotypeCount, pool, wide);
             var sumOfLikelihoods = ReadDecimal(reader);
+
+            // The sum is the last field, so nothing may follow it. Gzip's CRC already covers what this encoder wrote,
+            // so extra bytes can only come from a body that other code wrote. Accepting them would also let two
+            // different payloads decode to one set - the same break in determinism that the override order rules out.
+            if (stream.Position != stream.Length)
+            {
+                throw new InvalidDataException(
+                    $"Payload holds {stream.Length - stream.Position:N0} byte(s) after its last field, so it was not written by this encoder.");
+            }
 
             return new SubjectGenotypeSet(isUnrepresented, genotypes, sumOfLikelihoods);
         }

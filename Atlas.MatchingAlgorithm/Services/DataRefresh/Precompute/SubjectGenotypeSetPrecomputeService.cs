@@ -43,7 +43,7 @@ public interface ISubjectGenotypeSetPrecomputeService
 /// <para>
 /// <b>It computes nothing itself.</b> <see cref="IGenotypeSetService"/> already runs expand, truncate and convert and
 /// returns exactly the type that gets stored, so this class is orchestration: derive the key, skip what is stored,
-/// compute the rest, encode, store, assign.
+/// compute, encode and store the rest a chunk at a time, assign.
 /// </para>
 ///
 /// <para>
@@ -54,6 +54,17 @@ public interface ISubjectGenotypeSetPrecomputeService
 /// </summary>
 public class SubjectGenotypeSetPrecomputeService : ISubjectGenotypeSetPrecomputeService
 {
+    /// <summary>
+    /// Values computed, then stored, per round - so a batch's values are never all held at once.
+    ///
+    /// <para>
+    /// The same as the repository's <c>StagingChunkSize</c>, so that one store is one staging round trip. Measured
+    /// payloads average 3.4 KB and reach 36 KB at the 2,000-genotype cap, so a round holds roughly 3.4 MB and at most
+    /// 36 MB, where a whole batch of 8,000 values could hold up to 290 MB.
+    /// </para>
+    /// </summary>
+    internal const int ValueChunkSize = 1000;
+
     private readonly ISubjectGenotypeSetRepository repository;
     private readonly IGenotypeSetService genotypeSetService;
 
@@ -80,14 +91,12 @@ public class SubjectGenotypeSetPrecomputeService : ISubjectGenotypeSetPrecompute
         // Do not "simplify" it into a blind insert on the strength of what it returned.
         var storedIds = await repository.GetExistingValueIds(requests.Select(request => request.Key).Distinct().ToList());
 
-        var computedValues = await Compute(
-            requests.Where(request => !storedIds.ContainsKey(request.Key)).DistinctBy(request => request.Key).ToList(),
-            matchingAlgorithmHlaNomenclatureVersion);
-
         // Values before assignments, never the other way round. A crash between the two leaves value rows that no
         // donor points at, which the next run finds and reuses; the opposite order would leave donor rows pointing at
         // ids that do not exist, and there is no foreign key on the transient databases to catch that.
-        var createdIds = await repository.GetOrCreateValueIds(computedValues);
+        var createdIds = await ComputeAndStore(
+            requests.Where(request => !storedIds.ContainsKey(request.Key)).DistinctBy(request => request.Key).ToList(),
+            matchingAlgorithmHlaNomenclatureVersion);
 
         await repository.WriteDonorAssignments(requests
             .Select(request => new DonorSubjectGenotypeSetAssignment(
@@ -95,6 +104,44 @@ public class SubjectGenotypeSetPrecomputeService : ISubjectGenotypeSetPrecompute
                 request.AllowedLociKey,
                 storedIds.TryGetValue(request.Key, out var storedId) ? storedId : createdIds[request.Key]))
             .ToList());
+    }
+
+    /// <summary>
+    /// Computes the values <see cref="ValueChunkSize"/> at a time, and stores each chunk before the next is computed.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Memory.</b> Only one chunk of payloads is held at a time, not every payload in the batch.
+    /// </para>
+    ///
+    /// <para>
+    /// <b>Loss.</b> A batch is thousands of imputations of about 100 ms each. A crash loses only the chunk in hand: the
+    /// stored chunks are found by the next run's <c>GetExistingValueIds</c>, and are not computed again.
+    /// </para>
+    ///
+    /// <para>
+    /// <b>Sequential, not a producer and a consumer.</b> A store is one staging round trip of about 3.4 MB, and the
+    /// chunk it stores took about 100 seconds of imputation to compute. Running the two side by side could only hide
+    /// the store - a small part of that time - at the cost of a channel, error propagation and cancellation.
+    /// </para>
+    /// </remarks>
+    private async Task<IReadOnlyDictionary<SubjectGenotypeSetKey, int>> ComputeAndStore(
+        IReadOnlyCollection<PrecomputeRequest> requests,
+        string matchingAlgorithmHlaNomenclatureVersion)
+    {
+        var ids = new Dictionary<SubjectGenotypeSetKey, int>(requests.Count);
+
+        foreach (var chunk in requests.Chunk(ValueChunkSize))
+        {
+            var values = await Compute(chunk, matchingAlgorithmHlaNomenclatureVersion);
+
+            foreach (var (key, id) in await repository.GetOrCreateValueIds(values))
+            {
+                ids[key] = id;
+            }
+        }
+
+        return ids;
     }
 
     /// <remarks>

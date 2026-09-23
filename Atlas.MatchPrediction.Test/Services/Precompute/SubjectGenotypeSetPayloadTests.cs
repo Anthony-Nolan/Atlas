@@ -461,16 +461,28 @@ public class SubjectGenotypeSetPayloadTests
     public void Decode_ForAnOutOfRangePoolId_Throws()
     {
         var body = SubjectGenotypeSetPayload.EncodeBody(CanonicalV1Set());
+        var (firstSlotOffset, poolCount) = LocateFirstSlotId(body);
 
-        // The first genotype's first slot id sits directly after the header and the pool entries. Rather than compute
-        // that offset, raise every plausible id byte: 0xFE is far above any canonical pool, so whichever byte the
-        // reader reaches first is out of range.
-        var firstSlotOffset = body.Length - SubjectGenotypeSetPayloadFormat.DecimalSizeInBytes - 1;
-        body[firstSlotOffset] = 0xFE;
+        poolCount.Should().BeLessThanOrEqualTo(
+            SubjectGenotypeSetPayloadFormat.NarrowPoolCountLimit, "the canonical set's ids are one byte wide, so one byte holds the first id");
+
+        // One past the last real id: the smallest id that the check must reject.
+        body[firstSlotOffset] = (byte)(poolCount + 1);
 
         var act = () => SubjectGenotypeSetPayload.Decode(SubjectGenotypeSetPayload.Wrap(body));
 
-        act.Should().Throw<InvalidDataException>();
+        act.Should().Throw<InvalidDataException>().WithMessage($"*Pool id {poolCount + 1} is outside*");
+    }
+
+    [Test]
+    public void Decode_ForBytesAfterTheLastField_Throws()
+    {
+        var body = SubjectGenotypeSetPayload.EncodeBody(CanonicalV1Set());
+        var extraBytes = fixture.CreateMany<byte>().ToArray();
+
+        var act = () => SubjectGenotypeSetPayload.Decode(SubjectGenotypeSetPayload.Wrap(body.Concat(extraBytes).ToArray()));
+
+        act.Should().Throw<InvalidDataException>().WithMessage($"*{extraBytes.Length} byte(s) after its last field*");
     }
 
     [Test]
@@ -535,6 +547,25 @@ public class SubjectGenotypeSetPayloadTests
     /// byte and the int32 genotype count.
     /// </summary>
     private const int PoolCountOffset = 1 + 1 + sizeof(int);
+
+    /// <summary>
+    /// Where the first genotype's first slot id sits - directly after the header and the pool entries - and how many
+    /// entries the pool holds. Read with the decoder's own primitives, not calculated from the canonical names, so the
+    /// offset stays correct whatever width each length prefix takes.
+    /// </summary>
+    private static (int Offset, int PoolCount) LocateFirstSlotId(byte[] body)
+    {
+        using var reader = new BinaryReader(new MemoryStream(body, writable: false), SubjectGenotypeSetPayloadFormat.PayloadEncoding);
+        reader.BaseStream.Position = PoolCountOffset;
+
+        var poolCount = reader.Read7BitEncodedInt();
+        for (var entry = 0; entry < poolCount; entry++)
+        {
+            reader.ReadString();
+        }
+
+        return ((int)reader.BaseStream.Position, poolCount);
+    }
 
     /// <summary>
     /// SHA-256 of <see cref="CanonicalV1Set"/>'s uncompressed body. Regenerating this to fix a red build defeats the
