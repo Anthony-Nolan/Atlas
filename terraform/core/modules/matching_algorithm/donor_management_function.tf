@@ -8,6 +8,9 @@ locals {
 
     "HlaMetadataDictionary:AzureStorageConnectionString" = var.key_vault.secret_refs["azure-storage-connection-string"],
 
+    "HlaMetadataDictionaryNotifications:ConnectionString" = var.servicebus_topics.hla_metadata_dictionary_updated.manage_connection_string
+    "HlaMetadataDictionaryNotifications:UpdatedTopic"     = var.servicebus_topics.hla_metadata_dictionary_updated.name
+
     "MacDictionary:AzureStorageConnectionString" = var.key_vault.secret_refs["azure-storage-connection-string"]
     "MacDictionary:TableName"                    = var.mac_import_table.name,
 

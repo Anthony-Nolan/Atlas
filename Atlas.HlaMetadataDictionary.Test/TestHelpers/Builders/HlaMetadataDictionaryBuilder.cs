@@ -5,6 +5,7 @@ using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
 using Atlas.HlaMetadataDictionary.Services.HlaValidation;
+using Atlas.HlaMetadataDictionary.Services.Notifications;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using NSubstitute;
 
@@ -24,6 +25,7 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
         private ISerologyToAllelesMetadataService serologyToAlleles;
         private IHlaMetadataGenerationOrchestrator metadata;
         private IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
+        private IHlaMetadataDictionaryUpdateNotifier updateNotifier;
         private IAtlasLogger logger;
         private IHlaMetadataDictionary cannedResponse = null;
 
@@ -46,6 +48,7 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
             serologyToAlleles = Substitute.For<ISerologyToAllelesMetadataService>();
             metadata = Substitute.For<IHlaMetadataGenerationOrchestrator>();
             wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
+            updateNotifier = Substitute.For<IHlaMetadataDictionaryUpdateNotifier>();
             logger = Substitute.For<IAtlasLogger>();
         }
 
@@ -95,6 +98,9 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
                 case IWmdaHlaNomenclatureVersionAccessor typedDependency:
                     wmdaHlaNomenclatureVersionAccessor = typedDependency;
                     break;
+                case IHlaMetadataDictionaryUpdateNotifier typedDependency:
+                    updateNotifier = typedDependency;
+                    break;
                 default:
                     throw new InvalidOperationException($"Type '{typeof(T).FullName}' does not match any expected dependency");
             }
@@ -123,6 +129,7 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
                 serologyToAlleles,
                 metadata,
                 wmdaHlaNomenclatureVersionAccessor,
+                updateNotifier,
                 logger
             );
         }
