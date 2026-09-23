@@ -129,6 +129,18 @@ When used, the HMD then caches the contents of its CloudTables in memory, althou
 
 The run-time consumer of the HMD doesn't need to know much of those details though; all it needs to know is that the HMD will return data from an in-memory cache, and that if you want to ensure the first usage of the HMD is already fast, then you can pre-warm the cache.
 
+#### Cache Invalidation
+Every in-memory cache of dictionary data is keyed by HLA Nomenclature version and nothing else - the whole-table caches in `TableClientRepositoryBase`, the individual lookup outcomes in `MetadataServiceBase`, and the objects the `Factory` hands out. Recreating the dictionary at a version that is *already* active therefore changes the stored data without changing anything a running process keys on, and that process would go on serving its old snapshot until the cache expired (24h) or the worker restarted. That is how a donor carrying newly-added lookup data came to be silently skipped during matching (ATL-395).
+
+So whenever `RecreateHlaMetadataDictionary` actually rewrites storage - on the forced, specific-version route and on the normal, version-changing route alike - it publishes an `HlaMetadataDictionaryUpdatedMessage` to the `hla-metadata-dictionary-updated` Service Bus topic. The three Matching Algorithm functions apps subscribe and call `IHlaMetadataCacheInvalidator`, which empties their persistent cache.
+
+Three things to know about this:
+* **Publishing is opt-in.** `RegisterHlaMetadataDictionary` registers a non-publishing notifier that only logs a warning; an app that can recreate the dictionary must also call `RegisterHlaMetadataDictionaryUpdateNotifications`. The Matching Algorithm and Data Refresh functions apps do. `Atlas.MatchingAlgorithm.Api`, which is a dev-only tool, deliberately does not - recreating through it will not invalidate anything.
+* **Only the Matching Algorithm apps subscribe.** `MatchingAlgorithm.Functions`, `.DonorManagement` and `.DataRefresh` - the three named in ATL-395, and between them the apps that expand HLA when donors are imported and when searches are scored. Other apps that read the dictionary (`Atlas.Functions`, `MatchPrediction.Functions`, `RepeatSearch.Functions`) hold caches of it too, and deliberately do NOT subscribe: they will serve their existing copy until it expires. Adding one is a subscriber function, a `ConfigureAppConfiguration` call, and its Terraform app settings.
+* **Subscribing is per worker instance, not per app.** A Service Bus subscription is a competing-consumer queue, so if all instances of an app shared one subscription a single arbitrary instance would receive each invalidation and every other instance would carry on serving its stale copy - which matters, since the Matching Algorithm functions app scales out. Each instance therefore creates a subscription named after itself at startup, via `AddPerInstanceHlaMetadataDictionaryCacheInvalidationSubscription` called from the app's `ConfigureAppConfiguration`, and that subscription auto-deletes once idle so scaled-away instances clean up after themselves. This is also why the topic's connection string carries Manage rights, scoped to that one topic.
+* **Invalidation is scoped to the recreated version.** Cache keys for dictionary-derived data all embed the nomenclature version - the whole-table caches, the per-lookup outcomes, the object the `Factory` hands out, and the Matching Algorithm's `ScoringCache`, whose entries go stale at the same moment. Invalidating evicts exactly the keys carrying the recreated version, via `IPersistentCacheProvider.RemoveWhere` and the shared `HlaVersionedCacheKey` convention in `Atlas.Common`. That scoping matters most during a data refresh: the refresh recreates the dictionary at a *new* version as its first stage, while every running matching app carries on serving the *previous* version for the hours until the refresh completes (the active version being the one from the last successful refresh). Evicting wholesale would cold-start those apps' caches on every scheduled refresh. Data that isn't derived from the dictionary - most expensively Match Prediction's haplotype frequency sets - shares the same cache but carries no version in its keys, and is never matched.
+  * `HlaVersionedCacheKey` recognises key *formats*, so a new cache key that embeds the version differently will silently never be invalidated. It errs towards over-matching - evicting another version's entry costs one re-read from storage, whereas failing to evict this version's entry is ATL-395 all over again. `HlaVersionedCacheKeyTests` and `ScoringCacheInvalidationTests` guard the formats currently in use.
+
 ### Project-To-Project Interface
 
 The logic classes that other projects should be using are the following.
@@ -151,6 +163,10 @@ The logic classes that other projects should be using are the following.
 * `IHlaMetadataCacheControl`
   * As referenced earlier, the HMD caches all its data in memory. By default the first call will cache the relevant data it needs, which can be quite slow. If you want to ensure that your first usage of the HMD is quick then you can use the `CacheControl` to pre-warm the memory caches.
   * Either warm everything, with `.PreWarmAllCaches()` or just target `.PreWarmAlleleNameCache()` if desired.
+  * Note that pre-warming only fills empty cache slots - it does not replace data already cached. To drop stale data, see `IHlaMetadataCacheInvalidator`.
+* `IHlaMetadataCacheInvalidator`
+  * The counterpart to `CacheControl`: `.InvalidateCaches(hlaNomenclatureVersion)` empties this process's cached dictionary data, so the next lookup re-reads storage.
+  * Consumed by each app's `HlaMetadataDictionaryCacheFunctions`, triggered by the `hla-metadata-dictionary-updated` topic. See [Cache Invalidation](#cache-invalidation) above.
   
 ### Configuration
 
