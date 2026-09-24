@@ -38,7 +38,7 @@ setting; see [Key Vault bootstrap](./README_Deployment.md#key-vault-bootstrap).
 | IP-RESTRICTION-SETTINGS | all | N/A | Allows restriction of functions app access to specified IPs only. |
 | LOG-ANALYTICS-DAILY-QUOTA-GB | N/A | N/A | The Log Analytics workspace daily quota for ingestion in GB. Default is -1 (unlimited). |
 | LOG-ANALYTICS-SKU | N/A | N/A | Log Analytics Workspace SKU. Default is `Pay As You Go`. |
-| MATCHING-DATA-REFRESH-AUTO-RUN | ATLAS-MATCHING-ALGORITHM-FUNCTIONS | DataRefresh-AutoRunDataRefresh | When set, the data refresh will automatically run once new HLA nomenclature is detected. This can be disabled to allow manual control on when new nomenclature is imported. |
+| MATCHING-DATA-REFRESH-AUTO-RUN | DATA-REFRESH-FUNCTION | DataRefresh-AutoRunDataRefresh | When set, the data refresh will automatically run once new HLA nomenclature is detected. This can be disabled to allow manual control on when new nomenclature is imported. |
 
 ## Donor Import
 Settings for the donor import app (`ATLAS-DONOR-IMPORT-FUNCTIONS`).
@@ -69,8 +69,8 @@ infrequently runs easy searches)
 
 | Terraform Setting          | Functions App Name                 | Functions App Setting Name | Description                |
 | -------------------------- | ------------------                 | -------------------------- | -----------                | 
-| MATCHING-DATA-REFRESH-DB-SIZE-DORMANT | ATLAS-MATCHING-ALGORITHM-FUNCTIONS | DataRefresh-DormantDatabaseSize | The size of database used for the dormant (inactive) matching database. Recommended to be the lowest possible tier, likely S0, to save on hosting costs. |
-| MATCHING-DATA-REFRESH-DB-SIZE-REFRESH | ATLAS-MATCHING-ALGORITHM-FUNCTIONS | DataRefresh-DormantDatabaseSize | The size of database used for the matching database during the data refresh. Recommended to be fairly powerful to facilitate a fast data refresh. Premium tier recommended over Standard, for improved IO performance. |
+| MATCHING-DATA-REFRESH-DB-SIZE-DORMANT | DATA-REFRESH-FUNCTION | DataRefresh-DormantDatabaseSize | The size of database used for the dormant (inactive) matching database. Recommended to be the lowest possible tier, likely S0, to save on hosting costs. |
+| MATCHING-DATA-REFRESH-DB-SIZE-REFRESH | DATA-REFRESH-FUNCTION | DataRefresh-RefreshDatabaseSize | The size of database used for the matching database during the data refresh. Recommended to be fairly powerful to facilitate a fast data refresh. Premium tier recommended over Standard, for improved IO performance. |
 
 ### Shared 
 
@@ -95,7 +95,7 @@ Most Atlas functions apps run on a shared service plan, which will also impact t
 | MATCHING-MAX-CONCURRENT-PROCESSES-PER-INSTANCE | ATLAS-MATCHING-ALGORITHM-FUNCTIONS |AzureFunctionsJobHost--extensions--serviceBus--messageHandlerOptions--maxConcurrentCalls|Determines how many searches can run on a single instance of the matching algorithm. Higher values will improve throughput without increasing cost, but will decrease performance when multiple searches are running on the same instance, and increase [load on the matching database](#database-connection-limit). In environments with a very large number of donors, memory will be a significant concern, and this concurrency should be  kept fairly low (e.g. 1-2) |
 | MATCHING-MAX-SCALE-OUT | ATLAS-MATCHING-ALGORITHM-FUNCTIONS | WEBSITE-MAX-DYNAMIC-APPLICATION-SCALE-OUT | How many instances of the matching algorithm can be run at once? These will automatically scale up with load, up to this limit. A higher value here means higher throughput with less impact on individual search times, though comes with increased running cost, and increased [load on the matching database](#database-connection-limit) |
 | MATCHING-DATABASE-TRANSIENT-TIMEOUT | ATLAS-MATCHING-ALGORITHM-FUNCTIONS | SqlA/SqlB | Timeout for any individual query of the matching database. Default of 30 minutes should be enough in all but the largest Atlas installations, which may require slightly longer timeouts. **WARNING** If the matching database is overload, e.g. via [exceeding the connection limit](#database-connection-limit) | 
-| MATCHING-DATA-REFRESH-DB-SIZE-ACTIVE | ATLAS-MATCHING-ALGORITHM-FUNCTIONS | DataRefresh-ActiveDatabaseSize | Determines the size (in scale, not bytes) of the active matching database. | 
+| MATCHING-DATA-REFRESH-DB-SIZE-ACTIVE | DATA-REFRESH-FUNCTION | DataRefresh-ActiveDatabaseSize | Determines the size (in scale, not bytes) of the active matching database. | 
 | REPEAT-SEARCH-MATCHING-MAX-CONCURRENT-PROCESSES-PER-INSTANCE | ATLAS-REPEAT-SEARCH-FUNCTION |AzureFunctionsJobHost--extensions--serviceBus--messageHandlerOptions--maxConcurrentCalls| Same as the similar setting above, but for the repeat search module. Note that when repeat searches are run concurrently with first time searches, the database should be able to handle the max concurrent load of *both* apps.  |
 | REPEAT-SEARCH-MATCHING-MAX-SCALE-OUT | ATLAS-REPEAT-SEARCH-FUNCTION | WEBSITE-MAX-DYNAMIC-APPLICATION-SCALE-OUT | Same as the similar setting above, but for the repeat search module. Note that when repeat searches are run concurrently with first time searches, the database should be able to handle the max concurrent load of *both* apps. |
 
