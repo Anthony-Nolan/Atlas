@@ -145,6 +145,40 @@ public class SubjectGenotypeSetPrecomputeServiceTests
     }
 
     [Test]
+    public async Task Precompute_ForAnEmptyHlaName_ImputesItAsNull()
+    {
+        // The HLA Metadata Dictionary throws for an empty name, so no empty name may reach the imputation.
+        var withEmpty = new PhenotypeInfoBuilder<string>(TypedAtEveryLocus())
+            .WithDataAt(Locus.C, string.Empty, string.Empty)
+            .WithDataAt(Locus.Dqb1, string.Empty, string.Empty)
+            .Build();
+        var withNull = new PhenotypeInfoBuilder<string>(TypedAtEveryLocus())
+            .WithDataAt(Locus.C, null, null)
+            .WithDataAt(Locus.Dqb1, null, null)
+            .Build();
+
+        await precomputeService.Precompute([NewSubject(fixture.Create<int>(), withEmpty)], HlaNomenclatureVersion);
+
+        ImputedTypings().Should().HaveCount(4).And.AllSatisfy(imputed => imputed.Should().Be(withNull));
+    }
+
+    [Test]
+    public async Task Precompute_ForTwoDonorsDifferingOnlyByEmptyOrNull_ComputesOncePerCombination()
+    {
+        // The two donors share every key. The donor with the empty name comes first, so without the change to null its
+        // typing would be the one imputed - and the HLA Metadata Dictionary throws for it.
+        var donorIds = fixture.CreateMany<int>(2).ToList();
+        var withEmpty = new PhenotypeInfoBuilder<string>(TypedAtEveryLocus()).WithDataAt(Locus.C, string.Empty, string.Empty).Build();
+        var withNull = new PhenotypeInfoBuilder<string>(TypedAtEveryLocus()).WithDataAt(Locus.C, null, null).Build();
+
+        await precomputeService.Precompute(
+            [NewSubject(donorIds[0], withEmpty), NewSubject(donorIds[1], withNull)],
+            HlaNomenclatureVersion);
+
+        ImputedTypings().Should().HaveCount(4).And.AllSatisfy(imputed => imputed.Should().Be(withNull));
+    }
+
+    [Test]
     public async Task Precompute_ForAKeyAlreadyStored_DoesNotComputeItAgain()
     {
         EverythingIsAlreadyStored();
@@ -338,6 +372,10 @@ public class SubjectGenotypeSetPrecomputeServiceTests
 
     private IEnumerable<MatchPredictionParameters> ComputedParameters() =>
         genotypeSetService.ReceivedCalls().Select(call => (MatchPredictionParameters) call.GetArguments()[1]);
+
+    /// <summary>The typing each call to <see cref="IGenotypeSetService.GetGenotypeSet"/> was given, in call order.</summary>
+    private IEnumerable<PhenotypeInfo<string>> ImputedTypings() =>
+        genotypeSetService.ReceivedCalls().Select(call => ((SubjectData) call.GetArguments()[0]).HlaTyping);
 
     private IReadOnlyCollection<SubjectGenotypeSetValueToStore> StoredValues() => StoreCalls().SelectMany(values => values).ToList();
 

@@ -17,10 +17,12 @@ public interface ISubjectGenotypeSetRepository
     /// The ids of the keys that are already stored. Keys with no row are simply absent from the result.
     /// </summary>
     /// <remarks>
-    /// Purely an optimisation for the caller: it lets an expensive imputation be skipped for a typing that some
-    /// earlier batch, or some earlier refresh, has already paid for. It is NOT how duplicate rows are prevented -
-    /// that is <see cref="GetOrCreateValueIds"/>'s guarded insert - so a caller may skip this call entirely and still
-    /// be correct, just slower.
+    /// Purely an optimisation for the caller: it lets an expensive imputation be skipped for a typing that an earlier
+    /// batch of the same refresh has already paid for, including a batch from a stopped run that is now continued. Under
+    /// the agreed design, rows do not outlive their refresh - ATL-231 adds both tables to the clean-up that starts each
+    /// refresh - which is why the key can leave out the HLA nomenclature version. This call is NOT how duplicate rows
+    /// are prevented - that is <see cref="GetOrCreateValueIds"/>'s guarded insert - so a caller may skip it entirely
+    /// and still be correct, just slower.
     /// </remarks>
     Task<IReadOnlyDictionary<SubjectGenotypeSetKey, int>> GetExistingValueIds(IReadOnlyCollection<SubjectGenotypeSetKey> keys);
 
@@ -39,10 +41,17 @@ public interface ISubjectGenotypeSetRepository
     /// Writes the per-donor mapping rows pointing donors at the values they resolve to.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// A plain insert, and all or nothing. <c>IX_DonorSubjectGenotypeSets_DonorId_AllowedLociKey</c> is unique, so
-    /// writing a donor that already has a row for that combination throws - which is correct while the only caller is
-    /// a refresh running against freshly cleared tables. When the write throws, it keeps no row, so the caller can send
-    /// the same assignments again.
+    /// writing a donor that already has a row for that combination throws. When the write throws, it keeps no row, so
+    /// the caller can send the same assignments again.
+    /// </para>
+    ///
+    /// <para>
+    /// <b>Not safe yet for a continued refresh.</b> A continuation processes the last
+    /// <c>HlaProcessor.NumberOfBatchesOverlapOnRestart</c> batches again, and their assignments can already be stored,
+    /// so this insert would throw for them. Make it idempotent before the service is wired into HLA processing.
+    /// </para>
     /// </remarks>
     Task WriteDonorAssignments(IReadOnlyCollection<DonorSubjectGenotypeSetAssignment> assignments);
 }

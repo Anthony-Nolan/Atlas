@@ -74,9 +74,11 @@ public static class SubjectGenotypeSetKeyGenerator
     /// came from, and a silent change to this is a silent change to every key.
     /// </summary>
     /// <remarks>
-    /// Null and empty collapse to the same thing, deliberately: the donor table holds both for an untyped position
-    /// (<c>HarnessDonorSampleReader</c> records that production copies the columns verbatim), and imputation treats
-    /// them the same, so two donors differing only that way must not occupy two rows.
+    /// Null and empty give the same string, deliberately: <c>StringBuilder.Append</c> adds nothing for either. The
+    /// matching algorithm reads both as an untyped position, so two donors that differ only this way must share one row.
+    /// Imputation does NOT read them the same - it sends an empty name to the HLA Metadata Dictionary, which throws. The
+    /// shared row is correct because <see cref="SubjectGenotypeSetPrecomputeService"/> changes each empty name to null
+    /// before it imputes.
     /// </remarks>
     internal static string Canonicalise(PhenotypeInfo<string> hlaTyping, IReadOnlySet<Locus> allowedLoci)
     {

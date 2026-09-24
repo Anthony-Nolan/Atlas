@@ -83,6 +83,7 @@ public class SubjectGenotypeSetPrecomputeService : ISubjectGenotypeSetPrecompute
         }
 
         var requests = subjects
+            .Select(WithEmptyHlaNamesAsNull)
             .SelectMany(subject => AllowedLociKeyExtensions.All.Select(allowedLociKey => new PrecomputeRequest(subject, allowedLociKey)))
             .ToList();
 
@@ -105,6 +106,20 @@ public class SubjectGenotypeSetPrecomputeService : ISubjectGenotypeSetPrecompute
                 storedIds.TryGetValue(request.Key, out var storedId) ? storedId : createdIds[request.Key]))
             .ToList());
     }
+
+    /// <summary>
+    /// <paramref name="subject"/> with each empty HLA name changed to null. The key and the imputation then read the same
+    /// typing.
+    /// </summary>
+    /// <remarks>
+    /// The matching algorithm reads null and empty as the same thing, an untyped position (see <c>DonorHlaExpander</c>).
+    /// The key does too: neither adds anything to the canonical string. Imputation does not. <c>CompressedPhenotypeConverter</c>
+    /// skips only null, and sends an empty name to the HLA Metadata Dictionary, which throws. Without this step, a donor
+    /// with an empty name fails its whole batch - unless a donor with the same key and a null name was imputed first.
+    /// Whether a batch fails would then depend on donor order.
+    /// </remarks>
+    private static PrecomputeSubject WithEmptyHlaNamesAsNull(PrecomputeSubject subject) =>
+        subject with { HlaTyping = subject.HlaTyping?.Map(hla => string.IsNullOrEmpty(hla) ? null : hla) };
 
     /// <summary>
     /// Computes the values <see cref="ValueChunkSize"/> at a time, and stores each chunk before the next is computed.
@@ -169,6 +184,9 @@ public class SubjectGenotypeSetPrecomputeService : ISubjectGenotypeSetPrecompute
                 request.AllowedLociKey.ToLoci().ToHashSet(),
                 matchingAlgorithmHlaNomenclatureVersion);
 
+            // TODO: ATL-233/ATL-314: one throw here fails the whole batch, not only this donor; the chunks already stored
+            // are kept. Let a single donor fail on its own (the stage-55 PermanentlyFailed status and graceful
+            // degradation) when the service is wired in.
             var genotypeSet = await genotypeSetService.GetGenotypeSet(subjectData, parameters);
 
             // Storing NULL for an unrepresented subject is this class's policy, not the format's - the encoder round

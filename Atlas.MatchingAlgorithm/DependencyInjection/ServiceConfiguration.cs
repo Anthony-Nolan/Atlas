@@ -47,7 +47,6 @@ using Atlas.MatchingAlgorithm.Services.Utility;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
-using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Azure.Identity;
 using Microsoft.Extensions.Azure;

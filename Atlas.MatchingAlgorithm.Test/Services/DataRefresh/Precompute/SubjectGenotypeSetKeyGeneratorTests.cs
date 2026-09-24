@@ -107,8 +107,8 @@ public class SubjectGenotypeSetKeyGeneratorTests
     [Test]
     public void GenerateHlaTypingKey_ForNullAndEmptyAtTheSamePosition_ReturnsTheSameKey()
     {
-        // The donor table holds both for an untyped position and imputation treats them the same, so two donors
-        // differing only that way must not occupy two rows.
+        // The matching algorithm reads both as an untyped position, and the precompute service imputes an empty name as
+        // null, so two donors that differ only this way must share one row.
         var withNull = new PhenotypeInfoBuilder<string>(TypedAtEveryLocus()).WithDataAt(Locus.B, null, null).Build();
         var withEmpty = new PhenotypeInfoBuilder<string>(TypedAtEveryLocus()).WithDataAt(Locus.B, "", "").Build();
 
