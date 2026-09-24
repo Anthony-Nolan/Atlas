@@ -53,6 +53,7 @@ module "donor_import" {
   app_service_plan        = azurerm_service_plan.atlas-elastic-plan
   application_insights    = azurerm_application_insights.atlas
   azure_storage           = azurerm_storage_account.azure_storage
+  key_vault               = local.key_vault_module_handoff
   servicebus_namespace    = azurerm_servicebus_namespace.general
   shared_function_storage = azurerm_storage_account.function_storage
   sql_database            = azurerm_mssql_database.atlas-database-shared
@@ -94,6 +95,12 @@ module "donor_import" {
   USE_EXTERNAL_SQL         = var.USE_EXTERNAL_SQL
   EXTERNAL_SQL_SERVER_NAME = var.EXTERNAL_SQL_SERVER_NAME
   EXTERNAL_SQL_DB_SHARED   = var.EXTERNAL_SQL_DB_SHARED
+
+  // See the equivalent comment on module.matching_algorithm.
+  depends_on = [
+    azurerm_role_assignment.function_apps_identity_kv_secrets_user,
+    time_sleep.wait_for_key_vault_rbac,
+  ]
 }
 
 module "matching_algorithm" {
@@ -287,7 +294,7 @@ module "repeat_search" {
   app_service_plan                       = azurerm_service_plan.atlas-elastic-plan
   azure_app_configuration                = azurerm_app_configuration.atlas_app_configuration
   azure_storage                          = azurerm_storage_account.azure_storage
-  donor_database_connection_string       = module.donor_import.sql_database.connection_string
+  donor_database_kv_ref                  = module.donor_import.sql_database.connection_string_kv_ref
   key_vault                              = local.key_vault_module_handoff
   mac_import_table                       = module.multiple_allele_code_lookup.storage_table
   matching_persistent_database_kv_ref    = module.matching_algorithm.sql_database.persistent_database_kv_ref
