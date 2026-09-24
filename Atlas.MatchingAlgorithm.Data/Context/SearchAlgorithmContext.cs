@@ -84,6 +84,7 @@ namespace Atlas.MatchingAlgorithm.Data.Context
                 .HasIndex(x => new { x.DonorId, x.AllowedLociKey })
                 .IsUnique();
 
+            // No nomenclature version in this key: the table is wiped on every data refresh - see SubjectGenotypeSetValue.
             modelBuilder.Entity<SubjectGenotypeSetValue>()
                 .HasIndex(x => new { x.HlaTypingKey, x.HaplotypeFrequencySetId, x.AllowedLociKey })
                 .IsUnique();
