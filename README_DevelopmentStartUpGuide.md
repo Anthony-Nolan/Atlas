@@ -72,7 +72,9 @@ It's highly recommended that you read the sections outside ZtH in parallel with 
 #### Run an Initial Data Refresh
 - Open up Service Bus Explorer and connect to your local development Service Bus.
 - Create the topic, `data-refresh-requests` with subscription `matching-algorithm`.
-- Run `MatchingAlgorithm.Functions` and in Swagger UI (or any other API development environment) trigger the `SubmitDataRefreshRequestManual` endpoint.
+- Create the topic, `completed-data-refresh-jobs`. It needs no subscription: the refresh publishes a completion message to it when the job ends.
+  - If this topic does not exist, the refresh still completes, but at the end it logs a failure and sends a failure alert.
+- Run `MatchingAlgorithm.Functions.DataRefresh` and in Swagger UI (or any other API development environment) trigger the `SubmitDataRefreshRequestManual` endpoint.
   - Set `forceDataRefresh` to `true`.
   - You should get a 200 Success response almost immediately but the refresh itself will take ~15 minute to run (do NOT close the function app down until it's complete!).
 - Monitor the `notifications` topic to ensure the refresh succeeded; a failure will be reported via `alerts` topic.

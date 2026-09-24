@@ -194,8 +194,10 @@ Test donors need to be exported to the Atlas instance before search requests can
     3. Force a data refresh on the matching algorithm.
   - Ensure the following settings have been overriden in `local.settings.json` with values for the remote environment:
       `DataRefresh:RequestUrl`, `DataRefresh:CompletionTopicSubscription`, and `DonorImport:Sql`.
+    - `DataRefresh:RequestUrl` is the URL of the `SubmitDataRefreshRequestManual` function, in the `DATA-REFRESH-FUNCTION` functions app.
 - As data refresh is a long-running process, a servicebus-triggered function, `Exercise4_HandleDataRefreshCompletion`, is used to determine when data refresh has actually completed.
-  - The local verification functions app should be left running to allow the triggering of `Exercise4_HandleDataRefreshCompletion`.
+  - It listens to the `completed-data-refresh-jobs` topic. Terraform does not create a subscription for it: manually create one on the remote environment, and set its name as `DataRefresh:CompletionTopicSubscription`.
+  - The local validation functions app should be left running to allow the triggering of `Exercise4_HandleDataRefreshCompletion`.
   - On receipt of a new job completion message, the appropriate export record is updated with data refresh details,
     including whether the job succeeded or failed - a failure should prompt further investigation before re-attempting export.
 - Make sure to check support alerts and AI logs for info on single donor processing failures.
@@ -361,6 +363,9 @@ The exercise involves:
         }
       }
       ```
+  - `DataRefresh:RequestUrl` is the URL of the `SubmitDataRefreshRequestManual` function, in the `DATA-REFRESH-FUNCTION` functions app.
+  - `DataRefresh:CompletionTopicSubscription` is a subscription to the `completed-data-refresh-jobs` topic. Terraform does not create it: manually create it on the remote environment.
+    The `HandleDataRefreshCompletion` function uses it to find out when the data refresh has completed.
 
 ### Test Harness Generation
 - The test harness generator executes the following steps:
