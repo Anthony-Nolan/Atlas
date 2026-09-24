@@ -40,6 +40,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models
         }
 
         public static readonly CreationBehaviour Latest = new CreationBehaviour(Mode.Latest, false);
+        public static readonly CreationBehaviour LatestForced = new CreationBehaviour(Mode.Latest, true);
         public static readonly CreationBehaviour Active = new CreationBehaviour(Mode.Active, true);
         public static CreationBehaviour Specific(string version) => new CreationBehaviour(version, true);
     }
