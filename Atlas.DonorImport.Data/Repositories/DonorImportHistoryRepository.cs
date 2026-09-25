@@ -15,6 +15,7 @@ namespace Atlas.DonorImport.Data.Repositories
         public Task IncrementImportedDonorCount(string filename, DateTime uploadTime, int importedCount, int failedCount);
         public Task<DonorImportHistoryRecord> GetFileIfExists(string filename, DateTime uploadTime);
         public Task<IReadOnlyCollection<DonorImportHistoryRecord>> GetLongRunningFiles(TimeSpan duration);
+        public Task<IReadOnlyCollection<DonorImportHistoryRecord>> GetByFileName(string filename);
     }
 
     public class DonorImportHistoryRepository : IDonorImportHistoryRepository
@@ -94,6 +95,15 @@ WHERE Filename = (@{nameof(filename)}) AND UploadTime = (@{nameof(uploadTime)})"
                 var sql = $"SELECT * FROM {DonorImportHistoryRecord.QualifiedTableName} WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
                 var results = connection.Query<DonorImportHistoryRecord>(sql, new {FileName = filename, UploadTime = uploadTime}).ToArray();
                 return results.SingleOrDefault();
+            }
+        }
+
+        public async Task<IReadOnlyCollection<DonorImportHistoryRecord>> GetByFileName(string filename)
+        {
+            await using (var connection = new SqlConnection(connectionString))
+            {
+                var sql = $"SELECT * FROM {DonorImportHistoryRecord.QualifiedTableName} WHERE Filename = (@Filename) ORDER BY UploadTime DESC";
+                return (await connection.QueryAsync<DonorImportHistoryRecord>(sql, new { Filename = filename })).ToArray();
             }
         }
 

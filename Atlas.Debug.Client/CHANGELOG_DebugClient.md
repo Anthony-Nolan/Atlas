@@ -14,6 +14,11 @@ The following table documents backwards compatibility.
 ## Changelog
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### 4.1.1
+* Added `GetDonorImportAudit` to `IDonorImportFunctionsClient` — composite audit of import history, donor log times, and publishable updates.
+* Added `GetMatchingAudit` to `IMatchingAlgorithmFunctionsClient` — composite audit of active database and donor management logs.
+* Added new `RegisterDebugClients` overload accepting `IConfigurationRoot` with settings validation (migrated from `Atlas.Auto.Tests`).
+
 ### 3.1.1
 * Creation of new client `Atlas.Debug.Client.SearchTrackingFunctionsClient`
 
