@@ -35,10 +35,9 @@ namespace Atlas.MatchingAlgorithm.Functions.DataRefresh
                 ConnectionStringReader("SqlB"),
                 ConnectionStringReader("DonorSql"));
 
-            // After RegisterDataRefresh, so that the real publisher displaces the non-publishing default the HLA
-            // Metadata Dictionary registers for apps that only read it. A data refresh recreates the dictionary, so
-            // this app has to announce when it has.
-            services.RegisterHlaMetadataDictionaryUpdateNotifications(OptionsReaderFor<HlaMetadataDictionaryNotificationSettings>());
+            // This app holds a cached copy of the dictionary, so it needs to notice when the dictionary is
+            // recreated - by itself or by anything else.
+            services.RegisterHlaMetadataDictionaryCacheInvalidation();
         }
 
         private static void RegisterSettings(IServiceCollection services)
@@ -50,7 +49,6 @@ namespace Atlas.MatchingAlgorithm.Functions.DataRefresh
             services.RegisterAsOptions<DataRefreshSettings>("DataRefresh");
             services.RegisterAsOptions<DonorManagementSettings>("DataRefresh:DonorManagement");
             services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
-            services.RegisterAsOptions<HlaMetadataDictionaryNotificationSettings>("HlaMetadataDictionaryNotifications");
             services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
             services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
             services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");

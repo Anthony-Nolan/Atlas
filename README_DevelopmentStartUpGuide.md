@@ -72,15 +72,6 @@ It's highly recommended that you read the sections outside ZtH in parallel with 
 #### Run an Initial Data Refresh
 - Open up Service Bus Explorer and connect to your local development Service Bus.
 - Create the topic, `data-refresh-requests` with subscription `matching-algorithm`.
-- Create the topic, `hla-metadata-dictionary-updated`. The three Matching Algorithm functions apps
-  (`MatchingAlgorithm.Functions`, `.DonorManagement`, `.DataRefresh`) drop their in-memory copy of the HLA Metadata
-  Dictionary when a message arrives here. You do NOT need to create subscriptions: each app instance creates one for
-  itself on startup, and deletes it again once it has been idle for an hour.
-  - This means the `HlaMetadataDictionaryNotifications:ConnectionString` you configure must carry Manage rights on
-    that topic - the local `RootManageSharedAccessKey` is fine. An app that cannot create its subscription will fail
-    to start.
-  - Without this topic, a forced recreation of the dictionary at an unchanged nomenclature version leaves every
-    already-running app serving its old copy for the 24h cache lifetime.
 - Run `MatchingAlgorithm.Functions` and in Swagger UI (or any other API development environment) trigger the `SubmitDataRefreshRequestManual` endpoint.
   - Set `forceDataRefresh` to `true`.
   - You should get a 200 Success response almost immediately but the refresh itself will take ~15 minute to run (do NOT close the function app down until it's complete!).

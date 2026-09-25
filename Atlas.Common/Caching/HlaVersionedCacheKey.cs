@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace Atlas.Common.Caching
 {
@@ -7,10 +7,6 @@ namespace Atlas.Common.Caching
     /// nomenclature version, so that recreating the dictionary can evict exactly those entries.
     /// </summary>
     /// <remarks>
-    /// Needed because every cache of dictionary data is keyed by nomenclature version and nothing else. Recreating the
-    /// dictionary at a version that is ALREADY active therefore changes the stored data without changing any key, and
-    /// a running process would serve its old snapshot until the cache expired. See ATL-395.
-    ///
     /// <para>
     /// This lives in Atlas.Common rather than in the HLA Metadata Dictionary because the keys it has to recognise are
     /// minted in two projects - the dictionary's own repositories and services, and the Matching Algorithm's
@@ -57,7 +53,7 @@ namespace Atlas.Common.Caching
 
             // "{perTypeCacheKey}-{version}-{locus}-{lookupName}", e.g. "hlaScoringLookup-3650-A-0265" - the per-lookup
             // outcomes cached by MetadataServiceBase, INCLUDING its cached "this name has no data" results. Those are
-            // what made ATL-395 present as a silently skipped donor: the serology code was cached as not-found before
+            // what made the defect present as a silently skipped donor: the serology code was cached as not-found before
             // the dictionary was recreated with a row for it.
             if (cacheKey.Contains($"-{version}-", StringComparison.Ordinal))
             {

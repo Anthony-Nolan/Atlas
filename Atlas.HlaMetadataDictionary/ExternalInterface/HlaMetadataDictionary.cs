@@ -12,7 +12,7 @@ using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
 using Atlas.HlaMetadataDictionary.Services.HlaValidation;
-using Atlas.HlaMetadataDictionary.Services.Notifications;
+using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 
 namespace Atlas.HlaMetadataDictionary.ExternalInterface
@@ -107,7 +107,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly ISerologyToAllelesMetadataService serologyToAllelesMetadataService;
         private readonly IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
-        private readonly IHlaMetadataDictionaryUpdateNotifier updateNotifier;
+        private readonly IHlaMetadataRecreationRepository recreationRepository;
+        private readonly IHlaMetadataCacheInvalidator cacheInvalidator;
         private readonly IAtlasLogger logger;
 
         public HlaMetadataDictionary(
@@ -124,7 +125,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             ISerologyToAllelesMetadataService serologyToAllelesMetadataService,
             IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator,
             IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
-            IHlaMetadataDictionaryUpdateNotifier updateNotifier,
+            IHlaMetadataRecreationRepository recreationRepository,
+            IHlaMetadataCacheInvalidator cacheInvalidator,
             IAtlasLogger logger)
         {
             this.hlaNomenclatureVersionOrDefault = hlaNomenclatureVersionOrDefault;
@@ -140,7 +142,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.serologyToAllelesMetadataService = serologyToAllelesMetadataService;
             this.hlaMetadataGenerationOrchestrator = hlaMetadataGenerationOrchestrator;
             this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
-            this.updateNotifier = updateNotifier;
+            this.recreationRepository = recreationRepository;
+            this.cacheInvalidator = cacheInvalidator;
             this.logger = logger;
         }
 
@@ -167,10 +170,10 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
                 logger.SendTrace($"HLA-METADATA-DICTIONARY REFRESH: HLA Metadata dictionary recreated at HLA Nomenclature version: {version}");
 
                 // Only on the branch that actually rewrote storage, and only once storage has been rewritten: a
-                // consumer that clears its cache before the new data is in place would simply re-cache the old data.
+                // consumer that drops its cache before the new data is in place would simply re-cache the old data.
                 // Both recreation routes pass through here, which is what keeps the forced same-version refresh and a
                 // normal version-changing data refresh behaving identically.
-                await updateNotifier.NotifyOfUpdate(version);
+                await RecordRecreationAndDropLocalCaches(version);
             }
             else
             {
@@ -179,6 +182,37 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             }
 
             return version;
+        }
+
+        /// <summary>
+        /// Stamps this recreation for other processes to notice, and drops this one's own cached copy at once.
+        /// </summary>
+        /// <remarks>
+        /// A failure to stamp deliberately does NOT fail the recreation. Storage has already been rewritten by the
+        /// time this runs, so throwing here would fail a data refresh whose first stage had in fact succeeded, and
+        /// force a re-run that would redo work already done. What is lost instead is only that other processes keep
+        /// their cached copy until it expires - which is exactly where they would have been anyway. It is logged as an
+        /// error because an operator who has just recreated the dictionary needs to know the rest of the estate was
+        /// not told.
+        /// </remarks>
+        private async Task RecordRecreationAndDropLocalCaches(string version)
+        {
+            try
+            {
+                await recreationRepository.RecordRecreation(version);
+            }
+            catch (Exception exception)
+            {
+                logger.SendTrace(
+                    "HLA-METADATA-DICTIONARY REFRESH: Recreated the dictionary at HLA Nomenclature version: " +
+                    $"{version}, but could not record it. Other running apps will not notice, and will serve their " +
+                    $"cached copy until it expires. Exception: {exception}",
+                    LogLevel.Error);
+            }
+
+            // Not left to this process's own watcher to notice: it already knows, and waiting a poll interval to act
+            // on its own recreation would be a pointless window of staleness.
+            cacheInvalidator.InvalidateCaches(version);
         }
 
         public async Task<bool> ValidateHla(Locus locus, string hlaName, HlaValidationCategory targetHlaCategory)

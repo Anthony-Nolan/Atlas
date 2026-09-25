@@ -34,10 +34,9 @@ namespace Atlas.MatchingAlgorithm.Functions
                 ConnectionStringReader("SqlB"),
                 ConnectionStringReader("DonorSql"));
 
-            // After the registration above, so that the real publisher displaces the non-publishing default the HLA
-            // Metadata Dictionary registers for apps that only read it. This app can recreate the dictionary, via
-            // RefreshHlaMetadataDictionary(ToSpecificVersion), so it has to announce when it has.
-            services.RegisterHlaMetadataDictionaryUpdateNotifications(OptionsReaderFor<HlaMetadataDictionaryNotificationSettings>());
+            // This app holds a cached copy of the dictionary, so it needs to notice when the dictionary is
+            // recreated - by itself or by anything else.
+            services.RegisterHlaMetadataDictionaryCacheInvalidation();
 
             services.RegisterDebugServices(
                 OptionsReaderFor<MessagingServiceBusSettings>(),
@@ -53,7 +52,6 @@ namespace Atlas.MatchingAlgorithm.Functions
             services.RegisterAsOptions<AzureMonitoringSettings>("AzureManagement:Monitoring");
             services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
             services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
-            services.RegisterAsOptions<HlaMetadataDictionaryNotificationSettings>("HlaMetadataDictionaryNotifications");
             services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
             services.RegisterAsOptions<MatchingConfigurationSettings>("MatchingConfiguration");
             services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");

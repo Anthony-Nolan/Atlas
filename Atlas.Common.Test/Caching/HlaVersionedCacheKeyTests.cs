@@ -1,4 +1,4 @@
-using Atlas.Common.Caching;
+﻿using Atlas.Common.Caching;
 using AwesomeAssertions;
 using NUnit.Framework;
 
@@ -7,7 +7,7 @@ namespace Atlas.Common.Test.Caching
     /// <summary>
     /// The key shapes here mirror the ones minted in production. Anything that changes a cache key format without
     /// changing these is the failure mode this fixture exists to catch: an unmatched key is never evicted, which is
-    /// exactly the stale-cache bug of ATL-395.
+    /// exactly the stale-cache bug this guards against.
     /// </summary>
     [TestFixture]
     public class HlaVersionedCacheKeyTests
@@ -20,7 +20,7 @@ namespace Atlas.Common.Test.Caching
         [TestCase("All-small-g-Groups:3650", TestName = "SmallGGroupToPGroupMetadataRepository")]
         [TestCase("hlaMetadataDictionary-version:3650", TestName = "HlaMetadataDictionaryFactory")]
         [TestCase("AlleleNamesMetadataService-3650-A-01:01", TestName = "Per-lookup outcome - MetadataServiceBase")]
-        [TestCase("hlaScoringLookup-3650-A-0265", TestName = "Per-lookup outcome - the ATL-395 serology code")]
+        [TestCase("hlaScoringLookup-3650-A-0265", TestName = "Per-lookup outcome - a newly-added serology code")]
         [TestCase("MatchGrade:v3650;lA;d01:01;p01:01", TestName = "ScoringCache - match grade")]
         [TestCase("MatchConfidence:v3650;lA;d01:01;p01:01", TestName = "ScoringCache - match confidence")]
         [TestCase("IsAntigenMatch:v3650;lA;d01:01;p01:01", TestName = "ScoringCache - antigen match")]

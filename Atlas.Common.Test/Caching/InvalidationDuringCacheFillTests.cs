@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,7 +24,7 @@ namespace Atlas.Common.Test.Caching
     ///
     /// <para>
     /// That is a property of LazyCache, not of our code, and nothing else would notice if it changed - the symptom
-    /// would be silently stale HLA metadata for a full cache lifetime, which is ATL-395 returning. Swapping the
+    /// would be silently stale HLA metadata for a full cache lifetime. Swapping the
     /// caching library, or reaching past <see cref="LazyCache.IAppCache"/> to <c>MemoryCache.GetOrCreateAsync</c>
     /// (which commits only after its factory completes), would break it. Hence these tests.
     /// </para>
@@ -95,7 +95,7 @@ namespace Atlas.Common.Test.Caching
                 "a fetch that began before the invalidation must not repopulate the cache after it");
         }
 
-        /// <summary>The same guarantee for the per-lookup entries, which is where ATL-395 actually bit.</summary>
+        /// <summary>The same guarantee for the per-lookup entries, which is where the bug actually bit.</summary>
         [Test]
         public async Task InvalidatingMidLookup_DoesNotLeaveAStaleOutcomeCached()
         {

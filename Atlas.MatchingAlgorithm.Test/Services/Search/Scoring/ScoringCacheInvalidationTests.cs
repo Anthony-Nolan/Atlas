@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.Extensions.Caching.Memory;
 using Atlas.Common.Caching;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
@@ -19,7 +19,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
     ///
     /// <para>
     /// This fixture is the guard on that seam. If a scoring cache key is ever reformatted without updating
-    /// <see cref="HlaVersionedCacheKey"/>, the entries simply stop being evicted - a silent return of ATL-395 - and
+    /// <see cref="HlaVersionedCacheKey"/>, the entries simply stop being evicted - a silent return of the stale-cache bug - and
     /// nothing else in the suite would notice.
     /// </para>
     /// </summary>

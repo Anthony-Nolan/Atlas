@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData.Hla.Models;
@@ -85,7 +85,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
         }
 
         /// <summary>
-        /// The entry that actually caused ATL-395. A name with no row is cached as a not-found OUTCOME under a key of
+        /// The entry that actually caused the defect. A name with no row is cached as a not-found OUTCOME under a key of
         /// its own - the lookup then throws on every subsequent call WITHOUT going back to storage, which is how a
         /// donor carrying a newly-added serology code kept being skipped after the dictionary had been fixed.
         /// Evicting only the whole-table entries would leave that outcome in place.
