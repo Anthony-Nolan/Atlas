@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using LazyCache;
@@ -14,7 +14,7 @@ namespace Atlas.Common.Caching
         /// </summary>
         /// <remarks>
         /// Exists so that data cached from the HLA Metadata Dictionary can be dropped when the dictionary's stored
-        /// data is recreated - see <see cref="HlaVersionedCacheKey"/> and ATL-395. Only the persistent cache offers
+        /// data is recreated - see <see cref="HlaVersionedCacheKey"/>. Only the persistent cache offers
         /// this: the transient cache lives for a single request, so nothing it holds can outlive a recreation.
         ///
         /// <para>

@@ -1,5 +1,4 @@
-﻿using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
-using Atlas.MatchingAlgorithm.Functions;
+﻿using Atlas.MatchingAlgorithm.Functions;
 using Azure.Core.Serialization;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
@@ -12,13 +11,6 @@ using System;
 using System.Linq;
 
 var host = new HostBuilder()
-    .ConfigureAppConfiguration(builder =>
-    {
-        // Before any trigger binding resolves: this instance needs a subscription of its own on the HLA Metadata
-        // Dictionary update topic, so that it drops its cached copy when the dictionary is recreated rather than
-        // leaving one arbitrary instance of this app to receive the notification on everyone's behalf.
-        builder.AddPerInstanceHlaMetadataDictionaryCacheInvalidationSubscription();
-    })
     .ConfigureAppConfiguration(builder =>
     {
         var azureConfigurationConnectionString = Environment.GetEnvironmentVariable("AzureAppConfiguration:ConnectionString");

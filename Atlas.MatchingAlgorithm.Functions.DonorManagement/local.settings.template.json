@@ -6,8 +6,6 @@
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
     "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
-    "HlaMetadataDictionaryNotifications:ConnectionString": "override-this",
-    "HlaMetadataDictionaryNotifications:UpdatedTopic": "hla-metadata-dictionary-updated",
     "MacDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
     "MacDictionary:TableName": "AtlasMultipleAlleleCodes",
     "MessagingServiceBus:ConnectionString": "override-this",

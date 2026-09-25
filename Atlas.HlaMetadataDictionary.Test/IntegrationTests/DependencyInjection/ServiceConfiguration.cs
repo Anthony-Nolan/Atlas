@@ -5,6 +5,7 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
+using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
@@ -52,6 +53,10 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
             services.AddSingleton<IGGroupToPGroupMetadataRepository, FileBackedGGroupToPGroupMetadataRepository>();
             services.AddSingleton<IHlaNameToSmallGGroupLookupRepository, FileBackedHlaNameToSmallGroupLookupRepository>();
             services.AddSingleton<ISmallGGroupToPGroupMetadataRepository, FileBackedSmallGGroupToPGroupMetadataRepository>();
+
+            // Substituted for the same reason as the repositories above: these tests run against file-backed data,
+            // with no storage account to reach, and the real one would need a connection string to construct.
+            services.AddSingleton(_ => Substitute.For<IHlaMetadataRecreationRepository>());
             services.AddSingleton(sp =>
             {
                 var wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();

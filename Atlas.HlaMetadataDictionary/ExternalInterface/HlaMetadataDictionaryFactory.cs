@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
@@ -6,7 +6,7 @@ using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
 using Atlas.HlaMetadataDictionary.Services.HlaValidation;
-using Atlas.HlaMetadataDictionary.Services.Notifications;
+using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using LazyCache;
 
@@ -51,7 +51,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly ISerologyToAllelesMetadataService serologyToAllelesMetadataService;
         private readonly IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
-        private readonly IHlaMetadataDictionaryUpdateNotifier updateNotifier;
+        private readonly IHlaMetadataRecreationRepository recreationRepository;
+        private readonly IHlaMetadataCacheInvalidator cacheInvalidator;
         private readonly IAtlasLogger logger;
 
         //For CacheControl
@@ -80,7 +81,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             ISerologyToAllelesMetadataService serologyToAllelesMetadataService,
             IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator,
             IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
-            IHlaMetadataDictionaryUpdateNotifier updateNotifier,
+            IHlaMetadataRecreationRepository recreationRepository,
+            IHlaMetadataCacheInvalidator cacheInvalidator,
             IAtlasLogger logger,
 
             //For CacheControl
@@ -108,7 +110,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.serologyToAllelesMetadataService = serologyToAllelesMetadataService;
             this.hlaMetadataGenerationOrchestrator = hlaMetadataGenerationOrchestrator;
             this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
-            this.updateNotifier = updateNotifier;
+            this.recreationRepository = recreationRepository;
+            this.cacheInvalidator = cacheInvalidator;
             this.logger = logger;
 
             //For CacheControl
@@ -177,7 +180,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
                 serologyToAllelesMetadataService,
                 hlaMetadataGenerationOrchestrator,
                 wmdaHlaNomenclatureVersionAccessor,
-                updateNotifier,
+                recreationRepository,
+                cacheInvalidator,
                 logger);
         }
 
