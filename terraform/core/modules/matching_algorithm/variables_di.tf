@@ -97,10 +97,6 @@ variable "servicebus_topics" {
     search_tracking = object({
       name = string
     })
-    hla_metadata_dictionary_updated = object({
-      name                     = string
-      manage_connection_string = string
-    })
   })
 }
 
