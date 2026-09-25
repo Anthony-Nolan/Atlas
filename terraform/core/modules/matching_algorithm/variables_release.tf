@@ -13,10 +13,6 @@ variable "AZURE_CLIENT_ID" {
   type = string
 }
 
-variable "AZURE_CLIENT_SECRET" {
-  type = string
-}
-
 variable "AZURE_OAUTH_BASEURL" {
   type = string
 }

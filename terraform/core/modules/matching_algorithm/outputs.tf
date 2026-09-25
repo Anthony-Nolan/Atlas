@@ -21,13 +21,16 @@ output "service_bus" {
   }
 }
 
+// The connection strings are exposed as Key Vault references rather than values, so that consumers outside this module
+// configure their apps without the secret passing through them. A consumer must attach the shared function apps
+// identity for these to resolve.
 output "sql_database" {
   value = {
-    sql_server                             = var.sql_server.fully_qualified_domain_name
-    persistent_database_connection_string  = local.matching_persistent_database_connection_string
-    transient_a_database_name              = azurerm_mssql_database.atlas-matching-transient-a.name
-    transient_a_database_connection_string = local.matching_transient_database_a_connection_string
-    transient_b_database_name              = azurerm_mssql_database.atlas-matching-transient-b.name
-    transient_b_database_connection_string = local.matching_transient_database_b_connection_string
+    sql_server                  = var.sql_server.fully_qualified_domain_name
+    persistent_database_kv_ref  = local.sql_kv_ref["matching-persistent-sql-connection-string"]
+    transient_a_database_name   = azurerm_mssql_database.atlas-matching-transient-a.name
+    transient_a_database_kv_ref = local.sql_kv_ref["matching-transient-a-sql-connection-string"]
+    transient_b_database_name   = azurerm_mssql_database.atlas-matching-transient-b.name
+    transient_b_database_kv_ref = local.sql_kv_ref["matching-transient-b-sql-connection-string"]
   }
 }

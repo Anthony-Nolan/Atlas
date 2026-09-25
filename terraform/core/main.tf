@@ -53,6 +53,7 @@ module "donor_import" {
   app_service_plan        = azurerm_service_plan.atlas-elastic-plan
   application_insights    = azurerm_application_insights.atlas
   azure_storage           = azurerm_storage_account.azure_storage
+  key_vault               = local.key_vault_module_handoff
   servicebus_namespace    = azurerm_servicebus_namespace.general
   shared_function_storage = azurerm_storage_account.function_storage
   sql_database            = azurerm_mssql_database.atlas-database-shared
@@ -94,6 +95,12 @@ module "donor_import" {
   USE_EXTERNAL_SQL         = var.USE_EXTERNAL_SQL
   EXTERNAL_SQL_SERVER_NAME = var.EXTERNAL_SQL_SERVER_NAME
   EXTERNAL_SQL_DB_SHARED   = var.EXTERNAL_SQL_DB_SHARED
+
+  // See the equivalent comment on module.matching_algorithm.
+  depends_on = [
+    azurerm_role_assignment.function_apps_identity_kv_secrets_user,
+    time_sleep.wait_for_key_vault_rbac,
+  ]
 }
 
 module "matching_algorithm" {
@@ -115,6 +122,7 @@ module "matching_algorithm" {
   azure_storage                  = azurerm_storage_account.azure_storage
   donor_import_sql_database      = azurerm_mssql_database.atlas-database-shared
   elastic_app_service_plan       = azurerm_service_plan.atlas-elastic-plan
+  key_vault                      = local.key_vault_module_handoff
   mac_import_table               = module.multiple_allele_code_lookup.storage_table
   resource_group                 = azurerm_resource_group.atlas_resource_group
   servicebus_namespace           = azurerm_servicebus_namespace.general
@@ -139,7 +147,6 @@ module "matching_algorithm" {
   APPLICATION_INSIGHTS_LOG_LEVEL                           = var.APPLICATION_INSIGHTS_LOG_LEVEL
   AUTOMAPPER_LICENSE_KEY                                   = var.AUTOMAPPER_LICENSE_KEY
   AZURE_CLIENT_ID                                          = var.AZURE_CLIENT_ID
-  AZURE_CLIENT_SECRET                                      = var.AZURE_CLIENT_SECRET
   AZURE_OAUTH_BASEURL                                      = var.AZURE_OAUTH_BASEURL
   AZURE_TENANT_ID                                          = var.AZURE_TENANT_ID
   DATA_REFRESH_AUTO_RUN                                    = var.MATCHING_DATA_REFRESH_AUTO_RUN
@@ -185,6 +192,15 @@ module "matching_algorithm" {
   EXTERNAL_SQL_DB_MATCHING_B   = var.EXTERNAL_SQL_DB_MATCHING_B
   EXTERNAL_SQL_RESOURCE_GROUP  = var.EXTERNAL_SQL_RESOURCE_GROUP
   EXTERNAL_SQL_SUBSCRIPTION_ID = var.EXTERNAL_SQL_SUBSCRIPTION_ID
+
+  // The role assignment that lets the shared identity read the vault, and the RBAC propagation wait, both live here in
+  // the root module - resources inside a child module cannot depend on them directly. This gates the whole module,
+  // which is coarser than needed but is the only mechanism available. It would become a cycle if any key-vault-side
+  // resource here ever consumed an output of this module.
+  depends_on = [
+    azurerm_role_assignment.function_apps_identity_kv_secrets_user,
+    time_sleep.wait_for_key_vault_rbac,
+  ]
 }
 
 module "match_prediction" {
@@ -274,17 +290,18 @@ module "repeat_search" {
   default_servicebus_settings = local.service-bus
 
   // DI Variables
-  application_insights                            = azurerm_application_insights.atlas
-  app_service_plan                                = azurerm_service_plan.atlas-elastic-plan
-  azure_app_configuration                         = azurerm_app_configuration.atlas_app_configuration
-  azure_storage                                   = azurerm_storage_account.azure_storage
-  donor_database_connection_string                = module.donor_import.sql_database.connection_string
-  mac_import_table                                = module.multiple_allele_code_lookup.storage_table
-  matching_persistent_database_connection_string  = module.matching_algorithm.sql_database.persistent_database_connection_string
-  matching_transient_a_database_connection_string = module.matching_algorithm.sql_database.transient_a_database_connection_string
-  matching_transient_b_database_connection_string = module.matching_algorithm.sql_database.transient_b_database_connection_string
-  original-search-matching-results-topic          = module.matching_algorithm.service_bus.matching_results_topic
-  servicebus_namespace                            = azurerm_servicebus_namespace.general
+  application_insights                   = azurerm_application_insights.atlas
+  app_service_plan                       = azurerm_service_plan.atlas-elastic-plan
+  azure_app_configuration                = azurerm_app_configuration.atlas_app_configuration
+  azure_storage                          = azurerm_storage_account.azure_storage
+  donor_database_kv_ref                  = module.donor_import.sql_database.connection_string_kv_ref
+  key_vault                              = local.key_vault_module_handoff
+  mac_import_table                       = module.multiple_allele_code_lookup.storage_table
+  matching_persistent_database_kv_ref    = module.matching_algorithm.sql_database.persistent_database_kv_ref
+  matching_transient_a_database_kv_ref   = module.matching_algorithm.sql_database.transient_a_database_kv_ref
+  matching_transient_b_database_kv_ref   = module.matching_algorithm.sql_database.transient_b_database_kv_ref
+  original-search-matching-results-topic = module.matching_algorithm.service_bus.matching_results_topic
+  servicebus_namespace                   = azurerm_servicebus_namespace.general
   servicebus_namespace_authorization_rules = {
     read-write = azurerm_servicebus_namespace_authorization_rule.read-write
     read-only  = azurerm_servicebus_namespace_authorization_rule.read-only
@@ -320,6 +337,13 @@ module "repeat_search" {
   USE_EXTERNAL_SQL         = var.USE_EXTERNAL_SQL
   EXTERNAL_SQL_SERVER_NAME = var.EXTERNAL_SQL_SERVER_NAME
   EXTERNAL_SQL_DB_SHARED   = var.EXTERNAL_SQL_DB_SHARED
+
+  // See the equivalent comment on module.matching_algorithm. Needed here because this app resolves that module's
+  // Key Vault references.
+  depends_on = [
+    azurerm_role_assignment.function_apps_identity_kv_secrets_user,
+    time_sleep.wait_for_key_vault_rbac,
+  ]
 }
 
 module "search_tracking" {

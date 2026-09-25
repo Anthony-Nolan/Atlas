@@ -33,7 +33,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         Task CreateHlaTableIndexes();
 
         /// <summary>
-        /// Removes all donors, and all pre-processed data
+        /// Removes all donors, and all pre-processed data - including the precomputed subject genotype sets
+        /// (<see cref="SubjectGenotypeSetValue"/> / <see cref="DonorSubjectGenotypeSet"/>)
         /// </summary>
         Task RemoveAllDonorInformation();
 
@@ -100,6 +101,11 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
         private const string DropAllDonorsSql = @"TRUNCATE TABLE [Donors]";
         private const string DropAllDonorManagementLogsSql = @"TRUNCATE TABLE [DonorManagementLogs]";
+
+        // Must not be removed from the data refresh wipe - see SubjectGenotypeSetValue for why.
+        private const string DropAllSubjectGenotypeSetsSql = @"
+TRUNCATE TABLE [DonorSubjectGenotypeSets];
+TRUNCATE TABLE [SubjectGenotypeSetValues];";
 
         private static string BuildDropAllPreProcessedDonorHlaSql() =>
             AllHlaTables.Select(table => $"TRUNCATE TABLE [{table}];").StringJoinWithNewline();
@@ -237,6 +243,7 @@ END
                 await conn.ExecuteAsync(BuildDropAllPreProcessedDonorHlaSql(), commandTimeout: 300);
                 await conn.ExecuteAsync(DropAllDonorsSql, commandTimeout: 300);
                 await conn.ExecuteAsync(DropAllDonorManagementLogsSql, commandTimeout: 300);
+                await conn.ExecuteAsync(DropAllSubjectGenotypeSetsSql, commandTimeout: 300);
             }
         }
 

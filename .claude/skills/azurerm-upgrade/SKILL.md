@@ -173,7 +173,7 @@ existing versioned changelog filename found in Phase 0).
 ## Phase 3 — Workspace Migration & Iterative Validation
 
 Migration proceeds sequentially by risk tier: **atlas-dev → atlas-uat →
-atlas-wmda-uat → atlas-live → atlas-wmda-live**. Both `atlas-live` and
+atlas-live → atlas-wmda-uat → atlas-wmda-live**. Both `atlas-live` and
 `atlas-wmda-live` are production and carry the same constraints (3.3).
 
 The code changes are made once per root (they are shared across workspaces
@@ -213,7 +213,7 @@ For each of the 5 workspaces in turn, run:
 /terraform-plan <env>
 ```
 
-(`<env>` = `dev`, `uat`, `wmda-uat`, `live`, `wmda-live`). This already
+(`<env>` = `dev`, `uat`, `live`, `wmda-uat`, `wmda-live`). This already
 selects the right workspace, applies `terraform fmt -recursive`, runs
 `terraform validate`, and plans against the correct var-file — do not
 re-derive these steps by hand. Do NOT advance to the next environment until
@@ -288,7 +288,7 @@ before proceeding** (never batch multiple ambiguities):
 - Missing variable definitions affecting resource naming or environment
   targeting.
 - Workspace names or var-file mappings that don't match Atlas's actual set
-  (`atlas-dev` / `atlas-uat` / `atlas-wmda-uat` / `atlas-live` /
+  (`atlas-dev` / `atlas-uat` / `atlas-live` / `atlas-wmda-uat` /
   `atlas-wmda-live`).
 - Var-file contents that differ across environments in ways that affect
   which resources exist (conditional resource creation, count/for_each
