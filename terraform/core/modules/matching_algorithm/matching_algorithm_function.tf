@@ -25,11 +25,6 @@ locals {
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl"                              = var.WMDA_FILE_URL,
     "HlaMetadataDictionary:SearchRelatedMetadata:CacheSlidingExpirationInSeconds" = var.SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC
 
-    "HlaMetadataDictionaryNotifications:ConnectionString"         = var.servicebus_topics.hla_metadata_dictionary_updated.manage_connection_string
-    "HlaMetadataDictionaryNotifications:UpdatedTopic"             = var.servicebus_topics.hla_metadata_dictionary_updated.name
-    "HlaMetadataDictionaryNotifications:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
-    "HlaMetadataDictionaryNotifications:SendRetryCooldownSeconds" = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
-
     "MacDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string
     "MacDictionary:TableName"                    = var.mac_import_table.name,
 
