@@ -13,7 +13,7 @@ resource "azurerm_windows_function_app" "atlas_repeat_search_function" {
   storage_account_access_key  = var.shared_function_storage.primary_access_key
   storage_account_name        = var.shared_function_storage.name
 
-  // Resolves the matching algorithm's @Microsoft.KeyVault connection strings below. The role assignment granting this
+  // Resolves the matching algorithm's and donor import's @Microsoft.KeyVault connection strings below. The role assignment granting this
   // identity access lives in the root module, so it is ordered by the depends_on on this module's block.
   identity {
     type         = "UserAssigned"
@@ -124,7 +124,7 @@ resource "azurerm_windows_function_app" "atlas_repeat_search_function" {
   connection_string {
     name  = "DonorSql"
     type  = "SQLAzure"
-    value = var.donor_database_connection_string
+    value = var.donor_database_kv_ref
   }
 
   lifecycle {

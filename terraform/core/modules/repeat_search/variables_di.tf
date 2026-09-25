@@ -30,7 +30,7 @@ variable "azure_storage" {
   })
 }
 
-variable "donor_database_connection_string" {
+variable "donor_database_kv_ref" {
   type = string
 }
 
