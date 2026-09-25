@@ -15,6 +15,7 @@ using Atlas.HlaMetadataDictionary.Services.DataGeneration.MatchedHlaConversion;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
 using Atlas.HlaMetadataDictionary.Services.HlaValidation;
+using Atlas.HlaMetadataDictionary.Services.CacheInvalidation;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
@@ -43,10 +44,24 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
             services.RegisterMacDictionary(fetchApplicationInsightsSettings, fetchMacDictionarySettings);
         }
 
+        /// <summary>
+        /// Opt-in, for apps that hold a cached copy of the dictionary and so need to be told when it is recreated.
+        /// </summary>
+        /// <remarks>
+        /// Not folded into <see cref="RegisterHlaMetadataDictionary"/>: the watcher is a background loop polling
+        /// storage for the lifetime of the process, which is not something a consumer should acquire merely by
+        /// registering the dictionary - a short-lived tool or a test host has nothing to keep fresh.
+        /// </remarks>
+        public static void RegisterHlaMetadataDictionaryCacheInvalidation(this IServiceCollection services)
+        {
+            services.AddHostedService<HlaMetadataDictionaryRecreationWatcher>();
+        }
+
         private static void RegisterStorageTypes(this IServiceCollection services)
         {
             services.AddSingleton<ITableClientFactory, TableClientFactory>();
             services.AddSingleton<ITableReferenceRepository, TableReferenceRepository>();
+            services.AddScoped<IHlaMetadataRecreationRepository, HlaMetadataRecreationRepository>();
 
             services.AddScoped<IGGroupToPGroupMetadataRepository, GGroupToPGroupMetadataRepository>();
             services.AddScoped<IHlaMatchingMetadataRepository, HlaMatchingMetadataRepository>();
@@ -99,6 +114,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
             services.AddScoped<ISmallGGroupMetadataService, SmallGGroupMetadataService>();
             services.AddScoped<ISerologyToAllelesMetadataService, SerologyToAllelesMetadataService>();
             services.AddScoped<ISmallGGroupToPGroupMetadataService, SmallGGroupToPGroupMetadataService>();
+            services.AddScoped<IHlaMetadataCacheInvalidator, HlaMetadataCacheInvalidator>();
         }
     }
 }
