@@ -38,6 +38,16 @@ namespace Atlas.MatchingAlgorithm.Settings
         /// to be consumed by automated workflows, whereas messages sent to the support topics are designed to be
         /// read by end-users in the support team.
         /// </summary>
+        /// <remarks>
+        /// The message model, <see cref="Client.Models.DataRefresh.CompletedDataRefresh"/>, is in the published client models
+        /// package, so the message is a public contract. No Atlas production app consumes this topic. In this repository the
+        /// consumers are the manual test tools, in Atlas.MatchPrediction.Test.Verification and
+        /// Atlas.MatchPrediction.Test.Validation: they wait for this message before they continue. Terraform creates only an
+        /// "audit" subscription, so each consumer must add its own subscription.
+        ///
+        /// A job that <see cref="Services.DataRefresh.IDataRefreshCleanupService"/> closes is marked as failed, but no message
+        /// is sent to this topic for it.
+        /// </remarks>
         public string CompletionTopic { get; set; }
         public int SendRetryCount { get; set; }
         public int SendRetryCooldownSeconds { get; set; }

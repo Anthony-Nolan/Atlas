@@ -69,7 +69,7 @@ See [Donor Import README](/README_DonorImport.md) for more information.
 
 The "data refresh" is a manually triggered job in the matching algorithm. 
 
-> It can be triggered via the `SubmitDataRefreshRequestManual` function in the `ATLAS-MATCHING-ALGORITHM-FUNCTIONS` function app
+> It can be triggered via the `SubmitDataRefreshRequestManual` function in the `DATA-REFRESH-FUNCTION` function app
 
 The data refresh performs several operations: 
 
@@ -86,6 +86,14 @@ This process is expected to be run:
 
 The process is expected to take several hours - and will increase with both the number of donors, and the ambiguity of their HLA. 
 For a dataset with ~2 million donors, the process takes 1-2 hours.
+
+When the job ends, the matching algorithm publishes a message to the service bus topic `completed-data-refresh-jobs`, for both success and failure.
+The message uses the [`CompletedDataRefresh`](Atlas.MatchingAlgorithm.Client.Models/DataRefresh/CompletedDataRefresh.cs) model: the `DataRefreshRecordId`, and a `WasSuccessful` flag.
+Use this topic to start automated work that must wait for the refresh to end. It is different from the `notifications` and `alerts` topics, which are for the support team.
+
+> Terraform creates only an `audit` subscription on this topic. To consume the messages, add your own subscription.
+>
+> A job that is closed by the data refresh cleanup (the `RunDataRefreshCleanup` function, or the automatic cleanup after a refresh request is dead-lettered) is marked as failed, but no message is published for it.
 
 ### Haplotype Frequency Sets
 
