@@ -40,7 +40,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability;
 /// (<c>CompressedPhenotypeExpander</c>, the <c>allowedLoci.Contains(l) ? hla : null</c> map) and therefore stands for
 /// a <i>group</i> of stored haplotypes whose frequencies are summed. That test fails for any implementation that
 /// carries an individual frequency instead of asking
-/// <see cref="IHaplotypeFrequencyService.GetFrequencyForHla"/>.
+/// <see cref="IHaplotypeFrequencyLookupService.GetFrequencyForHla"/>.
 /// </para>
 /// </summary>
 [TestFixture]

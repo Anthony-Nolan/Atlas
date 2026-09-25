@@ -24,6 +24,7 @@ using LazyCache;
 using LazyCache.Providers;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using System;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
@@ -43,12 +44,55 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             Func<IServiceProvider, string> fetchSqlConnectionString
         )
         {
-            services.RegisterSettings(fetchNotificationsServiceBusSettings, fetchAzureStorageSettings, fetchGenotypeImputationSettings);
-            services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
-            services.RegisterServices();
-            services.RegisterDatabaseServices(fetchSqlConnectionString);
+            services.RegisterGenotypeSetPipeline(
+                fetchApplicationInsightsSettings,
+                fetchHlaMetadataDictionarySettings,
+                fetchMacDictionarySettings,
+                fetchGenotypeImputationSettings,
+                fetchSqlConnectionString);
+
+            services.RegisterSettings(fetchNotificationsServiceBusSettings, fetchAzureStorageSettings);
+            services.RegisterSearchServices();
             services.RegisterClientServices();
             services.RegisterCommonMatchingServices();
+        }
+
+        /// <summary>
+        /// Registers the genotype set pipeline alone: <see cref="IGenotypeSetService"/> (imputation, truncation and
+        /// conversion to the matching algorithm's P groups) and the haplotype frequency set lookup,
+        /// <see cref="IHaplotypeFrequencyLookupService"/>. This is what a host needs to precompute donor genotype sets,
+        /// without the rest of match prediction.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Needs no Service Bus, notification or blob storage settings: nothing on this path sends a notification or
+        /// uploads a result. Frequency set import, which does, is registered by
+        /// <see cref="RegisterMatchPredictionAlgorithm"/> only.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>The host must also register <c>IOptions&lt;HaplotypeFrequencySetCacheSettings&gt;</c></b>, as every match
+        /// prediction host already does (e.g. <c>RegisterAsOptions&lt;HaplotypeFrequencySetCacheSettings&gt;</c>).
+        /// It is read through <c>IOptions</c> by the frequency set cache, so it is not passed in here.
+        /// </para>
+        ///
+        /// <para>
+        /// Safe to call as well as <see cref="RegisterMatchPredictionAlgorithm"/>, which calls it: the services it adds
+        /// are added only if not already registered, so a host that registers both gets one of each.
+        /// </para>
+        /// </remarks>
+        public static void RegisterGenotypeSetPipeline(
+            this IServiceCollection services,
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
+            Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
+            Func<IServiceProvider, GenotypeImputationSettings> fetchGenotypeImputationSettings,
+            Func<IServiceProvider, string> fetchSqlConnectionString)
+        {
+            services.MakeSettingsAvailableForUse(fetchGenotypeImputationSettings);
+            services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
+            services.RegisterGenotypeSetPipelineServices();
+            services.RegisterDatabaseServices(fetchSqlConnectionString);
             services.RegisterHlaMetadataDictionary(
                 fetchHlaMetadataDictionarySettings,
                 fetchApplicationInsightsSettings,
@@ -153,20 +197,18 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
         private static void RegisterSettings(
             this IServiceCollection services,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
-            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
-            Func<IServiceProvider, GenotypeImputationSettings> fetchGenotypeImputationSettings)
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings)
         {
             services.MakeSettingsAvailableForUse(fetchNotificationsServiceBusSettings);
             services.MakeSettingsAvailableForUse(fetchAzureStorageSettings);
-            services.MakeSettingsAvailableForUse(fetchGenotypeImputationSettings);
         }
 
         private static void RegisterDatabaseServices(this IServiceCollection services, Func<IServiceProvider, string> fetchSqlConnectionString)
         {
-            services.AddTransient<IHaplotypeFrequencySetRepository, HaplotypeFrequencySetRepository>(sp =>
+            services.TryAddTransient<IHaplotypeFrequencySetRepository>(sp =>
                 new HaplotypeFrequencySetRepository(fetchSqlConnectionString(sp), new ContextFactory())
             );
-            services.AddTransient<IHaplotypeFrequenciesRepository, HaplotypeFrequenciesRepository>(sp =>
+            services.TryAddTransient<IHaplotypeFrequenciesRepository>(sp =>
                 new HaplotypeFrequenciesRepository(fetchSqlConnectionString(sp))
             );
         }
@@ -179,29 +221,26 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             );
         }
 
-        private static void RegisterServices(this IServiceCollection services)
+        /// <summary>
+        /// The services <see cref="IGenotypeSetService"/> needs, and the frequency set lookup. Added only if not already
+        /// registered - see <see cref="RegisterGenotypeSetPipeline"/>.
+        /// </summary>
+        private static void RegisterGenotypeSetPipelineServices(this IServiceCollection services)
         {
-            services.AddScoped<MatchProbabilityLoggingContext>();
-            services.AddScoped(typeof(IMatchPredictionLogger<>), typeof(MatchPredictionLogger<>));
+            services.TryAddScoped<MatchProbabilityLoggingContext>();
+            services.TryAdd(ServiceDescriptor.Scoped(typeof(IMatchPredictionLogger<>), typeof(MatchPredictionLogger<>)));
 
-            services.AddScoped<IMatchPredictionAlgorithm, MatchPredictionAlgorithm>();
-            services.AddScoped<IParallelMatchPredictionAlgorithm, ParallelMatchPredictionAlgorithm>();
-            services.AddScoped<IDonorInputBatcher, DonorInputBatcher>();
-
-            services.AddScoped<IFrequencySetImporter, FrequencySetImporter>();
-            services.AddScoped<IFrequencyFileParser, FrequencyFileParser>();
-            services.AddScoped<IFrequencySetValidator, FrequencySetValidator>();
-            services.AddScoped<IHaplotypeFrequencyService, HaplotypeFrequencyService>();
-            services.AddScoped<IFrequencyConsolidator, FrequencyConsolidator>();
-            services.AddScoped<IHaplotypeFrequencyCache, HaplotypeFrequencyCache>();
-            services.AddSingleton<IHaplotypeFrequencySetCacheProvider>(_ =>
+            services.TryAddScoped<IHaplotypeFrequencyLookupService, HaplotypeFrequencyLookupService>();
+            services.TryAddScoped<IFrequencyConsolidator, FrequencyConsolidator>();
+            services.TryAddScoped<IHaplotypeFrequencyCache, HaplotypeFrequencyCache>();
+            services.TryAddSingleton<IHaplotypeFrequencySetCacheProvider>(_ =>
                 new HaplotypeFrequencySetCacheProvider(new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())))));
 
             // Singleton, not scoped like IHaplotypeFrequencyCache above: eviction has to be tracked once for the
             // whole process, since IHaplotypeFrequencySetCacheProvider's underlying cache is itself a singleton
             // shared by every scope. A tracker constructed per-scope would start empty each time and let residency
             // grow unboundedly across scopes - exactly the bug this fix exists to close.
-            services.AddSingleton<IFrequencySetResidencyTracker>(sp =>
+            services.TryAddSingleton<IFrequencySetResidencyTracker>(sp =>
             {
                 var cacheSettings = sp.GetRequiredService<IOptions<HaplotypeFrequencySetCacheSettings>>().Value;
                 var cacheProvider = sp.GetRequiredService<IHaplotypeFrequencySetCacheProvider>();
@@ -211,25 +250,42 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
                 );
             });
 
+            services.TryAddScoped<ICompressedPhenotypeExpander, CompressedPhenotypeExpander>();
+            services.TryAddScoped<ICompressedPhenotypeConverter, CompressedPhenotypeConverter>();
+            services.TryAddScoped<IHlaToTargetCategoryConverter, HlaToTargetCategoryConverter>();
+            services.TryAddScoped<ISmallGGroupToPGroupConverter, SmallGGroupToPGroupConverter>();
+            services.TryAddScoped<IGGroupToPGroupConverter, GGroupToPGroupConverter>();
+
+            services.TryAddScoped<IGenotypeImputationService, GenotypeImputationService>();
+            services.TryAddScoped<IGenotypeSetService, GenotypeSetService>();
+            services.TryAddScoped<IGenotypeConverter, GenotypeConverter>();
+        }
+
+        /// <summary>
+        /// Everything else match prediction registers: the search-time algorithms, match probability, genotype
+        /// likelihood, frequency set import and the result uploaders.
+        /// </summary>
+        private static void RegisterSearchServices(this IServiceCollection services)
+        {
+            services.AddScoped<IMatchPredictionAlgorithm, MatchPredictionAlgorithm>();
+            services.AddScoped<IParallelMatchPredictionAlgorithm, ParallelMatchPredictionAlgorithm>();
+            services.AddScoped<IDonorInputBatcher, DonorInputBatcher>();
+
+            services.AddScoped<IFrequencySetImporter, FrequencySetImporter>();
+            services.AddScoped<IFrequencyFileParser, FrequencyFileParser>();
+            services.AddScoped<IFrequencySetValidator, FrequencySetValidator>();
+            services.AddScoped<IHaplotypeFrequencyService, HaplotypeFrequencyService>();
+
             services.AddScoped<IGenotypeLikelihoodService, GenotypeLikelihoodService>();
             services.AddScoped<IUnambiguousGenotypeExpander, UnambiguousGenotypeExpander>();
             services.AddScoped<IGenotypeLikelihoodCalculator, GenotypeLikelihoodCalculator>();
             services.AddScoped<IGenotypeAlleleTruncater, GenotypeAlleleTruncater>();
-            
-            services.AddScoped<ICompressedPhenotypeExpander, CompressedPhenotypeExpander>();
-            services.AddScoped<ICompressedPhenotypeConverter, CompressedPhenotypeConverter>();
-            services.AddScoped<IHlaToTargetCategoryConverter, HlaToTargetCategoryConverter>();
-            services.AddScoped<ISmallGGroupToPGroupConverter, SmallGGroupToPGroupConverter>();
-            services.AddScoped<IGGroupToPGroupConverter, GGroupToPGroupConverter>();
 
             services.AddScoped<IMatchCalculationService, MatchCalculationService>();
 
             services.AddScoped<IMatchProbabilityService, MatchProbabilityService>();
-            services.AddScoped<IGenotypeImputationService, GenotypeImputationService>();
-            services.AddScoped<IGenotypeSetService, GenotypeSetService>();
             services.AddScoped<IGenotypeMatcher, GenotypeMatcher>();
             services.AddScoped<IMatchProbabilityCalculator, MatchProbabilityCalculator>();
-            services.AddScoped<IGenotypeConverter, GenotypeConverter>();
 
             services.AddScoped<ISearchDonorResultUploader, SearchDonorResultUploader>();
             services.AddScoped<IMatchPredictionBatchResultUploader, MatchPredictionBatchResultUploader>();

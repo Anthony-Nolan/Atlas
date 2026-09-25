@@ -172,11 +172,11 @@ internal readonly record struct GenotypeNameKey(int Name1, int Name2);
 internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
 {
     private readonly ICompressedPhenotypeConverter converter;
-    private readonly IHaplotypeFrequencyService haplotypeFrequencyService;
+    private readonly IHaplotypeFrequencyLookupService haplotypeFrequencyService;
 
     public CompressedPhenotypeExpander(
         ICompressedPhenotypeConverter converter,
-        IHaplotypeFrequencyService haplotypeFrequencyService)
+        IHaplotypeFrequencyLookupService haplotypeFrequencyService)
     {
         this.converter = converter;
         this.haplotypeFrequencyService = haplotypeFrequencyService;
@@ -502,7 +502,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     }
 
     /// <summary>
-    /// One frequency per survivor, through the unchanged <see cref="IHaplotypeFrequencyService.GetFrequencyForHla"/>.
+    /// One frequency per survivor, through the unchanged <see cref="IHaplotypeFrequencyLookupService.GetFrequencyForHla"/>.
     ///
     /// <para>
     /// Calling the same method with the same arguments is the point: it keeps the
