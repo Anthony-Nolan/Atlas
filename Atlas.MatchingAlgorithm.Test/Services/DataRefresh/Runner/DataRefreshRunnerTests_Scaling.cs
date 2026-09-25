@@ -119,7 +119,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
                 .Build();
             dataRefreshRunner = BuildDataRefreshRunner(settings);
             activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseA);
-            hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest).Throws(new Exception());
+            hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.LatestForced).Throws(new Exception());
 
             try
             {

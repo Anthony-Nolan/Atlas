@@ -79,7 +79,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             const string hlaNomenclatureVersion = "3390";
             hlaMetadataDictionary.IsActiveVersionDifferentFromLatestVersion().Returns(true);
             hlaMetadataDictionary
-                .RecreateHlaMetadataDictionary(CreationBehaviour.Latest)
+                .RecreateHlaMetadataDictionary(CreationBehaviour.LatestForced)
                 .Returns(hlaNomenclatureVersion);
 
             var returnedHlaVersion = await dataRefreshRunner.RefreshData(default);
@@ -102,7 +102,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
                 DataRefreshRecordBuilder.New.Build()
             );
             var version = "latestHlaVersion";
-            hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest).Returns(version);
+            hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.LatestForced).Returns(version);
 
             await dataRefreshRunner.RefreshData(default);
 
@@ -110,11 +110,23 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         }
 
         [Test]
+        public async Task RefreshData_WhenActiveVersionMatchesLatest_RecreatesHlaMetadataDictionaryWithForce()
+        {
+            // A new record with no HLA version is what a request with ForceDataRefresh = true creates when the version has not changed.
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(DataRefreshRecordBuilder.New.Build());
+            hlaMetadataDictionary.IsActiveVersionDifferentFromLatestVersion().Returns(false);
+
+            await dataRefreshRunner.RefreshData(default);
+
+            await hlaMetadataDictionary.Received().RecreateHlaMetadataDictionary(CreationBehaviour.LatestForced);
+        }
+
+        [Test]
         public async Task RefreshData_WhenRunningFromScratch_PassesRefreshHlaVersionToLaterSteps()
         {
             const string hlaNomenclatureVersion = "3390";
             hlaMetadataDictionary
-                .RecreateHlaMetadataDictionary(CreationBehaviour.Latest)
+                .RecreateHlaMetadataDictionary(CreationBehaviour.LatestForced)
                 .Returns(hlaNomenclatureVersion);
 
             await dataRefreshRunner.RefreshData(default);
