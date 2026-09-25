@@ -7,6 +7,7 @@ locals {
     "servicebus-read-write-connection-string" = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
     "servicebus-read-only-connection-string"  = azurerm_servicebus_namespace_authorization_rule.read-only.primary_connection_string
     "servicebus-write-only-connection-string" = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string
+    "servicebus-manage-connection-string"     = azurerm_servicebus_namespace_authorization_rule.manage.primary_connection_string
   }
 }
 
@@ -45,5 +46,9 @@ locals {
     id                        = azurerm_key_vault.atlas.id
     function_apps_identity_id = azurerm_user_assigned_identity.function_apps_identity.id
     secret_refs               = merge(local.kv_ref, { "azure-client-secret" = local.azure_client_secret_kv_ref })
+
+    // Container Apps take a Key Vault secret ID rather than an "@Microsoft.KeyVault(...)" string. Versioned, for the same
+    // reason as local.kv_ref. Modules whose key_vault variable does not declare this attribute simply drop it.
+    secret_ids = { for name, secret in azurerm_key_vault_secret.shared : name => secret.id }
   }
 }

@@ -9,9 +9,13 @@ resource "azurerm_container_app" "atlas_match_prediction" {
   revision_mode                = "Single"
   tags                         = var.general.common_tags
 
+  // aca_identity pulls from ACR and drives the Service Bus scale rule. The shared function apps identity is attached only
+  // to read the Key Vault-backed secrets below - aca_identity is deliberately kept without secret-read rights (see
+  // terraform/core/key_vault.tf). The role assignment for the shared identity lives in the root module, so it is ordered
+  // by the depends_on on the module block.
   identity {
     type         = "UserAssigned"
-    identity_ids = [var.aca_identity.id]
+    identity_ids = [var.aca_identity.id, var.key_vault.function_apps_identity_id]
   }
 
   template {
@@ -226,23 +230,29 @@ resource "azurerm_container_app" "atlas_match_prediction" {
     value = var.application_insights.connection_string
   }
 
+  // Versioned secret IDs, matching the function apps' choice of a versioned SecretUri. Running replicas only pick up a
+  // rotated value on a new revision or a restart, as was already the case for plain secrets.
   secret {
-    name  = "azure-storage-connection-string"
-    value = var.azure_storage.primary_connection_string
+    name                = "azure-storage-connection-string"
+    key_vault_secret_id = var.key_vault.secret_ids["azure-storage-connection-string"]
+    identity            = var.key_vault.function_apps_identity_id
   }
 
   secret {
-    name  = "servicebus-manage-connection-string"
-    value = var.servicebus_namespace_authorization_rules.manage.primary_connection_string
+    name                = "servicebus-manage-connection-string"
+    key_vault_secret_id = var.key_vault.secret_ids["servicebus-manage-connection-string"]
+    identity            = var.key_vault.function_apps_identity_id
   }
 
   secret {
-    name  = "servicebus-write-only-connection-string"
-    value = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
+    name                = "servicebus-write-only-connection-string"
+    key_vault_secret_id = var.key_vault.secret_ids["servicebus-write-only-connection-string"]
+    identity            = var.key_vault.function_apps_identity_id
   }
 
   secret {
-    name  = "match-prediction-sql-connection-string"
-    value = local.match_prediction_database_connection_string
+    name                = "match-prediction-sql-connection-string"
+    key_vault_secret_id = azurerm_key_vault_secret.match_prediction["match-prediction-sql-connection-string"].id
+    identity            = var.key_vault.function_apps_identity_id
   }
 }

@@ -159,7 +159,7 @@ resource "azurerm_windows_function_app" "atlas_function" {
   connection_string {
     name  = "MatchPrediction:Sql"
     type  = "SQLAzure"
-    value = module.match_prediction.sql_database.connection_string
+    value = module.match_prediction.sql_database.connection_string_kv_ref
   }
 }
 
