@@ -150,11 +150,20 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
     /// </para>
     ///
     /// <para>
-    /// <b><c>HOLDLOCK</c></b> holds the key-range locks on the unique index to the end of the statement, so a
-    /// concurrent upsert of the same donor waits instead of both finding no row and one of them failing the unique
-    /// index. The staged rows are small and a donor batch is at most a few thousand of them, so the statement is not
-    /// chunked; at that size SQL Server can escalate to a table lock, which costs nothing while one writer at a time
-    /// is the normal case for this table.
+    /// <b><c>TABLOCKX</c>, not row locks.</b> Two concurrent upserts must neither both find no row (and one fail the
+    /// unique index) nor deadlock. <c>HOLDLOCK</c> alone does the first but not the second: on a small table the
+    /// <c>MERGE</c> reads a range of the unique index rather than seeking each key, so two upserts can take the same
+    /// key-range locks in opposite order - the end-of-index key and an existing key - and deadlock. Measured with 8
+    /// concurrent upserts of the same donor: with <c>HOLDLOCK</c>, 4 of 10 runs deadlocked and took 2-9 s each while
+    /// SQL Server detected it, and only the retry made them pass. An exclusive table lock is one lock, taken first, so
+    /// two upserts wait for each other instead.
+    /// </para>
+    ///
+    /// <para>
+    /// What this costs is that writers always wait for each other. A donor batch is at most a few thousand small rows
+    /// and one writer at a time is the normal case for this table, and a full batch escalated to a table lock anyway.
+    /// Inside a caller's transaction (the differential import) the lock is held until that transaction ends. Readers
+    /// are not blocked under read-committed snapshot, which Azure SQL Database turns on by default.
     /// </para>
     ///
     /// <para>
@@ -162,7 +171,7 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
     /// </para>
     /// </summary>
     private const string UpsertStagedAssignmentsSql = $"""
-        MERGE {AssignmentsTableName} WITH (HOLDLOCK) AS t
+        MERGE {AssignmentsTableName} WITH (TABLOCKX) AS t
         USING {AssignmentStagingTableName} AS s
             ON t.{nameof(DonorSubjectGenotypeSet.DonorId)} = s.{nameof(DonorSubjectGenotypeSet.DonorId)}
            AND t.{nameof(DonorSubjectGenotypeSet.AllowedLociKey)} = s.{nameof(DonorSubjectGenotypeSet.AllowedLociKey)}

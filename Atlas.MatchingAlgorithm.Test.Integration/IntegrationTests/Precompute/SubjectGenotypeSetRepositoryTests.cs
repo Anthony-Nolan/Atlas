@@ -380,8 +380,9 @@ public class SubjectGenotypeSetRepositoryTests
     [Test]
     public async Task UpsertDonorAssignments_ConcurrentlyForTheSameDonor_DoesNotThrowAndKeepsOneRowEach()
     {
-        // Eight connections racing to insert the same rows that do not exist yet. Without HOLDLOCK and the retry, all
-        // of them can pass the MERGE's match and all but one fail the unique index.
+        // Eight connections racing to insert the same rows that do not exist yet. With row locks only (HOLDLOCK), they
+        // deadlocked in 4 of 10 fixture runs and passed only because of the retry; the table lock makes them wait for
+        // each other instead. This asserts the outcome; the absence of deadlocks is checked in the system_health session.
         var assignments = AssignmentsFor([1], fixture.Create<int>());
         var repositories = Enumerable.Range(0, 8).Select(_ => NewRepository()).ToList();
 
