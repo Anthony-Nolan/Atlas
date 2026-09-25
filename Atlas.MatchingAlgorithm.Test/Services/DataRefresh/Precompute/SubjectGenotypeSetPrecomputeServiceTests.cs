@@ -228,7 +228,7 @@ public class SubjectGenotypeSetPrecomputeServiceTests
         Received.InOrder(() =>
         {
             repository.GetOrCreateValueIds(Arg.Any<IReadOnlyCollection<SubjectGenotypeSetValueToStore>>());
-            repository.WriteDonorAssignments(Arg.Any<IReadOnlyCollection<DonorSubjectGenotypeSetAssignment>>());
+            repository.UpsertDonorAssignments(Arg.Any<IReadOnlyCollection<DonorSubjectGenotypeSetAssignment>>());
         });
     }
 
@@ -325,7 +325,7 @@ public class SubjectGenotypeSetPrecomputeServiceTests
         await genotypeSetService.DidNotReceiveWithAnyArgs().GetGenotypeSet(default, default);
         await repository.DidNotReceiveWithAnyArgs().GetExistingValueIds(default);
         await repository.DidNotReceiveWithAnyArgs().GetOrCreateValueIds(default);
-        await repository.DidNotReceiveWithAnyArgs().WriteDonorAssignments(default);
+        await repository.DidNotReceiveWithAnyArgs().UpsertDonorAssignments(default);
     }
 
     #region Substitute setup
@@ -390,7 +390,7 @@ public class SubjectGenotypeSetPrecomputeServiceTests
     private IReadOnlyCollection<DonorSubjectGenotypeSetAssignment> WrittenAssignments() =>
         (IReadOnlyCollection<DonorSubjectGenotypeSetAssignment>) repository
             .ReceivedCalls()
-            .Single(call => call.GetMethodInfo().Name == nameof(ISubjectGenotypeSetRepository.WriteDonorAssignments))
+            .Single(call => call.GetMethodInfo().Name == nameof(ISubjectGenotypeSetRepository.UpsertDonorAssignments))
             .GetArguments()[0];
 
     #endregion

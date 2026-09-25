@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Utils;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Models.Precompute;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
@@ -10,7 +12,6 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using AutoFixture;
 using AwesomeAssertions;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -36,9 +37,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute;
 public class SubjectGenotypeSetRepositoryTests
 {
     private const int LargePayloadSizeInBytes = 400_000;
-
-    /// <summary>SQL Server's error for a duplicate key in a unique index, as against a primary key or a constraint.</summary>
-    private const int DuplicateKeyInUniqueIndexErrorNumber = 2601;
 
     private Fixture fixture;
     private string transientConnectionString;
@@ -240,47 +238,173 @@ public class SubjectGenotypeSetRepositoryTests
     }
 
     [Test]
-    public async Task WriteDonorAssignments_WritesOneRowPerDonorAndCombination()
+    public async Task UpsertDonorAssignments_ForNewAssignments_WritesOneRowPerDonorAndCombination()
     {
-        var valueId = fixture.Create<int>();
-        var assignments = new[] { 1, 2 }
-            .SelectMany(donorId => AllowedLociKeyExtensions.All
-                .Select(allowedLociKey => new DonorSubjectGenotypeSetAssignment(donorId, allowedLociKey, valueId)))
-            .ToList();
+        var assignments = AssignmentsFor([1, 2], fixture.Create<int>());
 
-        await repository.WriteDonorAssignments(assignments);
+        await repository.UpsertDonorAssignments(assignments);
 
-        await using var context = new ContextFactory().Create(transientConnectionString);
-        var written = await context.DonorSubjectGenotypeSets.ToListAsync();
-
-        written.Should().HaveCount(8);
-        written.Select(row => (row.DonorId, row.AllowedLociKey, row.SubjectGenotypeSetValueId))
-            .Should().BeEquivalentTo(assignments.Select(a => (a.DonorId, a.AllowedLociKey, a.SubjectGenotypeSetValueId)));
+        (await StoredAssignments()).Should().BeEquivalentTo(AsRows(assignments));
     }
 
     [Test]
-    public async Task WriteDonorAssignments_WithNoAssignments_DoesNotThrow()
+    public async Task UpsertDonorAssignments_WithNoAssignments_DoesNotThrow()
     {
-        var act = () => repository.WriteDonorAssignments([]);
+        var act = () => repository.UpsertDonorAssignments([]);
 
         await act.Should().NotThrowAsync();
     }
 
     [Test]
-    public async Task WriteDonorAssignments_WhenTheUniqueIndexRejectsARow_KeepsNoRowFromTheCall()
+    public async Task UpsertDonorAssignments_WithTheSameAssignmentsTwice_DoesNotThrowAndKeepsOneRowEach()
     {
-        // The rejected row is the last one, after more rows than a StagingChunkSize batch holds. A write committed
-        // batch by batch would keep the rows before it, and the same assignments sent again would collide with them.
+        // A continued refresh, a message delivered twice, a failed batch sent again: each sends rows already stored.
+        var assignments = AssignmentsFor([1, 2], fixture.Create<int>());
+        await repository.UpsertDonorAssignments(assignments);
+
+        var act = () => NewRepository().UpsertDonorAssignments(assignments);
+
+        await act.Should().NotThrowAsync();
+        (await StoredAssignments()).Should().BeEquivalentTo(AsRows(assignments));
+    }
+
+    [Test]
+    public async Task UpsertDonorAssignments_ForAnExistingPairWithADifferentValue_PointsItAtTheNewValue()
+    {
+        // A differential import of an updated donor: its rows exist, and must move to its new values.
+        var oldValueId = fixture.Create<int>();
+        var newValueId = oldValueId + 1;
+        await repository.UpsertDonorAssignments(AssignmentsFor([1], oldValueId));
+
+        await repository.UpsertDonorAssignments(AssignmentsFor([1], newValueId));
+
+        (await StoredAssignments()).Should().BeEquivalentTo(AsRows(AssignmentsFor([1], newValueId)));
+    }
+
+    [Test]
+    public async Task UpsertDonorAssignments_ForAMixOfNewUnchangedAndChangedRows_GivesEachRowItsValue()
+    {
         var valueId = fixture.Create<int>();
-        var assignments = Enumerable.Range(1, SubjectGenotypeSetRepository.StagingChunkSize)
+        var unchanged = new DonorSubjectGenotypeSetAssignment(1, AllowedLociKey.ABCDrb1Dqb1, valueId);
+        var toChange = new DonorSubjectGenotypeSetAssignment(2, AllowedLociKey.ABCDrb1Dqb1, valueId);
+        await repository.UpsertDonorAssignments([unchanged, toChange]);
+
+        var changed = toChange with { SubjectGenotypeSetValueId = valueId + 1 };
+        var added = new DonorSubjectGenotypeSetAssignment(3, AllowedLociKey.ABDrb1, valueId + 2);
+        await repository.UpsertDonorAssignments([unchanged, changed, added]);
+
+        (await StoredAssignments()).Should().BeEquivalentTo(AsRows([unchanged, changed, added]));
+    }
+
+    [Test]
+    public async Task UpsertDonorAssignments_LeavesOtherDonorsRowsAlone()
+    {
+        var otherDonor = AssignmentsFor([1], fixture.Create<int>());
+        await repository.UpsertDonorAssignments(otherDonor);
+
+        var donor = AssignmentsFor([2], fixture.Create<int>());
+        await repository.UpsertDonorAssignments(donor);
+
+        (await StoredAssignments()).Should().BeEquivalentTo(AsRows([..otherDonor, ..donor]));
+    }
+
+    [Test]
+    public async Task UpsertDonorAssignments_WithTheSameAssignmentTwiceInOneCall_WritesOneRow()
+    {
+        // The staging table's primary key, and MERGE itself, both reject a pair staged twice - so exact repeats must
+        // be removed before staging rather than surface as an unclear constraint error.
+        var assignment = new DonorSubjectGenotypeSetAssignment(1, AllowedLociKey.ABCDrb1Dqb1, fixture.Create<int>());
+
+        await repository.UpsertDonorAssignments([assignment, assignment]);
+
+        (await StoredAssignments()).Should().BeEquivalentTo(AsRows([assignment]));
+    }
+
+    [Test]
+    public async Task UpsertDonorAssignments_WithTwoValuesForOnePairInOneCall_ThrowsAndWritesNothing()
+    {
+        var valueId = fixture.Create<int>();
+        var assignments = AssignmentsFor([1, 2], valueId);
+        var conflicting = assignments[0] with { SubjectGenotypeSetValueId = valueId + 1 };
+
+        var act = () => repository.UpsertDonorAssignments([..assignments, conflicting]);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+        (await StoredAssignmentCount()).Should().Be(0);
+    }
+
+    [Test]
+    public async Task UpsertDonorAssignments_ForMoreRowsThanAStagingChunk_WritesThemAll()
+    {
+        // A donor batch's worth: 2,000 donors x 4 combinations. The upsert is not chunked, so this pins that one
+        // statement copes with a full batch.
+        var assignments = AssignmentsFor(Enumerable.Range(1, 2_000).ToArray(), fixture.Create<int>());
+
+        await repository.UpsertDonorAssignments(assignments);
+
+        (await StoredAssignmentCount()).Should().Be(assignments.Count);
+    }
+
+    [Test]
+    public async Task UpsertDonorAssignments_InsideAnAmbientTransactionThatRollsBack_KeepsNoRow()
+    {
+        // The differential import writes these rows inside its own scope, with the donor's HLA. A rollback there must
+        // take them back out.
+        using (new AsyncTransactionScope())
+        {
+            await repository.UpsertDonorAssignments(AssignmentsFor([1, 2], fixture.Create<int>()));
+            // No Complete(): the scope rolls back on dispose.
+        }
+
+        (await StoredAssignmentCount()).Should().Be(0);
+    }
+
+    [Test]
+    public async Task UpsertDonorAssignments_InsideAnAmbientTransactionWithAnotherWrite_KeepsBothWhenCompleted()
+    {
+        // Two writes over two connections in one scope, as the differential import will make. They must share the
+        // scope's transaction rather than fail by needing a distributed one.
+        var first = AssignmentsFor([1], fixture.Create<int>());
+        var second = AssignmentsFor([2], fixture.Create<int>());
+
+        using (var scope = new AsyncTransactionScope())
+        {
+            await repository.UpsertDonorAssignments(first);
+            await NewRepository().UpsertDonorAssignments(second);
+            scope.Complete();
+        }
+
+        (await StoredAssignments()).Should().BeEquivalentTo(AsRows([..first, ..second]));
+    }
+
+    [Test]
+    public async Task UpsertDonorAssignments_ConcurrentlyForTheSameDonor_DoesNotThrowAndKeepsOneRowEach()
+    {
+        // Eight connections racing to insert the same rows that do not exist yet. Without HOLDLOCK and the retry, all
+        // of them can pass the MERGE's match and all but one fail the unique index.
+        var assignments = AssignmentsFor([1], fixture.Create<int>());
+        var repositories = Enumerable.Range(0, 8).Select(_ => NewRepository()).ToList();
+
+        var act = () => Task.WhenAll(repositories.Select(r => r.UpsertDonorAssignments(assignments)));
+
+        await act.Should().NotThrowAsync();
+        (await StoredAssignments()).Should().BeEquivalentTo(AsRows(assignments));
+    }
+
+    private static List<DonorSubjectGenotypeSetAssignment> AssignmentsFor(int[] donorIds, int valueId) =>
+        donorIds
             .SelectMany(donorId => AllowedLociKeyExtensions.All
                 .Select(allowedLociKey => new DonorSubjectGenotypeSetAssignment(donorId, allowedLociKey, valueId)))
             .ToList();
 
-        var act = () => repository.WriteDonorAssignments([..assignments, assignments[0]]);
+    private static IEnumerable<(int, AllowedLociKey, int)> AsRows(IEnumerable<DonorSubjectGenotypeSetAssignment> assignments) =>
+        assignments.Select(a => (a.DonorId, a.AllowedLociKey, a.SubjectGenotypeSetValueId));
 
-        await act.Should().ThrowAsync<SqlException>().Where(exception => exception.Number == DuplicateKeyInUniqueIndexErrorNumber);
-        (await StoredAssignmentCount()).Should().Be(0);
+    private async Task<List<(int, AllowedLociKey, int)>> StoredAssignments()
+    {
+        await using var context = new ContextFactory().Create(transientConnectionString);
+        var rows = await context.DonorSubjectGenotypeSets.ToListAsync();
+        return rows.Select(row => (row.DonorId, row.AllowedLociKey, row.SubjectGenotypeSetValueId)).ToList();
     }
 
     private static ISubjectGenotypeSetRepository NewRepository() =>

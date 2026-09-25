@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Transactions;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Models.Precompute;
 using Atlas.MatchingAlgorithm.Data.Services;
@@ -38,22 +39,28 @@ public interface ISubjectGenotypeSetRepository
     Task<IReadOnlyDictionary<SubjectGenotypeSetKey, int>> GetOrCreateValueIds(IReadOnlyCollection<SubjectGenotypeSetValueToStore> values);
 
     /// <summary>
-    /// Writes the per-donor mapping rows pointing donors at the values they resolve to.
+    /// Points each donor at the value it resolves to, per locus combination: inserts the rows that are missing, and
+    /// updates the rows that point at a different value. Rows that already point at the given value are left alone.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// A plain insert, and all or nothing. <c>IX_DonorSubjectGenotypeSets_DonorId_AllowedLociKey</c> is unique, so
-    /// writing a donor that already has a row for that combination throws. When the write throws, it keeps no row, so
-    /// the caller can send the same assignments again.
+    /// <b>Safe to repeat.</b> Sending the same assignments again leaves the table as the first call did. That is what
+    /// a continued refresh, a message Service Bus delivers twice, or a failed batch sent again all rely on. The update
+    /// is what a differential import relies on: an updated donor already has its rows, and they must move to the
+    /// donor's new values rather than keep the old ones.
     /// </para>
     ///
     /// <para>
-    /// <b>Not safe yet for a continued refresh.</b> A continuation processes the last
-    /// <c>HlaProcessor.NumberOfBatchesOverlapOnRestart</c> batches again, and their assignments can already be stored,
-    /// so this insert would throw for them. Make it idempotent before the service is wired into HLA processing.
+    /// <b>All or nothing.</b> The upsert is one statement, so a failed call keeps no row from that call. Inside an
+    /// ambient transaction it joins that transaction, and a rollback there undoes it too.
+    /// </para>
+    ///
+    /// <para>
+    /// The same (donor, combination) may appear more than once only with the same value id. Two different value ids
+    /// for one pair have no right answer, so that throws <see cref="ArgumentException"/> before anything is written.
     /// </para>
     /// </remarks>
-    Task WriteDonorAssignments(IReadOnlyCollection<DonorSubjectGenotypeSetAssignment> assignments);
+    Task UpsertDonorAssignments(IReadOnlyCollection<DonorSubjectGenotypeSetAssignment> assignments);
 }
 
 /// <summary>
@@ -68,9 +75,10 @@ public interface ISubjectGenotypeSetRepository
 /// </para>
 ///
 /// <para>
-/// <b>No transactions.</b> Each write is its own autocommit statement, as everywhere else in this project. The
-/// orchestrator's ordering - values first, then donor assignments - is what makes a crash between the two recoverable,
-/// not a scope around them.
+/// <b>No transactions of its own.</b> Each write is its own autocommit statement, as everywhere else in this project.
+/// The orchestrator's ordering - values first, then donor assignments - is what makes a crash between the two
+/// recoverable, not a scope around them. A caller that needs the assignments in its own transaction (the differential
+/// import writes them with the donor's HLA) opens an ambient scope, and the upsert joins it.
 /// </para>
 /// </summary>
 public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepository
@@ -78,6 +86,7 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
     private const string ValuesTableName = "SubjectGenotypeSetValues";
     private const string AssignmentsTableName = "DonorSubjectGenotypeSets";
     private const string StagingTableName = "#StagedGenotypeSetValues";
+    private const string AssignmentStagingTableName = "#StagedDonorAssignments";
 
     private const int CommandTimeoutInSeconds = 600;
 
@@ -95,7 +104,8 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
     internal const int StagingChunkSize = 1000;
 
     /// <summary>
-    /// Transient-failure attempts for one chunk's insert and read-back.
+    /// Transient-failure attempts for one chunk's insert and read-back, and for the donor-assignment upsert when no
+    /// ambient transaction is open.
     ///
     /// <para>
     /// A retry re-runs against the temp table that is already populated, and the insert is guarded by
@@ -114,15 +124,60 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
     /// <summary>Deadlock victim, and the two unique-constraint violations a lost race would surface as.</summary>
     private static readonly HashSet<int> RetryableErrorNumbers = [1205, 2601, 2627];
 
-    private static readonly string[] AssignmentColumnNames =
-    [
-        "Id",
-        nameof(DonorSubjectGenotypeSet.DonorId),
-        nameof(DonorSubjectGenotypeSet.AllowedLociKey),
-        nameof(DonorSubjectGenotypeSet.SubjectGenotypeSetValueId)
-    ];
-
     private const string TruncateStagingTableSql = $"TRUNCATE TABLE {StagingTableName}";
+
+    /// <summary>
+    /// The primary key is the unique index's key, so each (donor, combination) is staged once - which
+    /// <c>MERGE</c> requires, since it rejects a target row matched by more than one source row.
+    /// </summary>
+    private const string CreateAssignmentStagingTableSql = $"""
+        CREATE TABLE {AssignmentStagingTableName} (
+            {nameof(DonorSubjectGenotypeSet.DonorId)}                   int          NOT NULL,
+            {nameof(DonorSubjectGenotypeSet.AllowedLociKey)}            nvarchar(16) COLLATE DATABASE_DEFAULT NOT NULL,
+            {nameof(DonorSubjectGenotypeSet.SubjectGenotypeSetValueId)} int          NOT NULL,
+            PRIMARY KEY (
+                {nameof(DonorSubjectGenotypeSet.DonorId)},
+                {nameof(DonorSubjectGenotypeSet.AllowedLociKey)}))
+        """;
+
+    /// <summary>
+    /// Upserts every staged assignment in one statement.
+    ///
+    /// <para>
+    /// <b>One statement, not an <c>UPDATE</c> then an <c>INSERT</c>.</b> An autocommit statement is its own
+    /// transaction, so the whole call is kept or lost as one without a scope around it. Two statements would need
+    /// one, and a failure between them would keep the update without the insert.
+    /// </para>
+    ///
+    /// <para>
+    /// <b><c>HOLDLOCK</c></b> holds the key-range locks on the unique index to the end of the statement, so a
+    /// concurrent upsert of the same donor waits instead of both finding no row and one of them failing the unique
+    /// index. The staged rows are small and a donor batch is at most a few thousand of them, so the statement is not
+    /// chunked; at that size SQL Server can escalate to a table lock, which costs nothing while one writer at a time
+    /// is the normal case for this table.
+    /// </para>
+    ///
+    /// <para>
+    /// The update is guarded by the value id differing, so a repeated call rewrites nothing.
+    /// </para>
+    /// </summary>
+    private const string UpsertStagedAssignmentsSql = $"""
+        MERGE {AssignmentsTableName} WITH (HOLDLOCK) AS t
+        USING {AssignmentStagingTableName} AS s
+            ON t.{nameof(DonorSubjectGenotypeSet.DonorId)} = s.{nameof(DonorSubjectGenotypeSet.DonorId)}
+           AND t.{nameof(DonorSubjectGenotypeSet.AllowedLociKey)} = s.{nameof(DonorSubjectGenotypeSet.AllowedLociKey)}
+        WHEN MATCHED AND t.{nameof(DonorSubjectGenotypeSet.SubjectGenotypeSetValueId)} <> s.{nameof(DonorSubjectGenotypeSet.SubjectGenotypeSetValueId)} THEN
+            UPDATE SET t.{nameof(DonorSubjectGenotypeSet.SubjectGenotypeSetValueId)} = s.{nameof(DonorSubjectGenotypeSet.SubjectGenotypeSetValueId)}
+        WHEN NOT MATCHED BY TARGET THEN
+            INSERT (
+                {nameof(DonorSubjectGenotypeSet.DonorId)},
+                {nameof(DonorSubjectGenotypeSet.AllowedLociKey)},
+                {nameof(DonorSubjectGenotypeSet.SubjectGenotypeSetValueId)})
+            VALUES (
+                s.{nameof(DonorSubjectGenotypeSet.DonorId)},
+                s.{nameof(DonorSubjectGenotypeSet.AllowedLociKey)},
+                s.{nameof(DonorSubjectGenotypeSet.SubjectGenotypeSetValueId)});
+        """;
 
     /// <summary>
     /// <c>COLLATE DATABASE_DEFAULT</c> is not optional: a temp table otherwise takes tempdb's collation, and joining
@@ -247,34 +302,83 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
     }
 
     /// <inheritdoc />
-    public async Task WriteDonorAssignments(IReadOnlyCollection<DonorSubjectGenotypeSetAssignment> assignments)
+    public async Task UpsertDonorAssignments(IReadOnlyCollection<DonorSubjectGenotypeSetAssignment> assignments)
     {
         if (assignments == null || assignments.Count == 0)
         {
             return;
         }
 
-        var dataTable = new DataTable();
-        foreach (var columnName in AssignmentColumnNames)
+        var distinctAssignments = DistinctAssignments(assignments);
+
+        // One connection for the whole call: the temp table is visible only to the session that made it. Opened inside
+        // an ambient transaction, the connection enlists in it, and so do the bulk copy and the MERGE that run over it.
+        await using var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString());
+        await connection.OpenAsync();
+        await connection.ExecuteAsync(CreateAssignmentStagingTableSql, commandTimeout: CommandTimeoutInSeconds);
+
+        await StageAssignments(connection, distinctAssignments);
+
+        // A retry re-runs the MERGE against the rows already staged, so it cannot apply anything twice. It is only safe
+        // with no ambient transaction: a deadlock victim's transaction is rolled back, so inside a caller's scope there
+        // is nothing left to retry in, and the failure must reach the caller whose work was undone.
+        if (Transaction.Current == null)
         {
-            dataTable.Columns.Add(columnName);
+            await WithRetries(() => connection.ExecuteAsync(UpsertStagedAssignmentsSql, commandTimeout: CommandTimeoutInSeconds));
         }
+        else
+        {
+            await connection.ExecuteAsync(UpsertStagedAssignmentsSql, commandTimeout: CommandTimeoutInSeconds);
+        }
+    }
+
+    /// <summary>
+    /// One assignment per (donor, combination). Exact repeats are dropped - they are the same instruction twice. Two
+    /// different value ids for one pair are a caller bug with no right answer, so they fail here, before anything is
+    /// written, rather than as an unclear primary-key error from the staging table.
+    /// </summary>
+    private static List<DonorSubjectGenotypeSetAssignment> DistinctAssignments(IReadOnlyCollection<DonorSubjectGenotypeSetAssignment> assignments)
+    {
+        var distinct = new List<DonorSubjectGenotypeSetAssignment>(assignments.Count);
+
+        foreach (var group in assignments.GroupBy(assignment => (assignment.DonorId, assignment.AllowedLociKey)))
+        {
+            var valueIds = group.Select(assignment => assignment.SubjectGenotypeSetValueId).Distinct().ToList();
+            if (valueIds.Count > 1)
+            {
+                throw new ArgumentException(
+                    $"Donor {group.Key.DonorId} is assigned more than one value at {group.Key.AllowedLociKey}: {string.Join(", ", valueIds)}.",
+                    nameof(assignments));
+            }
+
+            distinct.Add(group.First());
+        }
+
+        return distinct;
+    }
+
+    /// <summary>
+    /// Bulk-copies the assignments into the temp table, over the caller's own connection. No
+    /// <see cref="SqlBulkCopyOptions.UseInternalTransaction"/>: the staging table needs no atomicity of its own, and the
+    /// copy should simply run in whatever transaction the connection is already in.
+    /// </summary>
+    private static async Task StageAssignments(SqlConnection connection, IReadOnlyCollection<DonorSubjectGenotypeSetAssignment> assignments)
+    {
+        var dataTable = new DataTable();
+        dataTable.Columns.Add(new DataColumn(nameof(DonorSubjectGenotypeSet.DonorId), typeof(int)));
+        dataTable.Columns.Add(new DataColumn(nameof(DonorSubjectGenotypeSet.AllowedLociKey), typeof(string)));
+        dataTable.Columns.Add(new DataColumn(nameof(DonorSubjectGenotypeSet.SubjectGenotypeSetValueId), typeof(int)));
 
         foreach (var assignment in assignments)
         {
-            dataTable.Rows.Add(0, assignment.DonorId, assignment.AllowedLociKey.ToString(), assignment.SubjectGenotypeSetValueId);
+            dataTable.Rows.Add(assignment.DonorId, assignment.AllowedLociKey.ToString(), assignment.SubjectGenotypeSetValueId);
         }
 
-        // No BatchSize, deliberately. Zero makes the whole write one batch, and UseInternalTransaction makes one batch
-        // one transaction. With a batch size, each batch commits on its own: a failure part way through - the unique
-        // index rejecting a row, a dropped connection - keeps the batches before it, and the same assignments sent
-        // again then collide with those rows. At a donor batch's 8,000 rows, SQL Server can escalate to a table lock;
-        // that costs nothing while a refresh is this table's only writer.
-        using (var bulkCopy = new SqlBulkCopy(ConnectionStringProvider.GetConnectionString(), SqlBulkCopyOptions.UseInternalTransaction))
+        using (var bulkCopy = new SqlBulkCopy(connection))
         {
             bulkCopy.BulkCopyTimeout = CommandTimeoutInSeconds;
-            bulkCopy.DestinationTableName = AssignmentsTableName;
-            AddColumnMappings(bulkCopy, AssignmentColumnNames);
+            bulkCopy.DestinationTableName = AssignmentStagingTableName;
+            AddColumnMappings(bulkCopy, dataTable.Columns.Cast<DataColumn>().Select(column => column.ColumnName));
 
             await bulkCopy.WriteToServerAsync(dataTable);
         }
