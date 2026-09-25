@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Models;
-using MoreLinq;
 
 namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
 {
@@ -63,25 +61,52 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
 
     internal class GenotypeAtDesiredResolutionsBuilder
     {
-        private GenotypeAtDesiredResolutions genotypeAtDesiredResolutions;
+        private PhenotypeInfo<string> haplotypeResolution = new(BuilderDefaults.HlaName);
+        private PhenotypeInfo<string> stringMatchableResolution = new(BuilderDefaults.HlaName);
+        private decimal likelihood = BuilderDefaults.Likelihood;
 
         public GenotypeAtDesiredResolutionsBuilder Default()
         {
-            // Built from an ImputedGenotype, the same way GenotypeConverter builds one, so HaplotypeResolution and
-            // GenotypeLikelihood come from one source rather than two independent literals.
-            var genotype = new ImputedGenotype(
-                new KnownTypingCategoryGenotypeBuilder(BuilderDefaults.HlaName).Build(),
-                new PhenotypeInfoBuilder<string>(BuilderDefaults.HlaName).Build(),
-                BuilderDefaults.Likelihood);
+            haplotypeResolution = new PhenotypeInfoBuilder<string>(BuilderDefaults.HlaName).Build();
+            stringMatchableResolution = new PhenotypeInfo<string>(BuilderDefaults.HlaName);
+            likelihood = BuilderDefaults.Likelihood;
 
-            genotypeAtDesiredResolutions = new GenotypeAtDesiredResolutions(genotype, new PhenotypeInfo<string>(BuilderDefaults.HlaName));
+            return this;
+        }
 
+        /// <summary>
+        /// The HF-set resolution - P group, or G group where a null allele meant no P group existed. Equal to
+        /// <see cref="WithStringMatchableResolution"/> at every slot for a P-group set, and different at every typed
+        /// slot for a set imported as SmallGGroup.
+        /// </summary>
+        public GenotypeAtDesiredResolutionsBuilder WithHaplotypeResolution(PhenotypeInfo<string> resolution)
+        {
+            haplotypeResolution = resolution;
+            return this;
+        }
+
+        public GenotypeAtDesiredResolutionsBuilder WithStringMatchableResolution(PhenotypeInfo<string> resolution)
+        {
+            stringMatchableResolution = resolution;
+            return this;
+        }
+
+        public GenotypeAtDesiredResolutionsBuilder WithLikelihood(decimal value)
+        {
+            likelihood = value;
             return this;
         }
 
         public GenotypeAtDesiredResolutions Build()
         {
-            return genotypeAtDesiredResolutions;
+            // Built from an ImputedGenotype, the same way GenotypeConverter builds one, so HaplotypeResolution and
+            // GenotypeLikelihood come from one source rather than two independent literals.
+            var genotype = new ImputedGenotype(
+                new KnownTypingCategoryGenotypeBuilder(BuilderDefaults.HlaName).Build(),
+                haplotypeResolution,
+                likelihood);
+
+            return new GenotypeAtDesiredResolutions(genotype, stringMatchableResolution);
         }
     }
 }
