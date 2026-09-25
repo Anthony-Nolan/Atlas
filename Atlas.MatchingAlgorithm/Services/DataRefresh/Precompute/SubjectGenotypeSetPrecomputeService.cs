@@ -99,7 +99,7 @@ public class SubjectGenotypeSetPrecomputeService : ISubjectGenotypeSetPrecompute
             requests.Where(request => !storedIds.ContainsKey(request.Key)).DistinctBy(request => request.Key).ToList(),
             matchingAlgorithmHlaNomenclatureVersion);
 
-        await repository.WriteDonorAssignments(requests
+        await repository.UpsertDonorAssignments(requests
             .Select(request => new DonorSubjectGenotypeSetAssignment(
                 request.Subject.DonorId,
                 request.AllowedLociKey,
