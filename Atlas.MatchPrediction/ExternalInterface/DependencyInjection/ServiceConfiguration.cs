@@ -53,7 +53,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
 
             services.RegisterSettings(fetchNotificationsServiceBusSettings, fetchAzureStorageSettings);
             services.RegisterSearchServices();
-            services.RegisterClientServices();
+            services.RegisterClientServices(fetchNotificationsServiceBusSettings, fetchApplicationInsightsSettings);
             services.RegisterCommonMatchingServices();
         }
 
@@ -213,12 +213,14 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             );
         }
 
-        private static void RegisterClientServices(this IServiceCollection services)
+        private static void RegisterClientServices(
+            this IServiceCollection services,
+            Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings)
         {
-            services.RegisterNotificationSender(
-                OptionsReaderFor<NotificationsServiceBusSettings>(),
-                OptionsReaderFor<ApplicationInsightsSettings>()
-            );
+            // Uses the host's readers, not OptionsReaderFor: settings are registered last-wins, and this runs after
+            // RegisterGenotypeSetPipeline, so an IOptions reader here would replace the host's reader.
+            services.RegisterNotificationSender(fetchNotificationsServiceBusSettings, fetchApplicationInsightsSettings);
         }
 
         /// <summary>

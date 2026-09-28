@@ -79,6 +79,23 @@ internal class GenotypeSetPipelineRegistrationTests
         services.Should().Contain(d => d.ServiceType == typeof(INotificationSender));
     }
 
+    [Test]
+    public void RegisterMatchPredictionAlgorithm_WhenHostAlsoRegistersOptions_ResolvesSettingsFromHostReaders()
+    {
+        // Settings registrations are last-wins. The host's readers must win over any IOptions value, as the host
+        // decides where its settings come from.
+        var services = new ServiceCollection();
+        services.AddSingleton(Options.Create(new HaplotypeFrequencySetCacheSettings()));
+        services.AddSingleton(Options.Create(new ApplicationInsightsSettings { LogLevel = "Error" }));
+        services.AddSingleton(Options.Create(new NotificationsServiceBusSettings { NotificationsTopic = "from-options" }));
+        RegisterWholeAlgorithm(services);
+
+        using var provider = services.BuildServiceProvider();
+
+        provider.GetRequiredService<ApplicationInsightsSettings>().LogLevel.Should().Be("Info");
+        provider.GetRequiredService<NotificationsServiceBusSettings>().NotificationsTopic.Should().Be("from-host");
+    }
+
     [TestCase(typeof(IGenotypeSetService))]
     [TestCase(typeof(IHaplotypeFrequencyLookupService))]
     [TestCase(typeof(IHaplotypeFrequencySetCacheProvider))]
@@ -115,7 +132,7 @@ internal class GenotypeSetPipelineRegistrationTests
             _ => new ApplicationInsightsSettings { LogLevel = "Info" },
             _ => new HlaMetadataDictionarySettings(),
             _ => new MacDictionarySettings(),
-            _ => new NotificationsServiceBusSettings(),
+            _ => new NotificationsServiceBusSettings { NotificationsTopic = "from-host" },
             _ => new AzureStorageSettings(),
             _ => new GenotypeImputationSettings(),
             _ => "match-prediction-sql");
