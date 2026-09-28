@@ -122,6 +122,7 @@ Split of responsibility:
 | `servicebus-read-write-connection-string` | Terraform (derived from the Service Bus authorization rule it owns) |
 | `servicebus-read-only-connection-string` | Terraform |
 | `servicebus-write-only-connection-string` | Terraform |
+| `servicebus-manage-connection-string` | Terraform |
 | `azure-client-secret` | **Seeded by hand** - see below |
 
 `azure-client-secret` is the client secret of the app registration used by Atlas at runtime. Terraform never reads it,

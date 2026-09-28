@@ -13,15 +13,24 @@ resource "azurerm_windows_function_app" "atlas_match_prediction_function" {
   storage_account_access_key  = var.shared_function_storage.primary_access_key
   storage_account_name        = var.shared_function_storage.name
 
+  // Used to resolve the @Microsoft.KeyVault app settings and connection strings below. The role assignment that lets
+  // this identity read the vault lives in the root module, so it is ordered by the depends_on on the module block.
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [var.key_vault.function_apps_identity_id]
+  }
+
+  key_vault_reference_identity_id = var.key_vault.function_apps_identity_id
+
   tags = var.general.common_tags
 
   app_settings = {
     "ApplicationInsights:LogLevel" = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
-    "AzureStorage:ConnectionString"                    = var.azure_storage.primary_connection_string
+    "AzureStorage:ConnectionString"                    = var.key_vault.secret_refs["azure-storage-connection-string"]
     "AzureStorage:MatchPredictionResultsBlobContainer" = azurerm_storage_container.match_prediction_results_container.name
 
-    "HlaMetadataDictionary:AzureStorageConnectionString"                          = var.azure_storage.primary_connection_string
+    "HlaMetadataDictionary:AzureStorageConnectionString"                          = var.key_vault.secret_refs["azure-storage-connection-string"]
     "HlaMetadataDictionary:SearchRelatedMetadata:CacheSlidingExpirationInSeconds" = var.SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC
     "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes"                      = var.ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES
     "HaplotypeFrequencySetCache:MaxCachedFrequencySets"                           = var.MAX_CACHED_FREQUENCY_SETS
@@ -29,10 +38,10 @@ resource "azurerm_windows_function_app" "atlas_match_prediction_function" {
 
     "GenotypeImputation:MaximumExpandedGenotypesPerInput" = var.MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT
 
-    "MacDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string
+    "MacDictionary:AzureStorageConnectionString" = var.key_vault.secret_refs["azure-storage-connection-string"]
     "MacDictionary:TableName"                    = var.mac_import_table.name,
 
-    "MessagingServiceBus:ConnectionString"         = var.servicebus_namespace_authorization_rules.manage.primary_connection_string
+    "MessagingServiceBus:ConnectionString"         = var.key_vault.secret_refs["servicebus-manage-connection-string"]
     "MessagingServiceBus:ImportFileSubscription"   = azurerm_servicebus_subscription.haplotype-frequency-file-processor.name
     "MessagingServiceBus:ImportFileTopic"          = azurerm_servicebus_topic.haplotype-frequency-file-uploads.name
     "MessagingServiceBus:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
@@ -43,7 +52,7 @@ resource "azurerm_windows_function_app" "atlas_match_prediction_function" {
     "MatchPredictionRequests:ResultsTopic"         = azurerm_servicebus_topic.match-prediction-results.name
     "MatchPredictionRequests:MaxParallelism"       = var.MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM
 
-    "NotificationsServiceBus:ConnectionString"         = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
+    "NotificationsServiceBus:ConnectionString"         = var.key_vault.secret_refs["servicebus-write-only-connection-string"]
     "NotificationsServiceBus:AlertsTopic"              = var.servicebus_topics.alerts.name
     "NotificationsServiceBus:NotificationsTopic"       = var.servicebus_topics.notifications.name
     "NotificationsServiceBus:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
@@ -81,7 +90,7 @@ resource "azurerm_windows_function_app" "atlas_match_prediction_function" {
   connection_string {
     name  = "MatchPredictionSql"
     type  = "SQLAzure"
-    value = local.match_prediction_database_connection_string
+    value = local.sql_kv_ref["match-prediction-sql-connection-string"]
   }
 
   lifecycle {

@@ -217,6 +217,7 @@ module "match_prediction" {
   application_insights    = azurerm_application_insights.atlas
   app_service_plan        = azurerm_service_plan.atlas-elastic-plan
   azure_storage           = azurerm_storage_account.azure_storage
+  key_vault               = local.key_vault_module_handoff
   servicebus_namespace    = azurerm_servicebus_namespace.general
   shared_function_storage = azurerm_storage_account.function_storage
   sql_server              = azurerm_mssql_server.atlas_sql_server
@@ -271,6 +272,12 @@ module "match_prediction" {
   USE_EXTERNAL_SQL         = var.USE_EXTERNAL_SQL
   EXTERNAL_SQL_SERVER_NAME = var.EXTERNAL_SQL_SERVER_NAME
   EXTERNAL_SQL_DB_SHARED   = var.EXTERNAL_SQL_DB_SHARED
+
+  // See the equivalent comment on module.matching_algorithm.
+  depends_on = [
+    azurerm_role_assignment.function_apps_identity_kv_secrets_user,
+    time_sleep.wait_for_key_vault_rbac,
+  ]
 }
 
 module "multiple_allele_code_lookup" {
