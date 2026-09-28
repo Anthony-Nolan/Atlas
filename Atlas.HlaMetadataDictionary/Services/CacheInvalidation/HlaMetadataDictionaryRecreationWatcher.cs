@@ -29,17 +29,19 @@ namespace Atlas.HlaMetadataDictionary.Services.CacheInvalidation
     internal class HlaMetadataDictionaryRecreationWatcher : BackgroundService
     {
         private readonly IServiceScopeFactory scopeFactory;
-        private readonly IAtlasLogger logger;
 
         /// <summary>The stamp last seen for each version, as at the previous poll.</summary>
         private readonly Dictionary<string, string> lastSeenStamps = new();
 
         private bool hasPolled;
 
-        public HlaMetadataDictionaryRecreationWatcher(IServiceScopeFactory scopeFactory, IAtlasLogger logger)
+        /// <remarks>
+        /// Takes only the scope factory. Everything else - the repository, the invalidator, the logger - is scoped,
+        /// and a hosted service is a singleton, so resolving any of them here would fail DI validation at start-up.
+        /// </remarks>
+        public HlaMetadataDictionaryRecreationWatcher(IServiceScopeFactory scopeFactory)
         {
             this.scopeFactory = scopeFactory;
-            this.logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -67,9 +69,13 @@ namespace Atlas.HlaMetadataDictionary.Services.CacheInvalidation
         /// </remarks>
         internal async Task PollOnce(CancellationToken cancellationToken)
         {
+            IAtlasLogger logger = null;
+
             try
             {
                 using var scope = scopeFactory.CreateScope();
+
+                logger = scope.ServiceProvider.GetRequiredService<IAtlasLogger>();
 
                 var stamps = await scope.ServiceProvider
                     .GetRequiredService<IHlaMetadataRecreationRepository>()
@@ -91,7 +97,7 @@ namespace Atlas.HlaMetadataDictionary.Services.CacheInvalidation
             }
             catch (Exception exception)
             {
-                logger.SendTrace(
+                logger?.SendTrace(
                     "HLA-METADATA-DICTIONARY REFRESH: Could not read HLA Metadata Dictionary recreation stamps, so " +
                     $"cannot tell whether cached data is stale. Will try again on the next poll. Exception: {exception}",
                     LogLevel.Warn);

@@ -11,6 +11,7 @@ using Atlas.Functions.Services.BlobStorageClients;
 using Atlas.Functions.Services.Debug;
 using Atlas.Functions.Services.MatchCategories;
 using Atlas.Functions.Settings;
+using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Repositories;
@@ -73,6 +74,9 @@ namespace Atlas.Functions
                 OptionsReaderFor<MatchPrediction.ExternalInterface.Settings.GenotypeImputationSettings>(),
                 ConnectionStringReader("MatchPrediction:Sql")
             );
+
+            // This app caches HLA Metadata Dictionary data, so it has to be told when the dictionary is recreated.
+            services.RegisterHlaMetadataDictionaryCacheInvalidation();
         }
 
         private static void RegisterSettings(IServiceCollection services)

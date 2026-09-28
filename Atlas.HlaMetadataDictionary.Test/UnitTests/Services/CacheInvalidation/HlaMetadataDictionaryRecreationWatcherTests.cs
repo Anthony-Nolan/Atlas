@@ -37,10 +37,10 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.CacheInvalidation
             services.AddScoped(_ => repository);
             services.AddScoped(_ => invalidator);
             services.AddScoped(_ => new HlaMetadataDictionarySettings());
+            services.AddScoped(_ => logger);
             var provider = services.BuildServiceProvider();
 
-            watcher = new HlaMetadataDictionaryRecreationWatcher(
-                provider.GetRequiredService<IServiceScopeFactory>(), logger);
+            watcher = new HlaMetadataDictionaryRecreationWatcher(provider.GetRequiredService<IServiceScopeFactory>());
         }
 
         private void StampsAre(params (string Version, string Stamp)[] stamps)
