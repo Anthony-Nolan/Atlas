@@ -19,6 +19,7 @@ namespace Atlas.Common.Test.Caching
         [TestCase("All-G-Groups:3650", TestName = "HlaScoringMetadataRepository")]
         [TestCase("All-small-g-Groups:3650", TestName = "SmallGGroupToPGroupMetadataRepository")]
         [TestCase("hlaMetadataDictionary-version:3650", TestName = "HlaMetadataDictionaryFactory")]
+        [TestCase("hlaMatchingLookup-tableClient:3650", TestName = "Table client - TableClientRepositoryBase")]
         [TestCase("AlleleNamesMetadataService-3650-A-01:01", TestName = "Per-lookup outcome - MetadataServiceBase")]
         [TestCase("hlaScoringLookup-3650-A-0265", TestName = "Per-lookup outcome - a newly-added serology code")]
         [TestCase("MatchGrade:v3650;lA;d01:01;p01:01", TestName = "ScoringCache - match grade")]
@@ -32,6 +33,7 @@ namespace Atlas.Common.Test.Caching
         [TestCase("hlaMatchingLookup:3660")]
         [TestCase("All-P-Groups:3660")]
         [TestCase("hlaScoringLookup-3660-A-0265")]
+        [TestCase("hlaMatchingLookup-tableClient:3660")]
         [TestCase("MatchGrade:v3660;lA;d01:01;p01:01")]
         public void Matches_ForAKeyOfAnotherVersion_IsFalse(string cacheKey)
         {
