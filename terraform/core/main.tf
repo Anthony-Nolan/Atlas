@@ -367,6 +367,7 @@ module "search_tracking" {
   application_insights    = azurerm_application_insights.atlas
   app_service_plan        = azurerm_service_plan.atlas-elastic-plan
   azure_app_configuration = azurerm_app_configuration.atlas_app_configuration
+  key_vault               = local.key_vault_module_handoff
   servicebus_namespace    = azurerm_servicebus_namespace.general
   servicebus_namespace_authorization_rules = {
     read-write = azurerm_servicebus_namespace_authorization_rule.read-write
@@ -388,6 +389,12 @@ module "search_tracking" {
   USE_EXTERNAL_SQL         = var.USE_EXTERNAL_SQL
   EXTERNAL_SQL_SERVER_NAME = var.EXTERNAL_SQL_SERVER_NAME
   EXTERNAL_SQL_DB_SHARED   = var.EXTERNAL_SQL_DB_SHARED
+
+  // See the equivalent comment on module.matching_algorithm.
+  depends_on = [
+    azurerm_role_assignment.function_apps_identity_kv_secrets_user,
+    time_sleep.wait_for_key_vault_rbac,
+  ]
 }
 
 module "support" {
