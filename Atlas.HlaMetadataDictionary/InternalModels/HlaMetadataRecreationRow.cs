@@ -17,11 +17,15 @@ namespace Atlas.HlaMetadataDictionary.InternalModels
 
         /// <summary>
         /// A value that differs from the last one, and carries no other meaning. A GUID rather than a timestamp so
-        /// that two recreations cannot collide however close together they run, and so that nothing depends on the
-        /// clocks of the machines that wrote them agreeing.
+        /// that two recreations cannot collide however close together they run, and so that telling one recreation
+        /// from the next never depends on the clocks of the machines that wrote them agreeing.
         /// </summary>
         public string Stamp { get; set; }
 
+        /// <summary>
+        /// Read only by a process's first poll, which has no earlier stamp to compare against - and then loosely,
+        /// allowing for clock differences. See <c>HlaMetadataDictionaryRecreationWatcher</c>.
+        /// </summary>
         public DateTimeOffset RecreatedAtUtc { get; set; }
 
         public HlaMetadataRecreationRow() { }

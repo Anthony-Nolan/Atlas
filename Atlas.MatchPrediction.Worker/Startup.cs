@@ -1,6 +1,7 @@
 ﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Notifications;
+using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
@@ -33,6 +34,9 @@ public static class Startup
             OptionsReaderFor<GenotypeImputationSettings>(),
             ConnectionStringReader("MatchPredictionSql")
         );
+
+        // This app caches HLA Metadata Dictionary data, so it has to be told when the dictionary is recreated.
+        services.RegisterHlaMetadataDictionaryCacheInvalidation();
 
         services.RegisterMatchPredictionRequester(
             OptionsReaderFor<MessagingServiceBusSettings>(),

@@ -61,7 +61,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
         {
             services.AddSingleton<ITableClientFactory, TableClientFactory>();
             services.AddSingleton<ITableReferenceRepository, TableReferenceRepository>();
-            services.AddScoped<IHlaMetadataRecreationRepository, HlaMetadataRecreationRepository>();
+            // A singleton, because it remembers the stamps this process wrote - see HlaMetadataRecreationRepository.
+            services.AddSingleton<IHlaMetadataRecreationRepository, HlaMetadataRecreationRepository>();
 
             services.AddScoped<IGGroupToPGroupMetadataRepository, GGroupToPGroupMetadataRepository>();
             services.AddScoped<IHlaMatchingMetadataRepository, HlaMatchingMetadataRepository>();
