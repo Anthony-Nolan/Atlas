@@ -25,7 +25,7 @@ public interface IGenotypeSetService
 internal class GenotypeSetService(
     IGenotypeImputationService genotypeImputer,
     IGenotypeConverter genotypeConverter,
-    IHaplotypeFrequencyService haplotypeFrequencyService)
+    IHaplotypeFrequencyLookupService haplotypeFrequencyService)
     : IGenotypeSetService
 {
     private static readonly IReadOnlyDictionary<int, Dictionary<(Locus, string), string>> LocusValueReplacementMapping =
