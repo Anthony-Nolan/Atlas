@@ -150,6 +150,10 @@ The solution is split across multiple projects:
   traditional web api.
   - Note that this app should always be deployed to an *app service plan* not a consumption plan - as we require the longer timeout of an app service plan, 
   plus we do not want the app to automatically scale
+- Atlas.MatchingAlgorithm.Functions.DataRefresh
+  - Azure functions app responsible only for the data refresh
+  - Requests a refresh manually, or on a timer when auto-run is on and a new HLA nomenclature version is available
+  - Runs the refresh, re-requests stalled refreshes, and runs the cleanup
 - Atlas.MatchingAlgorithm.Functions.DonorManagement
   - Azure functions app responsible only for ongoing donor imports / updates
   - Needs to be an independent app so that the three-monthly full data refresh can disable these functions for the duration of the refresh
