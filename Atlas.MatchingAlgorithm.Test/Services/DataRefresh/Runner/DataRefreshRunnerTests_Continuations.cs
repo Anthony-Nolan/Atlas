@@ -67,7 +67,7 @@ public partial class DataRefreshRunnerTests
                 .With(r => r.HlaNomenclatureVersion, oldVersion)
                 .Build()
         );
-        hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest).Returns(newVersion);
+        hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.LatestForced).Returns(newVersion);
 
         await dataRefreshRunner.RefreshData(default);
 

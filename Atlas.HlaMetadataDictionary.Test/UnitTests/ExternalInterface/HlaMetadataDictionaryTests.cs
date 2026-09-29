@@ -88,6 +88,16 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
         }
 
         [Test]
+        public async Task RecreateHlaMetadataDictionaryIfNecessary_ForLatestForcedVersion_WhenAlreadyUpToDate_RecreatesDictionary()
+        {
+            wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().Returns(DefaultVersion);
+
+            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.LatestForced);
+
+            await recreateMetadataService.Received().RefreshAllHlaMetadata(DefaultVersion);
+        }
+
+        [Test]
         public async Task RecreateHlaMetadataDictionaryIfNecessary_ForActiveVersion_WhenAlreadyUpToDate_RecreatesDictionary()
         {
             wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().Returns(DefaultVersion);

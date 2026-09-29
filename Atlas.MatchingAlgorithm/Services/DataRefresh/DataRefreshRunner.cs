@@ -242,7 +242,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         {
             if (string.IsNullOrEmpty(refreshRecord.HlaNomenclatureVersion))
             {
-                var newHlaNomenclatureVersion = await activeVersionHlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
+                // Always rebuild, even when the active version is already the latest one:
+                // a forced refresh on an unchanged version must still repair the dictionary.
+                var newHlaNomenclatureVersion = await activeVersionHlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.LatestForced);
                 refreshRecord.HlaNomenclatureVersion = newHlaNomenclatureVersion; //Later steps will make use of this value.
                 loggingContext.HlaNomenclatureVersion = newHlaNomenclatureVersion;
                 await dataRefreshHistoryRepository.UpdateExecutionDetails(refreshRecord.Id, newHlaNomenclatureVersion);
