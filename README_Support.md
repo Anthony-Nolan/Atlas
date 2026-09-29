@@ -60,7 +60,7 @@ Atlas can be configured to automatically re-run the data refresh process as soon
 (b) If this installation of Atlas has opted to disable the auto-run refresh - in this case manual will be the only way to trigger this job
     - An example reason to maintain manual control would be to ensure that haplotype frequency nomenclature and matching nomenclature are updated simultaneously
     
-To manually trigger the Job, call the `SubmitDataRefreshRequestManual` HTTP Azure function, on the Matching Algorithm Functions App.
+To manually trigger the Job, call the `SubmitDataRefreshRequestManual` HTTP Azure function, on the Data Refresh Functions App (`DATA-REFRESH-FUNCTION`).
 Configuration options are available as per the model `DataRefreshRequest`
 
 ### In the case of the refresh job server dying
@@ -142,7 +142,7 @@ request is what recovers it immediately.
 #### (b) Manual cleanup
  
 If you prefer not to continue a refresh, any live request messages must be purged from the `matching-algorithm` subscription, and teardown performed.
-Teardown can either be done entirely manually, or the `RunDataRefreshCleanup` function can be run, which performs the described steps.
+Teardown can either be done entirely manually, or the `RunDataRefreshCleanup` function (on the Data Refresh Functions App) can be run, which performs the described steps.
  
 If a refresh stalls locally, you can likely ignore the infrastructure part of this checklist.
 
