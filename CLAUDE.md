@@ -14,25 +14,13 @@ The repo has extensive existing documentation — prefer it over re-deriving thi
 - `README_Contribution_Versioning.md` — versioning rules and commit message conventions
 - `README_MatchingAlgorithm.md`, `README_MatchPredictionAlgorithm.md`, `README_HlaMetadataDictionary.md`, `README_DonorImport.md`, `README_MultipleAlleleCodeDictionary.md`, `README_RepeatSearch.md` — per-component deep dives
 - `ArchitecturalDecisionRecord/` — ADRs explaining why past architectural decisions were made
-- `.claude/skills/azurerm-upgrade/` — Claude Code skill for the Terraform provider upgrade workflow
-- `.claude/commands/terraform-plan.md` — Claude Code slash command (`/terraform-plan <env>`) for running `terraform plan` for the core infrastructure against any of the five environments (`dev`, `uat`, `live`, `wmda-uat`, `wmda-live`)
 
 ## Build and test commands
 
 ```bash
-# Restore + build (mirrors build-pipeline.yml)
-dotnet restore
-dotnet build --configuration Release --no-restore
-
 # Run all unit tests (Test projects only, excludes Integration/Validation/Performance/Verification)
 shopt -s globstar
 dotnet test **/*Test.csproj
-
-# Run a single test project
-dotnet test Atlas.MatchingAlgorithm.Test/Atlas.MatchingAlgorithm.Test.csproj
-
-# Run a single test by name
-dotnet test Atlas.MatchingAlgorithm.Test/Atlas.MatchingAlgorithm.Test.csproj --filter "FullyQualifiedName~RankSearchResults_OrdersResultsByMatchCount"
 
 # EF Core migrations — must be run from inside the relevant .Data project folder
 # Apply pending migrations:
@@ -53,23 +41,12 @@ There is no local Azure Service Bus emulator in use for this project — local d
 
 ## Architecture
 
-### Components (each with its own infra, README, and `Atlas.<Name>*` project family)
+### Components
 
-- **Donor Import** — master donor store; ingests donor JSON files from blob storage, feeds Matching and Match Prediction.
-- **HLA Metadata Dictionary (HMD)** — Azure Table Storage cache of HLA nomenclature (sourced from WMDA/IMGT-HLA files), used to interpret and convert between HLA typing representations (allele, G group, P group, "small g" group, serology, MAC). Nearly everything else depends on it for HLA interpretation.
-- **Matching Algorithm** — the core, non-predictive search: given patient HLA, returns donors that meet mismatch criteria, then grades/scores/ranks matches. Matching is done at P-group level; see `README_MatchingAlgorithm.md` for grading/confidence/ranking rules and null-allele handling — this logic is clinically sensitive and changes need sign-off from an HLA matching expert (see `README_Contribution_Versioning.md`).
-- **Match Prediction Algorithm** — post-processes Matching's results per patient/donor pair, computing likelihood of a given mismatch count using haplotype frequency sets.
-- **Multiple Allele Code (MAC) Dictionary** — Azure Table Storage cache of NMDP allele-compression codes.
-- **Repeat Search** — standalone component that tracks previously-returned donors so consumers can request differential results; kept separate to keep the main algorithm stateless.
-- **Search Tracking** — tracks search lifecycle/state.
-- **Atlas.Functions** — top-level Functions app; runs MAC import and orchestrates match prediction after a matching search completes.
-- **Atlas.Functions.PublicApi** — the versioned public HTTP API surface. This, together with `Atlas.*.Client.Models`, `Atlas.DonorImport.FileSchema.Models`, `Atlas.Common.Public.Models`, and `Atlas.Debug.Client(.Models)`, is the only code versioned/released as public interface — see `README_Contribution_Versioning.md`.
+See `README_ArchitecturalOverview.md` for the component breakdown. Two rules the code does not show:
 
-Per component, the project-naming convention is: `Atlas.<Component>` (business logic), `Atlas.<Component>.Data` (EF Core schema + Dapper/EF querying), `Atlas.<Component>.Functions` (Azure Functions entry point), `Atlas.<Component>.Client.Models` (models for external consumers), `Atlas.<Component>.Common` (shared internal models between logic/data layers), plus the `.Test`/`.Test.Integration`/etc. suite.
-
-### Cross-cutting code (`Atlas.Common`)
-
-Shared code lives under `Atlas.Common/` by concern: `ApplicationInsights` (logging/telemetry), `AzureEventGrid`, `AzureStorage` (blob/table clients), `Caching`, `Debugging`, `FeatureManagement`, `GeneticData` (HLA typing model/utilities), `Matching` (locus match calculators), `Maths`, `Notifications`, `ServiceBus`, `Sql` (bulk insert helpers), `Utils`, `Validation`.
+- Matching Algorithm grading/confidence/ranking logic (see `README_MatchingAlgorithm.md`) is clinically sensitive — changes need sign-off from an HLA matching expert (see `README_Contribution_Versioning.md`).
+- Only `Atlas.Functions.PublicApi`, `Atlas.*.Client.Models`, `Atlas.DonorImport.FileSchema.Models`, `Atlas.Common.Public.Models` and `Atlas.Debug.Client(.Models)` are versioned/released as public interface — see `README_Contribution_Versioning.md`.
 
 ### Dependency injection
 
@@ -88,7 +65,6 @@ Non-Functions projects use `appsettings.json` + user secrets. Functions apps use
 - Test framework: NUnit (`[TestFixture]`/`[Test]`), NSubstitute for mocking, AwesomeAssertions (FluentAssertions-compatible, `.Should()`) for assertions, AutoFixture (via a repo `FixtureBuilder.For<T>()` helper) plus custom `*Builder` classes under `TestHelpers/Builders` for test data. Test naming: `MethodUnderTest_ExpectedBehaviour`.
 - Commit messages are prefixed with the Jira ticket ID and a semantic type, e.g. `feature: ATL-34: add match prediction`, `fix: ATL-45: fix null reference` (see `README_Contribution_Versioning.md` for the full type list — note that README documents an older GitHub-issue-number convention, e.g. `fix: #45: ...`, which real commit history confirms has been superseded by the `ATL-###` Jira convention).
 - Versioning is semantic (`major.minor.patch`) and applies only to the public-interface projects listed above; stable releases are tagged `stable/x.y.z`.
-- `.editorconfig` sets `max_line_length = 150`.
 
 ## Branching
 
