@@ -13,6 +13,15 @@ resource "azurerm_windows_function_app" "atlas_search_tracking_function" {
   storage_account_access_key  = var.shared_function_storage.primary_access_key
   storage_account_name        = var.shared_function_storage.name
 
+  // Used to resolve the @Microsoft.KeyVault app settings below. The role assignment that lets this identity read the
+  // vault lives in the root module, so it is ordered by the depends_on on the module block.
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [var.key_vault.function_apps_identity_id]
+  }
+
+  key_vault_reference_identity_id = var.key_vault.function_apps_identity_id
+
   tags = var.general.common_tags
 
   app_settings = {
@@ -24,9 +33,12 @@ resource "azurerm_windows_function_app" "atlas_search_tracking_function" {
 
     "AzureAppConfiguration:ConnectionString" = var.azure_app_configuration.primary_read_key[0].connection_string
 
-    "ConnectionStrings:PersistentSql" = local.search_tracking_database_connection_string
+    // Deliberately an app setting rather than a connection_string block: Program.cs reads it with
+    // Environment.GetEnvironmentVariable("ConnectionStrings:PersistentSql"), and a connection_string block would expose
+    // it as SQLAZURECONNSTR_PersistentSql instead.
+    "ConnectionStrings:PersistentSql" = local.sql_kv_ref["search-tracking-sql-connection-string"]
 
-    "MessagingServiceBus:ConnectionString"           = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
+    "MessagingServiceBus:ConnectionString"           = var.key_vault.secret_refs["servicebus-read-write-connection-string"]
     "MessagingServiceBus:SearchTrackingSubscription" = azurerm_servicebus_subscription.search-tracking.name
     "MessagingServiceBus:SearchTrackingTopic"        = azurerm_servicebus_topic.search-tracking-events.name
 
