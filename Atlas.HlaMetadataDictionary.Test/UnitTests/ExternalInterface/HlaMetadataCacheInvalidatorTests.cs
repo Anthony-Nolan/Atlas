@@ -68,9 +68,10 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
         }
 
         /// <summary>
-        /// The case this scoping exists for. A data refresh recreates the dictionary at a NEW version as its first
-        /// stage, while every running matching app carries on serving the PREVIOUS version for the hours until that
-        /// refresh completes. Evicting the version it is actively serving would cold-start it on every refresh.
+        /// The case this scoping exists for. When WMDA has published a new version, a data refresh recreates the
+        /// dictionary at it as its first stage, while every running matching app carries on serving the PREVIOUS
+        /// version for the hours until that refresh completes. Evicting the version they are actively serving would
+        /// cold-start them for nothing - its data has not changed.
         /// </summary>
         [Test]
         public async Task InvalidateCaches_LeavesOtherNomenclatureVersionsIntact()

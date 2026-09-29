@@ -171,8 +171,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
                 // Only on the branch that actually rewrote storage, and only once storage has been rewritten: a
                 // consumer that drops its cache before the new data is in place would simply re-cache the old data.
-                // Both recreation routes pass through here, which is what keeps the forced same-version refresh and a
-                // normal version-changing data refresh behaving identically.
+                // Every route that rewrites storage - a data refresh, or a manual refresh, forced or not - passes
+                // through here, so all of them stamp alike.
                 await RecordRecreationAndDropLocalCaches(version);
             }
             else

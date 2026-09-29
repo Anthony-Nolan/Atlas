@@ -91,7 +91,8 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.CacheInvalidation
 
         /// <summary>
         /// A recreation at a new version must not cost a running matching app the warm cache of the version it is
-        /// still serving - a data refresh recreates at a new version hours before that version becomes active.
+        /// still serving. When WMDA has published a new version, a data refresh recreates at it hours before it
+        /// becomes active.
         /// </summary>
         [Test]
         public async Task PollOnce_InvalidatesOnlyTheVersionWhoseStampChanged()

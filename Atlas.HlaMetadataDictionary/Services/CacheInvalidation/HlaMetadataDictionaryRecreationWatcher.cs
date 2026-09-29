@@ -132,7 +132,7 @@ namespace Atlas.HlaMetadataDictionary.Services.CacheInvalidation
         /// <para>
         /// A stamp this process wrote itself is skipped either way. The recreating process has already evicted
         /// directly, and evicting again would throw away data it has since started reloading - in a data refresh,
-        /// the new version it is about to process donors against.
+        /// the version it is about to process donors against.
         /// </para>
         /// </remarks>
         private IEnumerable<string> VersionsToInvalidate(
