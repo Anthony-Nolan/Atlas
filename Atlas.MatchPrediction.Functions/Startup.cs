@@ -1,5 +1,6 @@
 ﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
+using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
@@ -30,6 +31,9 @@ namespace Atlas.MatchPrediction.Functions
             services.RegisterMatchPredictionRequester(
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<MatchPredictionRequestsSettings>());
+
+            // This app caches HLA Metadata Dictionary data, so it has to be told when the dictionary is recreated.
+            services.RegisterHlaMetadataDictionaryCacheInvalidation();
         }
 
         private static void RegisterSettings(IServiceCollection services)

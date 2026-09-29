@@ -1,3 +1,4 @@
+using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
@@ -33,6 +34,10 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement
                 ConnectionStringReader("SqlB"),
                 ConnectionStringReader("DonorSql")
             );
+
+            // This app holds a cached copy of the dictionary, so it needs to notice when the dictionary is
+            // recreated by one of the apps that can.
+            services.RegisterHlaMetadataDictionaryCacheInvalidation();
         }
 
         private static void RegisterSettings(IServiceCollection services)

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
@@ -36,7 +35,6 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         private readonly ITableReferenceRepository tableReferenceRepository;
         private readonly string functionalTableReferencePrefix;
         private readonly string cacheKey;
-        private readonly IDictionary<string, TableClient> tableClients = new Dictionary<string, TableClient>();
 
         protected TableClientRepositoryBase(
             ITableClientFactory factory,
@@ -73,7 +71,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
 
             await newDataTable.BatchInsert(tableContents.Select(rowData => new HlaMetadataTableRow(rowData).ToTableEntity()));
             await tableReferenceRepository.UpdateTableReference(tablePrefix, newDataTable.Name);
-            tableClients.Remove(tablePrefix);
+            Cache.Remove(TableClientCacheKey(hlaNomenclatureVersion));
         }
 
         protected async Task<TTableRow> GetDataRowIfExists(string partition, string rowKey, string hlaNomenclatureVersion)
@@ -126,34 +124,33 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
             return $"{functionalTableReferencePrefix}{hlaNomenclatureVersion}";
         }
 
-        private readonly SemaphoreSlim tableConnectionCreationLock = new(1, 1);
-
         /// <summary>
-        /// The connection to the current data table is cached so we don't open unnecessary connections
+        /// The connection to the current data table, cached so we don't open unnecessary connections - creating one
+        /// costs a round trip, and this is on the path of every single-item lookup made while a collection warms.
         /// </summary>
+        /// <remarks>
+        /// Held under a version-keyed cache entry rather than in a field, so that invalidating a version drops its
+        /// table client along with its data. Recreation writes a NEW physical table and leaves the old one in place,
+        /// so a client cached per repository instance would outlive the eviction: an object graph obtained before the
+        /// recreation would miss the cache, re-read the OLD table it still points at, and store those rows again
+        /// under the same versioned key for a further cache lifetime.
+        /// </remarks>
         private async Task<TableClient> GetVersionedDataTable(string hlaNomenclatureVersion)
         {
-            await tableConnectionCreationLock.WaitAsync();
-
-            var tablePrefix = VersionedTableReferencePrefix(hlaNomenclatureVersion);
-
-            try
+            return await Cache.GetOrAddAsync(TableClientCacheKey(hlaNomenclatureVersion), async () =>
             {
-                if (tableClients.TryGetValue(tablePrefix, out var cachedTableClient))
-                {
-                    return cachedTableClient;
-                }
-
+                var tablePrefix = VersionedTableReferencePrefix(hlaNomenclatureVersion);
                 var dataTableReference = await tableReferenceRepository.GetCurrentTableReference(tablePrefix);
-                var TableClient = await tableFactory.GetTable(dataTableReference);
-                tableClients.Add(tablePrefix, TableClient);
-                return TableClient;
-            }
-            finally
-            {
-                tableConnectionCreationLock.Release();
-            }
+
+                return await tableFactory.GetTable(dataTableReference);
+            });
         }
+
+        /// <remarks>
+        /// Ends with ":{version}" so that <c>HlaVersionedCacheKey</c> recognises it and the existing invalidation
+        /// evicts it; nothing separate has to know about table clients.
+        /// </remarks>
+        private string TableClientCacheKey(string hlaNomenclatureVersion) => $"{cacheKey}-tableClient:{hlaNomenclatureVersion}";
 
         private static TTableRow GetRowFromCachedTable(string partition, string rowKey, IReadOnlyDictionary<string, TTableRow> metadataDictionary)
         {

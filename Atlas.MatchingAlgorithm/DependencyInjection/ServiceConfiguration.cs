@@ -477,6 +477,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 var logger = sp.GetService<IMatchingAlgorithmSearchLogger>();
                 return new SearchResultsBlobStorageClient(settings.ConnectionString, logger);
             });
+
+            services.AddScoped<IManualHlaMetadataDictionaryRefresher, ManualHlaMetadataDictionaryRefresher>();
         }
 
         /// <summary>
