@@ -1,5 +1,5 @@
 locals {
-  atlas_match_prediction_container_app_name = lower("${var.general.environment}-atlas-match-prediction-ca")
+  atlas_match_prediction_container_app_name = lower("${var.general.environment}-atlas-match-pred-ca")
 }
 
 resource "azurerm_container_app" "atlas_match_prediction" {
