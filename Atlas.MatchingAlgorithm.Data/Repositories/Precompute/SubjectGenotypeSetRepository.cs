@@ -61,6 +61,23 @@ public interface ISubjectGenotypeSetRepository
     /// </para>
     /// </remarks>
     Task UpsertDonorAssignments(IReadOnlyCollection<DonorSubjectGenotypeSetAssignment> assignments);
+
+    /// <summary>
+    /// Deletes every <c>DonorSubjectGenotypeSets</c> row of the given donors, at all locus combinations.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// For the differential import: an updated donor's rows point at values for its OLD typing. They are deleted in
+    /// the same transaction as the donor's new HLA, so that the donor has either rows for its new typing or no rows -
+    /// never rows for the old one, which search would otherwise use. Inside an ambient transaction it joins that
+    /// transaction, and a rollback there undoes it too.
+    /// </para>
+    ///
+    /// <para>
+    /// <c>SubjectGenotypeSetValues</c> rows are never deleted: other donors with the same typing can point at them.
+    /// </para>
+    /// </remarks>
+    Task DeleteDonorAssignments(IReadOnlyCollection<int> donorIds);
 }
 
 /// <summary>
@@ -77,8 +94,8 @@ public interface ISubjectGenotypeSetRepository
 /// <para>
 /// <b>No transactions of its own.</b> Each write is its own autocommit statement, as everywhere else in this project.
 /// The orchestrator's ordering - values first, then donor assignments - is what makes a crash between the two
-/// recoverable, not a scope around them. A caller that needs the assignments in its own transaction (the differential
-/// import writes them with the donor's HLA) opens an ambient scope, and the upsert joins it.
+/// recoverable, not a scope around them. A caller that needs a write in its own transaction (the differential import
+/// deletes an updated donor's rows with the donor's new HLA) opens an ambient scope, and the write joins it.
 /// </para>
 /// </summary>
 public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepository
@@ -126,6 +143,14 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
 
     private const string TruncateStagingTableSql = $"TRUNCATE TABLE {StagingTableName}";
 
+    /// <summary>Donor ids per delete statement - below SQL Server's limit of about 2,100 parameters per command.</summary>
+    private const int DeleteChunkSize = 2000;
+
+    private const string DeleteDonorAssignmentsSql = $"""
+        DELETE FROM {AssignmentsTableName}
+        WHERE {nameof(DonorSubjectGenotypeSet.DonorId)} IN @DonorIds
+        """;
+
     /// <summary>
     /// The primary key is the unique index's key, so each (donor, combination) is staged once - which
     /// <c>MERGE</c> requires, since it rejects a target row matched by more than one source row.
@@ -162,7 +187,8 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
     /// <para>
     /// What this costs is that writers always wait for each other. A donor batch is at most a few thousand small rows
     /// and one writer at a time is the normal case for this table, and a full batch escalated to a table lock anyway.
-    /// Inside a caller's transaction (the differential import) the lock is held until that transaction ends. Readers
+    /// Inside a caller's transaction the lock is held until that transaction ends. (The differential import runs the
+    /// upsert after its donor transaction has committed, partly for this reason.) Readers
     /// are not blocked under read-committed snapshot, which Azure SQL Database turns on by default.
     /// </para>
     ///
@@ -338,6 +364,26 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
         else
         {
             await connection.ExecuteAsync(UpsertStagedAssignmentsSql, commandTimeout: CommandTimeoutInSeconds);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task DeleteDonorAssignments(IReadOnlyCollection<int> donorIds)
+    {
+        if (donorIds == null || donorIds.Count == 0)
+        {
+            return;
+        }
+
+        // Dapper sends each id as its own parameter, and SQL Server allows about 2,100 per command. A donor batch is
+        // at most a few thousand donors, so this is at most a few chunks, each a seek on the unique index's leading
+        // DonorId column.
+        await using var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString());
+        await connection.OpenAsync();
+
+        foreach (var chunk in donorIds.Distinct().Chunk(DeleteChunkSize))
+        {
+            await connection.ExecuteAsync(DeleteDonorAssignmentsSql, new { DonorIds = chunk }, commandTimeout: CommandTimeoutInSeconds);
         }
     }
 

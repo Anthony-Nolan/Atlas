@@ -348,8 +348,7 @@ public class SubjectGenotypeSetRepositoryTests
     [Test]
     public async Task UpsertDonorAssignments_InsideAnAmbientTransactionThatRollsBack_KeepsNoRow()
     {
-        // The differential import writes these rows inside its own scope, with the donor's HLA. A rollback there must
-        // take them back out.
+        // A caller that writes these rows inside its own scope must have a rollback there take them back out.
         using (new AsyncTransactionScope())
         {
             await repository.UpsertDonorAssignments(AssignmentsFor([1, 2], fixture.Create<int>()));
@@ -362,8 +361,8 @@ public class SubjectGenotypeSetRepositoryTests
     [Test]
     public async Task UpsertDonorAssignments_InsideAnAmbientTransactionWithAnotherWrite_KeepsBothWhenCompleted()
     {
-        // Two writes over two connections in one scope, as the differential import will make. They must share the
-        // scope's transaction rather than fail by needing a distributed one.
+        // Two writes over two connections in one scope. They must share the scope's transaction rather than fail by
+        // needing a distributed one.
         var first = AssignmentsFor([1], fixture.Create<int>());
         var second = AssignmentsFor([2], fixture.Create<int>());
 
@@ -375,6 +374,85 @@ public class SubjectGenotypeSetRepositoryTests
         }
 
         (await StoredAssignments()).Should().BeEquivalentTo(AsRows([..first, ..second]));
+    }
+
+    [Test]
+    public async Task DeleteDonorAssignments_DeletesEveryRowOfTheGivenDonors_AndLeavesOtherDonors()
+    {
+        var valueId = fixture.Create<int>();
+        var kept = AssignmentsFor([3], valueId);
+        await repository.UpsertDonorAssignments([..AssignmentsFor([1, 2], valueId), ..kept]);
+
+        await repository.DeleteDonorAssignments([1, 2]);
+
+        (await StoredAssignments()).Should().BeEquivalentTo(AsRows(kept));
+    }
+
+    [Test]
+    public async Task DeleteDonorAssignments_LeavesTheValuesTheRowsPointedAt()
+    {
+        // Other donors with the same typing can point at the same value.
+        var ids = await repository.GetOrCreateValueIds([NewValue()]);
+        await repository.UpsertDonorAssignments(AssignmentsFor([1], ids.Values.Single()));
+
+        await repository.DeleteDonorAssignments([1]);
+
+        (await StoredAssignmentCount()).Should().Be(0);
+        (await StoredValueCount()).Should().Be(1);
+    }
+
+    [Test]
+    public async Task DeleteDonorAssignments_ForDonorsWithNoRows_OrNoDonors_DoesNotThrow()
+    {
+        var act = async () =>
+        {
+            await repository.DeleteDonorAssignments([42]);
+            await repository.DeleteDonorAssignments([]);
+        };
+
+        await act.Should().NotThrowAsync();
+    }
+
+    [Test]
+    public async Task DeleteDonorAssignments_ForMoreDonorsThanOneStatementTakes_DeletesThemAll()
+    {
+        var donorIds = Enumerable.Range(1, 2500).ToArray();
+        await repository.UpsertDonorAssignments(AssignmentsFor(donorIds, fixture.Create<int>()));
+
+        await repository.DeleteDonorAssignments(donorIds);
+
+        (await StoredAssignmentCount()).Should().Be(0);
+    }
+
+    [Test]
+    public async Task DeleteDonorAssignments_InsideAnAmbientTransactionThatRollsBack_KeepsTheRows()
+    {
+        // The differential import deletes an updated donor's rows inside its donor transaction. If that transaction
+        // rolls back, the donor keeps its old HLA, and must keep the rows that match it.
+        var assignments = AssignmentsFor([1], fixture.Create<int>());
+        await repository.UpsertDonorAssignments(assignments);
+
+        using (new AsyncTransactionScope())
+        {
+            await repository.DeleteDonorAssignments([1]);
+            // No Complete(): the scope rolls back on dispose.
+        }
+
+        (await StoredAssignments()).Should().BeEquivalentTo(AsRows(assignments));
+    }
+
+    [Test]
+    public async Task DeleteDonorAssignments_InsideAnAmbientTransactionThatCompletes_DeletesTheRows()
+    {
+        await repository.UpsertDonorAssignments(AssignmentsFor([1], fixture.Create<int>()));
+
+        using (var scope = new AsyncTransactionScope())
+        {
+            await repository.DeleteDonorAssignments([1]);
+            scope.Complete();
+        }
+
+        (await StoredAssignmentCount()).Should().Be(0);
     }
 
     [Test]
