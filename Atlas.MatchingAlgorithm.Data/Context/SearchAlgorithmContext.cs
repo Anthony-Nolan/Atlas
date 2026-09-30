@@ -89,6 +89,11 @@ namespace Atlas.MatchingAlgorithm.Data.Context
                 .HasIndex(x => new { x.HlaTypingKey, x.HaplotypeFrequencySetId, x.AllowedLociKey })
                 .IsUnique();
 
+            modelBuilder.Entity<DonorGenotypePrecomputationRun>().SetUpModel();
+            modelBuilder.Entity<DonorGenotypePrecomputationBatch>().SetUpModel();
+            modelBuilder.Entity<DonorGenotypePrecomputationGroup>().SetUpModel();
+            modelBuilder.Entity<DonorGenotypePrecomputationGroupDonor>().SetUpModel();
+
             base.OnModelCreating(modelBuilder);
         }
 
@@ -110,6 +115,11 @@ namespace Atlas.MatchingAlgorithm.Data.Context
 
         public DbSet<SubjectGenotypeSetValue> SubjectGenotypeSetValues { get; set; }
         public DbSet<DonorSubjectGenotypeSet> DonorSubjectGenotypeSets { get; set; }
+
+        public DbSet<DonorGenotypePrecomputationRun> DonorGenotypePrecomputationRuns { get; set; }
+        public DbSet<DonorGenotypePrecomputationBatch> DonorGenotypePrecomputationBatches { get; set; }
+        public DbSet<DonorGenotypePrecomputationGroup> DonorGenotypePrecomputationGroups { get; set; }
+        public DbSet<DonorGenotypePrecomputationGroupDonor> DonorGenotypePrecomputationGroupDonors { get; set; }
 
         public DbSet<PGroupName> PGroupNames { get; set; }
         public DbSet<HlaName> HlaNames { get; set; }

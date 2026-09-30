@@ -16,6 +16,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
         IDonorInspectionRepository GetDonorInspectionRepository();
         IDonorUpdateRepository GetDonorUpdateRepository();
         ISubjectGenotypeSetRepository GetSubjectGenotypeSetRepository();
+        IDonorGenotypePrecomputationRepository GetDonorGenotypePrecomputationRepository();
     }
     
     public abstract class TransientRepositoryFactoryBase : ITransientRepositoryFactory
@@ -62,6 +63,15 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
         public ISubjectGenotypeSetRepository GetSubjectGenotypeSetRepository()
         {
             return new SubjectGenotypeSetRepository(ConnectionStringProvider);
+        }
+
+        /// <summary>
+        /// On the base for the same reason as <see cref="GetSubjectGenotypeSetRepository"/>: the precomputation stage runs
+        /// against the dormant database, and the debug endpoint (ATL-422) will read a finished run from the active one.
+        /// </summary>
+        public IDonorGenotypePrecomputationRepository GetDonorGenotypePrecomputationRepository()
+        {
+            return new DonorGenotypePrecomputationRepository(ConnectionStringProvider);
         }
     }
 }

@@ -20,6 +20,12 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
         IDonorUpdateRepository GetDonorUpdateRepositoryForDatabase(TransientDatabase targetDatabase);
         IPGroupRepository GetPGroupRepositoryForDatabase(TransientDatabase targetDatabase);
         ISubjectGenotypeSetRepository GetSubjectGenotypeSetRepositoryForDatabase(TransientDatabase targetDatabase);
+
+        /// <summary>
+        /// For a caller that takes its database from a refresh record, such as the precomputation workers and sweeps,
+        /// rather than one that asks which database is dormant.
+        /// </summary>
+        IDonorGenotypePrecomputationRepository GetDonorGenotypePrecomputationRepositoryForDatabase(TransientDatabase targetDatabase);
     }
 
     public class StaticallyChosenDatabaseRepositoryFactory : IStaticallyChosenDatabaseRepositoryFactory
@@ -44,6 +50,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
             public IHlaImportRepository HlaImport { get; set; }
             public IDonorUpdateRepository DonorUpdate { get; set; }
             public ISubjectGenotypeSetRepository SubjectGenotypeSet { get; set; }
+            public IDonorGenotypePrecomputationRepository DonorGenotypePrecomputation { get; set; }
         }
 
         readonly Dictionary<TransientDatabase, AvailableRepositories> cachedRepositories =
@@ -101,6 +108,13 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
             var available = cachedRepositories[targetDatabase];
             return available.SubjectGenotypeSet ??
                    (available.SubjectGenotypeSet = new SubjectGenotypeSetRepository(GetConnectionStringProvider(targetDatabase)));
+        }
+
+        public IDonorGenotypePrecomputationRepository GetDonorGenotypePrecomputationRepositoryForDatabase(TransientDatabase targetDatabase)
+        {
+            var available = cachedRepositories[targetDatabase];
+            return available.DonorGenotypePrecomputation ??
+                   (available.DonorGenotypePrecomputation = new DonorGenotypePrecomputationRepository(GetConnectionStringProvider(targetDatabase)));
         }
     }
 }

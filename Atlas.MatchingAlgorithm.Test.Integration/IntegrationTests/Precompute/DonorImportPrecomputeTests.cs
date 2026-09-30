@@ -208,6 +208,9 @@ public class DonorImportPrecomputeTests
 
         public IPGroupRepository GetPGroupRepositoryForDatabase(TransientDatabase targetDatabase) =>
             inner.GetPGroupRepositoryForDatabase(targetDatabase);
+
+        public IDonorGenotypePrecomputationRepository GetDonorGenotypePrecomputationRepositoryForDatabase(TransientDatabase targetDatabase) =>
+            inner.GetDonorGenotypePrecomputationRepositoryForDatabase(targetDatabase);
     }
 
     private sealed class FailingUpsertRepository(ISubjectGenotypeSetRepository inner, Func<bool> shouldFail) : ISubjectGenotypeSetRepository
