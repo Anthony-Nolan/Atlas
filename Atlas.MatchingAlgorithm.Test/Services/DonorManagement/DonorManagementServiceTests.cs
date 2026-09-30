@@ -15,6 +15,8 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using AutoMapper;
+using AwesomeAssertions;
+using NSubstitute.ExceptionExtensions;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -27,6 +29,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         private IDonorService donorService;
         private IDonorManagementService donorManagementService;
         private IMatchingAlgorithmImportLogger logger;
+        private IDonorGenotypeSetPrecomputer donorGenotypeSetPrecomputer;
 
         [SetUp]
         public void SetUp()
@@ -40,7 +43,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
             donorService = Substitute.For<IDonorService>();
             logger = Substitute.For<IMatchingAlgorithmImportLogger>();
             
-            donorManagementService = new DonorManagementService(repositoryFactory, donorService, logger);
+            donorGenotypeSetPrecomputer = Substitute.For<IDonorGenotypeSetPrecomputer>();
+
+            donorManagementService = new DonorManagementService(repositoryFactory, donorService, logger, donorGenotypeSetPrecomputer);
         }
 
         [Test]
@@ -533,5 +538,65 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     x.Single().UpdateSequenceNumber == sequenceNumber &&
                     x.Single().UpdateDateTime == updateDateTime));
         }
+
+        [Test]
+        public async Task ApplyDonorUpdatesToDatabase_PrecomputesProcessedDonorsInTargetDatabaseAtTargetVersion()
+        {
+            const int donorId = 321;
+            const TransientDatabase targetDatabase = TransientDatabase.DatabaseB;
+            const string hlaVersion = "3570";
+            var processedDonor = new DonorInfoWithExpandedHla { DonorId = donorId };
+            donorService.CreateOrUpdateDonorBatch(default, default, default, default).ReturnsForAnyArgs(new DonorInfo[] { processedDonor });
+
+            await donorManagementService.ApplyDonorUpdatesToDatabase(
+                new[] { AvailableUpdate(donorId) },
+                targetDatabase,
+                hlaVersion,
+                true);
+
+            await donorGenotypeSetPrecomputer.Received(1).PrecomputeBestEffort(
+                Arg.Is<IReadOnlyCollection<DonorInfo>>(x => x.Single() == processedDonor),
+                targetDatabase,
+                hlaVersion);
+        }
+
+        [Test]
+        public async Task ApplyDonorUpdatesToDatabase_PrecomputesAfterTheDonorTransactionHasEnded()
+        {
+            const int donorId = 322;
+            donorService.CreateOrUpdateDonorBatch(default, default, default, default)
+                .ReturnsForAnyArgs(new DonorInfo[] { new DonorInfoWithExpandedHla { DonorId = donorId } });
+
+            System.Transactions.Transaction transactionDuringDonorWrite = null;
+            logRepository.CreateOrUpdateDonorManagementLogBatch(default)
+                .ReturnsForAnyArgs(_ => { transactionDuringDonorWrite = System.Transactions.Transaction.Current; return Task.CompletedTask; });
+
+            var transactionDuringPrecompute = System.Transactions.Transaction.Current;
+            donorGenotypeSetPrecomputer.PrecomputeBestEffort(default, default, default)
+                .ReturnsForAnyArgs(_ => { transactionDuringPrecompute = System.Transactions.Transaction.Current; return Task.CompletedTask; });
+
+            await donorManagementService.ApplyDonorUpdatesToDatabase(new[] { AvailableUpdate(donorId) }, default, default, true);
+
+            transactionDuringDonorWrite.Should().NotBeNull();
+            transactionDuringPrecompute.Should().BeNull();
+        }
+
+        [Test]
+        public async Task ApplyDonorUpdatesToDatabase_WhenDonorWriteFails_DoesNotPrecompute()
+        {
+            donorService.CreateOrUpdateDonorBatch(default, default, default, default).ThrowsAsyncForAnyArgs(new Exception("write failed"));
+
+            var act = () => donorManagementService.ApplyDonorUpdatesToDatabase(new[] { AvailableUpdate(323) }, default, default, true);
+
+            await act.Should().ThrowAsync<Exception>();
+            await donorGenotypeSetPrecomputer.DidNotReceiveWithAnyArgs().PrecomputeBestEffort(default, default, default);
+        }
+
+        private static DonorAvailabilityUpdate AvailableUpdate(int donorId) => new()
+        {
+            DonorId = donorId,
+            DonorInfo = new DonorInfo { DonorId = donorId },
+            IsAvailableForSearch = true
+        };
     }
 }

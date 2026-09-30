@@ -72,7 +72,7 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
 
             var donorHlaExpander = donorHlaExpanderFactory.BuildForSpecifiedHlaNomenclatureVersion(hlaNomenclatureVersion);
             var expansionResult = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorInfos, ExpansionFailureEventName);
-            EnsureAllPGroupsExist(expansionResult.ProcessingResults, targetDatabase);
+            await EnsureAllPGroupsExist(expansionResult.ProcessingResults, targetDatabase);
 
             await CreateOrUpdateDonorsWithHla(expansionResult.ProcessingResults, targetDatabase, runAllHlaInsertionsInASingleTransactionScope);
             await SendFailedDonorsAlert(expansionResult.FailedDonors);
@@ -86,7 +86,7 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
         /// But it means that during tests the DonorUpdate code behaves more like
         /// "the real thing", since the PGroups have already been inserted into the DB.
         /// </remarks>
-        private void EnsureAllPGroupsExist(
+        private async Task EnsureAllPGroupsExist(
             IReadOnlyCollection<DonorInfoWithExpandedHla> donorsWithHlas,
             TransientDatabase targetDatabase)
         {
@@ -96,7 +96,9 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
                     d.MatchingHla?.ToEnumerable().SelectMany(hla => hla?.MatchingPGroups ?? new string[0]) ?? new List<string>()
                 ).ToList();
 
-            pGroupRepo.EnsureAllPGroupsExist(allPGroups);
+            // Awaited: left running, its connection would be open at the same time as the donor writes that follow, and
+            // inside a transaction scope that promotes the transaction to a distributed one, which fails.
+            await pGroupRepo.EnsureAllPGroupsExist(allPGroups);
         }
 
         private async Task CreateOrUpdateDonorsWithHla(IReadOnlyCollection<DonorInfoWithExpandedHla> donorsWithHla, TransientDatabase targetDatabase, bool runAllHlaInsertionsInASingleTransactionScope)
@@ -112,8 +114,25 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
             using (var transactionScope = new OptionalAsyncTransactionScope(runAllHlaInsertionsInASingleTransactionScope))
             {
                 await CreateDonorBatch(newDonors, targetDatabase, runAllHlaInsertionsInASingleTransactionScope);
+                await DeletePrecomputedGenotypeSets(updatedDonors, targetDatabase);
                 await UpdateDonorBatch(updatedDonors, targetDatabase, runAllHlaInsertionsInASingleTransactionScope);
                 transactionScope.Complete();
+            }
+        }
+
+        /// <summary>
+        /// An updated donor's precomputed genotype set rows are for its OLD typing and frequency set. They are deleted
+        /// in the same transaction as the new HLA, so the donor never has rows for HLA it no longer has. Rows for the
+        /// new HLA are written after the donor transaction commits, as best effort (<see cref="IDonorGenotypeSetPrecomputer"/>);
+        /// until then, or if that fails, search imputes the donor live. New donors have no rows to delete.
+        /// </summary>
+        private async Task DeletePrecomputedGenotypeSets(List<DonorInfoWithExpandedHla> updatedDonors, TransientDatabase targetDatabase)
+        {
+            if (updatedDonors.Any())
+            {
+                var subjectGenotypeSetRepository = repositoryFactory.GetSubjectGenotypeSetRepositoryForDatabase(targetDatabase);
+
+                await subjectGenotypeSetRepository.DeleteDonorAssignments(updatedDonors.Select(d => d.DonorId).ToList());
             }
         }
 

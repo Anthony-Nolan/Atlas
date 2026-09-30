@@ -47,11 +47,14 @@ using Atlas.MatchingAlgorithm.Services.Utility;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
+using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
+using GenotypeImputationSettings = Atlas.MatchPrediction.ExternalInterface.Settings.GenotypeImputationSettings;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Azure.Identity;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.FeatureManagement;
 using System;
@@ -326,6 +329,34 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         }
 
         /// <summary>
+        /// Makes the differential donor import precompute the genotype sets of the donors it writes (ATL-232). Call it
+        /// after <see cref="RegisterDonorManagement"/>: it replaces the no-op precomputer that method registers.
+        /// </summary>
+        /// <remarks>
+        /// Registers the Match Prediction genotype set pipeline, so the host needs its settings: the Match Prediction
+        /// SQL connection string (haplotype frequency sets), <see cref="GenotypeImputationSettings"/>, and
+        /// <c>IOptions&lt;HaplotypeFrequencySetCacheSettings&gt;</c>, which the host registers itself.
+        /// </remarks>
+        public static void RegisterDonorImportGenotypeSetPrecompute(
+            this IServiceCollection services,
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
+            Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
+            Func<IServiceProvider, GenotypeImputationSettings> fetchGenotypeImputationSettings,
+            Func<IServiceProvider, string> fetchMatchPredictionSqlConnectionString)
+        {
+            services.RegisterGenotypeSetPipeline(
+                fetchApplicationInsightsSettings,
+                fetchHlaMetadataDictionarySettings,
+                fetchMacDictionarySettings,
+                fetchGenotypeImputationSettings,
+                fetchMatchPredictionSqlConnectionString);
+
+            services.RegisterSubjectGenotypeSetPrecompute();
+            services.Replace(ServiceDescriptor.Scoped<IDonorGenotypeSetPrecomputer, DonorGenotypeSetPrecomputer>());
+        }
+
+        /// <summary>
         /// Register services only needed for ongoing donor management
         /// </summary>
         private static void RegisterDonorManagementServices(
@@ -338,6 +369,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.RegisterDonorImportServices(fetchDonorImportSqlConnectionString);
 
             services.AddScoped<IDonorManagementService, DonorManagementService>();
+            // Hosts that run the genotype set pipeline replace this with RegisterDonorImportGenotypeSetPrecompute.
+            services.TryAddScoped<IDonorGenotypeSetPrecomputer, NoOpDonorGenotypeSetPrecomputer>();
             services.AddScoped<ISearchableDonorUpdateConverter, SearchableDonorUpdateConverter>();
 
             services.RegisterServiceBusAsKeyedServices(

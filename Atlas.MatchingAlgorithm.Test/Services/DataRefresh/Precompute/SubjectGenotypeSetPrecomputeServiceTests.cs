@@ -7,6 +7,7 @@ using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Models.Precompute;
+using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Repositories.Precompute;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
@@ -31,6 +32,7 @@ public class SubjectGenotypeSetPrecomputeServiceTests
 {
     private const string HlaNomenclatureVersion = "3500";
     private const int FrequencySetId = 77;
+    private const TransientDatabase TargetDatabase = TransientDatabase.DatabaseB;
 
     /// <summary>Ids the substituted repository hands out, high enough not to be confused with a count or an index.</summary>
     private int nextValueId;
@@ -54,8 +56,8 @@ public class SubjectGenotypeSetPrecomputeServiceTests
         repository = Substitute.For<ISubjectGenotypeSetRepository>();
         genotypeSetService = Substitute.For<IGenotypeSetService>();
 
-        var repositoryFactory = Substitute.For<IDormantRepositoryFactory>();
-        repositoryFactory.GetSubjectGenotypeSetRepository().Returns(repository);
+        var repositoryFactory = Substitute.For<IStaticallyChosenDatabaseRepositoryFactory>();
+        repositoryFactory.GetSubjectGenotypeSetRepositoryForDatabase(TargetDatabase).Returns(repository);
 
         NothingIsStoredYet();
         EveryStoredValueGetsAnId();
@@ -67,7 +69,7 @@ public class SubjectGenotypeSetPrecomputeServiceTests
     [Test]
     public async Task Precompute_ComputesOneGenotypeSetPerAllowedLociCombination()
     {
-        await precomputeService.Precompute([NewSubject()], HlaNomenclatureVersion);
+        await precomputeService.Precompute([NewSubject()], HlaNomenclatureVersion, TargetDatabase);
 
         var requestedLoci = ComputedParameters().Select(parameters => parameters.AllowedLoci).ToList();
 
@@ -78,7 +80,7 @@ public class SubjectGenotypeSetPrecomputeServiceTests
     [Test]
     public async Task Precompute_PassesTheMatchingAlgorithmNomenclatureVersionToEveryComputation()
     {
-        await precomputeService.Precompute([NewSubject()], HlaNomenclatureVersion);
+        await precomputeService.Precompute([NewSubject()], HlaNomenclatureVersion, TargetDatabase);
 
         ComputedParameters().Should().AllSatisfy(parameters =>
             parameters.MatchingAlgorithmHlaNomenclatureVersion.Should().Be(HlaNomenclatureVersion));
@@ -89,7 +91,7 @@ public class SubjectGenotypeSetPrecomputeServiceTests
     {
         var subjects = new[] { NewSubject(donorId: 1), NewSubject(donorId: 2) };
 
-        await precomputeService.Precompute(subjects, HlaNomenclatureVersion);
+        await precomputeService.Precompute(subjects, HlaNomenclatureVersion, TargetDatabase);
 
         var assignments = WrittenAssignments();
 
@@ -106,7 +108,8 @@ public class SubjectGenotypeSetPrecomputeServiceTests
 
         await precomputeService.Precompute(
             [NewSubject(donorId: 1, typing: typing), NewSubject(donorId: 2, typing: typing)],
-            HlaNomenclatureVersion);
+            HlaNomenclatureVersion,
+            TargetDatabase);
 
         await genotypeSetService.Received(4).GetGenotypeSet(Arg.Any<SubjectData>(), Arg.Any<MatchPredictionParameters>());
     }
@@ -118,7 +121,8 @@ public class SubjectGenotypeSetPrecomputeServiceTests
 
         await precomputeService.Precompute(
             [NewSubject(donorId: 1, typing: typing), NewSubject(donorId: 2, typing: typing)],
-            HlaNomenclatureVersion);
+            HlaNomenclatureVersion,
+            TargetDatabase);
 
         var assignments = WrittenAssignments();
 
@@ -139,7 +143,8 @@ public class SubjectGenotypeSetPrecomputeServiceTests
 
         await precomputeService.Precompute(
             [NewSubject(donorId: 1), NewSubject(donorId: 2, typing: otherTyping)],
-            HlaNomenclatureVersion);
+            HlaNomenclatureVersion,
+            TargetDatabase);
 
         await genotypeSetService.Received(8).GetGenotypeSet(Arg.Any<SubjectData>(), Arg.Any<MatchPredictionParameters>());
     }
@@ -157,7 +162,7 @@ public class SubjectGenotypeSetPrecomputeServiceTests
             .WithDataAt(Locus.Dqb1, null, null)
             .Build();
 
-        await precomputeService.Precompute([NewSubject(fixture.Create<int>(), withEmpty)], HlaNomenclatureVersion);
+        await precomputeService.Precompute([NewSubject(fixture.Create<int>(), withEmpty)], HlaNomenclatureVersion, TargetDatabase);
 
         ImputedTypings().Should().HaveCount(4).And.AllSatisfy(imputed => imputed.Should().Be(withNull));
     }
@@ -173,7 +178,8 @@ public class SubjectGenotypeSetPrecomputeServiceTests
 
         await precomputeService.Precompute(
             [NewSubject(donorIds[0], withEmpty), NewSubject(donorIds[1], withNull)],
-            HlaNomenclatureVersion);
+            HlaNomenclatureVersion,
+            TargetDatabase);
 
         ImputedTypings().Should().HaveCount(4).And.AllSatisfy(imputed => imputed.Should().Be(withNull));
     }
@@ -183,7 +189,7 @@ public class SubjectGenotypeSetPrecomputeServiceTests
     {
         EverythingIsAlreadyStored();
 
-        await precomputeService.Precompute([NewSubject()], HlaNomenclatureVersion);
+        await precomputeService.Precompute([NewSubject()], HlaNomenclatureVersion, TargetDatabase);
 
         await genotypeSetService.DidNotReceiveWithAnyArgs().GetGenotypeSet(default, default);
         await repository.DidNotReceiveWithAnyArgs().GetOrCreateValueIds(default);
@@ -194,7 +200,7 @@ public class SubjectGenotypeSetPrecomputeServiceTests
     {
         var storedIds = EverythingIsAlreadyStored();
 
-        await precomputeService.Precompute([NewSubject()], HlaNomenclatureVersion);
+        await precomputeService.Precompute([NewSubject()], HlaNomenclatureVersion, TargetDatabase);
 
         WrittenAssignments().Select(assignment => assignment.SubjectGenotypeSetValueId)
             .Should().BeEquivalentTo(storedIds.Values);
@@ -205,7 +211,7 @@ public class SubjectGenotypeSetPrecomputeServiceTests
     {
         var subject = NewSubject();
 
-        await precomputeService.Precompute([subject], HlaNomenclatureVersion);
+        await precomputeService.Precompute([subject], HlaNomenclatureVersion, TargetDatabase);
 
         var keysById = createdIds.ToDictionary(created => created.Value, created => created.Key);
 
@@ -223,7 +229,7 @@ public class SubjectGenotypeSetPrecomputeServiceTests
         // A crash between the two leaves value rows no donor points at, which the next run finds and reuses. The other
         // order leaves donor rows pointing at ids that do not exist, and the transient databases hold no foreign keys
         // to catch that.
-        await precomputeService.Precompute([NewSubject()], HlaNomenclatureVersion);
+        await precomputeService.Precompute([NewSubject()], HlaNomenclatureVersion, TargetDatabase);
 
         Received.InOrder(() =>
         {
@@ -243,7 +249,7 @@ public class SubjectGenotypeSetPrecomputeServiceTests
             .When(r => r.GetOrCreateValueIds(Arg.Any<IReadOnlyCollection<SubjectGenotypeSetValueToStore>>()))
             .Do(_ => computationsAtEachStore.Add(genotypeSetService.ReceivedCalls().Count()));
 
-        await precomputeService.Precompute(subjects, HlaNomenclatureVersion);
+        await precomputeService.Precompute(subjects, HlaNomenclatureVersion, TargetDatabase);
 
         const int chunkSize = SubjectGenotypeSetPrecomputeService.ValueChunkSize;
         var valueCount = subjects.Count * AllowedLociKeyExtensions.All.Count;
@@ -254,7 +260,7 @@ public class SubjectGenotypeSetPrecomputeServiceTests
     [Test]
     public async Task Precompute_ForMoreValuesThanOneChunk_AssignsDonorsToTheIdsFromEveryChunk()
     {
-        await precomputeService.Precompute(SubjectsNeedingTwoChunks(), HlaNomenclatureVersion);
+        await precomputeService.Precompute(SubjectsNeedingTwoChunks(), HlaNomenclatureVersion, TargetDatabase);
 
         WrittenAssignments().Select(assignment => assignment.SubjectGenotypeSetValueId)
             .Should().BeEquivalentTo(createdIds.Values);
@@ -265,7 +271,7 @@ public class SubjectGenotypeSetPrecomputeServiceTests
     {
         genotypeSetService.GetGenotypeSet(default, default).ReturnsForAnyArgs(_ => new SubjectGenotypeSet(true, [], 0m));
 
-        await precomputeService.Precompute([NewSubject()], HlaNomenclatureVersion);
+        await precomputeService.Precompute([NewSubject()], HlaNomenclatureVersion, TargetDatabase);
 
         StoredValues().Should().AllSatisfy(value =>
         {
@@ -280,7 +286,7 @@ public class SubjectGenotypeSetPrecomputeServiceTests
         var computed = RepresentedSet();
         genotypeSetService.GetGenotypeSet(default, default).ReturnsForAnyArgs(_ => computed);
 
-        await precomputeService.Precompute([NewSubject()], HlaNomenclatureVersion);
+        await precomputeService.Precompute([NewSubject()], HlaNomenclatureVersion, TargetDatabase);
 
         StoredValues().Should().AllSatisfy(value =>
         {
@@ -295,7 +301,7 @@ public class SubjectGenotypeSetPrecomputeServiceTests
     [Test]
     public async Task Precompute_KeysEachCombinationAgainstTheDonorsFrequencySet()
     {
-        await precomputeService.Precompute([NewSubject()], HlaNomenclatureVersion);
+        await precomputeService.Precompute([NewSubject()], HlaNomenclatureVersion, TargetDatabase);
 
         StoredValues().Should().AllSatisfy(value => value.Key.HaplotypeFrequencySetId.Should().Be(FrequencySetId));
     }
@@ -312,7 +318,8 @@ public class SubjectGenotypeSetPrecomputeServiceTests
                 NewSubject(donorId: 1, typing: typing),
                 NewSubject(donorId: 2, typing: typing, frequencySetId: FrequencySetId + 1)
             ],
-            HlaNomenclatureVersion);
+            HlaNomenclatureVersion,
+            TargetDatabase);
 
         StoredValues().Should().HaveCount(8);
     }
@@ -320,7 +327,7 @@ public class SubjectGenotypeSetPrecomputeServiceTests
     [Test]
     public async Task Precompute_WithNoSubjects_TouchesNeitherTheDatabaseNorThePipeline()
     {
-        await precomputeService.Precompute([], HlaNomenclatureVersion);
+        await precomputeService.Precompute([], HlaNomenclatureVersion, TargetDatabase);
 
         await genotypeSetService.DidNotReceiveWithAnyArgs().GetGenotypeSet(default, default);
         await repository.DidNotReceiveWithAnyArgs().GetExistingValueIds(default);

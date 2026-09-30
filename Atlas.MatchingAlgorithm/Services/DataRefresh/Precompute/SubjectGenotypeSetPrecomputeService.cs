@@ -5,6 +5,7 @@ using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Models.Precompute;
+using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Repositories.Precompute;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
@@ -33,7 +34,18 @@ public interface ISubjectGenotypeSetPrecomputeService
     /// call covers 2,000 x 4 = 8,000 rows. That is also what makes de-duplication worth anything - two donors with the
     /// same typing only ever pay for one imputation.
     /// </remarks>
-    Task Precompute(IReadOnlyCollection<PrecomputeSubject> subjects, string matchingAlgorithmHlaNomenclatureVersion);
+    /// <param name="subjects">The donors to precompute.</param>
+    /// <param name="matchingAlgorithmHlaNomenclatureVersion">
+    /// The nomenclature version of <paramref name="targetDatabase"/>, which the P-group conversion runs at.
+    /// </param>
+    /// <param name="targetDatabase">
+    /// The transient database the rows are written to: the dormant one during a data refresh, and whichever one a
+    /// differential donor import writes its donors to.
+    /// </param>
+    Task Precompute(
+        IReadOnlyCollection<PrecomputeSubject> subjects,
+        string matchingAlgorithmHlaNomenclatureVersion,
+        TransientDatabase targetDatabase);
 }
 
 /// <summary>
@@ -65,22 +77,27 @@ public class SubjectGenotypeSetPrecomputeService : ISubjectGenotypeSetPrecompute
     /// </summary>
     internal const int ValueChunkSize = 1000;
 
-    private readonly ISubjectGenotypeSetRepository repository;
+    private readonly IStaticallyChosenDatabaseRepositoryFactory repositoryFactory;
     private readonly IGenotypeSetService genotypeSetService;
 
-    public SubjectGenotypeSetPrecomputeService(IDormantRepositoryFactory repositoryFactory, IGenotypeSetService genotypeSetService)
+    public SubjectGenotypeSetPrecomputeService(IStaticallyChosenDatabaseRepositoryFactory repositoryFactory, IGenotypeSetService genotypeSetService)
     {
-        repository = repositoryFactory.GetSubjectGenotypeSetRepository();
+        this.repositoryFactory = repositoryFactory;
         this.genotypeSetService = genotypeSetService;
     }
 
     /// <inheritdoc />
-    public async Task Precompute(IReadOnlyCollection<PrecomputeSubject> subjects, string matchingAlgorithmHlaNomenclatureVersion)
+    public async Task Precompute(
+        IReadOnlyCollection<PrecomputeSubject> subjects,
+        string matchingAlgorithmHlaNomenclatureVersion,
+        TransientDatabase targetDatabase)
     {
         if (subjects == null || subjects.Count == 0)
         {
             return;
         }
+
+        var repository = repositoryFactory.GetSubjectGenotypeSetRepositoryForDatabase(targetDatabase);
 
         var requests = subjects
             .Select(WithEmptyHlaNamesAsNull)
@@ -96,6 +113,7 @@ public class SubjectGenotypeSetPrecomputeService : ISubjectGenotypeSetPrecompute
         // donor points at, which the next run finds and reuses; the opposite order would leave donor rows pointing at
         // ids that do not exist, and there is no foreign key on the transient databases to catch that.
         var createdIds = await ComputeAndStore(
+            repository,
             requests.Where(request => !storedIds.ContainsKey(request.Key)).DistinctBy(request => request.Key).ToList(),
             matchingAlgorithmHlaNomenclatureVersion);
 
@@ -141,6 +159,7 @@ public class SubjectGenotypeSetPrecomputeService : ISubjectGenotypeSetPrecompute
     /// </para>
     /// </remarks>
     private async Task<IReadOnlyDictionary<SubjectGenotypeSetKey, int>> ComputeAndStore(
+        ISubjectGenotypeSetRepository repository,
         IReadOnlyCollection<PrecomputeRequest> requests,
         string matchingAlgorithmHlaNomenclatureVersion)
     {
