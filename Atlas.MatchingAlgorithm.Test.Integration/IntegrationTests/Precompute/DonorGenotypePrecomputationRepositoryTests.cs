@@ -491,9 +491,24 @@ public class DonorGenotypePrecomputationRepositoryTests
         await InsertBatch(run.Id, BatchStatus.Requested);
         await InsertBatch((await InsertRun()).Id);
 
-        var ids = await repository.GetPendingBatchIds(run.Id, afterBatchId: pendingBatches[0].Id, maxCount: 3);
+        var ids = await repository.GetPendingBatchIds(run.Id, PendingBatchSelection.All, afterBatchId: pendingBatches[0].Id, maxCount: 3);
 
         ids.Should().Equal(pendingBatches.Skip(1).Take(3).Select(batch => batch.Id));
+    }
+
+    [Test]
+    public async Task GetPendingBatchIds_ForTheRequeuedBatches_ReturnsOnlyThePendingBatchesThatHaveRetries()
+    {
+        // The requeue sweep sends only the batches that it sent back. The others are the stage's to send, and two senders
+        // of one batch would put two messages on the topic for it.
+        var run = await InsertRun();
+        await InsertBatch(run.Id);
+        var requeued = await InsertBatch(run.Id, BatchStatus.Pending, b => b.RetryCount = 1);
+        await InsertBatch(run.Id, BatchStatus.Requested, b => b.RetryCount = 1);
+
+        var ids = await repository.GetPendingBatchIds(run.Id, PendingBatchSelection.Requeued, afterBatchId: 0, maxCount: 10);
+
+        ids.Should().Equal(requeued.Id);
     }
 
     [Test]
@@ -664,12 +679,318 @@ public class DonorGenotypePrecomputationRepositoryTests
         abandoned.Should().BeFalse();
     }
 
+    [Test]
+    public async Task TryFinaliseRun_WhenEveryBatchHasResultsAndNoGroupFailed_CompletesTheRun()
+    {
+        var run = await InsertRun();
+        await InsertBatch(run.Id, BatchStatus.ResultsReceived);
+        await InsertBatch(run.Id, BatchStatus.ResultsReceived);
+
+        var status = await repository.TryFinaliseRun(run.Id);
+
+        status.Should().Be(RunStatus.Completed);
+        var stored = await StoredRun(run.Id);
+        stored.Status.Should().Be(RunStatus.Completed);
+        stored.CompletedUtc.Should().BeCloseTo(DateTime.UtcNow, ClockTolerance);
+    }
+
+    [TestCase(BatchStatus.PermanentlyFailed, 0)]
+    [TestCase(BatchStatus.ResultsReceived, 1)]
+    public async Task TryFinaliseRun_WhenABatchFailedOrHasFailedGroups_CompletesTheRunWithFailures(BatchStatus status, int failedGroupCount)
+    {
+        // The donors of a failed group have no rows, so a batch with failed groups is not a clean success.
+        var run = await InsertRun();
+        await InsertBatch(run.Id, BatchStatus.ResultsReceived);
+        await InsertBatch(run.Id, status, b => b.FailedGroupCount = failedGroupCount);
+
+        var finalStatus = await repository.TryFinaliseRun(run.Id);
+
+        finalStatus.Should().Be(RunStatus.CompletedWithFailures);
+        (await StoredRun(run.Id)).Status.Should().Be(RunStatus.CompletedWithFailures);
+    }
+
+    [TestCase(BatchStatus.Pending)]
+    [TestCase(BatchStatus.Requested)]
+    [TestCase(BatchStatus.InProgress)]
+    [TestCase(BatchStatus.Failed)]
+    [TestCase(BatchStatus.Abandoned)]
+    public async Task TryFinaliseRun_WhileABatchIsNotTerminal_ReturnsNullAndLeavesTheRun(BatchStatus status)
+    {
+        var run = await InsertRun();
+        await InsertBatch(run.Id, BatchStatus.ResultsReceived);
+        await InsertBatch(run.Id, status);
+
+        var finalStatus = await repository.TryFinaliseRun(run.Id);
+
+        finalStatus.Should().BeNull();
+        (await StoredRun(run.Id)).Status.Should().Be(RunStatus.Running);
+    }
+
+    [TestCase(RunStatus.Building)]
+    [TestCase(RunStatus.Completed)]
+    [TestCase(RunStatus.CompletedWithFailures)]
+    [TestCase(RunStatus.Cancelled)]
+    public async Task TryFinaliseRun_WhenTheRunIsNotRunning_ReturnsNullAndLeavesTheRun(RunStatus runStatus)
+    {
+        // A building run can have no batches yet, and a completed one must not complete twice.
+        var run = await InsertRun(runStatus);
+
+        var finalStatus = await repository.TryFinaliseRun(run.Id);
+
+        finalStatus.Should().BeNull();
+        (await StoredRun(run.Id)).Status.Should().Be(runStatus);
+    }
+
+    [Test]
+    public async Task TryFinaliseRun_ForARunWithNoBatches_CompletesTheRun()
+    {
+        // A refresh with no donors builds no batches. Its stage must still end.
+        var run = await InsertRun();
+
+        var status = await repository.TryFinaliseRun(run.Id);
+
+        status.Should().Be(RunStatus.Completed);
+    }
+
+    [Test]
+    public async Task GetBatchCounts_CountsTheBatchesPerStatus_AndTheFailedGroupsOfTheBatchesWithResults()
+    {
+        var run = await InsertRun();
+        await InsertBatch(run.Id, BatchStatus.ResultsReceived, b => b.FailedGroupCount = 2);
+        await InsertBatch(run.Id, BatchStatus.ResultsReceived, b => b.FailedGroupCount = 3);
+        await InsertBatch(run.Id, BatchStatus.Failed, b => b.FailedGroupCount = 7);
+        await InsertBatch(run.Id);
+        await InsertBatch((await InsertRun()).Id, BatchStatus.ResultsReceived, b => b.FailedGroupCount = 11);
+
+        var counts = await repository.GetBatchCounts(run.Id);
+
+        counts.BatchCountByStatus.Should().BeEquivalentTo(new Dictionary<BatchStatus, int>
+        {
+            [BatchStatus.ResultsReceived] = 2,
+            [BatchStatus.Failed] = 1,
+            [BatchStatus.Pending] = 1
+        });
+        counts.FailedGroupCount.Should().Be(5);
+        counts.TotalBatchCount.Should().Be(4);
+        counts.TerminalBatchCount.Should().Be(2);
+    }
+
+    [Test]
+    public async Task GetFailureSummary_CountsEveryDonorOfAPermanentlyFailedBatch_AndTheDonorsOfTheFailedGroupsOfTheOtherBatches()
+    {
+        // A batch that stopped part way can have values and no donor rows, so all donors of a permanently failed batch
+        // count, also the donors of its groups that have a value.
+        var run = await InsertRun();
+        await InsertBatchOverGroups(run.Id, BatchStatus.PermanentlyFailed, firstGroupId: 1, lastGroupId: 2);
+        var failedBatchDonorIds = (await InsertStoredGroupWithDonors(run.Id, 1, 2))
+            .Concat(await InsertFailedGroupWithDonors(run.Id, 2, 1))
+            .ToList();
+        await InsertBatchOverGroups(run.Id, BatchStatus.ResultsReceived, firstGroupId: 3, lastGroupId: 4, failedGroupCount: 1);
+        await InsertStoredGroupWithDonors(run.Id, 3, 1);
+        var failedGroupDonorIds = await InsertFailedGroupWithDonors(run.Id, 4, 2);
+        await InsertBatchOverGroups(run.Id, BatchStatus.ResultsReceived, firstGroupId: 5, lastGroupId: 5);
+        await InsertStoredGroupWithDonors(run.Id, 5, 1);
+
+        var summary = await repository.GetFailureSummary(run.Id);
+
+        summary.PermanentlyFailedBatchCount.Should().Be(1);
+        summary.FailedGroupCount.Should().Be(1);
+        summary.FailedDonorCount.Should().Be(failedBatchDonorIds.Count + failedGroupDonorIds.Count);
+        summary.TotalDonorCount.Should().Be(run.TotalDonorCount.Value);
+        summary.HasFailures.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task GetFailureSummary_CountsADonorOfTwoFailedGroupsOnce()
+    {
+        // A donor is in four groups, one per locus combination, and two of them can fail.
+        var run = await InsertRun();
+        var donorId = fixture.Create<int>();
+        await InsertBatchOverGroups(run.Id, BatchStatus.ResultsReceived, firstGroupId: 1, lastGroupId: 2, failedGroupCount: 2);
+        await InsertGroup(run.Id, 1, donorId, failureMessage: fixture.Create<string>());
+        await InsertGroup(run.Id, 2, donorId, failureMessage: fixture.Create<string>());
+        await InsertGroupDonors(1, [donorId]);
+        await InsertGroupDonors(2, [donorId]);
+
+        var summary = await repository.GetFailureSummary(run.Id);
+
+        summary.FailedGroupCount.Should().Be(2);
+        summary.FailedDonorCount.Should().Be(1);
+    }
+
+    [Test]
+    public async Task GetFailureSummary_ForARunWithNoFailure_ReportsNoFailure()
+    {
+        var run = await InsertRun();
+        await InsertBatchOverGroups(run.Id, BatchStatus.ResultsReceived, firstGroupId: 1, lastGroupId: 2);
+        await InsertStoredGroupWithDonors(run.Id, 1, 2);
+        await InsertStoredGroupWithDonors(run.Id, 2, 2);
+
+        var summary = await repository.GetFailureSummary(run.Id);
+
+        summary.Should().BeEquivalentTo(new DonorGenotypePrecomputationFailureSummary(0, 0, 0, run.TotalDonorCount.Value, []));
+        summary.HasFailures.Should().BeFalse();
+    }
+
+    [Test]
+    public async Task GetFailureSummary_GivesOneSamplePerDistinctMessage_TheBatchFailuresFirst_UpToTen()
+    {
+        var run = await InsertRun();
+        var repeatedMessage = fixture.Create<string>();
+        var firstFailedBatch = await InsertBatchOverGroups(run.Id, BatchStatus.PermanentlyFailed, 1, 1, failureMessage: repeatedMessage);
+        await InsertBatchOverGroups(run.Id, BatchStatus.PermanentlyFailed, 2, 2, failureMessage: repeatedMessage);
+        var otherFailedBatch = await InsertBatchOverGroups(run.Id, BatchStatus.PermanentlyFailed, 3, 3, failureMessage: fixture.Create<string>());
+        const int failedGroupCount = 12;
+        var batchWithResults = await InsertBatchOverGroups(run.Id, BatchStatus.ResultsReceived, 4, 3 + failedGroupCount, failedGroupCount);
+        var failedGroups = new List<DonorGenotypePrecomputationGroup>();
+        for (var groupId = 4; groupId <= 3 + failedGroupCount; groupId++)
+        {
+            failedGroups.Add(await InsertGroup(run.Id, groupId, fixture.Create<int>(), failureMessage: fixture.Create<string>()));
+        }
+
+        var summary = await repository.GetFailureSummary(run.Id);
+
+        summary.Samples.Should().Equal(
+            new[]
+                {
+                    new DonorGenotypePrecomputationFailureSample(firstFailedBatch.Id, null, repeatedMessage),
+                    new DonorGenotypePrecomputationFailureSample(otherFailedBatch.Id, null, otherFailedBatch.FailureMessage)
+                }
+                .Concat(failedGroups
+                    .Take(DonorGenotypePrecomputationRepository.MaxFailureSampleCount - 2)
+                    .Select(group => new DonorGenotypePrecomputationFailureSample(batchWithResults.Id, group.Id, group.FailureMessage))));
+    }
+
+    [Test]
+    public async Task GetFailureSummary_WhenTheRunDoesNotExist_ReturnsNull()
+    {
+        var summary = await repository.GetFailureSummary(fixture.Create<int>());
+
+        summary.Should().BeNull();
+    }
+
+    [Test]
+    public async Task ResetFailedBatchesForManualRetry_ResetsThePermanentlyFailedBatchesAndTheBatchesWithFailedGroups()
+    {
+        var run = await InsertRun(RunStatus.CompletedWithFailures);
+        var permanentlyFailed = await InsertBatch(run.Id, BatchStatus.PermanentlyFailed, b =>
+        {
+            b.RetryCount = MaxBatchRetries;
+            b.FailureMessage = fixture.Create<string>();
+            b.FailureException = fixture.Create<string>();
+            b.LeaseOwner = fixture.Create<Guid>();
+            b.LeaseExpiresUtc = DateTime.UtcNow;
+            b.CompletedUtc = DateTime.UtcNow;
+        });
+        var withFailedGroups = await InsertBatch(run.Id, BatchStatus.ResultsReceived, b =>
+        {
+            b.FailedGroupCount = fixture.Create<int>();
+            b.CompletedUtc = DateTime.UtcNow;
+        });
+        var clean = await InsertBatch(run.Id, BatchStatus.ResultsReceived, b => b.CompletedUtc = DateTime.UtcNow);
+
+        var resetCount = await repository.ResetFailedBatchesForManualRetry(run.Id);
+
+        resetCount.Should().Be(2);
+        foreach (var batch in new[] { permanentlyFailed, withFailedGroups })
+        {
+            var stored = await StoredBatch(batch.Id);
+            stored.Status.Should().Be(BatchStatus.Pending);
+            stored.RetryCount.Should().Be(0);
+            stored.FailureMessage.Should().BeNull();
+            stored.FailureException.Should().BeNull();
+            stored.FailedGroupCount.Should().Be(0);
+            stored.LeaseOwner.Should().BeNull();
+            stored.LeaseExpiresUtc.Should().BeNull();
+            stored.CompletedUtc.Should().BeNull();
+        }
+
+        (await StoredBatch(clean.Id)).Should().BeEquivalentTo(clean, options => options.Excluding(b => b.StatusDateUtc).Excluding(b => b.CompletedUtc));
+    }
+
+    [Test]
+    public async Task ResetFailedBatchesForManualRetry_MovesTheRunBackToRunning_AndCountsTheRetry()
+    {
+        var run = await InsertRun(RunStatus.CompletedWithFailures, customise: r => r.CompletedUtc = DateTime.UtcNow);
+        await InsertBatch(run.Id, BatchStatus.PermanentlyFailed);
+
+        await repository.ResetFailedBatchesForManualRetry(run.Id);
+
+        var stored = await StoredRun(run.Id);
+        stored.Status.Should().Be(RunStatus.Running);
+        stored.ManualRetryCount.Should().Be(run.ManualRetryCount + 1);
+        stored.CompletedUtc.Should().BeNull();
+    }
+
+    [Test]
+    public async Task ResetFailedBatchesForManualRetry_LeavesTheResetBatchesToTheStage_NotToTheRequeueSweep()
+    {
+        // The stage sends the reset batches when the refresh continues, after the database is scaled up again. A requeue
+        // sweep that sent them too would send them twice, and could send them to a database that is scaled down.
+        var run = await InsertRun(RunStatus.CompletedWithFailures);
+        var batch = await InsertBatch(run.Id, BatchStatus.PermanentlyFailed, b => b.RetryCount = MaxBatchRetries);
+
+        await repository.ResetFailedBatchesForManualRetry(run.Id);
+
+        (await repository.GetPendingBatchIds(run.Id, PendingBatchSelection.Requeued, 0, 10)).Should().BeEmpty();
+        (await repository.GetPendingBatchIds(run.Id, PendingBatchSelection.All, 0, 10)).Should().Equal(batch.Id);
+    }
+
+    [TestCase(RunStatus.Building)]
+    [TestCase(RunStatus.Running)]
+    [TestCase(RunStatus.Completed)]
+    [TestCase(RunStatus.Cancelled)]
+    public async Task ResetFailedBatchesForManualRetry_WhenTheRunIsNotCompletedWithFailures_ChangesNothing(RunStatus runStatus)
+    {
+        var run = await InsertRun(runStatus);
+        var batch = await InsertBatch(run.Id, BatchStatus.PermanentlyFailed);
+
+        var resetCount = await repository.ResetFailedBatchesForManualRetry(run.Id);
+
+        resetCount.Should().Be(0);
+        (await StoredRun(run.Id)).Status.Should().Be(runStatus);
+        (await StoredBatch(batch.Id)).Status.Should().Be(BatchStatus.PermanentlyFailed);
+    }
+
+    [Test]
+    public async Task ResetFailedBatchesForManualRetry_WhenNoBatchFailed_LeavesTheRunCompleted()
+    {
+        // A running run with nothing to send would wait for the finaliser to complete it again, for no gain.
+        var run = await InsertRun(RunStatus.CompletedWithFailures);
+        await InsertBatch(run.Id, BatchStatus.ResultsReceived);
+
+        var resetCount = await repository.ResetFailedBatchesForManualRetry(run.Id);
+
+        resetCount.Should().Be(0);
+        var stored = await StoredRun(run.Id);
+        stored.Status.Should().Be(RunStatus.CompletedWithFailures);
+        stored.ManualRetryCount.Should().Be(run.ManualRetryCount);
+    }
+
+    [Test]
+    public async Task TruncateStagingTables_RemovesTheGroupsAndTheirDonors_AndKeepsTheRunAndTheBatches()
+    {
+        var run = await InsertRun(RunStatus.Completed);
+        var batch = await InsertBatchOverGroups(run.Id, BatchStatus.ResultsReceived, firstGroupId: 1, lastGroupId: 2);
+        await InsertStoredGroupWithDonors(run.Id, 1, 2);
+        await InsertFailedGroupWithDonors(run.Id, 2, 2);
+
+        await repository.TruncateStagingTables();
+
+        await using var context = NewContext();
+        (await context.DonorGenotypePrecomputationGroups.AnyAsync()).Should().BeFalse();
+        (await context.DonorGenotypePrecomputationGroupDonors.AnyAsync()).Should().BeFalse();
+        (await context.DonorGenotypePrecomputationRuns.AnyAsync(r => r.Id == run.Id)).Should().BeTrue();
+        (await context.DonorGenotypePrecomputationBatches.AnyAsync(b => b.Id == batch.Id)).Should().BeTrue();
+    }
+
     private DonorGenotypePrecomputationBatchClaim NewClaim(DonorGenotypePrecomputationRun run, DonorGenotypePrecomputationBatch batch) =>
         new(run.DataRefreshRecordId, run.Id, batch.Id, fixture.Create<Guid>(), LeaseDuration, IsRedelivery: false);
 
     private async Task<DonorGenotypePrecomputationRun> InsertRun(
         RunStatus status = RunStatus.Running,
-        TransientDatabase database = TransientDatabase.DatabaseA)
+        TransientDatabase database = TransientDatabase.DatabaseA,
+        Action<DonorGenotypePrecomputationRun> customise = null)
     {
         var run = new DonorGenotypePrecomputationRun
         {
@@ -678,9 +999,12 @@ public class DonorGenotypePrecomputationRepositoryTests
             HlaNomenclatureVersion = fixture.Create<string>()[..8],
             Status = status,
             GroupsPerBatch = fixture.Create<int>(),
+            TotalDonorCount = fixture.Create<int>(),
+            ManualRetryCount = fixture.Create<int>(),
             CreatedUtc = DateTime.UtcNow,
             StatusDateUtc = DateTime.UtcNow
         };
+        customise?.Invoke(run);
 
         await Insert(run, database);
         return run;
@@ -697,6 +1021,23 @@ public class DonorGenotypePrecomputationRepositoryTests
         await Insert(batch);
         return batch;
     }
+
+    /// <summary>A batch whose range is the given groups, as the build cuts it.</summary>
+    private Task<DonorGenotypePrecomputationBatch> InsertBatchOverGroups(
+        int runId,
+        BatchStatus status,
+        int firstGroupId,
+        int lastGroupId,
+        int failedGroupCount = 0,
+        string failureMessage = null) =>
+        InsertBatch(runId, status, b =>
+        {
+            b.FirstGroupId = firstGroupId;
+            b.LastGroupId = lastGroupId;
+            b.GroupCount = lastGroupId - firstGroupId + 1;
+            b.FailedGroupCount = failedGroupCount;
+            b.FailureMessage = failureMessage;
+        });
 
     private async Task<IReadOnlyCollection<int>> InsertPendingBatches(int runId, int count)
     {
@@ -752,13 +1093,31 @@ public class DonorGenotypePrecomputationRepositoryTests
     private async Task<IReadOnlyCollection<int>> InsertGroupDonors(int groupId, int donorCount)
     {
         var donorIds = fixture.CreateMany<int>(donorCount).ToList();
+        await InsertGroupDonors(groupId, donorIds);
 
+        return donorIds;
+    }
+
+    private async Task InsertGroupDonors(int groupId, IReadOnlyCollection<int> donorIds)
+    {
         await using var context = NewContext();
         context.DonorGenotypePrecomputationGroupDonors.AddRange(
             donorIds.Select(donorId => new DonorGenotypePrecomputationGroupDonor { GroupId = groupId, DonorId = donorId }));
         await context.SaveChangesAsync();
+    }
 
-        return donorIds;
+    /// <summary>A group that has its value. Returns the ids of its donors.</summary>
+    private async Task<IReadOnlyCollection<int>> InsertStoredGroupWithDonors(int runId, int groupId, int donorCount)
+    {
+        await InsertGroup(runId, groupId, fixture.Create<int>(), subjectGenotypeSetValueId: fixture.Create<int>());
+        return await InsertGroupDonors(groupId, donorCount);
+    }
+
+    /// <summary>A group that failed. Returns the ids of its donors.</summary>
+    private async Task<IReadOnlyCollection<int>> InsertFailedGroupWithDonors(int runId, int groupId, int donorCount)
+    {
+        await InsertGroup(runId, groupId, fixture.Create<int>(), failureMessage: fixture.Create<string>());
+        return await InsertGroupDonors(groupId, donorCount);
     }
 
     private async Task<Donor> InsertDonor()
@@ -787,6 +1146,12 @@ public class DonorGenotypePrecomputationRepositoryTests
 
         await Insert(donor);
         return donor;
+    }
+
+    private async Task<DonorGenotypePrecomputationRun> StoredRun(int runId)
+    {
+        await using var context = NewContext();
+        return await context.DonorGenotypePrecomputationRuns.AsNoTracking().SingleAsync(run => run.Id == runId);
     }
 
     private async Task<DonorGenotypePrecomputationBatch> StoredBatch(int batchId)

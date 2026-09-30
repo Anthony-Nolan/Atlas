@@ -93,7 +93,7 @@ public interface IDonorGenotypePrecomputationRepository
     /// order, after <paramref name="afterBatchId"/>. The id bound lets a dispatch go through the batches a chunk at a time
     /// and finish, even when some of them stay pending.
     /// </summary>
-    Task<IReadOnlyList<int>> GetPendingBatchIds(int runId, int afterBatchId, int maxCount);
+    Task<IReadOnlyList<int>> GetPendingBatchIds(int runId, PendingBatchSelection selection, int afterBatchId, int maxCount);
 
     /// <summary>
     /// Moves the given batches from <see cref="DonorGenotypePrecomputationBatchStatus.Pending"/> to
@@ -129,6 +129,50 @@ public interface IDonorGenotypePrecomputationRepository
     /// </summary>
     /// <returns>False when the batch was not moved.</returns>
     Task<bool> TryMarkBatchAbandoned(int dataRefreshRecordId, int runId, int batchId, string reason);
+
+    /// <summary>
+    /// Moves a <see cref="DonorGenotypePrecomputationRunStatus.Running"/> run whose batches are all terminal to
+    /// <see cref="DonorGenotypePrecomputationRunStatus.Completed"/>, or to
+    /// <see cref="DonorGenotypePrecomputationRunStatus.CompletedWithFailures"/> when a batch failed permanently or a batch
+    /// has failed groups. It only sets the status: the workers have written every result already.
+    /// </summary>
+    /// <returns>The new status, or null when the run is not running, or a batch is not terminal yet.</returns>
+    Task<DonorGenotypePrecomputationRunStatus?> TryFinaliseRun(int runId);
+
+    /// <summary>The batches of the run per status, and the failed groups of the batches with results.</summary>
+    Task<DonorGenotypePrecomputationBatchCounts> GetBatchCounts(int runId);
+
+    /// <summary>What failed in the run, for the failure threshold and the alerts. Reads the staging tables.</summary>
+    /// <returns>Null when the run does not exist.</returns>
+    Task<DonorGenotypePrecomputationFailureSummary> GetFailureSummary(int runId);
+
+    /// <summary>
+    /// A manual retry: sends the failed work of a <see cref="DonorGenotypePrecomputationRunStatus.CompletedWithFailures"/>
+    /// run back to <see cref="DonorGenotypePrecomputationBatchStatus.Pending"/>, and moves the run back to
+    /// <see cref="DonorGenotypePrecomputationRunStatus.Running"/>, in one transaction.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// It resets every <see cref="DonorGenotypePrecomputationBatchStatus.PermanentlyFailed"/> batch, and every
+    /// <see cref="DonorGenotypePrecomputationBatchStatus.ResultsReceived"/> batch with failed groups, to a retry count of 0
+    /// and no failure. A batch that runs again computes only its groups with no value.
+    /// </para>
+    ///
+    /// <para>
+    /// <b>To <see cref="DonorGenotypePrecomputationBatchStatus.Pending"/>, not to
+    /// <see cref="DonorGenotypePrecomputationBatchStatus.Requested"/>.</b> Requested means that a message is out. The
+    /// stage sends the reset batches when it starts again, and the requeue sweep does not send them, because their retry
+    /// count is 0.
+    /// </para>
+    /// </remarks>
+    /// <returns>The number of batches reset. 0 when the run is not <see cref="DonorGenotypePrecomputationRunStatus.CompletedWithFailures"/>.</returns>
+    Task<int> ResetFailedBatchesForManualRetry(int runId);
+
+    /// <summary>
+    /// Removes every row of the group and group-donor staging tables. A database holds one run at a time, so this is the
+    /// staging data of that run. The run and batch rows stay.
+    /// </summary>
+    Task TruncateStagingTables();
 }
 
 /// <inheritdoc />
@@ -143,8 +187,17 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
 
     private const int CommandTimeoutInSeconds = 300;
 
+    /// <summary>
+    /// Long, because the failure summary can read most of the staging data: when most batches of a run failed, it counts
+    /// the distinct donors of most of the group-donor rows: four rows for each donor.
+    /// </summary>
+    private const int FailureSummaryCommandTimeoutInSeconds = 3600;
+
     /// <summary>The length of <c>FailureMessage</c> on the batch and group tables. A longer message fails the whole update.</summary>
     internal const int FailureMessageMaxLength = 512;
+
+    /// <summary>The failures in a failure summary: enough for an alert to show the causes.</summary>
+    internal const int MaxFailureSampleCount = 10;
 
     /// <summary>Ids per <c>IN</c> list: well below the 2,100 parameters that SQL Server allows in one command.</summary>
     internal const int MaxIdsPerStatement = 1000;
@@ -161,6 +214,8 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
                                              {nameof(Run.TotalGroupCount)},
                                              {nameof(Run.TotalBatchCount)},
                                              {nameof(Run.TotalDonorAssignmentCount)},
+                                             {nameof(Run.TotalDonorCount)},
+                                             {nameof(Run.ManualRetryCount)},
                                              {nameof(Run.CreatedUtc)},
                                              {nameof(Run.StatusDateUtc)},
                                              {nameof(Run.CompletedUtc)}
@@ -316,6 +371,7 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
                                                      WHERE {nameof(Batch.RunId)} = @RunId
                                                        AND {nameof(Batch.Status)} = '{nameof(BatchStatus.Pending)}'
                                                        AND {nameof(Batch.Id)} > @AfterBatchId
+                                                       AND (@RequeuedOnly = 0 OR {nameof(Batch.RetryCount)} > 0)
                                                      ORDER BY {nameof(Batch.Id)}
                                                      """;
 
@@ -395,6 +451,185 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
                                                     AND r.{nameof(Run.Status)} = '{nameof(RunStatus.Running)}'
                                                     AND b.{nameof(Batch.Status)} IN ('{nameof(BatchStatus.Pending)}', '{nameof(BatchStatus.Requested)}', '{nameof(BatchStatus.InProgress)}')
                                                   """;
+
+    /// <summary>
+    /// <para>
+    /// <b>Safe with no lock across calls.</b> A terminal batch does not move while its run is running: only the manual
+    /// reset moves it, and the reset needs a completed run. So when the check finds no batch left to finish, no batch can
+    /// start again before the update.
+    /// </para>
+    ///
+    /// <para>
+    /// A batch with failed groups makes the run <see cref="RunStatus.CompletedWithFailures"/>: the donors of those groups
+    /// have no rows.
+    /// </para>
+    /// </summary>
+    private const string FinaliseRunSql = $"""
+                                           UPDATE r
+                                           SET
+                                               r.{nameof(Run.Status)} = CASE
+                                                   WHEN EXISTS (
+                                                       SELECT 1 FROM {BatchesTableName} b
+                                                       WHERE b.{nameof(Batch.RunId)} = r.{nameof(Run.Id)}
+                                                         AND (b.{nameof(Batch.Status)} = '{nameof(BatchStatus.PermanentlyFailed)}'
+                                                              OR b.{nameof(Batch.FailedGroupCount)} > 0))
+                                                       THEN '{nameof(RunStatus.CompletedWithFailures)}'
+                                                   ELSE '{nameof(RunStatus.Completed)}'
+                                               END,
+                                               r.{nameof(Run.StatusDateUtc)} = SYSUTCDATETIME(),
+                                               r.{nameof(Run.CompletedUtc)} = SYSUTCDATETIME()
+                                           OUTPUT inserted.{nameof(Run.Status)}
+                                           FROM {RunsTableName} r
+                                           WHERE r.{nameof(Run.Id)} = @RunId
+                                             AND r.{nameof(Run.Status)} = '{nameof(RunStatus.Running)}'
+                                             AND NOT EXISTS (
+                                                 SELECT 1 FROM {BatchesTableName} b
+                                                 WHERE b.{nameof(Batch.RunId)} = r.{nameof(Run.Id)}
+                                                   AND b.{nameof(Batch.Status)} NOT IN (
+                                                       '{nameof(BatchStatus.ResultsReceived)}', '{nameof(BatchStatus.PermanentlyFailed)}'))
+                                           """;
+
+    private const string SelectBatchCountsSql = $"""
+                                                 SELECT
+                                                     {nameof(Batch.Status)},
+                                                     COUNT(*) AS {nameof(BatchCountRow.BatchCount)},
+                                                     SUM(CASE
+                                                         WHEN {nameof(Batch.Status)} = '{nameof(BatchStatus.ResultsReceived)}' THEN {nameof(Batch.FailedGroupCount)}
+                                                         ELSE 0
+                                                     END) AS {nameof(BatchCountRow.FailedGroupCount)}
+                                                 FROM {BatchesTableName}
+                                                 WHERE {nameof(Batch.RunId)} = @RunId
+                                                 GROUP BY {nameof(Batch.Status)}
+                                                 """;
+
+    private const string SelectRunDonorCountSql = $"""
+                                                   SELECT {nameof(Run.Id)}, {nameof(Run.TotalDonorCount)}
+                                                   FROM {RunsTableName}
+                                                   WHERE {nameof(Run.Id)} = @RunId
+                                                   """;
+
+    /// <summary>
+    /// The groups with no value in a batch with results. Only the batches with failed groups are read, and each of them
+    /// costs one range seek on the groups, so a run with few failures reads few groups.
+    /// </summary>
+    private const string FailedGroupsOfBatchesWithResultsSource = $"""
+                                                                   FROM {BatchesTableName} b
+                                                                   INNER JOIN {GroupsTableName} g
+                                                                       ON g.{nameof(Group.Id)} BETWEEN b.{nameof(Batch.FirstGroupId)} AND b.{nameof(Batch.LastGroupId)}
+                                                                   WHERE b.{nameof(Batch.RunId)} = @RunId
+                                                                     AND b.{nameof(Batch.Status)} = '{nameof(BatchStatus.ResultsReceived)}'
+                                                                     AND b.{nameof(Batch.FailedGroupCount)} > 0
+                                                                     AND g.{nameof(Group.RunId)} = @RunId
+                                                                     AND g.{nameof(Group.SubjectGenotypeSetValueId)} IS NULL
+                                                                   """;
+
+    /// <summary>
+    /// The donors are counted through the groups of the failed batches, not through their values or donor rows: a batch
+    /// that stopped part way can have stored values and written no donor rows.
+    /// </summary>
+    private const string SelectFailureCountsSql = $"""
+                                                   WITH FailedGroups AS (
+                                                       SELECT g.{nameof(Group.Id)} AS GroupId, b.{nameof(Batch.Status)} AS BatchStatus
+                                                       FROM {BatchesTableName} b
+                                                       INNER JOIN {GroupsTableName} g
+                                                           ON g.{nameof(Group.Id)} BETWEEN b.{nameof(Batch.FirstGroupId)} AND b.{nameof(Batch.LastGroupId)}
+                                                       WHERE b.{nameof(Batch.RunId)} = @RunId
+                                                         AND b.{nameof(Batch.Status)} = '{nameof(BatchStatus.PermanentlyFailed)}'
+                                                         AND g.{nameof(Group.RunId)} = @RunId
+                                                       UNION ALL
+                                                       SELECT g.{nameof(Group.Id)}, b.{nameof(Batch.Status)}
+                                                       {FailedGroupsOfBatchesWithResultsSource}
+                                                   )
+                                                   SELECT
+                                                       (SELECT COUNT(*)
+                                                        FROM {BatchesTableName}
+                                                        WHERE {nameof(Batch.RunId)} = @RunId
+                                                          AND {nameof(Batch.Status)} = '{nameof(BatchStatus.PermanentlyFailed)}')
+                                                           AS {nameof(FailureCountsRow.PermanentlyFailedBatchCount)},
+                                                       (SELECT COUNT(*)
+                                                        FROM FailedGroups
+                                                        WHERE BatchStatus = '{nameof(BatchStatus.ResultsReceived)}')
+                                                           AS {nameof(FailureCountsRow.FailedGroupCount)},
+                                                       (SELECT COUNT(DISTINCT gd.{nameof(GroupDonor.DonorId)})
+                                                        FROM FailedGroups fg
+                                                        INNER JOIN {GroupDonorsTableName} gd ON gd.{nameof(GroupDonor.GroupId)} = fg.GroupId)
+                                                           AS {nameof(FailureCountsRow.FailedDonorCount)}
+                                                   """;
+
+    /// <summary>
+    /// The first failure of each distinct message: one cause that failed many batches, such as a database outage, then
+    /// takes one sample, and the other samples show other causes.
+    /// </summary>
+    private const string SelectFailureSamplesSql = $"""
+                                                    SELECT TOP (@MaxSampleCount)
+                                                        numbered.{nameof(FailureSampleRow.BatchId)},
+                                                        numbered.{nameof(FailureSampleRow.GroupId)},
+                                                        numbered.{nameof(FailureSampleRow.FailureMessage)}
+                                                    FROM (
+                                                        SELECT
+                                                            failures.*,
+                                                            ROW_NUMBER() OVER (
+                                                                PARTITION BY failures.{nameof(FailureSampleRow.FailureMessage)}
+                                                                ORDER BY failures.IsGroupFailure, failures.{nameof(FailureSampleRow.BatchId)}, failures.{nameof(FailureSampleRow.GroupId)}
+                                                            ) AS Occurrence
+                                                        FROM (
+                                                            SELECT
+                                                                b.{nameof(Batch.Id)} AS {nameof(FailureSampleRow.BatchId)},
+                                                                CAST(NULL AS int) AS {nameof(FailureSampleRow.GroupId)},
+                                                                b.{nameof(Batch.FailureMessage)} AS {nameof(FailureSampleRow.FailureMessage)},
+                                                                0 AS IsGroupFailure
+                                                            FROM {BatchesTableName} b
+                                                            WHERE b.{nameof(Batch.RunId)} = @RunId
+                                                              AND b.{nameof(Batch.Status)} = '{nameof(BatchStatus.PermanentlyFailed)}'
+                                                            UNION ALL
+                                                            SELECT b.{nameof(Batch.Id)}, g.{nameof(Group.Id)}, g.{nameof(Group.FailureMessage)}, 1
+                                                            {FailedGroupsOfBatchesWithResultsSource}
+                                                        ) failures
+                                                    ) numbered
+                                                    WHERE numbered.Occurrence = 1
+                                                    ORDER BY numbered.IsGroupFailure, numbered.{nameof(FailureSampleRow.BatchId)}, numbered.{nameof(FailureSampleRow.GroupId)}
+                                                    """;
+
+    private const string ResetRunForManualRetrySql = $"""
+                                                      UPDATE {RunsTableName}
+                                                      SET
+                                                          {nameof(Run.Status)} = '{nameof(RunStatus.Running)}',
+                                                          {nameof(Run.ManualRetryCount)} = {nameof(Run.ManualRetryCount)} + 1,
+                                                          {nameof(Run.StatusDateUtc)} = SYSUTCDATETIME(),
+                                                          {nameof(Run.CompletedUtc)} = NULL
+                                                      WHERE {nameof(Run.Id)} = @RunId
+                                                        AND {nameof(Run.Status)} = '{nameof(RunStatus.CompletedWithFailures)}'
+                                                      """;
+
+    /// <summary>
+    /// The same batches that made the run <see cref="RunStatus.CompletedWithFailures"/> (see <see cref="FinaliseRunSql"/>).
+    /// </summary>
+    private const string ResetFailedBatchesSql = $"""
+                                                  UPDATE {BatchesTableName}
+                                                  SET
+                                                      {nameof(Batch.Status)} = '{nameof(BatchStatus.Pending)}',
+                                                      {nameof(Batch.RetryCount)} = 0,
+                                                      {nameof(Batch.FailureMessage)} = NULL,
+                                                      {nameof(Batch.FailureException)} = NULL,
+                                                      {nameof(Batch.FailedGroupCount)} = 0,
+                                                      {nameof(Batch.LeaseOwner)} = NULL,
+                                                      {nameof(Batch.LeaseExpiresUtc)} = NULL,
+                                                      {nameof(Batch.StatusDateUtc)} = SYSUTCDATETIME(),
+                                                      {nameof(Batch.CompletedUtc)} = NULL
+                                                  WHERE {nameof(Batch.RunId)} = @RunId
+                                                    AND (
+                                                        {nameof(Batch.Status)} = '{nameof(BatchStatus.PermanentlyFailed)}'
+                                                        OR ({nameof(Batch.Status)} = '{nameof(BatchStatus.ResultsReceived)}' AND {nameof(Batch.FailedGroupCount)} > 0))
+                                                  """;
+
+    /// <summary>
+    /// <c>TRUNCATE</c> is not allowed on a table that a foreign key points at. No foreign key points at either table: keep
+    /// it so.
+    /// </summary>
+    private const string TruncateStagingTablesSql = $"""
+                                                     TRUNCATE TABLE {GroupDonorsTableName};
+                                                     TRUNCATE TABLE {GroupsTableName};
+                                                     """;
 
     public DonorGenotypePrecomputationRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
     {
@@ -517,12 +752,18 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<int>> GetPendingBatchIds(int runId, int afterBatchId, int maxCount)
+    public async Task<IReadOnlyList<int>> GetPendingBatchIds(int runId, PendingBatchSelection selection, int afterBatchId, int maxCount)
     {
         await using var connection = await OpenConnection();
         var ids = await connection.QueryAsync<int>(
             SelectPendingBatchIdsSql,
-            new { RunId = runId, AfterBatchId = afterBatchId, MaxCount = maxCount },
+            new
+            {
+                RunId = runId,
+                RequeuedOnly = selection == PendingBatchSelection.Requeued,
+                AfterBatchId = afterBatchId,
+                MaxCount = maxCount
+            },
             commandTimeout: CommandTimeoutInSeconds
         );
 
@@ -581,6 +822,102 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
         );
 
         return rowsUpdated == 1;
+    }
+
+    /// <inheritdoc />
+    public async Task<RunStatus?> TryFinaliseRun(int runId)
+    {
+        await using var connection = await OpenConnection();
+        var status = await connection.QuerySingleOrDefaultAsync<string>(
+            FinaliseRunSql,
+            new { RunId = runId },
+            commandTimeout: CommandTimeoutInSeconds
+        );
+
+        return status == null ? null : Enum.Parse<RunStatus>(status);
+    }
+
+    /// <inheritdoc />
+    public async Task<DonorGenotypePrecomputationBatchCounts> GetBatchCounts(int runId)
+    {
+        await using var connection = await OpenConnection();
+        var rows = (await connection.QueryAsync<BatchCountRow>(
+            SelectBatchCountsSql,
+            new { RunId = runId },
+            commandTimeout: CommandTimeoutInSeconds
+        )).ToList();
+
+        return new DonorGenotypePrecomputationBatchCounts(
+            rows.ToDictionary(row => Enum.Parse<BatchStatus>(row.Status), row => row.BatchCount),
+            rows.Sum(row => row.FailedGroupCount)
+        );
+    }
+
+    /// <inheritdoc />
+    public async Task<DonorGenotypePrecomputationFailureSummary> GetFailureSummary(int runId)
+    {
+        var parameters = new { RunId = runId, MaxSampleCount = MaxFailureSampleCount };
+
+        await using var connection = await OpenConnection();
+        var run = await connection.QuerySingleOrDefaultAsync<RunDonorCountRow>(
+            SelectRunDonorCountSql,
+            parameters,
+            commandTimeout: CommandTimeoutInSeconds
+        );
+        if (run == null)
+        {
+            return null;
+        }
+
+        var counts = await connection.QuerySingleAsync<FailureCountsRow>(
+            SelectFailureCountsSql,
+            parameters,
+            commandTimeout: FailureSummaryCommandTimeoutInSeconds
+        );
+        var samples = await connection.QueryAsync<FailureSampleRow>(
+            SelectFailureSamplesSql,
+            parameters,
+            commandTimeout: FailureSummaryCommandTimeoutInSeconds
+        );
+
+        return new DonorGenotypePrecomputationFailureSummary(
+            counts.PermanentlyFailedBatchCount,
+            counts.FailedGroupCount,
+            counts.FailedDonorCount,
+            run.TotalDonorCount ?? 0,
+            [.. samples.Select(sample => sample.ToModel())]
+        );
+    }
+
+    /// <inheritdoc />
+    public async Task<int> ResetFailedBatchesForManualRetry(int runId)
+    {
+        await using var connection = await OpenConnection();
+        await using var transaction = await connection.BeginTransactionAsync();
+
+        var runsReset = await connection.ExecuteAsync(ResetRunForManualRetrySql, new { RunId = runId }, transaction, CommandTimeoutInSeconds);
+        if (runsReset == 0)
+        {
+            return 0;
+        }
+
+        var batchesReset = await connection.ExecuteAsync(ResetFailedBatchesSql, new { RunId = runId }, transaction, CommandTimeoutInSeconds);
+
+        // A run with nothing to retry stays as it was: the dispose rolls back its move to running.
+        if (batchesReset == 0)
+        {
+            return 0;
+        }
+
+        await transaction.CommitAsync();
+        return batchesReset;
+    }
+
+    /// <inheritdoc />
+    public async Task TruncateStagingTables()
+    {
+        await using var connection = await OpenConnection();
+        await connection.ExecuteAsync(TruncateStagingTablesSql, commandTimeout: CommandTimeoutInSeconds);
     }
 
     internal static string TruncateFailureMessage(string message) =>
@@ -653,6 +990,10 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
 
         public int? TotalDonorAssignmentCount { get; init; }
 
+        public int? TotalDonorCount { get; init; }
+
+        public int ManualRetryCount { get; init; }
+
         public DateTime CreatedUtc { get; init; }
 
         public DateTime StatusDateUtc { get; init; }
@@ -669,6 +1010,8 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
             TotalGroupCount = TotalGroupCount,
             TotalBatchCount = TotalBatchCount,
             TotalDonorAssignmentCount = TotalDonorAssignmentCount,
+            TotalDonorCount = TotalDonorCount,
+            ManualRetryCount = ManualRetryCount,
             CreatedUtc = CreatedUtc,
             StatusDateUtc = StatusDateUtc,
             CompletedUtc = CompletedUtc
@@ -760,5 +1103,41 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
             RetryCount,
             FailureMessage
         );
+    }
+
+    private sealed class BatchCountRow
+    {
+        public string Status { get; init; }
+
+        public int BatchCount { get; init; }
+
+        public int FailedGroupCount { get; init; }
+    }
+
+    private sealed class RunDonorCountRow
+    {
+        public int Id { get; init; }
+
+        public int? TotalDonorCount { get; init; }
+    }
+
+    private sealed class FailureCountsRow
+    {
+        public int PermanentlyFailedBatchCount { get; init; }
+
+        public int FailedGroupCount { get; init; }
+
+        public int FailedDonorCount { get; init; }
+    }
+
+    private sealed class FailureSampleRow
+    {
+        public int BatchId { get; init; }
+
+        public int? GroupId { get; init; }
+
+        public string FailureMessage { get; init; }
+
+        public DonorGenotypePrecomputationFailureSample ToModel() => new(BatchId, GroupId, FailureMessage);
     }
 }

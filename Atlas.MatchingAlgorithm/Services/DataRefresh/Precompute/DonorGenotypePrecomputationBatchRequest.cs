@@ -11,7 +11,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 /// </para>
 ///
 /// <para>
-/// <b>No database.</b> The database is on the refresh record that the message names.
+/// <b>No database.</b> The database is on the refresh record. The dead-letter trigger reads it from the record that the
+/// message names.
 /// </para>
 ///
 /// <para>

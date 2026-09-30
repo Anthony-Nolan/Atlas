@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 
@@ -67,3 +69,69 @@ public sealed record SweptDonorGenotypePrecomputationBatch(
     DonorGenotypePrecomputationBatchStatus PreviousStatus,
     int RetryCount,
     string FailureMessage);
+
+/// <summary>
+/// Which <see cref="DonorGenotypePrecomputationBatchStatus.Pending"/> batches a dispatch sends. Two senders share the
+/// pending batches, and they must not send the same ones.
+/// </summary>
+public enum PendingBatchSelection
+{
+    /// <summary>
+    /// Every pending batch: the first dispatch of the stage, and a stage that starts again, also after a manual retry.
+    /// </summary>
+    All,
+
+    /// <summary>Only the batches that a sweep sent back after a failure or an abandonment: a retry count above 0.</summary>
+    Requeued
+}
+
+/// <summary>The batches of a run per status.</summary>
+/// <param name="FailedGroupCount">
+/// The failed groups of the <see cref="DonorGenotypePrecomputationBatchStatus.ResultsReceived"/> batches. Their donors
+/// have no rows.
+/// </param>
+public sealed record DonorGenotypePrecomputationBatchCounts(
+    IReadOnlyDictionary<DonorGenotypePrecomputationBatchStatus, int> BatchCountByStatus,
+    int FailedGroupCount)
+{
+    public int TotalBatchCount => BatchCountByStatus.Values.Sum();
+
+    /// <summary>The batches that are done, with results or not.</summary>
+    public int TerminalBatchCount =>
+        CountOf(DonorGenotypePrecomputationBatchStatus.ResultsReceived) + CountOf(DonorGenotypePrecomputationBatchStatus.PermanentlyFailed);
+
+    public int CountOf(DonorGenotypePrecomputationBatchStatus status) => BatchCountByStatus.GetValueOrDefault(status);
+}
+
+/// <summary>
+/// What failed in a run: the input of the failure threshold of the stage, and of its alerts.
+/// </summary>
+/// <param name="PermanentlyFailedBatchCount">The batches that gave up.</param>
+/// <param name="FailedGroupCount">
+/// The groups with no value in the <see cref="DonorGenotypePrecomputationBatchStatus.ResultsReceived"/> batches: a known
+/// permanent error, such as a bad typing, fails its group and not its batch. The groups of the permanently failed batches
+/// are not in this count.
+/// </param>
+/// <param name="FailedDonorCount">
+/// The donors that have no row for at least one <see cref="AllowedLociKey"/>: every donor of a permanently failed batch,
+/// and every donor of a failed group. Each donor counts once. A batch that stopped part way can have values but no donor
+/// rows, so a permanently failed batch counts all its donors.
+/// </param>
+/// <param name="TotalDonorCount">The donors of the run.</param>
+/// <param name="Samples">Up to ten failures, one per distinct message: the failures of whole batches first.</param>
+public sealed record DonorGenotypePrecomputationFailureSummary(
+    int PermanentlyFailedBatchCount,
+    int FailedGroupCount,
+    int FailedDonorCount,
+    int TotalDonorCount,
+    IReadOnlyList<DonorGenotypePrecomputationFailureSample> Samples)
+{
+    public bool HasFailures => PermanentlyFailedBatchCount > 0 || FailedGroupCount > 0;
+
+    /// <summary>0 for a run with no donors.</summary>
+    public double FailedDonorFraction => TotalDonorCount == 0 ? 0 : (double)FailedDonorCount / TotalDonorCount;
+}
+
+/// <summary>One failure of a run.</summary>
+/// <param name="GroupId">Null when the whole batch failed.</param>
+public sealed record DonorGenotypePrecomputationFailureSample(int BatchId, int? GroupId, string FailureMessage);
