@@ -102,11 +102,17 @@
     <Project Path="Atlas.MatchingAlgorithm.Functions/Atlas.MatchingAlgorithm.Functions.csproj">
       <BuildType Solution="Development|*" Project="Debug" />
     </Project>
+    <Project Path="Atlas.MatchingAlgorithm.PrecomputeWorker/Atlas.MatchingAlgorithm.PrecomputeWorker.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
     <Project Path="Atlas.MatchingAlgorithm/Atlas.MatchingAlgorithm.csproj">
       <BuildType Solution="Development|*" Project="Debug" />
     </Project>
   </Folder>
   <Folder Name="/MatchingAlgorithm/MatchingAlgorithm.Tests/">
+    <Project Path="Atlas.MatchingAlgorithm.PrecomputeWorker.Test/Atlas.MatchingAlgorithm.PrecomputeWorker.Test.csproj">
+      <BuildType Solution="Development|*" Project="Debug" />
+    </Project>
     <Project Path="Atlas.MatchingAlgorithm.Test.Integration/Atlas.MatchingAlgorithm.Test.Integration.csproj">
       <BuildType Solution="Development|*" Project="Debug" />
     </Project>

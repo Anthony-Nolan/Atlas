@@ -13,7 +13,6 @@ using Atlas.MatchingAlgorithm.Settings;
 using Azure.Messaging.ServiceBus;
 using EnumStringValues;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 
@@ -115,7 +114,7 @@ internal class DonorGenotypePrecomputationSweeper : IDonorGenotypePrecomputation
     /// <inheritdoc />
     public async Task AbandonDeadLetteredBatch(ServiceBusReceivedMessage message)
     {
-        var request = ReadBody(message);
+        var request = DonorGenotypePrecomputationBatchRequest.FromBody(message.Body?.ToString());
         if (request == null)
         {
             // Nothing can be done with the message, so it is completed. Its batch stays requested with no message, and
@@ -279,23 +278,6 @@ internal class DonorGenotypePrecomputationSweeper : IDonorGenotypePrecomputation
         }
 
         return settings.MaxBatchRetries;
-    }
-
-    /// <summary>The request that the body of the message holds. Null when the body is not JSON of a request, or names no batch.</summary>
-    private static DonorGenotypePrecomputationBatchRequest ReadBody(ServiceBusReceivedMessage message)
-    {
-        DonorGenotypePrecomputationBatchRequest request;
-        try
-        {
-            request = JsonConvert.DeserializeObject<DonorGenotypePrecomputationBatchRequest>(message.Body.ToString());
-        }
-        catch (JsonException)
-        {
-            return null;
-        }
-
-        // A body with no ids reads as zeros, and no batch has them.
-        return request is { DataRefreshRecordId: > 0, RunId: > 0, BatchId: > 0 } ? request : null;
     }
 
     private static string DescribeBatches(
