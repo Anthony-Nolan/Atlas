@@ -80,6 +80,7 @@ namespace Atlas.Functions.Services
 
                 resultSet.TotalResults = matchingAlgorithmResultSet.TotalResults;
                 resultSet.MatchingAlgorithmHlaNomenclatureVersion = matchingAlgorithmResultSet.MatchingAlgorithmHlaNomenclatureVersion;
+                resultSet.MatchingAlgorithmDataRefreshRecordId = matchingAlgorithmResultSet.MatchingAlgorithmDataRefreshRecordId;
                 resultSet.SearchRequestId = matchingAlgorithmResultSet.SearchRequestId;
                 resultSet.BlobStorageContainerName = resultsContainer;
                 resultSet.MatchingAlgorithmTime = matchingTime;

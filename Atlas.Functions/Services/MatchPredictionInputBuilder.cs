@@ -65,6 +65,7 @@ namespace Atlas.Functions.Services
             {
                 SearchRequestId = resultSet.SearchRequestId,
                 MatchingAlgorithmHlaNomenclatureVersion = resultSet.MatchingAlgorithmHlaNomenclatureVersion,
+                MatchingAlgorithmDataRefreshRecordId = resultSet.MatchingAlgorithmDataRefreshRecordId,
                 ExcludedLoci = ExcludedLoci(resultSet.SearchRequest.MatchCriteria),
                 PatientHla = resultSet.SearchRequest.SearchHlaData.ToPhenotypeInfo().ToPhenotypeInfoTransfer(),
                 PatientFrequencySetMetadata = new FrequencySetMetadata

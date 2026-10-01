@@ -569,6 +569,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<ActiveTransientSqlConnectionStringProvider>();
             services.AddScoped<DormantTransientSqlConnectionStringProvider>();
             services.AddScoped<StaticallyChosenTransientSqlConnectionStringProviderFactory>();
+            services.AddScoped<IActiveDataRefreshRecordAccessor, ActiveDataRefreshRecordAccessor>();
             services.AddScoped<IActiveDatabaseProvider, ActiveDatabaseProvider>();
 
             services.RegisterCommonGeneticServices();

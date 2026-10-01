@@ -15,6 +15,9 @@ This package contains all client models utilised by the Atlas Public API to requ
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### 4.1.0
+* `ResultSet` model has been extended with a new optional property, `MatchingAlgorithmDataRefreshRecordId`. It identifies the matching algorithm data refresh record (and so the transient donor database) that matching ran against. It is `null` for result sets created before this version.
+
 ### 3.0.0
 * Updated .NET version from 6.0 to 8.0
 

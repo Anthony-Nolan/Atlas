@@ -94,6 +94,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IDpb1TceGroupMatchCalculator, Dpb1TceGroupMatchCalculator>();
 
             services.RegisterCommonGeneticServices();
+            services.AddScoped<IActiveDataRefreshRecordAccessor, ActiveDataRefreshRecordAccessor>();
             services.AddScoped<IActiveHlaNomenclatureVersionAccessor, ActiveHlaNomenclatureVersionAccessor>();
             services.RegisterHlaMetadataDictionary(
                 fetchHlaMetadataDictionarySettings, fetchApplicationInsightsSettings, fetchMacDictionarySettings);

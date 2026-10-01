@@ -1,8 +1,5 @@
 using System;
-using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
-using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
-using LazyCache;
 
 namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders
 {
@@ -28,31 +25,32 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders
 
     public class ActiveHlaNomenclatureVersionAccessor : IActiveHlaNomenclatureVersionAccessor
     {
-        private readonly IDataRefreshHistoryRepository dataRefreshHistoryRepository;
-        private readonly IAppCache cache;
+        private readonly IActiveDataRefreshRecordAccessor activeDataRefreshRecordAccessor;
 
-        private const string ActiveVersionCacheKey = "activeWmdaVersion";
+        private const string ActiveVersionKey = "activeWmdaVersion";
 
-        public ActiveHlaNomenclatureVersionAccessor(
-            IDataRefreshHistoryRepository dataRefreshHistoryRepository,
-            ITransientCacheProvider cacheProvider)
+        public ActiveHlaNomenclatureVersionAccessor(IActiveDataRefreshRecordAccessor activeDataRefreshRecordAccessor)
         {
-            this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
-            cache = cacheProvider.Cache;
+            this.activeDataRefreshRecordAccessor = activeDataRefreshRecordAccessor;
         }
 
         public bool DoesActiveHlaNomenclatureVersionExist()
         {
-            var version = cache.GetOrAdd(ActiveVersionCacheKey, () => dataRefreshHistoryRepository.GetActiveHlaNomenclatureVersion());
-            return IsDefined(version);
+            return IsDefined(GetVersion());
         }
 
         public string GetActiveHlaNomenclatureVersion()
         {
-            var version = cache.GetOrAdd(ActiveVersionCacheKey, () => dataRefreshHistoryRepository.GetActiveHlaNomenclatureVersion());
-            ThrowIfNull(version, ActiveVersionCacheKey);
+            var version = GetVersion();
+            ThrowIfNull(version, ActiveVersionKey);
             return version;
         }
+
+        /// <remarks>
+        /// Read from the same cached record as <see cref="TransientSqlDatabase.ActiveDatabaseProvider"/>, so the version
+        /// always belongs to the active database.
+        /// </remarks>
+        private string GetVersion() => activeDataRefreshRecordAccessor.GetActiveRecord()?.HlaNomenclatureVersion;
 
         private void ThrowIfNull(string wmdaDatabaseVersion, string key)
         {
