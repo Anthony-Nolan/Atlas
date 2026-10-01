@@ -118,6 +118,22 @@ variable "MAINTENANCE_GCCOLLECT_CRON_SCHEDULE" {
   type = string
 }
 
+variable "MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES" {
+  type = number
+}
+
+variable "MATCH_PREDICTION_MAX_CACHED_FREQUENCY_SETS" {
+  type = number
+}
+
+variable "MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT" {
+  type = number
+}
+
+variable "MATCH_PREDICTION_SET_CACHE_EXPIRY_MINUTES" {
+  type = number
+}
+
 variable "MATCHING_BATCH_SIZE" {
   type = number
 }
