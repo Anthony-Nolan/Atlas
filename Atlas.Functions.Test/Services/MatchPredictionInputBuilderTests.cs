@@ -76,6 +76,21 @@ internal class MatchPredictionInputBuilderTests
             .BatchDonorInputs(Arg.Any<IdentifiedMatchProbabilityRequest>(), Arg.Any<IEnumerable<DonorInput>>(), ConfiguredBatchSize);
     }
 
+    [TestCase(42)]
+    [TestCase(null)]
+    public void BuildMatchPredictionInputs_CopiesDataRefreshRecordIdFromResultSet(int? dataRefreshRecordId)
+    {
+        var resultSet = BuildResultSet();
+        resultSet.MatchingAlgorithmDataRefreshRecordId = dataRefreshRecordId;
+
+        builder.BuildMatchPredictionInputs(resultSet);
+
+        donorInputBatcher.Received(1).BatchDonorInputs(
+            Arg.Is<IdentifiedMatchProbabilityRequest>(r => r.MatchingAlgorithmDataRefreshRecordId == dataRefreshRecordId),
+            Arg.Any<IEnumerable<DonorInput>>(),
+            Arg.Any<int>());
+    }
+
     private OriginalMatchingAlgorithmResultSet BuildResultSet() =>
         new()
         {

@@ -34,9 +34,15 @@ internal class DonorInputBatcherTests
             .WithExcludedLoci(Locus.A)
             .WithSearchRequestId("request-id")
             .Build();
+        requestInput.MatchingAlgorithmHlaNomenclatureVersion = "3330";
+        requestInput.MatchingAlgorithmDataRefreshRecordId = 42;
 
         var batchedInput = donorInputBatcher.BatchDonorInputs(requestInput, new List<DonorInput> {DonorInputBuilder.Default.Build()}).Single();
 
+        batchedInput.MatchingAlgorithmHlaNomenclatureVersion.Should().Be(requestInput.MatchingAlgorithmHlaNomenclatureVersion);
+        batchedInput.MatchingAlgorithmDataRefreshRecordId.Should().Be(requestInput.MatchingAlgorithmDataRefreshRecordId);
+        batchedInput.SingleDonorMatchProbabilityInputs.Single().MatchingAlgorithmDataRefreshRecordId
+            .Should().Be(requestInput.MatchingAlgorithmDataRefreshRecordId);
         batchedInput.ExcludedLoci.Should().BeEquivalentTo(requestInput.ExcludedLoci);
         batchedInput.PatientHla.Should().BeEquivalentTo(requestInput.PatientHla);
         batchedInput.PatientFrequencySetMetadata.Should().BeEquivalentTo(requestInput.PatientFrequencySetMetadata);

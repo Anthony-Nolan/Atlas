@@ -17,6 +17,12 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         /// <returns>The HLA nomenclature version used in the most recently completed refresh job</returns>
         string GetActiveHlaNomenclatureVersion();
 
+        /// <returns>
+        /// The id, database and HLA nomenclature version of the most recently completed refresh job, all read from the
+        /// same record; or null if no refresh job has completed yet.
+        /// </returns>
+        ActiveDataRefreshRecord GetActiveRecord();
+
         IEnumerable<DataRefreshRecord> GetIncompleteRefreshJobs();
         Task<int> Create(DataRefreshRecord dataRefreshRecord);
 
@@ -92,6 +98,18 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         {
             var lastCompletedRecord = GetLastSuccessfulRecord();
             return lastCompletedRecord?.HlaNomenclatureVersion;
+        }
+
+        public ActiveDataRefreshRecord GetActiveRecord()
+        {
+            var lastCompletedRecord = GetLastSuccessfulRecord();
+
+            return lastCompletedRecord == null
+                ? null
+                : new ActiveDataRefreshRecord(
+                    lastCompletedRecord.Id,
+                    lastCompletedRecord.Database.ParseToEnum<TransientDatabase>(),
+                    lastCompletedRecord.HlaNomenclatureVersion);
         }
 
         public IEnumerable<DataRefreshRecord> GetIncompleteRefreshJobs()

@@ -14,6 +14,14 @@ namespace Atlas.Client.Models.Search.Results.ResultSet
         public abstract bool IsRepeatSearchSet { get; }
 
         public string MatchingAlgorithmHlaNomenclatureVersion { get; set; }
+
+        /// <summary>
+        /// The ID of the matching algorithm data refresh record that identifies the transient donor database that matching
+        /// ran against. It comes from the same record as <see cref="MatchingAlgorithmHlaNomenclatureVersion"/>.
+        /// Match prediction uses it to read only from the database that matching used.
+        /// Will be `null` for result sets created before this property was added, or if no data refresh has completed.
+        /// </summary>
+        public int? MatchingAlgorithmDataRefreshRecordId { get; set; }
         public string BlobStorageContainerName { get; set; }
         public abstract string ResultsFileName { get; }
 

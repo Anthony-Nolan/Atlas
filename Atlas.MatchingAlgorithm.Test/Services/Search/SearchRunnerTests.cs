@@ -13,6 +13,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search;
@@ -38,6 +39,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         private ISearchService batchedResultsSearchService;
         private ISearchResultsBlobStorageClient resultsBlobStorageClient;
         private IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
+        private IActiveDataRefreshRecordAccessor activeDataRefreshRecordAccessor;
         private IMatchingFailureNotificationSender matchingFailureNotificationSender;
         private ISearchTrackingEventPublisher searchTrackingEventPublisher;
 
@@ -51,6 +53,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             searchService = Substitute.For<ISearchService>();
             resultsBlobStorageClient = Substitute.For<ISearchResultsBlobStorageClient>();
             hlaNomenclatureVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
+            activeDataRefreshRecordAccessor = Substitute.For<IActiveDataRefreshRecordAccessor>();
             var logger = Substitute.For<IMatchingAlgorithmSearchLogger>();
             matchingFailureNotificationSender = Substitute.For<IMatchingFailureNotificationSender>();
             searchTrackingEventPublisher = Substitute.For<ISearchTrackingEventPublisher>();
@@ -66,6 +69,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
                 logger,
                 new MatchingAlgorithmSearchLoggingContext(),
                 hlaNomenclatureVersionAccessor,
+                activeDataRefreshRecordAccessor,
                 new MessagingServiceBusSettings { SearchRequestsMaxDeliveryCount = MaxRetryCount },
                 matchingFailureNotificationSender,
                 new Settings.Azure.AzureStorageSettings(),
@@ -79,6 +83,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
                 logger,
                 new MatchingAlgorithmSearchLoggingContext(),
                 hlaNomenclatureVersionAccessor,
+                activeDataRefreshRecordAccessor,
                 new MessagingServiceBusSettings { SearchRequestsMaxDeliveryCount = MaxRetryCount },
                 matchingFailureNotificationSender,
                 new Settings.Azure.AzureStorageSettings { SearchResultsBatchSize = 1 },
@@ -141,6 +146,36 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             await searchServiceBusClient.Received().PublishToResultsNotificationTopic(Arg.Is<MatchingResultsNotification>(r =>
                 r.MatchingAlgorithmHlaNomenclatureVersion == hlaNomenclatureVersion
             ));
+        }
+
+        [Test]
+        public async Task RunSearch_StoresActiveDataRefreshRecordIdInResultSet()
+        {
+            const string id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
+            const int dataRefreshRecordId = 42;
+            activeDataRefreshRecordAccessor.GetActiveRecord()
+                .Returns(new ActiveDataRefreshRecord(dataRefreshRecordId, TransientDatabase.DatabaseB, "hla-nomenclature-version"));
+
+            await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest }, default, default);
+
+            await resultsBlobStorageClient.Received().UploadResults(
+                Arg.Is<ResultSet<MatchingAlgorithmResult>>(r => r.MatchingAlgorithmDataRefreshRecordId == dataRefreshRecordId),
+                Arg.Any<int>(),
+                id);
+        }
+
+        [Test]
+        public async Task RunSearch_WhenNoDataRefreshHasCompleted_StoresNullDataRefreshRecordIdInResultSet()
+        {
+            const string id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
+            activeDataRefreshRecordAccessor.GetActiveRecord().Returns((ActiveDataRefreshRecord)null);
+
+            await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest }, default, default);
+
+            await resultsBlobStorageClient.Received().UploadResults(
+                Arg.Is<ResultSet<MatchingAlgorithmResult>>(r => r.MatchingAlgorithmDataRefreshRecordId == null),
+                Arg.Any<int>(),
+                id);
         }
 
         [Test]
