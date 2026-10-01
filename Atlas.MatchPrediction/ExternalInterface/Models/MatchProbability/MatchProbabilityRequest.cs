@@ -87,6 +87,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         {
             MatchProbabilityRequestId = initial.MatchProbabilityRequestId;
             SearchRequestId = initial.SearchRequestId;
+            MatchingAlgorithmDataRefreshRecordId = initial.MatchingAlgorithmDataRefreshRecordId;
         }
 
         protected IdentifiedMatchProbabilityRequest(MatchProbabilityRequestBase initialWithoutIds) : base(initialWithoutIds)
@@ -102,6 +103,13 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         /// Search ID is used to identify uploaded results of the Match Prediction Algorithm
         /// </summary>
         public string SearchRequestId { get; set; }
+
+        /// <summary>
+        /// The ID of the matching algorithm data refresh record whose transient donor database the donors were matched against.
+        /// Comes from the same record as <see cref="MatchProbabilityRequestBase.MatchingAlgorithmHlaNomenclatureVersion"/>.
+        /// Only set for search; `null` when the search was matched before this value was recorded.
+        /// </summary>
+        public int? MatchingAlgorithmDataRefreshRecordId { get; set; }
     }
 
     /// <summary>
@@ -117,7 +125,6 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         protected MatchProbabilityRequestBase(MatchProbabilityRequestBase initial)
         {
             MatchingAlgorithmHlaNomenclatureVersion = initial.MatchingAlgorithmHlaNomenclatureVersion;
-            MatchingAlgorithmDataRefreshRecordId = initial.MatchingAlgorithmDataRefreshRecordId;
             ExcludedLoci = initial.ExcludedLoci;
             PatientHla = initial.PatientHla;
             PatientFrequencySetMetadata = initial.PatientFrequencySetMetadata;
@@ -127,13 +134,6 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         /// <inheritdoc cref="MatchPredictionParameters.MatchingAlgorithmHlaNomenclatureVersion"/>
         /// </summary>
         public string MatchingAlgorithmHlaNomenclatureVersion { get; set; }
-
-        /// <summary>
-        /// The ID of the matching algorithm data refresh record whose transient donor database the donors were matched against.
-        /// Comes from the same record as <see cref="MatchingAlgorithmHlaNomenclatureVersion"/>.
-        /// `null` when the request did not come from a search, or the search was matched before this value was recorded.
-        /// </summary>
-        public int? MatchingAlgorithmDataRefreshRecordId { get; set; }
 
         /// <summary>
         /// Match prediction will be run on all loci by default.
