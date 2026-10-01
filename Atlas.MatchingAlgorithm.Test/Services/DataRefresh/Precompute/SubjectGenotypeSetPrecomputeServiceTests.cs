@@ -1,9 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
-using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Models.Precompute;
@@ -12,9 +12,6 @@ using Atlas.MatchingAlgorithm.Data.Repositories.Precompute;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
-using Atlas.MatchPrediction.Models;
-using Atlas.MatchPrediction.Services.MatchProbability;
-using Atlas.MatchPrediction.Services.Precompute;
 using AutoFixture;
 using AwesomeAssertions;
 using NSubstitute;
@@ -23,26 +20,26 @@ using NUnit.Framework;
 namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Precompute;
 
 /// <summary>
-/// The orchestrator's own behaviour, with both the database and the imputation pipeline substituted. What is proved
-/// here is the sharing - one imputation per distinct key, the same stored id handed to every donor that shares it -
-/// which is the whole reason the two tables are shaped as they are.
+/// The donor layer, with the value service and the database substituted. The values themselves - one computation per
+/// key, the chunks, the stored payloads - are proved in <see cref="SubjectGenotypeSetValueServiceTests"/>.
 /// </summary>
 [TestFixture]
 public class SubjectGenotypeSetPrecomputeServiceTests
 {
-    private const string HlaNomenclatureVersion = "3500";
-    private const int FrequencySetId = 77;
-    private const TransientDatabase TargetDatabase = TransientDatabase.DatabaseB;
-
-    /// <summary>Ids the substituted repository hands out, high enough not to be confused with a count or an index.</summary>
+    private Fixture fixture;
+    private string hlaNomenclatureVersion;
+    private TransientDatabase database;
     private int nextValueId;
 
-    /// <summary>Every id <see cref="ISubjectGenotypeSetRepository.GetOrCreateValueIds"/> handed back, by key.</summary>
-    private Dictionary<SubjectGenotypeSetKey, int> createdIds;
+    /// <summary>Each request that the substituted value service gave an id, with the id, in the order of the requests.</summary>
+    private List<(SubjectGenotypeSetValueRequest Request, int ValueId)> givenIds;
 
-    private Fixture fixture;
+    /// <summary>The values that the substituted value service fails: by the frequency set of their donor, and their combination.</summary>
+    private Dictionary<(HaplotypeFrequencySet, AllowedLociKey), Exception> failures;
+
+    private ISubjectGenotypeSetValueService valueService;
     private ISubjectGenotypeSetRepository repository;
-    private IGenotypeSetService genotypeSetService;
+    private IStaticallyChosenDatabaseRepositoryFactory repositoryFactory;
 
     private ISubjectGenotypeSetPrecomputeService precomputeService;
 
@@ -50,397 +47,194 @@ public class SubjectGenotypeSetPrecomputeServiceTests
     public void SetUp()
     {
         fixture = new Fixture();
-        nextValueId = 1000;
-        createdIds = new Dictionary<SubjectGenotypeSetKey, int>();
+        hlaNomenclatureVersion = fixture.Create<string>();
+        database = fixture.Create<TransientDatabase>();
+        nextValueId = fixture.Create<int>();
+        givenIds = [];
+        failures = new Dictionary<(HaplotypeFrequencySet, AllowedLociKey), Exception>();
+
+        valueService = Substitute.For<ISubjectGenotypeSetValueService>();
+        // The requests are null only when a test sets up the substitute again: that call is not a request.
+        valueService.GetOrComputeValueIds(default, default, default).ReturnsForAnyArgs(callInfo => new SubjectGenotypeSetValueResults(
+            callInfo.Arg<IReadOnlyList<SubjectGenotypeSetValueRequest>>()?.Select(OutcomeOf).ToList() ?? [],
+            null));
 
         repository = Substitute.For<ISubjectGenotypeSetRepository>();
-        genotypeSetService = Substitute.For<IGenotypeSetService>();
+        repositoryFactory = Substitute.For<IStaticallyChosenDatabaseRepositoryFactory>();
+        repositoryFactory.GetSubjectGenotypeSetRepositoryForDatabase(database).Returns(repository);
 
-        var repositoryFactory = Substitute.For<IStaticallyChosenDatabaseRepositoryFactory>();
-        repositoryFactory.GetSubjectGenotypeSetRepositoryForDatabase(TargetDatabase).Returns(repository);
-
-        NothingIsStoredYet();
-        EveryStoredValueGetsAnId();
-        genotypeSetService.GetGenotypeSet(default, default).ReturnsForAnyArgs(_ => RepresentedSet());
-
-        precomputeService = new SubjectGenotypeSetPrecomputeService(repositoryFactory, genotypeSetService);
+        precomputeService = new SubjectGenotypeSetPrecomputeService(valueService, repositoryFactory);
     }
 
     [Test]
-    public async Task Precompute_ComputesOneGenotypeSetPerAllowedLociCombination()
+    public async Task Precompute_RequestsTheValuesOfEachDonorAtAllFourCombinations()
     {
-        await precomputeService.Precompute([NewSubject()], HlaNomenclatureVersion, TargetDatabase);
+        var subjects = NewSubjects(2);
 
-        var requestedLoci = ComputedParameters().Select(parameters => parameters.AllowedLoci).ToList();
+        await precomputeService.Precompute(subjects, hlaNomenclatureVersion, database);
 
-        requestedLoci.Should().HaveCount(4);
-        requestedLoci.Should().BeEquivalentTo(AllowedLociKeyExtensions.All.Select(key => key.ToLoci()));
-    }
-
-    [Test]
-    public async Task Precompute_PassesTheMatchingAlgorithmNomenclatureVersionToEveryComputation()
-    {
-        await precomputeService.Precompute([NewSubject()], HlaNomenclatureVersion, TargetDatabase);
-
-        ComputedParameters().Should().AllSatisfy(parameters =>
-            parameters.MatchingAlgorithmHlaNomenclatureVersion.Should().Be(HlaNomenclatureVersion));
-    }
-
-    [Test]
-    public async Task Precompute_WritesOneAssignmentPerDonorPerCombination()
-    {
-        var subjects = new[] { NewSubject(donorId: 1), NewSubject(donorId: 2) };
-
-        await precomputeService.Precompute(subjects, HlaNomenclatureVersion, TargetDatabase);
-
-        var assignments = WrittenAssignments();
-
-        assignments.Should().HaveCount(8);
-        assignments.Select(assignment => (assignment.DonorId, assignment.AllowedLociKey)).Should().OnlyHaveUniqueItems();
-    }
-
-    [Test]
-    public async Task Precompute_ForTwoDonorsSharingATyping_ComputesOncePerCombination()
-    {
-        // The "within a batch" half of the de-duplication guarantee, with no database in play: the second donor must
-        // not pay for an imputation the first donor's key has already bought.
-        var typing = TypedAtEveryLocus();
-
-        await precomputeService.Precompute(
-            [NewSubject(donorId: 1, typing: typing), NewSubject(donorId: 2, typing: typing)],
-            HlaNomenclatureVersion,
-            TargetDatabase);
-
-        await genotypeSetService.Received(4).GetGenotypeSet(Arg.Any<SubjectData>(), Arg.Any<MatchPredictionParameters>());
-    }
-
-    [Test]
-    public async Task Precompute_ForTwoDonorsSharingATyping_AssignsBothToTheSameStoredValue()
-    {
-        var typing = TypedAtEveryLocus();
-
-        await precomputeService.Precompute(
-            [NewSubject(donorId: 1, typing: typing), NewSubject(donorId: 2, typing: typing)],
-            HlaNomenclatureVersion,
-            TargetDatabase);
-
-        var assignments = WrittenAssignments();
-
-        foreach (var allowedLociKey in AllowedLociKeyExtensions.All)
+        var requests = RequestedValues();
+        requests.Should().HaveCount(subjects.Count * AllowedLociKeyExtensions.All.Count);
+        foreach (var subject in subjects)
         {
-            var idsForCombination = assignments
-                .Where(assignment => assignment.AllowedLociKey == allowedLociKey)
-                .Select(assignment => assignment.SubjectGenotypeSetValueId);
-
-            idsForCombination.Distinct().Should().ContainSingle($"both donors share their {allowedLociKey} payload");
+            var requestsOfDonor = requests.Where(request => request.FrequencySet == subject.FrequencySet).ToList();
+            requestsOfDonor.Select(request => request.AllowedLociKey).Should().BeEquivalentTo(AllowedLociKeyExtensions.All);
+            requestsOfDonor.Should().OnlyContain(request => request.HlaTyping == subject.HlaTyping);
         }
     }
 
     [Test]
-    public async Task Precompute_ForTwoDonorsWithDifferentTypings_ComputesForBoth()
+    public async Task Precompute_GivesTheVersionAndTheDatabaseToTheValueService()
     {
-        var otherTyping = new PhenotypeInfoBuilder<string>(TypedAtEveryLocus()).WithDataAt(Locus.A, "other-1", "other-2").Build();
+        await precomputeService.Precompute(NewSubjects(1), hlaNomenclatureVersion, database);
 
-        await precomputeService.Precompute(
-            [NewSubject(donorId: 1), NewSubject(donorId: 2, typing: otherTyping)],
-            HlaNomenclatureVersion,
-            TargetDatabase);
-
-        await genotypeSetService.Received(8).GetGenotypeSet(Arg.Any<SubjectData>(), Arg.Any<MatchPredictionParameters>());
+        await valueService.Received(1).GetOrComputeValueIds(
+            Arg.Any<IReadOnlyList<SubjectGenotypeSetValueRequest>>(),
+            hlaNomenclatureVersion,
+            database);
     }
 
     [Test]
-    public async Task Precompute_ForAnEmptyHlaName_ImputesItAsNull()
+    public async Task Precompute_GivesEachDonorTheIdsOfItsOwnFourValues()
     {
-        // The HLA Metadata Dictionary throws for an empty name, so no empty name may reach the imputation.
-        var withEmpty = new PhenotypeInfoBuilder<string>(TypedAtEveryLocus())
-            .WithDataAt(Locus.C, string.Empty, string.Empty)
-            .WithDataAt(Locus.Dqb1, string.Empty, string.Empty)
-            .Build();
-        var withNull = new PhenotypeInfoBuilder<string>(TypedAtEveryLocus())
-            .WithDataAt(Locus.C, null, null)
-            .WithDataAt(Locus.Dqb1, null, null)
-            .Build();
+        var subjects = NewSubjects(3);
 
-        await precomputeService.Precompute([NewSubject(fixture.Create<int>(), withEmpty)], HlaNomenclatureVersion, TargetDatabase);
+        await precomputeService.Precompute(subjects, hlaNomenclatureVersion, database);
 
-        ImputedTypings().Should().HaveCount(4).And.AllSatisfy(imputed => imputed.Should().Be(withNull));
+        var expected = givenIds.Select(given => new DonorSubjectGenotypeSetAssignment(
+            DonorOf(given.Request, subjects).DonorId,
+            given.Request.AllowedLociKey,
+            given.ValueId));
+        WrittenAssignments().Should().BeEquivalentTo(expected);
     }
 
     [Test]
-    public async Task Precompute_ForTwoDonorsDifferingOnlyByEmptyOrNull_ComputesOncePerCombination()
+    public async Task Precompute_WhenOneValueOfADonorFails_WritesTheRowsOfTheOtherDonorsOnly()
     {
-        // The two donors share every key. The donor with the empty name comes first, so without the change to null its
-        // typing would be the one imputed - and the HLA Metadata Dictionary throws for it.
-        var donorIds = fixture.CreateMany<int>(2).ToList();
-        var withEmpty = new PhenotypeInfoBuilder<string>(TypedAtEveryLocus()).WithDataAt(Locus.C, string.Empty, string.Empty).Build();
-        var withNull = new PhenotypeInfoBuilder<string>(TypedAtEveryLocus()).WithDataAt(Locus.C, null, null).Build();
+        // Three of the four values of the donor have ids, but a donor gets all four rows or none.
+        var subjects = NewSubjects(3);
+        FailTheValue(subjects[1], fixture.Create<AllowedLociKey>(), new InvalidOperationException(fixture.Create<string>()));
 
-        await precomputeService.Precompute(
-            [NewSubject(donorIds[0], withEmpty), NewSubject(donorIds[1], withNull)],
-            HlaNomenclatureVersion,
-            TargetDatabase);
+        var act = () => precomputeService.Precompute(subjects, hlaNomenclatureVersion, database);
 
-        ImputedTypings().Should().HaveCount(4).And.AllSatisfy(imputed => imputed.Should().Be(withNull));
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        WrittenAssignments().Select(assignment => assignment.DonorId).Distinct()
+            .Should().BeEquivalentTo(new[] { subjects[0].DonorId, subjects[2].DonorId });
+        WrittenAssignments().Should().HaveCount(2 * AllowedLociKeyExtensions.All.Count);
     }
 
     [Test]
-    public async Task Precompute_ForAKeyAlreadyStored_DoesNotComputeItAgain()
+    public async Task Precompute_WhenValuesFail_ThrowsTheErrorOfTheFirstValueThatFailed()
     {
-        EverythingIsAlreadyStored();
+        // The caller logs this error, so it must be the real one.
+        var subjects = NewSubjects(3);
+        var firstFailure = new InvalidOperationException(fixture.Create<string>());
+        FailTheValue(subjects[1], fixture.Create<AllowedLociKey>(), firstFailure);
+        FailTheValue(subjects[2], fixture.Create<AllowedLociKey>(), new ArgumentException(fixture.Create<string>()));
 
-        await precomputeService.Precompute([NewSubject()], HlaNomenclatureVersion, TargetDatabase);
+        var act = () => precomputeService.Precompute(subjects, hlaNomenclatureVersion, database);
 
-        await genotypeSetService.DidNotReceiveWithAnyArgs().GetGenotypeSet(default, default);
-        await repository.DidNotReceiveWithAnyArgs().GetOrCreateValueIds(default);
+        (await act.Should().ThrowAsync<InvalidOperationException>()).Which.Should().BeSameAs(firstFailure);
     }
 
     [Test]
-    public async Task Precompute_ForAKeyAlreadyStored_AssignsTheDonorToTheStoredValue()
+    public async Task Precompute_WhenTheComputationsStopped_WritesTheRowsOfTheDonorsBeforeTheStop_AndThrowsTheErrorThatStoppedThem()
     {
-        var storedIds = EverythingIsAlreadyStored();
+        var subjects = NewSubjects(2);
+        var stoppedBy = new TimeoutException(fixture.Create<string>());
+        valueService.GetOrComputeValueIds(default, default, default).ReturnsForAnyArgs(callInfo => new SubjectGenotypeSetValueResults(
+            callInfo.Arg<IReadOnlyList<SubjectGenotypeSetValueRequest>>()
+                .Select(request => request.FrequencySet == subjects[0].FrequencySet
+                    ? new SubjectGenotypeSetValueOutcome(nextValueId++, null)
+                    : SubjectGenotypeSetValueOutcome.NotAttempted)
+                .ToList(),
+            stoppedBy));
 
-        await precomputeService.Precompute([NewSubject()], HlaNomenclatureVersion, TargetDatabase);
+        var act = () => precomputeService.Precompute(subjects, hlaNomenclatureVersion, database);
 
-        WrittenAssignments().Select(assignment => assignment.SubjectGenotypeSetValueId)
-            .Should().BeEquivalentTo(storedIds.Values);
+        (await act.Should().ThrowAsync<TimeoutException>()).Which.Should().BeSameAs(stoppedBy);
+        WrittenAssignments().Should().HaveCount(AllowedLociKeyExtensions.All.Count)
+            .And.OnlyContain(assignment => assignment.DonorId == subjects[0].DonorId);
     }
 
     [Test]
-    public async Task Precompute_AssignsDonorsToTheIdsTheRepositoryReturned()
+    public async Task Precompute_WhenNoDonorHasAllItsValues_WritesNoRows()
     {
-        var subject = NewSubject();
+        var subject = NewSubjects(1).Single();
+        FailTheValue(subject, fixture.Create<AllowedLociKey>(), new InvalidOperationException(fixture.Create<string>()));
 
-        await precomputeService.Precompute([subject], HlaNomenclatureVersion, TargetDatabase);
+        var act = () => precomputeService.Precompute([subject], hlaNomenclatureVersion, database);
 
-        var keysById = createdIds.ToDictionary(created => created.Value, created => created.Key);
-
-        foreach (var assignment in WrittenAssignments())
-        {
-            keysById.Should().ContainKey(assignment.SubjectGenotypeSetValueId);
-            keysById[assignment.SubjectGenotypeSetValueId].AllowedLociKey.Should().Be(assignment.AllowedLociKey);
-            assignment.DonorId.Should().Be(subject.DonorId);
-        }
-    }
-
-    [Test]
-    public async Task Precompute_WritesValuesBeforeAssignments()
-    {
-        // A crash between the two leaves value rows no donor points at, which the next run finds and reuses. The other
-        // order leaves donor rows pointing at ids that do not exist, and the transient databases hold no foreign keys
-        // to catch that.
-        await precomputeService.Precompute([NewSubject()], HlaNomenclatureVersion, TargetDatabase);
-
-        Received.InOrder(() =>
-        {
-            repository.GetOrCreateValueIds(Arg.Any<IReadOnlyCollection<SubjectGenotypeSetValueToStore>>());
-            repository.UpsertDonorAssignments(Arg.Any<IReadOnlyCollection<DonorSubjectGenotypeSetAssignment>>());
-        });
-    }
-
-    [Test]
-    public async Task Precompute_ForMoreValuesThanOneChunk_StoresEachChunkBeforeComputingTheNext()
-    {
-        // Each store gets only the values computed since the store before it. That is what limits the payloads held
-        // in memory, and what keeps the stored part of a batch when a crash stops the rest.
-        var subjects = SubjectsNeedingTwoChunks();
-        var computationsAtEachStore = new List<int>();
-        repository
-            .When(r => r.GetOrCreateValueIds(Arg.Any<IReadOnlyCollection<SubjectGenotypeSetValueToStore>>()))
-            .Do(_ => computationsAtEachStore.Add(genotypeSetService.ReceivedCalls().Count()));
-
-        await precomputeService.Precompute(subjects, HlaNomenclatureVersion, TargetDatabase);
-
-        const int chunkSize = SubjectGenotypeSetPrecomputeService.ValueChunkSize;
-        var valueCount = subjects.Count * AllowedLociKeyExtensions.All.Count;
-        computationsAtEachStore.Should().Equal(chunkSize, valueCount);
-        StoreCalls().Select(values => values.Count).Should().Equal(chunkSize, valueCount - chunkSize);
-    }
-
-    [Test]
-    public async Task Precompute_ForMoreValuesThanOneChunk_AssignsDonorsToTheIdsFromEveryChunk()
-    {
-        await precomputeService.Precompute(SubjectsNeedingTwoChunks(), HlaNomenclatureVersion, TargetDatabase);
-
-        WrittenAssignments().Select(assignment => assignment.SubjectGenotypeSetValueId)
-            .Should().BeEquivalentTo(createdIds.Values);
-    }
-
-    [Test]
-    public async Task Precompute_ForAnUnrepresentedSubject_StoresTheFlagAndNoPayload()
-    {
-        genotypeSetService.GetGenotypeSet(default, default).ReturnsForAnyArgs(_ => new SubjectGenotypeSet(true, [], 0m));
-
-        await precomputeService.Precompute([NewSubject()], HlaNomenclatureVersion, TargetDatabase);
-
-        StoredValues().Should().AllSatisfy(value =>
-        {
-            value.IsUnrepresented.Should().BeTrue();
-            value.SubjectGenotypeSetData.Should().BeNull();
-        });
-    }
-
-    [Test]
-    public async Task Precompute_ForARepresentedSubject_StoresAPayloadThatDecodesBackToTheComputedSet()
-    {
-        var computed = RepresentedSet();
-        genotypeSetService.GetGenotypeSet(default, default).ReturnsForAnyArgs(_ => computed);
-
-        await precomputeService.Precompute([NewSubject()], HlaNomenclatureVersion, TargetDatabase);
-
-        StoredValues().Should().AllSatisfy(value =>
-        {
-            value.IsUnrepresented.Should().BeFalse();
-
-            var decoded = SubjectGenotypeSetPayload.Decode(value.SubjectGenotypeSetData);
-            decoded.SumOfLikelihoods.Should().Be(computed.SumOfLikelihoods);
-            decoded.Genotypes.Should().HaveCount(computed.Genotypes.Count);
-        });
-    }
-
-    [Test]
-    public async Task Precompute_KeysEachCombinationAgainstTheDonorsFrequencySet()
-    {
-        await precomputeService.Precompute([NewSubject()], HlaNomenclatureVersion, TargetDatabase);
-
-        StoredValues().Should().AllSatisfy(value => value.Key.HaplotypeFrequencySetId.Should().Be(FrequencySetId));
-    }
-
-    [Test]
-    public async Task Precompute_ForDonorsOnDifferentFrequencySets_DoesNotShareAStoredValue()
-    {
-        // The same typing imputes differently against a different haplotype frequency set, so the set id is part of
-        // the key rather than a property of the row.
-        var typing = TypedAtEveryLocus();
-
-        await precomputeService.Precompute(
-            [
-                NewSubject(donorId: 1, typing: typing),
-                NewSubject(donorId: 2, typing: typing, frequencySetId: FrequencySetId + 1)
-            ],
-            HlaNomenclatureVersion,
-            TargetDatabase);
-
-        StoredValues().Should().HaveCount(8);
-    }
-
-    [Test]
-    public async Task Precompute_WithNoSubjects_TouchesNeitherTheDatabaseNorThePipeline()
-    {
-        await precomputeService.Precompute([], HlaNomenclatureVersion, TargetDatabase);
-
-        await genotypeSetService.DidNotReceiveWithAnyArgs().GetGenotypeSet(default, default);
-        await repository.DidNotReceiveWithAnyArgs().GetExistingValueIds(default);
-        await repository.DidNotReceiveWithAnyArgs().GetOrCreateValueIds(default);
+        await act.Should().ThrowAsync<InvalidOperationException>();
         await repository.DidNotReceiveWithAnyArgs().UpsertDonorAssignments(default);
     }
 
-    #region Substitute setup
-
-    private void NothingIsStoredYet() =>
-        repository.GetExistingValueIds(default).ReturnsForAnyArgs(new Dictionary<SubjectGenotypeSetKey, int>());
-
-    /// <returns>The ids the repository will claim are already stored, by key.</returns>
-    private IReadOnlyDictionary<SubjectGenotypeSetKey, int> EverythingIsAlreadyStored()
+    [Test]
+    public async Task Precompute_WhenAValueHasNoIdAndNoReason_Throws()
     {
-        var storedIds = new Dictionary<SubjectGenotypeSetKey, int>();
+        // The value service gives a reason for each missing value. Without one, the donor must not lose its rows silently.
+        valueService.GetOrComputeValueIds(default, default, default).ReturnsForAnyArgs(callInfo => new SubjectGenotypeSetValueResults(
+            callInfo.Arg<IReadOnlyList<SubjectGenotypeSetValueRequest>>().Select(_ => SubjectGenotypeSetValueOutcome.NotAttempted).ToList(),
+            null));
 
-        repository.GetExistingValueIds(default).ReturnsForAnyArgs(callInfo =>
-        {
-            foreach (var key in callInfo.Arg<IReadOnlyCollection<SubjectGenotypeSetKey>>())
-            {
-                storedIds[key] = nextValueId++;
-            }
+        var act = () => precomputeService.Precompute(NewSubjects(1), hlaNomenclatureVersion, database);
 
-            return storedIds;
-        });
-
-        return storedIds;
+        await act.Should().ThrowAsync<InvalidOperationException>();
     }
 
-    private void EveryStoredValueGetsAnId() =>
-        repository.GetOrCreateValueIds(default).ReturnsForAnyArgs(callInfo =>
+    [Test]
+    public async Task Precompute_WithNoSubjects_TouchesNeitherTheValueServiceNorTheDatabase()
+    {
+        await precomputeService.Precompute([], hlaNomenclatureVersion, database);
+
+        await valueService.DidNotReceiveWithAnyArgs().GetOrComputeValueIds(default, default, default);
+        repositoryFactory.DidNotReceiveWithAnyArgs().GetSubjectGenotypeSetRepositoryForDatabase(default);
+    }
+
+    private SubjectGenotypeSetValueOutcome OutcomeOf(SubjectGenotypeSetValueRequest request)
+    {
+        if (failures.TryGetValue((request.FrequencySet, request.AllowedLociKey), out var failure))
         {
-            var ids = callInfo
-                .Arg<IReadOnlyCollection<SubjectGenotypeSetValueToStore>>()
-                .ToDictionary(value => value.Key, _ => nextValueId++);
+            return new SubjectGenotypeSetValueOutcome(null, new SubjectGenotypeSetValueFailure(PrecomputeErrorKind.Unknown, failure));
+        }
 
-            foreach (var (key, id) in ids)
-            {
-                createdIds[key] = id;
-            }
+        var valueId = nextValueId++;
+        givenIds.Add((request, valueId));
+        return new SubjectGenotypeSetValueOutcome(valueId, null);
+    }
 
-            return ids;
-        });
+    private void FailTheValue(PrecomputeSubject subject, AllowedLociKey allowedLociKey, Exception failure) =>
+        failures[(subject.FrequencySet, allowedLociKey)] = failure;
 
-    #endregion
+    /// <summary>The donor of a request. Each donor of <see cref="NewSubjects"/> has a frequency set of its own.</summary>
+    private static PrecomputeSubject DonorOf(SubjectGenotypeSetValueRequest request, IEnumerable<PrecomputeSubject> subjects) =>
+        subjects.Single(subject => subject.FrequencySet == request.FrequencySet);
 
-    #region Reading what the substitutes were given
-
-    private IEnumerable<MatchPredictionParameters> ComputedParameters() =>
-        genotypeSetService.ReceivedCalls().Select(call => (MatchPredictionParameters) call.GetArguments()[1]);
-
-    /// <summary>The typing each call to <see cref="IGenotypeSetService.GetGenotypeSet"/> was given, in call order.</summary>
-    private IEnumerable<PhenotypeInfo<string>> ImputedTypings() =>
-        genotypeSetService.ReceivedCalls().Select(call => ((SubjectData) call.GetArguments()[0]).HlaTyping);
-
-    private IReadOnlyCollection<SubjectGenotypeSetValueToStore> StoredValues() => StoreCalls().SelectMany(values => values).ToList();
-
-    /// <summary>What each call to <see cref="ISubjectGenotypeSetRepository.GetOrCreateValueIds"/> was given, in call order.</summary>
-    private IReadOnlyList<IReadOnlyCollection<SubjectGenotypeSetValueToStore>> StoreCalls() =>
-        repository
-            .ReceivedCalls()
-            .Where(call => call.GetMethodInfo().Name == nameof(ISubjectGenotypeSetRepository.GetOrCreateValueIds))
-            .Select(call => (IReadOnlyCollection<SubjectGenotypeSetValueToStore>) call.GetArguments()[0])
-            .ToList();
+    /// <summary>The requests of the single call to the value service.</summary>
+    private IReadOnlyList<SubjectGenotypeSetValueRequest> RequestedValues() =>
+        (IReadOnlyList<SubjectGenotypeSetValueRequest>) valueService.ReceivedCalls().Single().GetArguments()[0];
 
     private IReadOnlyCollection<DonorSubjectGenotypeSetAssignment> WrittenAssignments() =>
-        (IReadOnlyCollection<DonorSubjectGenotypeSetAssignment>) repository
+        repository
             .ReceivedCalls()
-            .Single(call => call.GetMethodInfo().Name == nameof(ISubjectGenotypeSetRepository.UpsertDonorAssignments))
-            .GetArguments()[0];
-
-    #endregion
-
-    #region Test data
-
-    private static PrecomputeSubject NewSubject(int donorId = 1, PhenotypeInfo<string> typing = null, int frequencySetId = FrequencySetId) =>
-        new(donorId, typing ?? TypedAtEveryLocus(), new HaplotypeFrequencySet { Id = frequencySetId });
-
-    /// <summary>
-    /// One subject more than fits in one chunk of values. Each subject has a typing of its own, so each is four new
-    /// values, and the last subject's four go to a second chunk.
-    /// </summary>
-    private IReadOnlyCollection<PrecomputeSubject> SubjectsNeedingTwoChunks()
-    {
-        var subjectCount = SubjectGenotypeSetPrecomputeService.ValueChunkSize / AllowedLociKeyExtensions.All.Count + 1;
-
-        return fixture.CreateMany<int>(subjectCount)
-            .Select(donorId => NewSubject(donorId, new PhenotypeInfoBuilder<string>(TypedAtEveryLocus())
-                .WithDataAt(Locus.A, fixture.Create<string>(), fixture.Create<string>())
-                .Build()))
-            .ToList();
-    }
-
-    private static PhenotypeInfo<string> TypedAtEveryLocus() =>
-        new PhenotypeInfoBuilder<string>()
-            .WithDataAt(Locus.A, "a-1", "a-2")
-            .WithDataAt(Locus.B, "b-1", "b-2")
-            .WithDataAt(Locus.C, "c-1", "c-2")
-            .WithDataAt(Locus.Dqb1, "dqb1-1", "dqb1-2")
-            .WithDataAt(Locus.Drb1, "drb1-1", "drb1-2")
-            .Build();
-
-    private SubjectGenotypeSet RepresentedSet()
-    {
-        var genotypes = fixture.CreateMany<decimal>(3)
-            .Select(likelihood => new GenotypeAtDesiredResolutions(
-                new ImputedGenotype(null, TypedAtEveryLocus(), likelihood),
-                TypedAtEveryLocus()))
+            .Where(call => call.GetMethodInfo().Name == nameof(ISubjectGenotypeSetRepository.UpsertDonorAssignments))
+            .SelectMany(call => (IReadOnlyCollection<DonorSubjectGenotypeSetAssignment>) call.GetArguments()[0])
             .ToList();
 
-        return new SubjectGenotypeSet(false, genotypes, fixture.Create<decimal>());
-    }
+    /// <summary>Donors with a typing and a frequency set of their own.</summary>
+    private List<PrecomputeSubject> NewSubjects(int count) =>
+        fixture.CreateMany<int>(count)
+            .Select(donorId => new PrecomputeSubject(donorId, Typing(), new HaplotypeFrequencySet { Id = fixture.Create<int>() }))
+            .ToList();
 
-    #endregion
+    private PhenotypeInfo<string> Typing()
+    {
+        var builder = new PhenotypeInfoBuilder<string>();
+        foreach (var locus in new[] { Locus.A, Locus.B, Locus.C, Locus.Dqb1, Locus.Drb1 })
+        {
+            builder = builder.WithDataAt(locus, fixture.Create<string>(), fixture.Create<string>());
+        }
+
+        return builder.Build();
+    }
 }

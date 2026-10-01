@@ -16,6 +16,7 @@ using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.MatchProbability;
+using Atlas.MatchPrediction.Services.Precompute;
 using AutoFixture;
 using AwesomeAssertions;
 using NSubstitute;
@@ -101,6 +102,41 @@ public class SubjectGenotypeSetValueServiceTests
 
         await genotypeSetService.Received(1).GetGenotypeSet(Arg.Any<SubjectData>(), Arg.Any<MatchPredictionParameters>());
         results.Outcomes.Select(outcome => outcome.ValueId).Distinct().Should().ContainSingle().Which.Should().NotBeNull();
+    }
+
+    [Test]
+    public async Task GetOrComputeValueIds_ForTwoRequestsThatDifferOnlyByEmptyOrNull_ComputesOnce_WithNull()
+    {
+        // The request with the empty name comes first. Without the change to null, its typing is the one imputed, and the
+        // HLA Metadata Dictionary throws for it: whether a batch fails would then depend on the order of its donors.
+        var withEmpty = NewRequest(new PhenotypeInfoBuilder<string>(Typing()).WithDataAt(Locus.C, string.Empty, string.Empty).Build());
+        var withNull = withEmpty with
+        {
+            HlaTyping = new PhenotypeInfoBuilder<string>(withEmpty.HlaTyping).WithDataAt(Locus.C, null, null).Build()
+        };
+
+        var results = await valueService.GetOrComputeValueIds([withEmpty, withNull], hlaNomenclatureVersion, database);
+
+        await genotypeSetService.Received(1).GetGenotypeSet(
+            Arg.Is<SubjectData>(subject => subject.HlaTyping.Equals(withNull.HlaTyping)),
+            Arg.Any<MatchPredictionParameters>());
+        results.Outcomes.Select(outcome => outcome.ValueId).Distinct().Should().ContainSingle().Which.Should().NotBeNull();
+    }
+
+    [Test]
+    public async Task GetOrComputeValueIds_ForOneTypingOnTwoFrequencySets_StoresAValueForEachSet()
+    {
+        // The same typing imputes differently against another frequency set, so the set is part of the key.
+        var request = NewRequest();
+        var onOtherSet = request with { FrequencySet = new HaplotypeFrequencySet { Id = fixture.Create<int>() } };
+        IReadOnlyCollection<SubjectGenotypeSetValueToStore> stored = null;
+        repository.When(r => r.GetOrCreateValueIds(Arg.Any<IReadOnlyCollection<SubjectGenotypeSetValueToStore>>()))
+            .Do(callInfo => stored = callInfo.Arg<IReadOnlyCollection<SubjectGenotypeSetValueToStore>>());
+
+        await valueService.GetOrComputeValueIds([request, onOtherSet], hlaNomenclatureVersion, database);
+
+        stored.Select(value => value.Key.HaplotypeFrequencySetId)
+            .Should().BeEquivalentTo(new[] { request.FrequencySet.Id, onOtherSet.FrequencySet.Id });
     }
 
     [Test]
@@ -228,6 +264,17 @@ public class SubjectGenotypeSetValueServiceTests
     }
 
     [Test]
+    public async Task GetOrComputeValueIds_ForMoreValuesThanOneChunk_ReturnsTheIdOfEveryValue()
+    {
+        var requests = NewRequests(SubjectGenotypeSetValueService.ValueChunkSize + 1);
+
+        var results = await valueService.GetOrComputeValueIds(requests, hlaNomenclatureVersion, database);
+
+        results.Outcomes.Should().HaveCount(requests.Count).And.OnlyContain(outcome => outcome.ValueId != null);
+        results.Outcomes.Select(outcome => outcome.ValueId).Should().OnlyHaveUniqueItems();
+    }
+
+    [Test]
     public async Task GetOrComputeValueIds_ForAnUnrepresentedSubject_StoresTheFlagAndNoPayload()
     {
         IReadOnlyCollection<SubjectGenotypeSetValueToStore> stored = null;
@@ -238,6 +285,24 @@ public class SubjectGenotypeSetValueServiceTests
 
         stored.Should().ContainSingle().Which.Should().Match<SubjectGenotypeSetValueToStore>(value =>
             value.IsUnrepresented && value.SubjectGenotypeSetData == null);
+    }
+
+    [Test]
+    public async Task GetOrComputeValueIds_ForARepresentedSubject_StoresAPayloadThatDecodesToTheComputedSet()
+    {
+        var computed = RepresentedSet();
+        genotypeSetService.GetGenotypeSet(default, default).ReturnsForAnyArgs(computed);
+        IReadOnlyCollection<SubjectGenotypeSetValueToStore> stored = null;
+        repository.When(r => r.GetOrCreateValueIds(Arg.Any<IReadOnlyCollection<SubjectGenotypeSetValueToStore>>()))
+            .Do(callInfo => stored = callInfo.Arg<IReadOnlyCollection<SubjectGenotypeSetValueToStore>>());
+
+        await valueService.GetOrComputeValueIds([NewRequest()], hlaNomenclatureVersion, database);
+
+        var value = stored.Should().ContainSingle().Which;
+        value.IsUnrepresented.Should().BeFalse();
+        var decoded = SubjectGenotypeSetPayload.Decode(value.SubjectGenotypeSetData);
+        decoded.SumOfLikelihoods.Should().Be(computed.SumOfLikelihoods);
+        decoded.Genotypes.Should().HaveCount(computed.Genotypes.Count);
     }
 
     [Test]
@@ -275,5 +340,14 @@ public class SubjectGenotypeSetValueServiceTests
         }
 
         return builder.Build();
+    }
+
+    private SubjectGenotypeSet RepresentedSet()
+    {
+        var genotypes = fixture.CreateMany<decimal>(3)
+            .Select(likelihood => new GenotypeAtDesiredResolutions(new ImputedGenotype(null, Typing(), likelihood), Typing()))
+            .ToList();
+
+        return new SubjectGenotypeSet(false, genotypes, fixture.Create<decimal>());
     }
 }

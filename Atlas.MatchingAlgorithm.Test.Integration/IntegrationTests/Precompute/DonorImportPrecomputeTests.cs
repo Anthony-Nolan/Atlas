@@ -87,7 +87,9 @@ public class DonorImportPrecomputeTests
 
         var precomputer = new DonorGenotypeSetPrecomputer(
             frequencyLookupService,
-            new SubjectGenotypeSetPrecomputeService(failingUpsertRepositoryFactory, genotypeSetService),
+            new SubjectGenotypeSetPrecomputeService(
+                new SubjectGenotypeSetValueService(failingUpsertRepositoryFactory, genotypeSetService),
+                failingUpsertRepositoryFactory),
             Injection.Provider.GetService<IMatchingAlgorithmImportLogger>());
 
         service = new DonorManagementService(

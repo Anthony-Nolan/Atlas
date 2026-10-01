@@ -353,10 +353,11 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         }
 
         /// <summary>
-        /// Register the genotype set precompute service.
+        /// Register the genotype set precompute service, and the value service that it uses.
         /// </summary>
         public static void RegisterSubjectGenotypeSetPrecompute(this IServiceCollection services)
         {
+            services.AddScoped<ISubjectGenotypeSetValueService, SubjectGenotypeSetValueService>();
             services.AddScoped<ISubjectGenotypeSetPrecomputeService, SubjectGenotypeSetPrecomputeService>();
         }
 

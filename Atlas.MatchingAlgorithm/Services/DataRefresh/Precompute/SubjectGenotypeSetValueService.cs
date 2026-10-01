@@ -87,8 +87,9 @@ public interface ISubjectGenotypeSetValueService
 /// <see cref="IGenotypeSetService"/> runs expansion, truncation and conversion, and returns what is stored.
 /// </summary>
 /// <remarks>
-/// The data refresh stage computes the values of its groups with this, and gives them to the donors of each group
-/// itself. The same steps are in <see cref="SubjectGenotypeSetPrecomputeService"/>, for the donors of a donor import.
+/// Two callers give the values to donors. <see cref="DonorGenotypePrecomputationBatchProcessor"/> (the data refresh
+/// stage) gives the value of each group to the donors of the group. <see cref="SubjectGenotypeSetPrecomputeService"/>
+/// gives each donor of a donor import its four values.
 /// </remarks>
 public class SubjectGenotypeSetValueService : ISubjectGenotypeSetValueService
 {

@@ -54,6 +54,7 @@ namespace Atlas.MatchingAlgorithm.Test.DependencyInjection
         // the HLA Metadata Dictionary, which connects to storage. GenotypeSetPipelineRegistrationTests (Match
         // Prediction) validates the pipeline itself.
         [TestCase(typeof(ISubjectGenotypeSetPrecomputeService))]
+        [TestCase(typeof(ISubjectGenotypeSetValueService))]
         [TestCase(typeof(Atlas.MatchPrediction.Services.MatchProbability.IGenotypeSetService))]
         [TestCase(typeof(Atlas.MatchPrediction.Services.HaplotypeFrequencies.IHaplotypeFrequencyLookupService))]
         public void RegisterDonorImportGenotypeSetPrecompute_RegistersThePrecomputerDependencies(Type serviceType)
