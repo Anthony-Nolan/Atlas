@@ -13,6 +13,7 @@ using Atlas.SearchTracking.Common.DependencyInjection;
 using Atlas.SearchTracking.Common.Dispatchers;
 using Atlas.SearchTracking.Common.Settings.ServiceBus;
 using Azure.Messaging.ServiceBus;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
@@ -33,6 +34,11 @@ public static class Startup
             OptionsReaderFor<AzureStorageSettings>(),
             OptionsReaderFor<GenotypeImputationSettings>(),
             ConnectionStringReader("MatchPredictionSql")
+        );
+
+        // Container Apps do not set a cloud role name, so without this the worker's telemetry has no role name in Application Insights.
+        services.AddSingleton<ITelemetryInitializer>(sp =>
+            new CloudRoleNameTelemetryInitializer(sp.GetRequiredService<IOptions<ApplicationInsightsSettings>>().Value.CloudRoleName)
         );
 
         // This app caches HLA Metadata Dictionary data, so it has to be told when the dictionary is recreated.
