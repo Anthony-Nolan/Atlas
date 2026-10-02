@@ -59,6 +59,45 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         }
 
         [Test]
+        public async Task MatchPatientDonorGenotypes_WhenDonorGenotypeSetSupplied_DoesNotComputeDonorAndUsesSuppliedSet()
+        {
+            var input = BuildDefaultInput();
+            var donorGenotype = new GenotypeAtDesiredResolutionsBuilder().Default().Build();
+            input.DonorGenotypeSet = new SubjectGenotypeSet(false, new List<GenotypeAtDesiredResolutions> { donorGenotype, donorGenotype }, 0.7m);
+
+            var result = await genotypeMatcher.MatchPatientDonorGenotypes(input);
+
+            await genotypeSetService.DidNotReceiveWithAnyArgs().GetGenotypeSet(default, default);
+            result.DonorResult.GenotypeCount.Should().Be(2);
+            result.DonorResult.SumOfLikelihoods.Should().Be(0.7m);
+            result.DonorGenotypeSet.Should().BeSameAs(input.DonorGenotypeSet);
+        }
+
+        [Test]
+        public async Task MatchPatientDonorGenotypes_WhenDonorComputedLive_ReturnsTheLiveDonorGenotypeSet()
+        {
+            var liveSet = new SubjectGenotypeSet(false, new List<GenotypeAtDesiredResolutions> { new GenotypeAtDesiredResolutionsBuilder().Default().Build() }, 0.4m);
+            genotypeSetService.GetGenotypeSet(default, default).ReturnsForAnyArgs(liveSet);
+
+            var result = await genotypeMatcher.MatchPatientDonorGenotypes(BuildDefaultInput());
+
+            result.DonorGenotypeSet.Should().BeSameAs(liveSet);
+        }
+
+        [Test]
+        public async Task MatchPatientDonorGenotypes_WhenSuppliedDonorSetIsUnrepresented_ReturnsDonorIsUnrepresented()
+        {
+            var input = BuildDefaultInput();
+            input.DonorGenotypeSet = new SubjectGenotypeSet(true, new List<GenotypeAtDesiredResolutions>(), 0m);
+
+            var result = await genotypeMatcher.MatchPatientDonorGenotypes(input);
+
+            result.DonorResult.IsUnrepresented.Should().BeTrue();
+            result.DonorGenotypeSet.Should().BeSameAs(input.DonorGenotypeSet);
+            await genotypeSetService.DidNotReceiveWithAnyArgs().GetGenotypeSet(default, default);
+        }
+
+        [Test]
         public async Task MatchPatientDonorGenotypes_UsesProvidedPatientGenotypeSet_DoesNotExpandPatient()
         {
             var input = BuildDefaultInput();

@@ -38,16 +38,27 @@ public static class AllowedLociKeyExtensions
             : throw new ArgumentOutOfRangeException(nameof(key), key, "Not one of the four allowed-loci combinations.");
 
     /// <summary>The key naming exactly this locus set, for turning a caller's set back into a stored value.</summary>
-    public static AllowedLociKey ToAllowedLociKey(IReadOnlySet<Locus> loci)
+    public static AllowedLociKey ToAllowedLociKey(IReadOnlySet<Locus> loci) =>
+        TryToAllowedLociKey(loci, out var key)
+            ? key
+            : throw new ArgumentOutOfRangeException(nameof(loci), string.Join(",", loci), "Not one of the four allowed-loci combinations.");
+
+    /// <summary>
+    /// As <see cref="ToAllowedLociKey"/>, but returns false instead of throwing for a set that is not one of the four.
+    /// For search, where an uncovered set is a reason to compute live, not an error.
+    /// </summary>
+    public static bool TryToAllowedLociKey(IReadOnlySet<Locus> loci, out AllowedLociKey key)
     {
-        foreach (var (key, keyLoci) in LociByKey)
+        foreach (var (candidate, keyLoci) in LociByKey)
         {
             if (keyLoci.SetEquals(loci))
             {
-                return key;
+                key = candidate;
+                return true;
             }
         }
 
-        throw new ArgumentOutOfRangeException(nameof(loci), string.Join(",", loci), "Not one of the four allowed-loci combinations.");
+        key = default;
+        return false;
     }
 }

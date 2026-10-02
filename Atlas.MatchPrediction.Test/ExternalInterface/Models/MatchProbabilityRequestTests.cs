@@ -43,4 +43,38 @@ internal class MatchProbabilityRequestTests
 
         inputs.Single().MatchingAlgorithmDataRefreshRecordId.Should().BeNull();
     }
+
+    [TestCase(true)]
+    [TestCase(false)]
+    [TestCase(null)]
+    public void SingleDonorMatchProbabilityInputs_CopyUsePrecomputedGenotypeSets(bool? usePrecomputedGenotypeSets)
+    {
+        var input = new MultipleDonorMatchProbabilityInput(new IdentifiedMatchProbabilityRequest
+        {
+            UsePrecomputedGenotypeSets = usePrecomputedGenotypeSets
+        })
+        {
+            Donors = new List<DonorInput> { new() { DonorId = 1 } }
+        };
+
+        input.UsePrecomputedGenotypeSets.Should().Be(usePrecomputedGenotypeSets);
+        input.SingleDonorMatchProbabilityInputs.Single().UsePrecomputedGenotypeSets.Should().Be(usePrecomputedGenotypeSets);
+    }
+
+    /// <summary>
+    /// Unlike the record id, the override is on the base request, so the standalone endpoint can set it too.
+    /// </summary>
+    [Test]
+    public void ToSingleDonorMatchProbabilityInputs_ForStandaloneRequest_CopiesUsePrecomputedGenotypeSets()
+    {
+        var batch = new BatchedMatchPredictionRequests
+        {
+            UsePrecomputedGenotypeSets = true,
+            Donors = new[] { new Donor { Id = 1 } }
+        };
+
+        var inputs = batch.ToSingleDonorMatchProbabilityInputs();
+
+        inputs.Single().UsePrecomputedGenotypeSets.Should().BeTrue();
+    }
 }

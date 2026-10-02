@@ -13,6 +13,7 @@ using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.MatchProbability;
+using Atlas.MatchPrediction.Services.Precompute;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using AwesomeAssertions;
@@ -30,6 +31,9 @@ namespace Atlas.MatchPrediction.Test.Services
         private IMatchPredictionBatchResultUploader resultUploader;
         private IMatchPredictionLogger<MatchProbabilityLoggingContext> logger;
         private IServiceScopeFactory serviceScopeFactory;
+        private IDonorGenotypeSetSourceResolver genotypeSetSourceResolver;
+        private IDonorGenotypeSetBatchCompleter genotypeSetBatchCompleter;
+        private DonorGenotypeSetBatchContext batchContext;
         private IParallelMatchPredictionAlgorithm sut;
 
         [SetUp]
@@ -40,8 +44,14 @@ namespace Atlas.MatchPrediction.Test.Services
             resultUploader = Substitute.For<IMatchPredictionBatchResultUploader>();
             logger = Substitute.For<IMatchPredictionLogger<MatchProbabilityLoggingContext>>();
             serviceScopeFactory = Substitute.For<IServiceScopeFactory>();
+            genotypeSetSourceResolver = Substitute.For<IDonorGenotypeSetSourceResolver>();
+            genotypeSetBatchCompleter = Substitute.For<IDonorGenotypeSetBatchCompleter>();
 
-            sut = new ParallelMatchPredictionAlgorithm(genotypeSetService, resultUploader, logger, serviceScopeFactory);
+            sut = new ParallelMatchPredictionAlgorithm(
+                genotypeSetService, resultUploader, logger, serviceScopeFactory, genotypeSetSourceResolver, genotypeSetBatchCompleter);
+
+            batchContext = DonorGenotypeSetBatchContext.Disabled(UsePrecomputedGenotypeSetsSource.FeatureFlag, null);
+            genotypeSetSourceResolver.Resolve(default, default).ReturnsForAnyArgs(batchContext);
 
             var patientGenotypeSet = new SubjectGenotypeSet(false, new List<GenotypeAtDesiredResolutions>(), 0.1m);
             genotypeSetService.GetPatientGenotypeSet(default).ReturnsForAnyArgs(patientGenotypeSet);
@@ -87,7 +97,8 @@ namespace Atlas.MatchPrediction.Test.Services
             await genotypeSetService.Received(1).GetPatientGenotypeSet(Arg.Any<SingleDonorMatchProbabilityInput>());
             await matchProbabilityService.Received(2).CalculateMatchProbability(
                 Arg.Any<SingleDonorMatchProbabilityInput>(),
-                Arg.Is<SubjectGenotypeSet>(x => ReferenceEquals(x, patientGenotypeSet)));
+                Arg.Is<SubjectGenotypeSet>(x => ReferenceEquals(x, patientGenotypeSet)),
+                Arg.Any<DonorGenotypeSetBatchContext>());
         }
 
         [Test]
@@ -111,7 +122,8 @@ namespace Atlas.MatchPrediction.Test.Services
 
             await matchProbabilityService.Received(3).CalculateMatchProbability(
                 Arg.Any<SingleDonorMatchProbabilityInput>(),
-                Arg.Any<SubjectGenotypeSet>());
+                Arg.Any<SubjectGenotypeSet>(),
+                Arg.Any<DonorGenotypeSetBatchContext>());
         }
 
         [Test]
@@ -213,6 +225,46 @@ namespace Atlas.MatchPrediction.Test.Services
             output.PatientGenotypeCount.Should().BeNull();
             output.DonorGenotypeCounts.Should().BeEmpty();
             await resultUploader.DidNotReceiveWithAnyArgs().UploadMatchPredictionBatchResult(default, default, default);
+        }
+
+        [Test]
+        public async Task RunBatch_ResolvesPrecomputeOncePassesItToEveryDonorAndCompletesAfterTheUpload()
+        {
+            var calls = new List<string>();
+            resultUploader.WhenForAnyArgs(u => u.UploadMatchPredictionBatchResult(default, default, default)).Do(_ => calls.Add("upload"));
+            genotypeSetBatchCompleter.WhenForAnyArgs(c => c.Complete(default, default, default)).Do(_ => calls.Add("complete"));
+            var toStore = new DonorGenotypeSetToStore([2, 3], new PhenotypeInfo<string>("hla"), 7, false, [1]);
+            matchProbabilityService.CalculateMatchProbability(default, default, default).ReturnsForAnyArgs(call =>
+                call.Arg<SingleDonorMatchProbabilityInput>().Donor.DonorIds.Contains(1)
+                    ? new MatchProbabilityResult(new MatchProbabilityResponse(null, new HashSet<Locus>()), 0, DonorGenotypeSetSource.Precomputed)
+                    : new MatchProbabilityResult(new MatchProbabilityResponse(null, new HashSet<Locus>()), 0, DonorGenotypeSetSource.NoRow, toStore));
+
+            var input = new MultipleDonorMatchProbabilityInput(new IdentifiedMatchProbabilityRequest { SearchRequestId = "search-request-id" })
+            {
+                Donors = new List<DonorInput>
+                {
+                    DonorInputBuilder.Default.WithDonorIds(1).Build(),
+                    DonorInputBuilder.Default.WithDonorIds(2, 3).Build()
+                }
+            };
+
+            await sut.RunBatch(input, maxDegreeOfParallelism: 10, batchId: 1);
+
+            await genotypeSetSourceResolver.Received(1).Resolve(
+                input,
+                Arg.Is<IReadOnlyCollection<int>>(ids => ids.Order().SequenceEqual(new[] { 1, 2, 3 })));
+            await matchProbabilityService.Received(2).CalculateMatchProbability(
+                Arg.Any<SingleDonorMatchProbabilityInput>(),
+                Arg.Any<SubjectGenotypeSet>(),
+                batchContext);
+            await genotypeSetBatchCompleter.Received(1).Complete(
+                input,
+                batchContext,
+                Arg.Is<IReadOnlyCollection<DonorGenotypeSetBatchOutcome>>(o =>
+                    o.Count == 2
+                    && o.Any(x => x.Source == DonorGenotypeSetSource.Precomputed && x.DonorIdCount == 1 && x.GenotypeSetToStore == null)
+                    && o.Any(x => x.Source == DonorGenotypeSetSource.NoRow && x.DonorIdCount == 2 && x.GenotypeSetToStore == toStore)));
+            calls.Should().Equal("upload", "complete");
         }
     }
 }

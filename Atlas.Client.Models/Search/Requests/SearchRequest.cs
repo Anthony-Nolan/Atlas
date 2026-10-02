@@ -61,6 +61,15 @@ namespace Atlas.Client.Models.Search.Requests
         /// When <c>null</c> (default), the function app default (<c>AtlasFunction:Search:DefaultParallelMatchPrediction</c>) is applied.
         /// </summary>
         public bool? ParallelMatchPrediction { get; set; }
+
+        /// <summary>
+        /// Optional. Controls whether match prediction reads precomputed donor genotype sets, instead of imputing each donor live.
+        /// When <c>true</c>, precomputed genotype sets are used for this search, even if the kill-switch is off.
+        /// When <c>false</c>, every donor is imputed live for this search, even if the kill-switch is on.
+        /// When <c>null</c> (default), the match prediction kill-switch (<c>MatchPrediction:Precompute:UsePrecomputedGenotypeSets</c>) is applied.
+        /// The value is resolved by match prediction for each donor batch, not when the search is submitted.
+        /// </summary>
+        public bool? UsePrecomputedGenotypeSets { get; set; }
     }
 
     public class MismatchCriteria
