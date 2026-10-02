@@ -295,10 +295,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchMessagingServiceBusSettings
             );
 
-            // ActiveRepositoryFactory depends on the search logger, which is otherwise only registered by the search path.
-            services.AddScoped<MatchingAlgorithmSearchLoggingContext>();
-            services.AddScoped<IMatchingAlgorithmSearchLogger, MatchingAlgorithmSearchLogger>();
-
             // Azure interaction services
             services.AddScoped<IThreadSleeper, ThreadSleeper>();
             services.AddScoped<IAzureDatabaseManagementClient, AzureDatabaseManagementClient>();
@@ -443,8 +439,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IMatchingFailureNotificationSender, MatchingFailureNotificationSender>();
 
             services.AddApplicationInsightsTelemetryWorkerService();
-            services.AddScoped<MatchingAlgorithmSearchLoggingContext>();
-            services.AddScoped<IMatchingAlgorithmSearchLogger, MatchingAlgorithmSearchLogger>();
             services.AddScoped<MatchingAlgorithmImportLoggingContext>();
             services.AddScoped<IMatchingAlgorithmImportLogger, MatchingAlgorithmImportLogger>();
             services.AddScoped<MatchingAlgorithmSearchTrackingContext>();
@@ -582,6 +576,9 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 OptionsReaderFor<ApplicationInsightsSettings>()
             );
 
+            // Registered with ActiveRepositoryFactory, which needs the search logger, so that every host can build it.
+            services.AddScoped<MatchingAlgorithmSearchLoggingContext>();
+            services.AddScoped<IMatchingAlgorithmSearchLogger, MatchingAlgorithmSearchLogger>();
             services.AddScoped<IActiveRepositoryFactory, ActiveRepositoryFactory>();
             services.AddScoped<IDormantRepositoryFactory, DormantRepositoryFactory>();
             services.AddScoped<IStaticallyChosenDatabaseRepositoryFactory, StaticallyChosenDatabaseRepositoryFactory>();

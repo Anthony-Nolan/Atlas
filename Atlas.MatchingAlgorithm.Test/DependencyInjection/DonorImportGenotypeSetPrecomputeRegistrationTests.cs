@@ -49,10 +49,23 @@ namespace Atlas.MatchingAlgorithm.Test.DependencyInjection
                 .ImplementationType.Should().Be(typeof(DonorGenotypeSetPrecomputer));
         }
 
-        // Not ValidateOnBuild over the whole collection: RegisterDonorManagement alone already fails it, on the search
-        // logger that IActiveRepositoryFactory needs and this host never uses. And resolving the precomputer builds
-        // the HLA Metadata Dictionary, which connects to storage. GenotypeSetPipelineRegistrationTests (Match
-        // Prediction) validates the pipeline itself.
+        // The Donor Management app validates its registrations when it starts in the Development environment
+        // (e.g. `func start`). ValidateOnBuild only checks that each service can be built: it creates nothing, so
+        // nothing connects to storage.
+        [Test]
+        public void RegisterDonorImportGenotypeSetPrecompute_AfterRegisterDonorManagement_ValidatesOnBuild()
+        {
+            var services = DonorManagementOnly();
+            RegisterPrecompute(services);
+
+            var buildProvider = () => services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });
+
+            buildProvider.Should().NotThrow();
+        }
+
+        // Resolving the precomputer builds the HLA Metadata Dictionary, which connects to storage, so these only check
+        // that the dependencies are registered. GenotypeSetPipelineRegistrationTests (Match Prediction) validates the
+        // pipeline itself.
         [TestCase(typeof(ISubjectGenotypeSetPrecomputeService))]
         [TestCase(typeof(Atlas.MatchPrediction.Services.MatchProbability.IGenotypeSetService))]
         [TestCase(typeof(Atlas.MatchPrediction.Services.HaplotypeFrequencies.IHaplotypeFrequencyLookupService))]
