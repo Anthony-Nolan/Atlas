@@ -44,16 +44,20 @@ It's highly recommended that you read the sections outside ZtH in parallel with 
 
 ### Run Migrations
 - Run EF Core Migrations for all data projects:
-    - `MatchingAlgorithm.Data`, `MatchingAlgorithm.Data.Persistent`, `DonorImport.Data`, `MatchPrediction.Data`, `RepeatSearch.Data`
+    - `MatchingAlgorithm.Data`, `MatchingAlgorithm.Data.Persistent`, `DonorImport.Data`, `MatchPrediction.Data`, `RepeatSearch.Data`, `SearchTracking.Data`
     - This can be done from general command line, or from the VS Package Manager Console, but in either case **must be run from within those project folders!**.
+- Instructions for the command line
+  - From inside each project folder (e.g. `<gitRoot>/Atlas.MatchingAlgorithm.Data`), run `dotnet ef database update`.
+    - Do not pass `-p <ProjectName>` here: it is resolved relative to the current folder, so it points at a folder that does not exist and fails with "Unable to retrieve project metadata".
 - Instructions for VS PkgMgrCons
   - Open the Nuget Package Manager Console (Menus > Tools > Nuget Package Manager > ...)
   - Run `Update-Database -project <ProjectName> -startupProject <ProjectName>` in the console.
     - Note: if you have both EF 6 and EF Core commands installed, you may need to prefix the command with `EntityFrameworkCore\` to ensure the correct version is selected for execution.
   - This should take 10-40 seconds to complete.
 - Having created all the local databases, run this additional step to set up the second transient Matching algorithm database:
-    - Open `Atlas.MatchingAlgorithm.Data\appsettings.json`, and modify the `ConnectionStrings.Sql` value to reference `Initial Catalog=AtlasMatchingB`.
-    - Once again run Migrations for the project `Atlas.MatchingAlgorithm.Data`
+    - From inside `<gitRoot>/Atlas.MatchingAlgorithm.Data`, run the migrations again with a connection string that points at `AtlasMatchingB`:
+      `dotnet ef database update --connection "Data Source=(local);Initial Catalog=AtlasMatchingB;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;"`
+    - This avoids editing the checked-in `Atlas.MatchingAlgorithm.Data\appsettings.json`.
 - On completion of migrations, open your local SQL Server and verify that you now have 3 databases: `Atlas`, `AtlasMatchingA` and `AtlasMatchingB`.
 
 ### Set up initial data
@@ -85,8 +89,9 @@ It's highly recommended that you read the sections outside ZtH in parallel with 
 - Upload the json file `initial-hf-set.json` to your `haplotype-frequency-set-import` container.
     - This should take < 1 second to run.
 - Open up Service Bus Explorer and connect to your local development Service Bus.
-- Create the topic, `haplotype-frequency-set-import` with subscription `haplotype-frequency-import`, right-click and select `Send Message`.
-    - Copy the content of the json file `<gitRoot>/MiscTestingAndDebuggingResources/DonorImport/initial-donors-hf-set-metadata.json` into the `Message Text` text box and click `Start`.
+- Create the topic, `haplotype-frequency-file-uploads` with subscription `haplotype-frequency-import`, right-click and select `Send Message`.
+    - This is the topic set in `MessagingServiceBus:ImportFileTopic` in the `MatchPrediction.Functions` settings.
+    - Copy the content of the json file `<gitRoot>/MiscTestingAndDebuggingResources/MatchPrediction/initial-hf-set-metadata.json` into the `Message Text` text box and click `Start`.
 - When you now run `MatchPrediction.Functions` your local HaplotypeFrequencies and HaplotypeFrequencySets tables should now be populated.
     - This should take < 5 minute to run.
 - Monitor the `notifications` topic to ensure the import succeeded; a failure will be reported via `alerts` topic.
@@ -103,7 +108,7 @@ It's highly recommended that you read the sections outside ZtH in parallel with 
   - Then in solution explorer right click on `Atlas.Functions`, and `Atlas.MatchingAlgorithm.Functions` and select `Debug -> Start New Instance`.
   - Alternatively you can right click on your solution in Solution Explorer go to properties and under multiple start up projects select all the functions.
   - *You will want to make sure all the local settings for these functions are up to date*
-- Then hit the `Search` endpoint within `Atlas.Functions.PublicApi` with the content of `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\initial-search.json` as the requests body.
+- Then hit the `Search` endpoint within `Atlas.Functions.PublicApi` with the content of `<gitRoot>\MiscTestingAndDebuggingResources\SearchRequests\initial-search.json` as the requests body.
   - You should get a 200 Success response.
 - In the `atlas-search-results` blob storage you have created you should have a file containing the search results.
   - The first search should take 20-60 seconds.
