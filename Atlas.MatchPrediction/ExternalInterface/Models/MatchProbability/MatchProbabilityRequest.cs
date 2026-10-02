@@ -128,6 +128,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
             ExcludedLoci = initial.ExcludedLoci;
             PatientHla = initial.PatientHla;
             PatientFrequencySetMetadata = initial.PatientFrequencySetMetadata;
+            UsePrecomputedGenotypeSets = initial.UsePrecomputedGenotypeSets;
         }
 
         /// <summary>
@@ -143,5 +144,12 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
 
         public PhenotypeInfoTransfer<string> PatientHla { get; set; }
         public FrequencySetMetadata PatientFrequencySetMetadata { get; set; }
+
+        /// <summary>
+        /// Overrides the precompute kill-switch (<see cref="Settings.PrecomputedGenotypeSetSettings.UsePrecomputedGenotypeSets"/>)
+        /// for this request, in both directions. `null` means the kill-switch decides.
+        /// Resolved once per donor batch, so turning the kill-switch off also affects a running search that leaves this `null`.
+        /// </summary>
+        public bool? UsePrecomputedGenotypeSets { get; set; }
     }
 }

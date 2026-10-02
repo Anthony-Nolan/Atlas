@@ -150,6 +150,70 @@ pinned by `ImputationEquivalenceTests`, `ExpandedGenotypeTruncaterTests`, `PairR
 - If this first attempt fails (e.g., when an allele belongs to a subsequent nomenclature version), it will attempt to convert the typing using the matching algorithm HLA version (as long as it is different to the HF set version).
 - If both attempts fail, there is a significant risk of the subject being deemed "unrepresented", depending on the point at which conversion fails and the overall typing resolution.
 
+## Precomputed donor genotype sets (search)
+Donor genotype sets can be computed ahead of time and stored in the transient matching database: Data Refresh and the
+differential donor import write them (ATL-232, ATL-233). When search finds a usable stored set for a donor, it decodes
+that set and uses it for match counting. It does not run imputation, truncation or the P group conversion for that
+donor (ATL-221). The patient is always computed live.
+
+### Switching it on and off
+- The kill-switch is off by default. Settings:
+  - `Atlas.Functions` (sequential Durable path): `MatchPrediction:Precompute:UsePrecomputedGenotypeSets`.
+  - `Atlas.MatchPrediction.Worker` (parallel path): `Precompute:UsePrecomputedGenotypeSets` (env var `Precompute__UsePrecomputedGenotypeSets`).
+- A search can override the kill-switch for itself, in either direction, with `SearchRequest.UsePrecomputedGenotypeSets`:
+  `true` uses stored sets even when the kill-switch is off, and `false` computes every donor live even when it is on.
+  `null` (the default) leaves the decision to the kill-switch. Repeat search uses the same value from its `SearchRequest`.
+- The value is resolved once for each donor batch, not when the search is submitted. So turning the kill-switch off also
+  affects a search that is already running and leaves the override `null`.
+- When the precomputed path is off, nothing stored is read, trusted or written: every donor runs the complete live pipeline.
+- The standalone match prediction endpoint (`Atlas.MatchPrediction.Functions`) has no access to the transient
+  databases. It always computes live.
+
+### Which database is read
+Matching records the data refresh record it ran against (`ResultSet.MatchingAlgorithmDataRefreshRecordId`, ATL-433).
+Match prediction reads stored sets only from that record's database, and only while it is still the active one. If a
+Data Refresh has swapped the active database since matching ran, the batch is computed live. The old (dormant)
+database is never read or written: it is scaled down, can be paused, and is wiped by the next refresh.
+
+### When a donor is computed live
+Each donor input (one per distinct phenotype and frequency set metadata) has one of these outcomes. The names are the
+metric names of the logging event below.
+
+| Outcome | Applies to | Meaning |
+|---|---|---|
+| `Precomputed` | donor | A stored set for the search's allowed loci and the frequency set the search uses was decoded and used. |
+| `NoRow` | donor | No stored set for any of the donor's ids. For example: the backfill (ATL-234) has not reached the donor; the donor was added or updated recently; pre-computation failed for the donor during donor import; or a Data Refresh pre-computation batch failed permanently. |
+| `StaleFrequencySet` | donor | A stored set exists, but it was computed with a different haplotype frequency set from the one the search now uses (for example, a new frequency set was imported). Neither its payload nor its "unrepresented" flag is used. |
+| `DecodeFailed` | donor | A stored set exists but could not be decoded. |
+| `UncoveredAllowedLoci` | batch | The search's loci are not one of the four precomputed combinations: `{A,B,C,DRB1,DQB1}`, `{A,B,C,DRB1}`, `{A,B,DRB1,DQB1}`, `{A,B,DRB1}`. |
+| `ActiveDatabaseChanged` | batch | A Data Refresh swapped the active database after matching ran (see above). |
+| `ActiveDatabaseUnknown` | batch | The search was matched before matching recorded its data refresh record, or the request did not come from a search. |
+| `ReadFailed` | batch | Reading the stored sets failed. This is logged as an exception, and the batch is computed live rather than failed. |
+| `PrecomputeDisabled` | batch | The precomputed path is off for the search: by the kill-switch, or by the request's override. |
+
+### Storing donors computed live
+When a donor has `NoRow`, `StaleFrequencySet` or `DecodeFailed`, search stores the set it has just computed, so the next
+search can use it. This is best effort: it runs after the batch's results are uploaded, and a failure is logged (event
+`Precomputed genotype set store failed`) and never fails the search. The stored set is the same as Data Refresh would
+store: the same genotype set service, frequency set, nomenclature version and key. Two guards apply:
+- Nothing is written unless the database matching used is still the active one. This is checked again just before writing.
+- A donor's set is written only while the donor's typing in the database is still the typing the set was computed
+  from. A differential import can change a donor between matching and match prediction. The write takes the table lock
+  on `DonorSubjectGenotypeSets` before it reads `Donors`, which is the same lock order as the import, so the two cannot
+  deadlock and whichever goes first wins safely.
+- One case is not covered: when `OngoingDifferentialDonorUpdatesShouldBeFullyTransactional` is `false`, the import
+  deletes a donor's rows and writes the donor's new typing as two separate commits. A write between them can store a
+  set for the old typing. The import's own pre-computation, which runs straight after, then replaces it. Only if that
+  also fails does the old set stay, until the next Data Refresh.
+
+### Logging
+Each donor batch sends one Application Insights event, `Precomputed genotype sets used`. Adding up a search's events
+gives the totals for that search.
+- Properties: `SearchRequestId`, `AllowedLociKey`, `UsePrecomputedGenotypeSets` (the resolved value),
+  `UsePrecomputedGenotypeSetsSource` (`Request` or `FeatureFlag`), `MatchingAlgorithmDataRefreshRecordId`.
+- Metrics: `DonorCount` (donor inputs), `DonorIdCount` (donors), `PrecomputedCount`, one count for each outcome in the
+  table above, and `StoredCount`, `StoreSkippedHlaChanged`, `StoreSkippedDatabaseChanged` (in donors).
+
 ## Match Prediction Requests
 - Match prediction requests (outside of search) can be submitted to the http-triggered function within the Match prediction project.
   - The endpoint accepts a single patient along with a set of donors (at least one donor must be submitted).
@@ -185,6 +249,11 @@ The following settings require real values to run locally:
 }
 ```
 All other settings have safe defaults for local development (Azurite for storage, local SQL Server for the database).
+
+The Worker also connects to the matching algorithm's databases, to read and store precomputed donor genotype sets (see
+[Precomputed donor genotype sets](#precomputed-donor-genotype-sets-search)): `ConnectionStrings:MatchingPersistentSql`
+(the persistent database, which holds the data refresh history) and `ConnectionStrings:MatchingTransientASql` /
+`ConnectionStrings:MatchingTransientBSql` (the two transient databases).
 
 ### `HaplotypeFrequencySetCache.AwaitConsolidatedFrequencyWarm`
 

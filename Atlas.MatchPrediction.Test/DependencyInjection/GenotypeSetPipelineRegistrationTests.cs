@@ -135,6 +135,7 @@ internal class GenotypeSetPipelineRegistrationTests
             _ => new NotificationsServiceBusSettings { NotificationsTopic = "from-host" },
             _ => new AzureStorageSettings(),
             _ => new GenotypeImputationSettings(),
+            _ => new PrecomputedGenotypeSetSettings(),
             _ => "match-prediction-sql");
     }
 }

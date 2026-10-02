@@ -19,6 +19,7 @@ using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 using Atlas.MatchPrediction.Services.HlaConversion;
 using Atlas.MatchPrediction.Services.MatchCalculation;
 using Atlas.MatchPrediction.Services.MatchProbability;
+using Atlas.MatchPrediction.Services.Precompute;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using LazyCache;
 using LazyCache.Providers;
@@ -41,6 +42,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
             Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, GenotypeImputationSettings> fetchGenotypeImputationSettings,
+            Func<IServiceProvider, PrecomputedGenotypeSetSettings> fetchPrecomputedGenotypeSetSettings,
             Func<IServiceProvider, string> fetchSqlConnectionString
         )
         {
@@ -52,7 +54,9 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
                 fetchSqlConnectionString);
 
             services.RegisterSettings(fetchNotificationsServiceBusSettings, fetchAzureStorageSettings);
+            services.MakeSettingsAvailableForUse(fetchPrecomputedGenotypeSetSettings);
             services.RegisterSearchServices();
+            services.RegisterPrecomputedGenotypeSetServices();
             services.RegisterClientServices(fetchNotificationsServiceBusSettings, fetchApplicationInsightsSettings);
             services.RegisterCommonMatchingServices();
         }
@@ -291,6 +295,21 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
 
             services.AddScoped<ISearchDonorResultUploader, SearchDonorResultUploader>();
             services.AddScoped<IMatchPredictionBatchResultUploader, MatchPredictionBatchResultUploader>();
+        }
+
+        /// <summary>
+        /// The search-time read path for precomputed donor genotype sets (ATL-221).
+        /// </summary>
+        /// <remarks>
+        /// The reader and writer default to no-ops, so every donor is computed live. Hosts that can reach the transient
+        /// matching databases replace them with the matching algorithm's <c>RegisterPrecomputedDonorGenotypeSetAccess</c>.
+        /// </remarks>
+        private static void RegisterPrecomputedGenotypeSetServices(this IServiceCollection services)
+        {
+            services.AddScoped<IDonorGenotypeSetSourceResolver, DonorGenotypeSetSourceResolver>();
+            services.AddScoped<IDonorGenotypeSetBatchCompleter, DonorGenotypeSetBatchCompleter>();
+            services.TryAddScoped<IPrecomputedDonorGenotypeSetReader, NoOpPrecomputedDonorGenotypeSetReader>();
+            services.TryAddScoped<IPrecomputedDonorGenotypeSetWriter, NoOpPrecomputedDonorGenotypeSetWriter>();
         }
     }
 }

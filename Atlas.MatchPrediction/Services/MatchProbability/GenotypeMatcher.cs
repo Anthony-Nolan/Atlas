@@ -18,6 +18,13 @@ public class GenotypeMatcherInput
     public SubjectData PatientData { get; set; }
     public SubjectData DonorData { get; set; }
     public SubjectGenotypeSet PatientGenotypeSet { get; set; }
+
+    /// <summary>
+    /// Optional. A donor genotype set that was precomputed and decoded (ATL-221). When set, it is used as it is, and the
+    /// donor is not imputed, truncated or converted. When null, the donor is computed live from <see cref="DonorData"/>.
+    /// </summary>
+    public SubjectGenotypeSet DonorGenotypeSet { get; set; }
+
     public MatchPredictionParameters MatchPredictionParameters { get; set; }
 }
 
@@ -26,6 +33,12 @@ public class GenotypeMatcherResult
     public SubjectResult PatientResult { get; set; }
     public SubjectResult DonorResult { get; set; }
     public IEnumerable<GenotypeMatchDetails> GenotypeMatchDetails { get; set; }
+
+    /// <summary>
+    /// The donor genotype set the match ran on: the one supplied in <see cref="GenotypeMatcherInput.DonorGenotypeSet"/>,
+    /// or the one computed live. Lets the caller store a live set for reuse.
+    /// </summary>
+    public SubjectGenotypeSet DonorGenotypeSet { get; set; }
 
     public class SubjectResult
     {
@@ -78,12 +91,14 @@ internal class GenotypeMatcher : IGenotypeMatcher
         ArgumentNullException.ThrowIfNull(input.MatchPredictionParameters);
 
         var patientGenotypeSet = input.PatientGenotypeSet;
-        var donorGenotypeSet = await genotypeSetService.GetGenotypeSet(input.DonorData, input.MatchPredictionParameters);
+        var donorGenotypeSet = input.DonorGenotypeSet
+                               ?? await genotypeSetService.GetGenotypeSet(input.DonorData, input.MatchPredictionParameters);
 
         if (patientGenotypeSet.IsUnrepresented || donorGenotypeSet.IsUnrepresented)
         {
             return new GenotypeMatcherResult
             {
+                DonorGenotypeSet = donorGenotypeSet,
                 PatientResult = new GenotypeMatcherResult.SubjectResult(
                     patientGenotypeSet.IsUnrepresented,
                     patientGenotypeSet.Genotypes.Count,
@@ -104,6 +119,8 @@ internal class GenotypeMatcher : IGenotypeMatcher
 
         return new GenotypeMatcherResult
         {
+            DonorGenotypeSet = donorGenotypeSet,
+
             PatientResult = new GenotypeMatcherResult.SubjectResult(
                 false,
                 patientGenotypeSet.Genotypes.Count,

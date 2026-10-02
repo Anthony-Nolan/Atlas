@@ -9,6 +9,7 @@ using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
 using Atlas.MatchPrediction.Services.MatchProbability;
+using Atlas.MatchPrediction.Services.Precompute;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.MatchPrediction.ExternalInterface
@@ -46,6 +47,8 @@ namespace Atlas.MatchPrediction.ExternalInterface
         private readonly IGenotypeSetService genotypeSetService;
         private readonly IMatchPredictionBatchResultUploader resultUploader;
         private readonly IServiceScopeFactory serviceScopeFactory;
+        private readonly IDonorGenotypeSetSourceResolver genotypeSetSourceResolver;
+        private readonly IDonorGenotypeSetBatchCompleter genotypeSetBatchCompleter;
         private readonly IAtlasLogger logger;
 
         public ParallelMatchPredictionAlgorithm(
@@ -53,12 +56,16 @@ namespace Atlas.MatchPrediction.ExternalInterface
             IMatchPredictionBatchResultUploader resultUploader,
             // ReSharper disable once SuggestBaseTypeForParameterInConstructor
             IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
-            IServiceScopeFactory serviceScopeFactory)
+            IServiceScopeFactory serviceScopeFactory,
+            IDonorGenotypeSetSourceResolver genotypeSetSourceResolver,
+            IDonorGenotypeSetBatchCompleter genotypeSetBatchCompleter)
         {
             this.genotypeSetService = genotypeSetService;
             this.resultUploader = resultUploader;
             this.logger = logger;
             this.serviceScopeFactory = serviceScopeFactory;
+            this.genotypeSetSourceResolver = genotypeSetSourceResolver;
+            this.genotypeSetBatchCompleter = genotypeSetBatchCompleter;
         }
 
         public async Task<ParallelMatchPredictionBatchOutput> RunBatch(
@@ -78,7 +85,13 @@ namespace Atlas.MatchPrediction.ExternalInterface
 
                 var patientGenotypeSet = await genotypeSetService.GetPatientGenotypeSet(matchProbabilityInputs.First());
 
-                var perDonorResults = await matchProbabilityInputs.WhenAll(
+                // Once per batch, in the batch's scope, and shared by the per-donor scopes below: one read of the stored
+                // rows, and one decision about the kill-switch for every donor.
+                var batchContext = await genotypeSetSourceResolver.Resolve(
+                    multipleDonorMatchProbabilityInput,
+                    matchProbabilityInputs.SelectMany(i => i.Donor.DonorIds).Distinct().ToList());
+
+                var perInputResults = await matchProbabilityInputs.WhenAll(
                     async input =>
                     {
                         await using var scope = serviceScopeFactory.CreateAsyncScope();
@@ -87,24 +100,36 @@ namespace Atlas.MatchPrediction.ExternalInterface
 
                         using (scopedLogger.RunTimed("Run Match Prediction Algorithm per donor (parallel)"))
                         {
-                            var result = await scopedMatchProbabilityService.CalculateMatchProbability(input, patientGenotypeSet);
-                            // Donors sharing a phenotype are imputed once, so every id in the group carries the same result and count.
-                            return input.Donor.DonorIds.Select(donorId =>
-                                new DonorBatchResult(donorId, result.Response, result.DonorGenotypeCount));
+                            var result = await scopedMatchProbabilityService.CalculateMatchProbability(input, patientGenotypeSet, batchContext);
+                            return new InputResult(input, result);
                         }
                     },
                     maxDegreeOfParallelism);
 
-                var flattenedResults = perDonorResults.SelectMany(donorResults => donorResults).ToList();
+                // Donors sharing a phenotype are imputed once, so every id in the group carries the same result and count.
+                var flattenedResults = perInputResults
+                    .SelectMany(r => r.Input.Donor.DonorIds.Select(donorId =>
+                        new DonorBatchResult(donorId, r.Result.Response, r.Result.DonorGenotypeCount)))
+                    .ToList();
 
                 var resultsByDonorId = flattenedResults.ToDictionary(r => r.DonorId, r => r.Response);
                 var donorGenotypeCounts = flattenedResults.ToDictionary(r => r.DonorId, r => r.GenotypeCount);
 
                 var resultLocation = await resultUploader.UploadMatchPredictionBatchResult(searchRequestId, batchId, resultsByDonorId);
 
+                // After the upload, so storing for reuse never delays this batch's results.
+                await genotypeSetBatchCompleter.Complete(
+                    multipleDonorMatchProbabilityInput,
+                    batchContext,
+                    perInputResults
+                        .Select(r => new DonorGenotypeSetBatchOutcome(r.Input.Donor.DonorIds.Count, r.Result.GenotypeSetSource, r.Result.GenotypeSetToStore))
+                        .ToList());
+
                 return new ParallelMatchPredictionBatchOutput(resultLocation, patientGenotypeSet.Genotypes.Count, donorGenotypeCounts);
             }
         }
+
+        private sealed record InputResult(SingleDonorMatchProbabilityInput Input, MatchProbabilityResult Result);
 
         private sealed record DonorBatchResult(int DonorId, MatchProbabilityResponse Response, int GenotypeCount);
     }
