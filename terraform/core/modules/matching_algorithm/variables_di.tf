@@ -55,6 +55,12 @@ variable "mac_import_table" {
   })
 }
 
+variable "match_prediction_sql_database" {
+  type = object({
+    connection_string_kv_ref = string
+  })
+}
+
 variable "resource_group" {
   type = object({
     name = string

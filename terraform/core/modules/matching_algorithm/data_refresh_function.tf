@@ -122,7 +122,7 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_data_refresh_f
 
   tags = var.general.common_tags
 
-  app_settings = local.data_refresh_func_app_settings
+  app_settings = merge(local.data_refresh_func_app_settings, local.match_prediction_func_app_settings)
 
   connection_string {
     name  = "SqlA"
@@ -143,6 +143,11 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_data_refresh_f
     name  = "DonorSql"
     type  = "SQLAzure"
     value = local.sql_kv_ref["matching-donor-sql-connection-string"]
+  }
+  connection_string {
+    name  = "MatchPredictionSql"
+    type  = "SQLAzure"
+    value = var.match_prediction_sql_database.connection_string_kv_ref
   }
 
   lifecycle {

@@ -124,6 +124,7 @@ module "matching_algorithm" {
   elastic_app_service_plan       = azurerm_service_plan.atlas-elastic-plan
   key_vault                      = local.key_vault_module_handoff
   mac_import_table               = module.multiple_allele_code_lookup.storage_table
+  match_prediction_sql_database  = module.match_prediction.sql_database
   resource_group                 = azurerm_resource_group.atlas_resource_group
   servicebus_namespace           = azurerm_servicebus_namespace.general
   shared_function_storage        = azurerm_storage_account.function_storage
@@ -172,6 +173,10 @@ module "matching_algorithm" {
   IP_RESTRICTION_SETTINGS                                  = var.IP_RESTRICTION_SETTINGS
   MAINTENANCE_GCCOLLECT_DISABLED                           = var.MATCHING_MAINTENANCE_GCCOLLECT_DISABLED
   MAINTENANCE_GCCOLLECT_CRON_SCHEDULE                      = var.MATCHING_MAINTENANCE_GCCOLLECT_CRON_SCHEDULE
+  MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES      = var.MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES
+  MATCH_PREDICTION_MAX_CACHED_FREQUENCY_SETS               = var.MATCH_PREDICTION_MAX_CACHED_FREQUENCY_SETS
+  MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT        = var.MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT
+  MATCH_PREDICTION_SET_CACHE_EXPIRY_MINUTES                = var.MATCH_PREDICTION_SET_CACHE_EXPIRY_MINUTES
   MATCHING_BATCH_SIZE                                      = var.MATCHING_BATCH_SIZE
   MAX_CONCURRENT_SERVICEBUS_FUNCTIONS                      = var.MATCHING_MAX_CONCURRENT_PROCESSES_PER_INSTANCE
   MAX_SCALE_OUT                                            = var.MATCHING_MAX_SCALE_OUT
