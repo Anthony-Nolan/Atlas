@@ -46,6 +46,11 @@ resource "azurerm_container_app" "atlas_match_prediction" {
         name  = "ApplicationInsights__LogLevel"
         value = var.APPLICATION_INSIGHTS_LOG_LEVEL
       }
+      // Container Apps do not set a cloud role name for Application Insights, unlike function apps.
+      env {
+        name  = "ApplicationInsights__CloudRoleName"
+        value = local.atlas_match_prediction_container_app_name
+      }
       env {
         name        = "APPLICATIONINSIGHTS_CONNECTION_STRING"
         secret_name = "appinsights-connection-string"
