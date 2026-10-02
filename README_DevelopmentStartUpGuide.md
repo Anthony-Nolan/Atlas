@@ -44,7 +44,7 @@ It's highly recommended that you read the sections outside ZtH in parallel with 
 
 ### Run Migrations
 - Run EF Core Migrations for all data projects:
-    - `MatchingAlgorithm.Data`, `MatchingAlgorithm.Data.Persistent`, `DonorImport.Data`, `MatchPrediction.Data`, `RepeatSearch.Data`
+    - `MatchingAlgorithm.Data`, `MatchingAlgorithm.Data.Persistent`, `DonorImport.Data`, `MatchPrediction.Data`, `RepeatSearch.Data`, `SearchTracking.Data`
     - This can be done from general command line, or from the VS Package Manager Console, but in either case **must be run from within those project folders!**.
 - Instructions for the command line
   - From inside each project folder (e.g. `<gitRoot>/Atlas.MatchingAlgorithm.Data`), run `dotnet ef database update`.
