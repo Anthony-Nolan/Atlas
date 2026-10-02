@@ -52,6 +52,11 @@ namespace Atlas.Debug.Client.Clients
         /// Donors have to be made unavailable for search by calling <see cref="MatchingAlgorithmFunctionsClient.SetDonorsAsUnavailableForSearch"/>.
         /// </summary>
         Task DeleteDonors(IEnumerable<string> externalDonorCodes);
+
+        /// <summary>
+        /// Retrieves a composite audit of the donor import pipeline state for the given donors and file.
+        /// </summary>
+        Task<DonorImportAuditResult> GetDonorImportAudit(DonorImportAuditRequest request);
     }
 
     /// <inheritdoc cref="IDonorImportFunctionsClient" />
@@ -102,6 +107,12 @@ namespace Atlas.Debug.Client.Clients
         public async Task DeleteDonors(IEnumerable<string> externalDonorCodes)
         {
             await PostRequest("debug/donors/delete", externalDonorCodes);
+        }
+
+        /// <inheritdoc />
+        public async Task<DonorImportAuditResult> GetDonorImportAudit(DonorImportAuditRequest request)
+        {
+            return await PostRequest<DonorImportAuditRequest, DonorImportAuditResult>("debug/audit/donorImport", request);
         }
     }
 }

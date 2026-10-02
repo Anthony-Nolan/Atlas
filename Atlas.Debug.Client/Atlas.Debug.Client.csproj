@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <VersionPrefix>4.1.0</VersionPrefix>
+    <VersionPrefix>4.1.1</VersionPrefix>
     <PackageReadmeFile>CHANGELOG_DebugClient.md</PackageReadmeFile>
     <Authors>Anthony Nolan</Authors>
     <Company>Anthony Nolan</Company>
@@ -16,6 +16,8 @@
     <ProjectReference Include="..\Atlas.Client.Models\Atlas.Client.Models.csproj" />
     <ProjectReference Include="..\Atlas.Debug.Client.Models\Atlas.Debug.Client.Models.csproj" />
     <ProjectReference Include="..\Atlas.MatchingAlgorithm.Client.Models\Atlas.MatchingAlgorithm.Client.Models.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.9" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.9" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.9" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.9" />

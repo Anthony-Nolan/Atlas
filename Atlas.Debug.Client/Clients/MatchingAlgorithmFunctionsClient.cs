@@ -6,6 +6,7 @@ using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Debug.Client.Models.ApplicationInsights;
 using Atlas.Debug.Client.Models.DonorImport;
+using Atlas.Debug.Client.Models.MatchingAlgorithm;
 using Atlas.Debug.Client.Models.SearchResults;
 using Atlas.Debug.Client.Models.ServiceBus;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
@@ -50,6 +51,11 @@ namespace Atlas.Debug.Client.Clients
         /// <param name="request"></param>
         /// <returns></returns>
         Task<IEnumerable<DonorScoringResult>> ScoreBatch(BatchScoringRequest request);
+
+        /// <summary>
+        /// Retrieves a composite audit of the matching algorithm state for the given donors.
+        /// </summary>
+        Task<MatchingAuditResult> GetMatchingAudit(MatchingAuditRequest request);
     }
 
     /// <inheritdoc cref="IMatchingAlgorithmFunctionsClient" />
@@ -94,6 +100,12 @@ namespace Atlas.Debug.Client.Clients
         public async Task<IEnumerable<DonorScoringResult>> ScoreBatch(BatchScoringRequest request)
         {
             return await PostRequest<BatchScoringRequest, IEnumerable<DonorScoringResult>>("ScoreBatch", request);
+        }
+
+        /// <inheritdoc />
+        public async Task<MatchingAuditResult> GetMatchingAudit(MatchingAuditRequest request)
+        {
+            return await PostRequest<MatchingAuditRequest, MatchingAuditResult>("debug/audit/matching", request);
         }
     }
 }
