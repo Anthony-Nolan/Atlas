@@ -44,8 +44,6 @@ jobs:
             Atlas.Functions
             Atlas.Functions.PublicApi
             Atlas.Functions.Test
-            Atlas.Debug.Client
-            Atlas.Debug.Client.Models
             Atlas.DonorImport.Data
             Atlas.DonorImport.FileSchema.Models
             Atlas.DonorImport.Functions
@@ -145,33 +143,6 @@ jobs:
         inputs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/published-models-ci'
           ArtifactName: published-models-ci
-
-      - task: DotNetCoreCLI@2
-        displayName: 'Prepare Debug Clients'
-        inputs:
-          command: pack
-          packagesToPack: '**/Atlas.Debug.Client*.csproj'
-          packDirectory: '$(Build.ArtifactStagingDirectory)/debug-client'
-          nobuild: true
-
-      - task: PublishBuildArtifacts@1
-        displayName: 'Publish Debug Client Packages'
-        inputs:
-          PathtoPublish: '$(Build.ArtifactStagingDirectory)/debug-client'
-          ArtifactName: debug-client
-
-        # Suffix version number with build ID to allow for a prerelease ci (continuous integration) packages to be published
-      - bash: dotnet pack **/Atlas.Debug.Client.csproj --output $(Build.ArtifactStagingDirectory)/debug-client-ci --no-build /p:Configuration=Release --version-suffix "ci-$(Build.BuildId)"
-        displayName: Pack Prerelease Debug Client
-
-      - bash: dotnet pack **/Atlas.Debug.Client.Models.csproj --output $(Build.ArtifactStagingDirectory)/debug-client-ci --no-build --version-suffix "ci-$(Build.BuildId)"
-        displayName: Pack Prerelease Debug Client Models
-
-      - task: PublishBuildArtifacts@1
-        displayName: 'Publish Artifact: Debug Client-CI'
-        inputs:
-          PathtoPublish: '$(Build.ArtifactStagingDirectory)/debug-client-ci'
-          ArtifactName: debug-client-ci
 
       - task: CopyFiles@2
         displayName: 'Copy Atlas Functions Build'

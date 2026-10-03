@@ -3,17 +3,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Atlas.Common.ServiceBus;
-using Atlas.Debug.Client.Models.ServiceBus;
+using Atlas.ManualTesting.Models;
 using Azure.Messaging.ServiceBus;
 using Newtonsoft.Json;
 
-namespace Atlas.Common.Debugging
+namespace Atlas.ManualTesting.Services.ServiceBus
 {
-    public interface IMessagesPeeker<T> : IServiceBusPeeker<T>
+    internal interface IMessagesPeeker<T> : IServiceBusPeeker<T>
     {
     }
 
-    public class MessagesPeeker<T> : ServiceBusPeeker<T>, IMessagesPeeker<T>
+    internal class MessagesPeeker<T> : ServiceBusPeeker<T>, IMessagesPeeker<T>
     {
         public MessagesPeeker(IMessageReceiverFactory factory, string topicName, string subscriptionName)
             : base(factory, topicName, subscriptionName)
@@ -21,12 +21,12 @@ namespace Atlas.Common.Debugging
         }
     }
 
-    public interface IServiceBusPeeker<T>
+    internal interface IServiceBusPeeker<T>
     {
         Task<PeekServiceBusMessagesResponse<T>> Peek(PeekServiceBusMessagesRequest peekRequest);
     }
 
-    public abstract class ServiceBusPeeker<T> : IServiceBusPeeker<T>
+    internal abstract class ServiceBusPeeker<T> : IServiceBusPeeker<T>
     {
         private readonly IMessageReceiver messageReceiver;
 

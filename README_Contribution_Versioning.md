@@ -24,10 +24,6 @@ Only the *public interface* of ATLAS is versioned in code. In practice, this mea
   * Models that represent the donor import file schema.
 * `Atlas.Common.Public.Models`
   * All models referenced by API projects and other Atlas components.
-* `Atlas.Debug.Client`
-  * Client that collects all debug endpoints required to write automated end-to-end tests against Atlas.
-* `Atlas.Debug.Client.Models`
-  * Models used by debug endpoints and/or debug client methods.
 
 All the above projects are versioned in-step with the public API.
 
@@ -53,8 +49,6 @@ This sign-off process should involve ensuring:
 * Documentation has been updated as appropriate, notably:
     * [Feature CHANGELOG](./Atlas.Functions.PublicApi/CHANGELOG_Atlas.md)
     * [Client CHANGELOG](./Atlas.Client.Models/CHANGELOG_Client.md)
-    * [Debug Client CHANGELOG](./Atlas.Debug.Client/CHANGELOG_DebugClient.md) 
-    * [Debug Client Model CHANGELOG](./Atlas.Debug.Client.Models/CHANGELOG_DebugClientModels.md)   
     * Database changelogs (see invidivudal `.Data` projects)
 
 ### Other Tags

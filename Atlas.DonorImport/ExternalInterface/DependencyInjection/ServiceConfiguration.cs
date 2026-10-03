@@ -13,7 +13,6 @@ using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.Logger;
 using Atlas.DonorImport.Models.Mapping;
 using Atlas.DonorImport.Services;
-using Atlas.DonorImport.Services.Debug;
 using Atlas.DonorImport.Services.DonorChecker;
 using Atlas.DonorImport.Services.DonorUpdates;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,7 +42,6 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
                 fetchNotificationConfigurationSettings, fetchStalledFileSettings, fetchPublishDonorUpdatesSettings, fetchAzureStorageSettings, fetchMessagingServiceBusSettings, fetchFailureLogsSettings);
             services.RegisterClients(fetchApplicationInsightsSettings, fetchNotificationsServiceBusSettings);
             services.RegisterServices(fetchMessagingServiceBusSettings, fetchAzureStorageSettings);
-            services.RegisterDebugServices(fetchMessagingServiceBusSettings, fetchAzureStorageSettings);
             services.RegisterImportDatabaseTypes(fetchSqlConnectionString);
         }
 
@@ -102,6 +100,10 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings)
         {
+            services.RegisterServiceBusAsKeyedServices(
+                typeof(MessagingServiceBusSettings),
+                sp => fetchMessagingServiceBusSettings(sp).ConnectionString);
+
             services.AddScoped<IDonorFileImporter, DonorFileImporter>();
             services.AddScoped<IDonorImportFileParser, DonorImportFileParser>();
             services.AddScoped<IDonorRecordChangeApplier, DonorRecordChangeApplier>();
@@ -159,35 +161,6 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.AddScoped<IDonorUpdateMapper, DonorUpdateMapper>();
             services.AddScoped<IDonorImportMessageSender, DonorImportMessageSender>();
             services.AddScoped<IDonorImportFailuresCleaner, DonorImportFailuresCleaner>();
-        }
-
-        private static void RegisterDebugServices(
-            this IServiceCollection services,
-            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
-            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings
-            )
-        {
-            var serviceKey = typeof(MessagingServiceBusSettings);
-            services.RegisterServiceBusAsKeyedServices(
-                serviceKey,
-                sp => fetchMessagingServiceBusSettings(sp).ConnectionString
-                );
-
-            services.AddScoped<IDonorImportResultsPeeker, DonorImportResultsPeeker>(sp =>
-            {
-                var settings = fetchMessagingServiceBusSettings(sp);
-                return new DonorImportResultsPeeker(
-                    sp.GetRequiredKeyedService<IMessageReceiverFactory>(serviceKey),
-                    settings.DonorImportResultsTopic,
-                    settings.DonorImportResultsDebugSubscription);
-            });
-
-            services.AddScoped<IDonorImportBlobStorageClient, DonorImportBlobStorageClient>(sp =>
-            {
-                var storageSettings = fetchAzureStorageSettings(sp);
-                var logger = sp.GetService<IAtlasLogger>();
-                return new DonorImportBlobStorageClient(logger, storageSettings.ConnectionString, storageSettings.DonorFileBlobContainer);
-            });
         }
 
         private static void RegisterDonorReaderServices(this IServiceCollection services)

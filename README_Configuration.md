@@ -29,7 +29,6 @@ readable manner.
 
 | Terraform Setting          | Functions App Name | Functions App Setting Name | Description |
 | -------------------------- | ------------------ | -------------------------- | ----------- | 
-| AZURE-TENANT-ID | ATLAS-MATCHING-ALGORITHM-FUNCTIONS  | AzureManagement-Authentication-TenantId | Tenant id used for authenticating with Azure via OAuth, when querying log analytics workspace from code. Expected to be domain name or GUID. Currently used only for debug endpoint to query application insigths logs. |
 | IP-RESTRICTION-SETTINGS | all | N/A | Allows restriction of functions app access to specified IPs only. |
 | LOG-ANALYTICS-DAILY-QUOTA-GB | N/A | N/A | The Log Analytics workspace daily quota for ingestion in GB. Default is -1 (unlimited). |
 | LOG-ANALYTICS-SKU | N/A | N/A | Log Analytics Workspace SKU. Default is `Pay As You Go`. |

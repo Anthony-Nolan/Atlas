@@ -63,7 +63,7 @@ There is no local Azure Service Bus emulator in use for this project — local d
 - **Repeat Search** — standalone component that tracks previously-returned donors so consumers can request differential results; kept separate to keep the main algorithm stateless.
 - **Search Tracking** — tracks search lifecycle/state.
 - **Atlas.Functions** — top-level Functions app; runs MAC import and orchestrates match prediction after a matching search completes.
-- **Atlas.Functions.PublicApi** — the versioned public HTTP API surface. This, together with `Atlas.*.Client.Models`, `Atlas.DonorImport.FileSchema.Models`, `Atlas.Common.Public.Models`, and `Atlas.Debug.Client(.Models)`, is the only code versioned/released as public interface — see `README_Contribution_Versioning.md`.
+- **Atlas.Functions.PublicApi** — the versioned public HTTP API surface. This, together with `Atlas.*.Client.Models`, `Atlas.DonorImport.FileSchema.Models`, and `Atlas.Common.Public.Models`, is the only code versioned/released as public interface — see `README_Contribution_Versioning.md`.
 
 Per component, the project-naming convention is: `Atlas.<Component>` (business logic), `Atlas.<Component>.Data` (EF Core schema + Dapper/EF querying), `Atlas.<Component>.Functions` (Azure Functions entry point), `Atlas.<Component>.Client.Models` (models for external consumers), `Atlas.<Component>.Common` (shared internal models between logic/data layers), plus the `.Test`/`.Test.Integration`/etc. suite.
 

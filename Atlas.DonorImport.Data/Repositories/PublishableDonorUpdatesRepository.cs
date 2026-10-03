@@ -14,7 +14,6 @@ namespace Atlas.DonorImport.Data.Repositories
         Task<IEnumerable<PublishableDonorUpdate>> GetOldestUnpublishedDonorUpdates(int batchSize);
         Task MarkUpdatesAsPublished(IEnumerable<int> updateIds);
         Task DeleteUpdatesPublishedOnOrBefore(DateTimeOffset dateCutOff, int publishedUpdatesToDeleteCap, int publishedUpdatesToDeleteBatchSize);
-        Task<IEnumerable<PublishableDonorUpdate>> GetByDonorIds(IEnumerable<int> donorIds);
     }
 
     public class PublishableDonorUpdatesRepository : BulkInsertRepository<PublishableDonorUpdate>, IPublishableDonorUpdatesRepository
@@ -49,18 +48,6 @@ namespace Atlas.DonorImport.Data.Repositories
             await using (var connection = new SqlConnection(ConnectionString))
             {
                 await connection.ExecuteAsync(sql, param: new { dateTimeNow, updateIds });
-            }
-        }
-
-        public async Task<IEnumerable<PublishableDonorUpdate>> GetByDonorIds(IEnumerable<int> donorIds)
-        {
-            const string sql = @$"SELECT * FROM {PublishableDonorUpdate.QualifiedTableName}
-                        WHERE {nameof(PublishableDonorUpdate.DonorId)} IN @{nameof(donorIds)}
-                        ORDER BY {nameof(PublishableDonorUpdate.Id)} DESC";
-
-            await using (var connection = new SqlConnection(ConnectionString))
-            {
-                return await connection.QueryAsync<PublishableDonorUpdate>(sql, param: new { donorIds });
             }
         }
 

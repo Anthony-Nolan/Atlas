@@ -65,8 +65,6 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsTopic"           = module.repeat_search.service_bus.repeat_search_matching_results_topic.name
     "AtlasFunction:MessagingServiceBus:RepeatSearchResultsTopic"                   = module.repeat_search.service_bus.repeat_search_results_topic.name
     "AtlasFunction:MessagingServiceBus:SearchResultsTopic"                         = azurerm_servicebus_topic.search-results-ready.name
-    "AtlasFunction:MessagingServiceBus:SearchResultsDebugSubscription"             = azurerm_servicebus_subscription.debug-search-results-ready.name
-    "AtlasFunction:MessagingServiceBus:RepeatSearchResultsDebugSubscription"       = module.repeat_search.service_bus.repeat_search_results_debug_subscription.name
     "AtlasFunction:MessagingServiceBus:SendRetryCount"                             = var.SERVICE_BUS_SEND_RETRY_COUNT
     "AtlasFunction:MessagingServiceBus:SendRetryCooldownSeconds"                   = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
     "AtlasFunction:MessagingServiceBus:ParallelMatchPredictionRequestsTopic"       = module.match_prediction.service_bus.parallel_match_prediction_requests_topic.name
@@ -102,18 +100,16 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "MatchPrediction:AzureStorage:ConnectionString"                    = azurerm_storage_account.azure_storage.primary_connection_string
     "MatchPrediction:AzureStorage:MatchPredictionResultsBlobContainer" = module.match_prediction.storage.match_prediction_results_container_name
 
-    "NotificationsServiceBus:AlertsTopic"                     = module.support.general.alerts_servicebus_topic.name
-    "NotificationsServiceBus:ConnectionString"                = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
-    "NotificationsServiceBus:Debug:AlertsSubscription"        = module.support.general.alerts_servicebus_debug_subscription
-    "NotificationsServiceBus:Debug:NotificationsSubscription" = module.support.general.notifications_servicebus_debug_subscription
-    "NotificationsServiceBus:NotificationsTopic"              = module.support.general.notifications_servicebus_topic.name
-    "NotificationsServiceBus:SendRetryCount"                  = var.SERVICE_BUS_SEND_RETRY_COUNT
-    "NotificationsServiceBus:SendRetryCooldownSeconds"        = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
-    "SearchTrackingServiceBus:ConnectionString"               = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
-    "SearchTrackingServiceBus:SearchTrackingTopic"            = module.search_tracking.service_bus.search_tracking_topic.name
-    "SearchTrackingServiceBus:SendRetryCount"                 = var.SERVICE_BUS_SEND_RETRY_COUNT
-    "SearchTrackingServiceBus:SendRetryCooldownSeconds"       = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
-    "WEBSITE_RUN_FROM_PACKAGE"                                = var.WEBSITE_RUN_FROM_PACKAGE
+    "NotificationsServiceBus:AlertsTopic"               = module.support.general.alerts_servicebus_topic.name
+    "NotificationsServiceBus:ConnectionString"          = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
+    "NotificationsServiceBus:NotificationsTopic"        = module.support.general.notifications_servicebus_topic.name
+    "NotificationsServiceBus:SendRetryCount"            = var.SERVICE_BUS_SEND_RETRY_COUNT
+    "NotificationsServiceBus:SendRetryCooldownSeconds"  = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
+    "SearchTrackingServiceBus:ConnectionString"         = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
+    "SearchTrackingServiceBus:SearchTrackingTopic"      = module.search_tracking.service_bus.search_tracking_topic.name
+    "SearchTrackingServiceBus:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
+    "SearchTrackingServiceBus:SendRetryCooldownSeconds" = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
+    "WEBSITE_RUN_FROM_PACKAGE"                          = var.WEBSITE_RUN_FROM_PACKAGE
   }
 
   lifecycle {

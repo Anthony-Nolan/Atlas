@@ -2,7 +2,6 @@ using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Caching;
-using Atlas.Common.Debugging;
 using Atlas.Common.FeatureManagement;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Matching.Services;
@@ -31,7 +30,6 @@ using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
-using Atlas.MatchingAlgorithm.Services.Debug;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Services.Search;
@@ -47,8 +45,6 @@ using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
-using Azure.Identity;
-using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -145,56 +141,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             );
         }
 
-        public static void RegisterDebugServices(
-            this IServiceCollection services,
-            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
-            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
-            Func<IServiceProvider, AzureAuthenticationSettings> fetchAzureAuthenticationSettings)
-        {
-            var serviceKey = typeof(MessagingServiceBusSettings);
-            services.RegisterServiceBusAsKeyedServices(
-                key: serviceKey,
-                sp => fetchMessagingServiceBusSettings(sp).ConnectionString
-                );
-
-            services.AddScoped<IServiceBusPeeker<MatchingResultsNotification>, MatchingResultNotificationsPeeker>(sp =>
-            {
-                var settings = fetchMessagingServiceBusSettings(sp);
-                return new MatchingResultNotificationsPeeker(
-                    sp.GetRequiredKeyedService<IMessageReceiverFactory>(serviceKey),
-                    settings.SearchResultsTopic,
-                    settings.SearchResultsDebugSubscription);
-            });
-
-            services.RegisterDebugLogger(fetchApplicationInsightsSettings);
-            services.AddScoped<IBlobDownloader, BlobDownloader>(sp =>
-            {
-                var settings = fetchAzureStorageSettings(sp);
-                return new BlobDownloader(settings.ConnectionString, sp.GetService<IDebugLogger>());
-            });
-            services.AddScoped<IDebugResultsDownloader, DebugResultsDownloader>();
-
-            // Register azure App.Insights API client and configure EntraId's Client Secret authentication
-            // Another azure clients can be added here and they will share authentication configuration
-            services.AddAzureClients(clientBuilder =>
-            {
-                clientBuilder.UseCredential(sp =>
-                {
-                    var authSetting = fetchAzureAuthenticationSettings(sp);
-
-                    return new ClientSecretCredential(
-                        tenantId: authSetting.TenantId,
-                        clientId: authSetting.ClientId,
-                        clientSecret: authSetting.ClientSecret);
-                });
-
-                clientBuilder.AddLogsQueryClient();
-            });
-
-            services.AddTransient<IHlaExpansionFailuresService, HlaExpansionFailuresService>();
-        }
-
         /// <summary>
         /// Register everything needed to perform searches.
         /// </summary>
@@ -266,6 +212,10 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             );
 
             services.RegisterMatchingAlgorithmSpecificServices(fetchAzureStorageSettings);
+
+            services.RegisterServiceBusAsKeyedServices(
+                typeof(MessagingServiceBusSettings),
+                sp => fetchMessagingServiceBusSettings(sp).ConnectionString);
         }
 
 

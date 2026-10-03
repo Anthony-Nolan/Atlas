@@ -28,7 +28,6 @@
     "AtlasFunction:MessagingServiceBus:RepeatSearchMatchingResultsTopic": "repeat-search-matching-results-ready",
     "AtlasFunction:MessagingServiceBus:RepeatSearchResultsTopic": "search-results-ready",
     "AtlasFunction:MessagingServiceBus:SearchResultsTopic": "search-results-ready",
-    "AtlasFunction:MessagingServiceBus:SearchResultsDebugSubscription": "debug",
     "AtlasFunction:MessagingServiceBus:SendRetryCount": 5,
     "AtlasFunction:MessagingServiceBus:SendRetryCooldownSeconds": 20,
     "AtlasFunction:MessagingServiceBus:ParallelMatchPredictionRequestsTopic": "parallel-match-prediction-requests",
@@ -70,8 +69,6 @@
 
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
-    "NotificationsServiceBus:Debug:AlertsSubscription": "debug",
-    "NotificationsServiceBus:Debug:NotificationsSubscription": "debug",
     "NotificationsServiceBus:NotificationsTopic": "notifications",
     "NotificationsServiceBus:SendRetryCount": 5,
     "NotificationsServiceBus:SendRetryCooldownSeconds": 20,

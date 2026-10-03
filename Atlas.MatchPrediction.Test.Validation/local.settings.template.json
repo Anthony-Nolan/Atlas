@@ -15,9 +15,6 @@
 
     "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes": 5,
 
-    "Homework:ImputationRequestUrl": "override-this",
-    "Homework:MatchingGenotypesRequestUrl": "override-this",
-
     "OutgoingMatchPredictionRequests:RequestBatchSize": 1000,
     "OutgoingMatchPredictionRequests:RequestUrl": "http://localhost:7085/api/BatchMatchPredictionRequests",
 

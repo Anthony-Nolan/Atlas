@@ -1,6 +1,4 @@
-﻿using Atlas.Common.Debugging;
-
-namespace Atlas.ManualTesting.Services.ServiceBus
+﻿namespace Atlas.ManualTesting.Services.ServiceBus
 {
     internal interface IDeadLettersPeeker<T> : IServiceBusPeeker<T>
     {

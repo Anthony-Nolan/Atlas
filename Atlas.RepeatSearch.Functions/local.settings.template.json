@@ -20,7 +20,6 @@
     "MessagingServiceBus:RepeatSearchRequestsSubscription": "repeat-search",
     "MessagingServiceBus:RepeatSearchRequestsTopic": "repeat-search-requests",
     "MessagingServiceBus:RepeatSearchMatchingResultsTopic": "repeat-search-matching-results-ready",
-    "MessagingServiceBus:RepeatSearchResultsDebugSubscription": "debug",
     "MessagingServiceBus:RepeatSearchRequestsMaxDeliveryCount": 10,
     "MessagingServiceBus:SendRetryCount": 5,
     "MessagingServiceBus:SendRetryCooldownSeconds": 20,

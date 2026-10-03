@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Atlas.Debug.Client.Models.ServiceBus
+namespace Atlas.ManualTesting.Models
 {
     /// <summary>
     /// Represents the response from a <see cref="PeekServiceBusMessagesRequest"/>.

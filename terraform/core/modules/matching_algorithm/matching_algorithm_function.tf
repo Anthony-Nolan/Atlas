@@ -6,13 +6,6 @@ locals {
 
     "AzureFunctionsJobHost__extensions__serviceBus__messageHandlerOptions__maxConcurrentCalls" = var.MAX_CONCURRENT_SERVICEBUS_FUNCTIONS
 
-    "AzureManagement:Authentication:ClientId"     = var.AZURE_CLIENT_ID
-    "AzureManagement:Authentication:ClientSecret" = var.AZURE_CLIENT_SECRET
-    "AzureManagement:Authentication:OAuthBaseUrl" = var.AZURE_OAUTH_BASEURL
-    "AzureManagement:Authentication:TenantId"     = var.AZURE_TENANT_ID
-
-    "AzureManagement:Monitoring:WorkspaceId" = var.application_insights_workspace.workspace_id
-
     "AzureAppConfiguration:ConnectionString" = var.azure_app_configuration.primary_read_key[0].connection_string
 
     "AzureStorage:ConnectionString"           = var.azure_storage.primary_connection_string
@@ -37,7 +30,6 @@ locals {
     "MessagingServiceBus:SearchRequestsSubscription"     = azurerm_servicebus_subscription.matching-requests-matching-algorithm.name
     "MessagingServiceBus:SearchRequestsTopic"            = azurerm_servicebus_topic.matching-requests.name
     "MessagingServiceBus:SearchResultsTopic"             = azurerm_servicebus_topic.matching-results-ready.name
-    "MessagingServiceBus:SearchResultsDebugSubscription" = azurerm_servicebus_subscription.debug-matching-results-ready.name
     "MessagingServiceBus:SendRetryCount"                 = var.SERVICE_BUS_SEND_RETRY_COUNT
     "MessagingServiceBus:SendRetryCooldownSeconds"       = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 

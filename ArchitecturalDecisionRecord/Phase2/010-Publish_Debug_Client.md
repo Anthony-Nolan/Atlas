@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted.
+Superseded - see [Update 2](#update-2).
 
 ## Context
 Several debug endpoints are being added to various Atlas functions apps for use by the upcoming end-to-end (E2E) test project.
@@ -25,3 +25,7 @@ As they are spread across different apps, it makes sense to collate them into a 
 
 ## Update
 * Versioning the debug client packages independently of the other Atlas packages did not prove feasible (see [this ticket](https://github.com/Anthony-Nolan/Atlas/issues/1295)). They will instead be versioned in step with Atlas, and instead the changelog should indicate the Atlas version range that the client is compatible with.
+
+## Update 2
+* The debug client proved to be an unnecessary HTTP layer over SQL, Service Bus and Blob Storage. The E2E test project, [Atlas.Auto.Tests](https://github.com/Anthony-Nolan/Atlas.Auto.Tests), now accesses these resources directly (see [ATL-356](https://github.com/Anthony-Nolan/Atlas.Auto.Tests/pull/73)).
+* `Atlas.Debug.Client` and `Atlas.Debug.Client.Models` have been removed, along with all debug endpoints, and are no longer published.
