@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -113,8 +115,6 @@ public class DonorGenotypePrecomputationBatchProcessor : IDonorGenotypePrecomput
     /// <inheritdoc />
     public async Task<DonorGenotypePrecomputationBatchResult> ProcessBatch(DonorGenotypePrecomputationBatchRequest request, bool isRedelivery)
     {
-        ArgumentNullException.ThrowIfNull(request);
-
         var startTimestamp = Stopwatch.GetTimestamp();
         var repository = repositoryFactory.GetDonorGenotypePrecomputationRepositoryForDatabase(target.Database);
 
@@ -162,12 +162,12 @@ public class DonorGenotypePrecomputationBatchProcessor : IDonorGenotypePrecomput
 
         // The build takes the representative from Donors, and Donors does not change during the stage. A missing donor is
         // a fault of the build, and a retry cannot fix it.
-        foreach (var group in groups.Where(group => group.HlaTyping == null))
+        foreach (var group in groups.Where(group => group.HlaTyping is null))
         {
             work.Outcomes.Add(Outcome.Failed(group.GroupId, $"The representative donor {group.RepresentativeDonorId} of the group is not in Donors."));
         }
 
-        var typedGroups = groups.Where(group => group.HlaTyping != null).ToList();
+        var typedGroups = groups.Where(group => group.HlaTyping is not null).ToList();
         var frequencySets = await ResolveFrequencySets(typedGroups, work);
         work.FrequencySetCount = frequencySets.Values.Select(set => set.Id).Distinct().Count();
 
@@ -178,17 +178,18 @@ public class DonorGenotypePrecomputationBatchProcessor : IDonorGenotypePrecomput
 
         // By frequency set, so a batch across the boundary of two registry and ethnicity pairs loads each set once.
         var groupsToCompute = typedGroups
-            .Where(group => frequencySets.ContainsKey(PairOf(group)))
-            .OrderBy(group => frequencySets[PairOf(group)].Id)
+            .Where(group => frequencySets.ContainsKey(RegistryEthnicityCodesPairOf(group)))
+            .OrderBy(group => frequencySets[RegistryEthnicityCodesPairOf(group)].Id)
             .ThenBy(group => group.GroupId)
             .ToList();
 
         var results = await valueService.GetOrComputeValueIds(
             groupsToCompute
                 .Select(group => new SubjectGenotypeSetValueRequest(
-                    group.HlaTyping,
+                    // Not null: the groups with no typing failed above.
+                    group.HlaTyping!,
                     group.AllowedLociKey,
-                    frequencySets[PairOf(group)],
+                    frequencySets[RegistryEthnicityCodesPairOf(group)],
                     $"group {group.GroupId} (donor {group.RepresentativeDonorId})"))
                 .ToList(),
             batch.HlaNomenclatureVersion,
@@ -203,13 +204,13 @@ public class DonorGenotypePrecomputationBatchProcessor : IDonorGenotypePrecomput
             {
                 work.Outcomes.Add(Outcome.Stored(group.GroupId, outcome.ValueId.Value));
             }
-            else if (outcome.Failure?.Kind == PrecomputeErrorKind.KnownPermanent)
+            else if (outcome.Failure is { Kind: PrecomputeErrorKind.KnownPermanent } permanentFailure)
             {
-                work.Outcomes.Add(Outcome.Failed(group.GroupId, outcome.Failure.Exception.Message));
+                work.Outcomes.Add(Outcome.Failed(group.GroupId, permanentFailure.Exception.Message));
             }
-            else if (outcome.Failure != null)
+            else if (outcome.Failure is { } failure)
             {
-                work.UnknownFailures.Add(new GroupError(group.GroupId, outcome.Failure.Exception));
+                work.UnknownFailures.Add(new GroupError(group.GroupId, failure.Exception));
             }
         }
 
@@ -222,19 +223,21 @@ public class DonorGenotypePrecomputationBatchProcessor : IDonorGenotypePrecomput
     /// fails with a known temporary error stops the batch. A pair whose lookup fails otherwise gives its groups an error
     /// of unknown cause, and a retry looks again.
     /// </summary>
-    private async Task<Dictionary<(string RegistryCode, string EthnicityCode), HaplotypeFrequencySet>> ResolveFrequencySets(
+    private async Task<Dictionary<(string? RegistryCode, string? EthnicityCode), HaplotypeFrequencySet>> ResolveFrequencySets(
         IEnumerable<DonorGenotypePrecomputationGroupToCompute> groups,
         BatchWork work)
     {
-        var frequencySets = new Dictionary<(string RegistryCode, string EthnicityCode), HaplotypeFrequencySet>();
+        var frequencySets = new Dictionary<(string? RegistryCode, string? EthnicityCode), HaplotypeFrequencySet>();
 
-        foreach (var pairGroups in groups.GroupBy(PairOf))
+        foreach (var pairGroups in groups.GroupBy(RegistryEthnicityCodesPairOf))
         {
             var pair = pairGroups.Key;
             try
             {
+                // FrequencySetMetadata marks the codes as not null, but a donor can have no code. The lookup then takes
+                // the set of the registry, or the global set.
                 frequencySets[pair] = await frequencySetLookup.GetSingleHaplotypeFrequencySet(
-                    new FrequencySetMetadata { RegistryCode = pair.RegistryCode, EthnicityCode = pair.EthnicityCode });
+                    new FrequencySetMetadata { RegistryCode = pair.RegistryCode!, EthnicityCode = pair.EthnicityCode! });
             }
             catch (Exception exception)
             {
@@ -303,7 +306,7 @@ public class DonorGenotypePrecomputationBatchProcessor : IDonorGenotypePrecomput
     }
 
     /// <summary>Why the batch fails, or null when it succeeds.</summary>
-    private DonorGenotypePrecomputationBatchFailure BatchFailure(BatchWork work, IReadOnlyCollection<Outcome> failedGroups)
+    private DonorGenotypePrecomputationBatchFailure? BatchFailure(BatchWork work, IReadOnlyCollection<Outcome> failedGroups)
     {
         if (work.StoppedBy != null)
         {
@@ -333,10 +336,10 @@ public class DonorGenotypePrecomputationBatchProcessor : IDonorGenotypePrecomput
         return null;
     }
 
-    private static DonorGenotypePrecomputationBatchFailure Failure(string message, Exception exception, IReadOnlyCollection<Outcome> failedGroups) =>
+    private static DonorGenotypePrecomputationBatchFailure Failure(string message, Exception? exception, IReadOnlyCollection<Outcome> failedGroups) =>
         new(message, exception?.ToString(), failedGroups.Count);
 
-    private static (string RegistryCode, string EthnicityCode) PairOf(DonorGenotypePrecomputationGroupToCompute group) =>
+    private static (string? RegistryCode, string? EthnicityCode) RegistryEthnicityCodesPairOf(DonorGenotypePrecomputationGroupToCompute group) =>
         (group.RegistryCode, group.EthnicityCode);
 
     private sealed record GroupError(int GroupId, Exception Exception);
@@ -351,7 +354,7 @@ public class DonorGenotypePrecomputationBatchProcessor : IDonorGenotypePrecomput
         public List<GroupError> UnknownFailures { get; } = [];
 
         /// <summary>The known temporary error that stopped the batch, or null.</summary>
-        public Exception StoppedBy { get; set; }
+        public Exception? StoppedBy { get; set; }
 
         public int ComputedGroupCount { get; init; }
 

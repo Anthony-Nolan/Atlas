@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -45,9 +47,9 @@ public class DonorGenotypePrecomputationBatch
     public int RetryCount { get; set; }
 
     [MaxLength(512)]
-    public string FailureMessage { get; set; }
+    public string? FailureMessage { get; set; }
 
-    public string FailureException { get; set; }
+    public string? FailureException { get; set; }
 
     /// <summary>
     /// The groups of the batch whose value the worker could not compute. Their donors get no rows, but the batch can

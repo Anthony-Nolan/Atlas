@@ -1,3 +1,5 @@
+#nullable enable
+
 using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
@@ -33,12 +35,12 @@ public class DonorGenotypePrecomputationBatchRequest
 
     /// <summary>The request that a message body holds.</summary>
     /// <returns>Null when the body is not JSON of a request, or names no batch.</returns>
-    public static DonorGenotypePrecomputationBatchRequest FromBody(string body)
+    public static DonorGenotypePrecomputationBatchRequest? FromBody(string body)
     {
-        DonorGenotypePrecomputationBatchRequest request;
+        DonorGenotypePrecomputationBatchRequest? request;
         try
         {
-            request = JsonConvert.DeserializeObject<DonorGenotypePrecomputationBatchRequest>(body ?? string.Empty);
+            request = JsonConvert.DeserializeObject<DonorGenotypePrecomputationBatchRequest>(body);
         }
         catch (JsonException)
         {

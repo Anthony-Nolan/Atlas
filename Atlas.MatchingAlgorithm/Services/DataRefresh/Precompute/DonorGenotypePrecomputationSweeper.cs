@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -114,7 +116,7 @@ internal class DonorGenotypePrecomputationSweeper : IDonorGenotypePrecomputation
     /// <inheritdoc />
     public async Task AbandonDeadLetteredBatch(ServiceBusReceivedMessage message)
     {
-        var request = DonorGenotypePrecomputationBatchRequest.FromBody(message.Body?.ToString());
+        var request = DonorGenotypePrecomputationBatchRequest.FromBody(message.Body.ToString());
         if (request == null)
         {
             // Nothing can be done with the message, so it is completed. Its batch stays requested with no message, and

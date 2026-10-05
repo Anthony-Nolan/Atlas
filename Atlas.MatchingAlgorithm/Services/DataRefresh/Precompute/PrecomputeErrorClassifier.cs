@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -59,8 +61,6 @@ public static class PrecomputeErrorClassifier
 
     public static PrecomputeErrorKind Classify(Exception exception)
     {
-        ArgumentNullException.ThrowIfNull(exception);
-
         if (IsKnownTemporary(exception))
         {
             return PrecomputeErrorKind.KnownTemporary;
@@ -73,7 +73,7 @@ public static class PrecomputeErrorClassifier
     /// Also through the inner exceptions: a wrapped timeout is still a timeout. An HTTP timeout, for example, is a
     /// <c>TaskCanceledException</c> around a <see cref="TimeoutException"/>.
     /// </summary>
-    private static bool IsKnownTemporary(Exception exception) => exception switch
+    private static bool IsKnownTemporary(Exception? exception) => exception switch
     {
         null => false,
         SqlException sqlException => sqlException.Errors.Cast<SqlError>().Any(error => TemporarySqlErrorNumbers.Contains(error.Number)),

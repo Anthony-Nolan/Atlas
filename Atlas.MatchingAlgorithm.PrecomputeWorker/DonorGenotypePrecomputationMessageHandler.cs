@@ -51,7 +51,7 @@ internal class DonorGenotypePrecomputationMessageHandler(
 
     public async Task<MessageDecision> Handle(ServiceBusReceivedMessage message)
     {
-        var request = DonorGenotypePrecomputationBatchRequest.FromBody(message.Body?.ToString());
+        var request = DonorGenotypePrecomputationBatchRequest.FromBody(message.Body.ToString());
         if (request is null)
         {
             logger.LogError("Message {MessageId} is dead-lettered: its body is not a donor genotype precomputation batch request.",

@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 /// first request names it.
 /// </param>
 public sealed record SubjectGenotypeSetValueRequest(
-    PhenotypeInfo<string> HlaTyping,
+    PhenotypeInfo<string?> HlaTyping,
     AllowedLociKey AllowedLociKey,
     HaplotypeFrequencySet FrequencySet,
     string SubjectLogDescription);
@@ -37,7 +39,7 @@ public sealed record SubjectGenotypeSetValueFailure(PrecomputeErrorKind Kind, Ex
 /// Why the value could not be computed. Null when it was computed, and when it was not attempted: the work stopped
 /// before it, or its chunk could not be stored.
 /// </param>
-public sealed record SubjectGenotypeSetValueOutcome(int? ValueId, SubjectGenotypeSetValueFailure Failure)
+public sealed record SubjectGenotypeSetValueOutcome(int? ValueId, SubjectGenotypeSetValueFailure? Failure)
 {
     internal static readonly SubjectGenotypeSetValueOutcome NotAttempted = new(null, null);
 }
@@ -47,7 +49,7 @@ public sealed record SubjectGenotypeSetValueOutcome(int? ValueId, SubjectGenotyp
 /// The error that stopped the work, or null. A known temporary error of a computation stops it, and so does any error of
 /// the database. The requests after it were not attempted.
 /// </param>
-public sealed record SubjectGenotypeSetValueResults(IReadOnlyList<SubjectGenotypeSetValueOutcome> Outcomes, Exception StoppedBy);
+public sealed record SubjectGenotypeSetValueResults(IReadOnlyList<SubjectGenotypeSetValueOutcome> Outcomes, Exception? StoppedBy);
 
 public interface ISubjectGenotypeSetValueService
 {
@@ -115,7 +117,7 @@ public class SubjectGenotypeSetValueService : ISubjectGenotypeSetValueService
         string matchingAlgorithmHlaNomenclatureVersion,
         TransientDatabase targetDatabase)
     {
-        if (requests == null || requests.Count == 0)
+        if (requests.Count == 0)
         {
             return new SubjectGenotypeSetValueResults([], null);
         }
@@ -125,7 +127,7 @@ public class SubjectGenotypeSetValueService : ISubjectGenotypeSetValueService
 
         var ids = new Dictionary<SubjectGenotypeSetKey, int>();
         var failures = new Dictionary<SubjectGenotypeSetKey, SubjectGenotypeSetValueFailure>();
-        Exception stoppedBy = null;
+        Exception? stoppedBy = null;
 
         try
         {
@@ -178,7 +180,7 @@ public class SubjectGenotypeSetValueService : ISubjectGenotypeSetValueService
     /// One at a time: each call is a full imputation, whose own peak memory is what limits the size of a batch. To run the
     /// imputations of a chunk at the same time is a change to make on purpose, with a measurement.
     /// </remarks>
-    private async Task<(List<SubjectGenotypeSetValueToStore> Values, Exception StoppedBy)> Compute(
+    private async Task<(List<SubjectGenotypeSetValueToStore> Values, Exception? StoppedBy)> Compute(
         IReadOnlyCollection<KeyedRequest> chunk,
         string matchingAlgorithmHlaNomenclatureVersion,
         IDictionary<SubjectGenotypeSetKey, SubjectGenotypeSetValueFailure> failures)
@@ -233,7 +235,7 @@ public class SubjectGenotypeSetValueService : ISubjectGenotypeSetValueService
     /// Dictionary, which throws.
     /// </summary>
     private static SubjectGenotypeSetValueRequest WithEmptyHlaNamesAsNull(SubjectGenotypeSetValueRequest request) =>
-        request with { HlaTyping = request.HlaTyping?.Map(hla => string.IsNullOrEmpty(hla) ? null : hla) };
+        request with { HlaTyping = request.HlaTyping.Map(hla => string.IsNullOrEmpty(hla) ? null : hla) };
 
     private static SubjectGenotypeSetKey KeyOf(SubjectGenotypeSetValueRequest request) => new(
         SubjectGenotypeSetKeyGenerator.GenerateHlaTypingKey(request.HlaTyping, request.AllowedLociKey),

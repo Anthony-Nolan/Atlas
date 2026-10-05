@@ -1,3 +1,5 @@
+#nullable enable
+
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 using Azure.Messaging.ServiceBus;

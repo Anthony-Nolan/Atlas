@@ -1,3 +1,5 @@
+#nullable enable
+
 namespace Atlas.MatchingAlgorithm.Data.Models.Entities;
 
 /// <summary>

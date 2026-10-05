@@ -1,6 +1,9 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
@@ -39,7 +42,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.Precompute;
 public interface IDonorGenotypePrecomputationRepository
 {
     /// <summary>The run of the data refresh record, or null when the precomputation stage has not created one.</summary>
-    Task<DonorGenotypePrecomputationRun> GetRun(int dataRefreshRecordId);
+    Task<DonorGenotypePrecomputationRun?> GetRun(int dataRefreshRecordId);
 
     /// <summary>
     /// Moves the batch to <see cref="DonorGenotypePrecomputationBatchStatus.InProgress"/> under a new lease, and returns
@@ -51,7 +54,7 @@ public interface IDonorGenotypePrecomputationRepository
     /// another worker holds a live lease and the message is not a redelivery. The worker then completes the message and
     /// does nothing.
     /// </returns>
-    Task<ClaimedDonorGenotypePrecomputationBatch> TryClaimBatch(DonorGenotypePrecomputationBatchClaim claim);
+    Task<ClaimedDonorGenotypePrecomputationBatch?> TryClaimBatch(DonorGenotypePrecomputationBatchClaim claim);
 
     /// <summary>
     /// The groups in the range that have no value yet, in id order, each with the typing and the codes of its
@@ -144,7 +147,7 @@ public interface IDonorGenotypePrecomputationRepository
 
     /// <summary>What failed in the run, for the failure threshold and the alerts. Reads the staging tables.</summary>
     /// <returns>Null when the run does not exist.</returns>
-    Task<DonorGenotypePrecomputationFailureSummary> GetFailureSummary(int runId);
+    Task<DonorGenotypePrecomputationFailureSummary?> GetFailureSummary(int runId);
 
     /// <summary>
     /// A manual retry: sends the failed work of a <see cref="DonorGenotypePrecomputationRunStatus.CompletedWithFailures"/>
@@ -636,7 +639,7 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
     }
 
     /// <inheritdoc />
-    public async Task<Run> GetRun(int dataRefreshRecordId)
+    public async Task<Run?> GetRun(int dataRefreshRecordId)
     {
         await using var connection = await OpenConnection();
         var row = await connection.QuerySingleOrDefaultAsync<RunRow>(
@@ -649,10 +652,8 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
     }
 
     /// <inheritdoc />
-    public async Task<ClaimedDonorGenotypePrecomputationBatch> TryClaimBatch(DonorGenotypePrecomputationBatchClaim claim)
+    public async Task<ClaimedDonorGenotypePrecomputationBatch?> TryClaimBatch(DonorGenotypePrecomputationBatchClaim claim)
     {
-        ArgumentNullException.ThrowIfNull(claim);
-
         await using var connection = await OpenConnection();
         return await connection.QuerySingleOrDefaultAsync<ClaimedDonorGenotypePrecomputationBatch>(
             ClaimBatchSql,
@@ -685,7 +686,7 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
     /// <inheritdoc />
     public async Task RecordGroupOutcomes(int runId, IReadOnlyCollection<Outcome> outcomes)
     {
-        if (outcomes == null || outcomes.Count == 0)
+        if (outcomes.Count == 0)
         {
             return;
         }
@@ -732,8 +733,6 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
     /// <inheritdoc />
     public async Task<bool> TryMarkBatchFailed(int batchId, Guid leaseOwner, DonorGenotypePrecomputationBatchFailure failure)
     {
-        ArgumentNullException.ThrowIfNull(failure);
-
         await using var connection = await OpenConnection();
         var rowsUpdated = await connection.ExecuteAsync(
             MarkBatchFailedSql,
@@ -773,7 +772,7 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
     /// <inheritdoc />
     public async Task<int> MarkBatchesRequested(int runId, IReadOnlyCollection<int> batchIds)
     {
-        if (batchIds == null || batchIds.Count == 0)
+        if (batchIds.Count == 0)
         {
             return 0;
         }
@@ -854,7 +853,7 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
     }
 
     /// <inheritdoc />
-    public async Task<DonorGenotypePrecomputationFailureSummary> GetFailureSummary(int runId)
+    public async Task<DonorGenotypePrecomputationFailureSummary?> GetFailureSummary(int runId)
     {
         var parameters = new { RunId = runId, MaxSampleCount = MaxFailureSampleCount };
 
@@ -920,7 +919,8 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
         await connection.ExecuteAsync(TruncateStagingTablesSql, commandTimeout: CommandTimeoutInSeconds);
     }
 
-    internal static string TruncateFailureMessage(string message) =>
+    [return: NotNullIfNotNull(nameof(message))]
+    internal static string? TruncateFailureMessage(string? message) =>
         message?.Length > FailureMessageMaxLength ? message[..FailureMessageMaxLength] : message;
 
     private async Task<SqlConnection> OpenConnection()
@@ -953,8 +953,8 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
         {
             dataTable.Rows.Add(
                 outcome.GroupId,
-                (object)outcome.SubjectGenotypeSetValueId ?? DBNull.Value,
-                (object)TruncateFailureMessage(outcome.FailureMessage) ?? DBNull.Value
+                (object?)outcome.SubjectGenotypeSetValueId ?? DBNull.Value,
+                (object?)TruncateFailureMessage(outcome.FailureMessage) ?? DBNull.Value
             );
         }
 
@@ -978,9 +978,9 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
 
         public int DataRefreshRecordId { get; init; }
 
-        public string HlaNomenclatureVersion { get; init; }
+        public required string HlaNomenclatureVersion { get; init; }
 
-        public string Status { get; init; }
+        public required string Status { get; init; }
 
         public int GroupsPerBatch { get; init; }
 
@@ -1022,39 +1022,39 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
     {
         public int GroupId { get; init; }
 
-        public string AllowedLociKey { get; init; }
+        public required string AllowedLociKey { get; init; }
 
         public int RepresentativeDonorId { get; init; }
 
         public int? FoundDonorId { get; init; }
 
-        public string RegistryCode { get; init; }
+        public string? RegistryCode { get; init; }
 
-        public string EthnicityCode { get; init; }
+        public string? EthnicityCode { get; init; }
 
-        public string A_1 { get; init; }
+        public string? A_1 { get; init; }
 
-        public string A_2 { get; init; }
+        public string? A_2 { get; init; }
 
-        public string B_1 { get; init; }
+        public string? B_1 { get; init; }
 
-        public string B_2 { get; init; }
+        public string? B_2 { get; init; }
 
-        public string C_1 { get; init; }
+        public string? C_1 { get; init; }
 
-        public string C_2 { get; init; }
+        public string? C_2 { get; init; }
 
-        public string DPB1_1 { get; init; }
+        public string? DPB1_1 { get; init; }
 
-        public string DPB1_2 { get; init; }
+        public string? DPB1_2 { get; init; }
 
-        public string DQB1_1 { get; init; }
+        public string? DQB1_1 { get; init; }
 
-        public string DQB1_2 { get; init; }
+        public string? DQB1_2 { get; init; }
 
-        public string DRB1_1 { get; init; }
+        public string? DRB1_1 { get; init; }
 
-        public string DRB1_2 { get; init; }
+        public string? DRB1_2 { get; init; }
 
         public DonorGenotypePrecomputationGroupToCompute ToModel() => new(
             GroupId,
@@ -1064,13 +1064,13 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
             EthnicityCode,
             FoundDonorId == null
                 ? null
-                : new PhenotypeInfo<string>(
-                    valueA: new LocusInfo<string>(A_1, A_2),
-                    valueB: new LocusInfo<string>(B_1, B_2),
-                    valueC: new LocusInfo<string>(C_1, C_2),
-                    valueDpb1: new LocusInfo<string>(DPB1_1, DPB1_2),
-                    valueDqb1: new LocusInfo<string>(DQB1_1, DQB1_2),
-                    valueDrb1: new LocusInfo<string>(DRB1_1, DRB1_2)
+                : new PhenotypeInfo<string?>(
+                    valueA: new LocusInfo<string?>(A_1, A_2),
+                    valueB: new LocusInfo<string?>(B_1, B_2),
+                    valueC: new LocusInfo<string?>(C_1, C_2),
+                    valueDpb1: new LocusInfo<string?>(DPB1_1, DPB1_2),
+                    valueDqb1: new LocusInfo<string?>(DQB1_1, DQB1_2),
+                    valueDrb1: new LocusInfo<string?>(DRB1_1, DRB1_2)
                 )
         );
     }
@@ -1079,7 +1079,7 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
     {
         public int DonorId { get; init; }
 
-        public string AllowedLociKey { get; init; }
+        public required string AllowedLociKey { get; init; }
 
         public int SubjectGenotypeSetValueId { get; init; }
 
@@ -1091,11 +1091,11 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
     {
         public int BatchId { get; init; }
 
-        public string PreviousStatus { get; init; }
+        public required string PreviousStatus { get; init; }
 
         public int RetryCount { get; init; }
 
-        public string FailureMessage { get; init; }
+        public string? FailureMessage { get; init; }
 
         public SweptDonorGenotypePrecomputationBatch ToModel() => new(
             BatchId,
@@ -1107,7 +1107,7 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
 
     private sealed class BatchCountRow
     {
-        public string Status { get; init; }
+        public required string Status { get; init; }
 
         public int BatchCount { get; init; }
 
@@ -1136,7 +1136,7 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
 
         public int? GroupId { get; init; }
 
-        public string FailureMessage { get; init; }
+        public string? FailureMessage { get; init; }
 
         public DonorGenotypePrecomputationFailureSample ToModel() => new(BatchId, GroupId, FailureMessage);
     }

@@ -1,3 +1,5 @@
+#nullable enable
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -39,7 +41,7 @@ public class DonorGenotypePrecomputationGroup
 
     /// <summary>Why the worker could not compute the value. Null unless the group failed.</summary>
     [MaxLength(512)]
-    public string FailureMessage { get; set; }
+    public string? FailureMessage { get; set; }
 }
 
 public static class DonorGenotypePrecomputationGroupModelBuilder

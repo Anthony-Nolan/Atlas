@@ -1,3 +1,5 @@
+#nullable enable
+
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Atlas.MatchingAlgorithm.Data.Models.Entities;

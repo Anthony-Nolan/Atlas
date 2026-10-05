@@ -1,3 +1,5 @@
+#nullable enable
+
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;

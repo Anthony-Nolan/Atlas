@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,26 +43,27 @@ public sealed record DonorGenotypePrecomputationGroupToCompute(
     int GroupId,
     AllowedLociKey AllowedLociKey,
     int RepresentativeDonorId,
-    string RegistryCode,
-    string EthnicityCode,
-    PhenotypeInfo<string> HlaTyping);
+    string? RegistryCode,
+    string? EthnicityCode,
+    PhenotypeInfo<string?>? HlaTyping);
 
 /// <summary>
 /// What a worker found for one group: a stored value, or a failure. Exactly one of the two is set.
 /// </summary>
-public sealed record DonorGenotypePrecomputationGroupOutcome(int GroupId, int? SubjectGenotypeSetValueId, string FailureMessage)
+public sealed record DonorGenotypePrecomputationGroupOutcome(int GroupId, int? SubjectGenotypeSetValueId, string? FailureMessage)
 {
     public static DonorGenotypePrecomputationGroupOutcome Stored(int groupId, int subjectGenotypeSetValueId) =>
         new(groupId, subjectGenotypeSetValueId, null);
 
     public static DonorGenotypePrecomputationGroupOutcome Failed(int groupId, string failureMessage) =>
-        new(groupId, null, failureMessage ?? string.Empty);
+        new(groupId, null, failureMessage);
 }
 
 /// <summary>Why a worker stopped a batch.</summary>
+/// <param name="FailureException">Null when no exception caused the failure: too many groups failed.</param>
 public sealed record DonorGenotypePrecomputationBatchFailure(
     string FailureMessage,
-    string FailureException,
+    string? FailureException,
     int FailedGroupCount);
 
 /// <summary>A batch that a sweep moved, as it was just before the move.</summary>
@@ -68,7 +71,7 @@ public sealed record SweptDonorGenotypePrecomputationBatch(
     int BatchId,
     DonorGenotypePrecomputationBatchStatus PreviousStatus,
     int RetryCount,
-    string FailureMessage);
+    string? FailureMessage);
 
 /// <summary>
 /// Which <see cref="DonorGenotypePrecomputationBatchStatus.Pending"/> batches a dispatch sends. Two senders share the
@@ -134,4 +137,4 @@ public sealed record DonorGenotypePrecomputationFailureSummary(
 
 /// <summary>One failure of a run.</summary>
 /// <param name="GroupId">Null when the whole batch failed.</param>
-public sealed record DonorGenotypePrecomputationFailureSample(int BatchId, int? GroupId, string FailureMessage);
+public sealed record DonorGenotypePrecomputationFailureSample(int BatchId, int? GroupId, string? FailureMessage);

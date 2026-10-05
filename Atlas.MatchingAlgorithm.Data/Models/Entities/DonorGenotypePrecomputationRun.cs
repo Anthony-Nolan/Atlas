@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -25,9 +27,8 @@ public class DonorGenotypePrecomputationRun
     public int DataRefreshRecordId { get; set; }
 
     /// <summary>The matching algorithm HLA nomenclature version of the refresh. The run imputes every value under it.</summary>
-    [Required]
     [MaxLength(32)]
-    public string HlaNomenclatureVersion { get; set; }
+    public required string HlaNomenclatureVersion { get; set; }
 
     public DonorGenotypePrecomputationRunStatus Status { get; set; }
 

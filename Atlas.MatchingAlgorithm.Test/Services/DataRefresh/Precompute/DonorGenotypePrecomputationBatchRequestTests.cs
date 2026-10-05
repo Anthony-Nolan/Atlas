@@ -38,7 +38,6 @@ public class DonorGenotypePrecomputationBatchRequestTests
 
     [TestCase("{}")]
     [TestCase("")]
-    [TestCase(null)]
     public void FromBody_WhenTheBodyNamesNoBatch_ReturnsNull(string body)
     {
         // An empty object reads as a batch with the ids 0, which no batch has.
