@@ -84,6 +84,20 @@ If request replay fails and Application Insights shows the exception: "Exception
 then find the record for your data refresh attempt with the shared db table, `[MatchingAlgorithmPersistent].[DataRefreshHistory]` and set value of `[RefreshLastContinuedUtc]` to `NULL`.
 This will allow the job to continue from where it left off.
 
+##### HLA nomenclature version and HLA Metadata Dictionary snapshot
+
+Each run records two values in `[MatchingAlgorithmPersistent].[DataRefreshHistory]`:
+
+- `HlaNomenclatureVersion`: the HLA nomenclature version of the run. It is read from WMDA once, and recorded before
+  the HLA Metadata Dictionary is recreated.
+- `HlaMetadataDictionarySnapshotUtc`: the time, in UTC, that identifies the HLA Metadata Dictionary tables the run
+  created. Every table of the run ends its name with this time, in the format `yyyyMMddHHmmssfff`. It is recorded when
+  the `MetadataDictionaryRefresh` stage completes. It is empty for runs from before this value was recorded.
+
+A continued run keeps both values. It does not read the version from WMDA again, even if WMDA has a newer version.
+If the run stopped while the dictionary was being recreated, the next attempt recreates it again under the recorded
+version, and records the snapshot of that last recreation.
+
 ##### Stale leases, and how they clear themselves
 
 Only one invocation may process a refresh record at a time, enforced by a lease held on the record. A replayed
