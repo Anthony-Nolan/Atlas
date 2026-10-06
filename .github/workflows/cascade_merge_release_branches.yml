@@ -1,0 +1,109 @@
+name: Cascade Merge Release Branches
+
+# Propagates changes merged into hotfix/* and rc/* branches down the release
+# branch chain and into master (ATL-274): each push finds the single next
+# branch in the chain and merges into it; that push re-triggers this workflow
+# for the following hop, until master is reached (master isn't watched, so
+# the chain terminates there).
+
+on:
+  push:
+    branches:
+      - 'rc/**'
+      - 'hotfix/**'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Compute and log the next hop without merging/pushing'
+        type: boolean
+        default: false
+      simulate_source:
+        description: 'Testing only: pretend the push came from this branch instead of the dispatch ref'
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  cascade:
+    if: github.event.deleted != true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine next hop
+        id: next
+        env:
+          SIMULATE_SOURCE: ${{ inputs.simulate_source }}
+        run: |
+          source="${SIMULATE_SOURCE:-${GITHUB_REF#refs/heads/}}"
+          echo "Source branch: $source"
+
+          if [[ "$source" =~ ^hotfix/([0-9]+)\.([0-9]+)\.[0-9]+$ ]]; then
+            major="${BASH_REMATCH[1]}"; minor="${BASH_REMATCH[2]}"; patch=0
+          elif [[ "$source" =~ ^rc/([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            major="${BASH_REMATCH[1]}"; minor="${BASH_REMATCH[2]}"; patch="${BASH_REMATCH[3]}"
+          else
+            echo "Branch $source doesn't match hotfix/x.y.z or rc/x.y.z - nothing to cascade"
+            echo "target=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          source_version="$major.$minor.$patch"
+          echo "Source version: $source_version"
+
+          target=""
+          target_version=""
+          for ref in $(git ls-remote --heads origin 'refs/heads/rc/*' | awk '{print $2}' | sed 's#refs/heads/##'); do
+            [[ "$ref" == "$source" ]] && continue
+            if [[ "$ref" =~ ^rc/([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+              rver="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.${BASH_REMATCH[3]}"
+              if printf '%s\n%s\n' "$source_version" "$rver" | sort -V -C; then
+                if [[ -z "$target_version" ]] || printf '%s\n%s\n' "$rver" "$target_version" | sort -V -C; then
+                  target="$ref"; target_version="$rver"
+                fi
+              fi
+            fi
+          done
+
+          [[ -z "$target" ]] && target="master"
+          echo "Next hop: $target"
+          echo "target=$target" >> "$GITHUB_OUTPUT"
+
+      - name: Generate app token
+        if: steps.next.outputs.target != ''
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.RELEASE_CASCADE_BOT_APP_ID }}
+          private-key: ${{ secrets.RELEASE_CASCADE_BOT_APP_PRIVATE_KEY }}
+
+      - name: Merge and push
+        if: steps.next.outputs.target != ''
+        env:
+          SOURCE: ${{ inputs.simulate_source || github.ref_name }}
+          TARGET: ${{ steps.next.outputs.target }}
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          echo "Cascading $SOURCE -> $TARGET (dry_run=$DRY_RUN)"
+          git config user.name "release-cascade-bot[bot]"
+          git config user.email "4664930+release-cascade-bot[bot]@users.noreply.github.com"
+
+          git fetch origin "$TARGET"
+          git checkout -B "$TARGET" "origin/$TARGET"
+
+          if ! git merge --no-ff --no-edit "origin/$SOURCE" -m "Merge $SOURCE into $TARGET (cascade)"; then
+            git merge --abort
+            echo "::error::Cascade merge from $SOURCE into $TARGET conflicted - resolve manually via a PR."
+            exit 1
+          fi
+
+          if [[ "$DRY_RUN" == "true" ]]; then
+            echo "Dry run - not pushing."
+            exit 0
+          fi
+
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" "$TARGET"
