@@ -89,7 +89,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
                 // rows, and one decision about the kill-switch for every donor.
                 var batchContext = await genotypeSetSourceResolver.Resolve(
                     multipleDonorMatchProbabilityInput,
-                    matchProbabilityInputs.SelectMany(i => i.Donor.DonorIds).Distinct().ToList());
+                    multipleDonorMatchProbabilityInput.Donors);
 
                 var perInputResults = await matchProbabilityInputs.WhenAll(
                     async input =>
@@ -117,7 +117,8 @@ namespace Atlas.MatchPrediction.ExternalInterface
 
                 var resultLocation = await resultUploader.UploadMatchPredictionBatchResult(searchRequestId, batchId, resultsByDonorId);
 
-                // After the upload, so storing for reuse never delays this batch's results.
+                // After the upload. The batch result is published only after RunBatch returns, so the store does delay
+                // the end of the batch, and so of the search. The store's lock timeout keeps that delay short.
                 await genotypeSetBatchCompleter.Complete(
                     multipleDonorMatchProbabilityInput,
                     batchContext,

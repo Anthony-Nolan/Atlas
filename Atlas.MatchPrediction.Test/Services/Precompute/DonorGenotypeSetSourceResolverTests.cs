@@ -17,7 +17,7 @@ namespace Atlas.MatchPrediction.Test.Services.Precompute;
 internal class DonorGenotypeSetSourceResolverTests
 {
     private const int DataRefreshRecordId = 42;
-    private static readonly IReadOnlyCollection<int> DonorIds = [1, 2];
+    private static readonly IReadOnlyCollection<DonorInput> Donors = [new() { DonorIds = [1, 2] }];
 
     private PrecomputedGenotypeSetSettings settings;
     private IPrecomputedDonorGenotypeSetReader reader;
@@ -34,32 +34,43 @@ internal class DonorGenotypeSetSourceResolverTests
         resolver = new DonorGenotypeSetSourceResolver(settings, reader, Substitute.For<IAtlasLogger>());
     }
 
-    [TestCase(null, false, false, UsePrecomputedGenotypeSetsSource.FeatureFlag)]
-    [TestCase(null, true, true, UsePrecomputedGenotypeSetsSource.FeatureFlag)]
-    [TestCase(true, false, true, UsePrecomputedGenotypeSetsSource.Request)]
-    [TestCase(true, true, true, UsePrecomputedGenotypeSetsSource.Request)]
-    [TestCase(false, false, false, UsePrecomputedGenotypeSetsSource.Request)]
-    [TestCase(false, true, false, UsePrecomputedGenotypeSetsSource.Request)]
-    public async Task Resolve_RequestOverridesTheKillSwitchInBothDirections(
+    [Test]
+    public void Settings_ByDefault_ForceLive()
+    {
+        new PrecomputedGenotypeSetSettings().Mode.Should().Be(PrecomputedGenotypeSetMode.ForceLive);
+    }
+
+    [TestCase(PrecomputedGenotypeSetMode.ForceLive, null, false, UsePrecomputedGenotypeSetsSource.FeatureFlag)]
+    [TestCase(PrecomputedGenotypeSetMode.ForceLive, true, false, UsePrecomputedGenotypeSetsSource.FeatureFlag)]
+    [TestCase(PrecomputedGenotypeSetMode.ForceLive, false, false, UsePrecomputedGenotypeSetsSource.FeatureFlag)]
+    [TestCase(PrecomputedGenotypeSetMode.DefaultLive, null, false, UsePrecomputedGenotypeSetsSource.FeatureFlag)]
+    [TestCase(PrecomputedGenotypeSetMode.DefaultLive, true, true, UsePrecomputedGenotypeSetsSource.Request)]
+    [TestCase(PrecomputedGenotypeSetMode.DefaultLive, false, false, UsePrecomputedGenotypeSetsSource.Request)]
+    [TestCase(PrecomputedGenotypeSetMode.DefaultPrecomputed, null, true, UsePrecomputedGenotypeSetsSource.FeatureFlag)]
+    [TestCase(PrecomputedGenotypeSetMode.DefaultPrecomputed, true, true, UsePrecomputedGenotypeSetsSource.Request)]
+    [TestCase(PrecomputedGenotypeSetMode.DefaultPrecomputed, false, false, UsePrecomputedGenotypeSetsSource.Request)]
+    public async Task Resolve_CombinesTheModeAndTheRequestOverride(
+        PrecomputedGenotypeSetMode mode,
         bool? requestValue,
-        bool flag,
         bool expectedUse,
         UsePrecomputedGenotypeSetsSource expectedSource)
     {
-        settings.UsePrecomputedGenotypeSets = flag;
+        settings.Mode = mode;
 
-        var context = await resolver.Resolve(Request(requestValue), DonorIds);
+        var context = await resolver.Resolve(Request(requestValue), Donors);
 
         context.UsePrecomputedGenotypeSets.Should().Be(expectedUse);
         context.UsePrecomputedGenotypeSetsSource.Should().Be(expectedSource);
+        context.Mode.Should().Be(mode);
     }
 
+    /// <summary>The hard off: a request that opts in still gets nothing read, nothing trusted and nothing stored.</summary>
     [Test]
-    public async Task Resolve_WhenSwitchedOff_DoesNotReadAndDisablesTheBatch()
+    public async Task Resolve_InForceLive_IgnoresARequestThatOptsInAndDoesNotRead()
     {
-        settings.UsePrecomputedGenotypeSets = true;
+        settings.Mode = PrecomputedGenotypeSetMode.ForceLive;
 
-        var context = await resolver.Resolve(Request(false), DonorIds);
+        var context = await resolver.Resolve(Request(true), Donors);
 
         await reader.DidNotReceiveWithAnyArgs().GetDonorGenotypeSets(default, default, default);
         context.BatchFallbackReason.Should().Be(DonorGenotypeSetSource.PrecomputeDisabled);
@@ -67,15 +78,28 @@ internal class DonorGenotypeSetSourceResolverTests
     }
 
     [Test]
-    public async Task Resolve_WhenSwitchedOn_ReadsTheBatchOnceWithTheSearchLociAndRecord()
+    public async Task Resolve_WhenSwitchedOff_DoesNotReadAndDisablesTheBatch()
     {
+        settings.Mode = PrecomputedGenotypeSetMode.DefaultPrecomputed;
+
+        var context = await resolver.Resolve(Request(false), Donors);
+
+        await reader.DidNotReceiveWithAnyArgs().GetDonorGenotypeSets(default, default, default);
+        context.BatchFallbackReason.Should().Be(DonorGenotypeSetSource.PrecomputeDisabled);
+        context.CanStore.Should().BeFalse();
+    }
+
+    [Test]
+    public async Task Resolve_WhenSwitchedOn_ReadsTheBatchOnceWithItsDonorInputsLociAndRecord()
+    {
+        settings.Mode = PrecomputedGenotypeSetMode.DefaultLive;
         var request = Request(true);
         request.ExcludedLoci = [Locus.C];
 
-        var context = await resolver.Resolve(request, DonorIds);
+        var context = await resolver.Resolve(request, Donors);
 
         await reader.Received(1).GetDonorGenotypeSets(
-            DonorIds,
+            Donors,
             Arg.Is<IReadOnlySet<Locus>>(loci => loci.SetEquals(new[] { Locus.A, Locus.B, Locus.Dqb1, Locus.Drb1 })),
             DataRefreshRecordId);
         context.BatchFallbackReason.Should().BeNull();
@@ -86,10 +110,11 @@ internal class DonorGenotypeSetSourceResolverTests
     [Test]
     public async Task Resolve_PassesTheReadersBatchFallbackReasonOn()
     {
+        settings.Mode = PrecomputedGenotypeSetMode.DefaultPrecomputed;
         reader.GetDonorGenotypeSets(default, default, default).ReturnsForAnyArgs(
             PrecomputedDonorGenotypeSetLookup.Unavailable(DonorGenotypeSetSource.ActiveDatabaseChanged, "ABDrb1"));
 
-        var context = await resolver.Resolve(Request(true), DonorIds);
+        var context = await resolver.Resolve(Request(null), Donors);
 
         context.BatchFallbackReason.Should().Be(DonorGenotypeSetSource.ActiveDatabaseChanged);
         context.CanStore.Should().BeFalse();
@@ -98,28 +123,29 @@ internal class DonorGenotypeSetSourceResolverTests
     [Test]
     public async Task Resolve_WhenTheReadFails_ComputesTheBatchLiveRatherThanFailing()
     {
+        settings.Mode = PrecomputedGenotypeSetMode.DefaultPrecomputed;
         reader.GetDonorGenotypeSets(default, default, default).ThrowsAsyncForAnyArgs(new Exception("sql is down"));
 
-        var context = await resolver.Resolve(Request(true), DonorIds);
+        var context = await resolver.Resolve(Request(null), Donors);
 
         context.BatchFallbackReason.Should().Be(DonorGenotypeSetSource.ReadFailed);
         context.CanStore.Should().BeFalse();
     }
 
     /// <summary>
-    /// The value is resolved for each batch, not when the search is submitted, so turning the kill-switch off reaches a
-    /// search that is already running and leaves the override null.
+    /// The value is resolved for each batch, not when the search is submitted, so switching to ForceLive reaches a
+    /// search that is already running - even one that opted in.
     /// </summary>
     [Test]
-    public async Task Resolve_WhenTheKillSwitchChangesBetweenBatchesOfOneSearch_EachBatchUsesTheCurrentValue()
+    public async Task Resolve_WhenTheModeChangesBetweenBatchesOfOneSearch_EachBatchUsesTheCurrentMode()
     {
-        var request = Request(null);
+        var request = Request(true);
 
-        settings.UsePrecomputedGenotypeSets = true;
-        var firstBatch = await resolver.Resolve(request, DonorIds);
+        settings.Mode = PrecomputedGenotypeSetMode.DefaultLive;
+        var firstBatch = await resolver.Resolve(request, Donors);
 
-        settings.UsePrecomputedGenotypeSets = false;
-        var secondBatch = await resolver.Resolve(request, DonorIds);
+        settings.Mode = PrecomputedGenotypeSetMode.ForceLive;
+        var secondBatch = await resolver.Resolve(request, Donors);
 
         firstBatch.UsePrecomputedGenotypeSets.Should().BeTrue();
         secondBatch.UsePrecomputedGenotypeSets.Should().BeFalse();

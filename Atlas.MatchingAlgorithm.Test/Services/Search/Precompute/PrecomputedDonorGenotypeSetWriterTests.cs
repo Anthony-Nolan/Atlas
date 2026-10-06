@@ -44,8 +44,8 @@ internal class PrecomputedDonorGenotypeSetWriterTests
             call.Arg<IReadOnlyCollection<SubjectGenotypeSetValueToStore>>()
                 .Select((value, index) => (value.Key, Id: 100 + index))
                 .ToDictionary(x => x.Key, x => x.Id));
-        repository.UpsertDonorAssignmentsWhereTypingUnchanged(default).ReturnsForAnyArgs(call =>
-            new TypingGuardedUpsertResult(call.Arg<IReadOnlyCollection<TypingGuardedDonorAssignment>>().Count - 1, 1));
+        repository.UpsertDonorAssignmentsWhereDonorUnchanged(default).ReturnsForAnyArgs(call =>
+            new GuardedUpsertResult(call.Arg<IReadOnlyCollection<GuardedDonorAssignment>>().Count - 1, 1));
 
         writer = new PrecomputedDonorGenotypeSetWriter(historyRepository, repositoryFactory);
     }
@@ -56,8 +56,8 @@ internal class PrecomputedDonorGenotypeSetWriterTests
         var hla = new PhenotypeInfo<string>("hla");
         var sets = new List<DonorGenotypeSetToStore>
         {
-            new([1, 2], hla, FrequencySetId, false, [9, 9]),
-            new([3], new PhenotypeInfo<string>("other-hla"), FrequencySetId, true, null)
+            new([1, 2], hla, "reg", "eth", FrequencySetId, false, [9, 9]),
+            new([3], new PhenotypeInfo<string>("other-hla"), "reg-3", null, FrequencySetId, true, null)
         };
 
         var result = await writer.Store(sets, FiveLoci, PinnedRecordId);
@@ -71,14 +71,18 @@ internal class PrecomputedDonorGenotypeSetWriterTests
             && values.Any(v => v.Key == expectedKey && !v.IsUnrepresented && v.SubjectGenotypeSetData.SequenceEqual(new byte[] { 9, 9 }))
             && values.Any(v => v.IsUnrepresented && v.SubjectGenotypeSetData == null)));
 
-        await repository.Received(1).UpsertDonorAssignmentsWhereTypingUnchanged(Arg.Is<IReadOnlyCollection<TypingGuardedDonorAssignment>>(a =>
+        await repository.Received(1).UpsertDonorAssignmentsWhereDonorUnchanged(Arg.Is<IReadOnlyCollection<GuardedDonorAssignment>>(a =>
             a.Count == 3
-            && a.Where(x => x.Assignment.DonorId == 1 || x.Assignment.DonorId == 2).All(x => x.Assignment.SubjectGenotypeSetValueId == 100 && ReferenceEquals(x.ExpectedHla, hla))
+            && a.Where(x => x.Assignment.DonorId == 1 || x.Assignment.DonorId == 2).All(x =>
+                x.Assignment.SubjectGenotypeSetValueId == 100 && ReferenceEquals(x.ExpectedHla, hla)
+                && x.ExpectedRegistryCode == "reg" && x.ExpectedEthnicityCode == "eth")
             && a.Single(x => x.Assignment.DonorId == 3).Assignment.SubjectGenotypeSetValueId == 101
+            && a.Single(x => x.Assignment.DonorId == 3).ExpectedRegistryCode == "reg-3"
+            && a.Single(x => x.Assignment.DonorId == 3).ExpectedEthnicityCode == null
             && a.All(x => x.Assignment.AllowedLociKey == AllowedLociKey.ABCDrb1Dqb1)));
 
         result.StoredCount.Should().Be(2);
-        result.SkippedHlaChangedCount.Should().Be(1);
+        result.SkippedDonorChangedCount.Should().Be(1);
         result.SkippedDatabaseChangedCount.Should().Be(0);
     }
 
@@ -87,7 +91,7 @@ internal class PrecomputedDonorGenotypeSetWriterTests
     {
         historyRepository.GetActiveRecord().Returns(new ActiveDataRefreshRecord(PinnedRecordId + 1, TransientDatabase.DatabaseB, "3440"));
 
-        var result = await writer.Store([new([1, 2], new PhenotypeInfo<string>("hla"), FrequencySetId, false, [1])], FiveLoci, PinnedRecordId);
+        var result = await writer.Store([new([1, 2], new PhenotypeInfo<string>("hla"), "reg", "eth", FrequencySetId, false, [1])], FiveLoci, PinnedRecordId);
 
         repositoryFactory.DidNotReceiveWithAnyArgs().GetForDatabase(default);
         result.SkippedDatabaseChangedCount.Should().Be(2);
@@ -100,7 +104,7 @@ internal class PrecomputedDonorGenotypeSetWriterTests
         var withEmpty = new PhenotypeInfo<string>("hla").SetPosition(Locus.C, LocusPosition.Two, string.Empty);
         var withNull = new PhenotypeInfo<string>("hla").SetPosition(Locus.C, LocusPosition.Two, null);
 
-        await writer.Store([new([1], withEmpty, FrequencySetId, false, [1])], FiveLoci, PinnedRecordId);
+        await writer.Store([new([1], withEmpty, "reg", "eth", FrequencySetId, false, [1])], FiveLoci, PinnedRecordId);
 
         var expectedTypingKey = SubjectGenotypeSetKeyGenerator.GenerateHlaTypingKey(withNull, AllowedLociKey.ABCDrb1Dqb1);
         await repository.Received(1).GetOrCreateValueIds(Arg.Is<IReadOnlyCollection<SubjectGenotypeSetValueToStore>>(values =>
@@ -111,7 +115,7 @@ internal class PrecomputedDonorGenotypeSetWriterTests
     public async Task Store_ForLociThatAreNotOneOfTheFourKeys_WritesNothing()
     {
         var result = await writer.Store(
-            [new([1], new PhenotypeInfo<string>("hla"), FrequencySetId, false, [1])],
+            [new([1], new PhenotypeInfo<string>("hla"), "reg", "eth", FrequencySetId, false, [1])],
             new HashSet<Locus> { Locus.A, Locus.B, Locus.C },
             PinnedRecordId);
 

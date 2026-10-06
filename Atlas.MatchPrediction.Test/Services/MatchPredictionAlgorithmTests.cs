@@ -14,6 +14,7 @@ using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
+using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Services.Precompute;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
@@ -55,7 +56,7 @@ namespace Atlas.MatchPrediction.Test.Services
                 genotypeSetSourceResolver,
                 genotypeSetBatchCompleter);
 
-            batchContext = DonorGenotypeSetBatchContext.Disabled(UsePrecomputedGenotypeSetsSource.FeatureFlag, null);
+            batchContext = DonorGenotypeSetBatchContext.Disabled(UsePrecomputedGenotypeSetsSource.FeatureFlag, PrecomputedGenotypeSetMode.ForceLive, null);
             genotypeSetSourceResolver.Resolve(default, default).ReturnsForAnyArgs(batchContext);
 
             haplotypeFrequencyService.GetSingleHaplotypeFrequencySet(default)
@@ -139,7 +140,7 @@ namespace Atlas.MatchPrediction.Test.Services
 
             await genotypeSetSourceResolver.Received(1).Resolve(
                 input,
-                Arg.Is<IReadOnlyCollection<int>>(ids => ids.Order().SequenceEqual(new[] { 1, 2, 3 })));
+                Arg.Is<IReadOnlyCollection<DonorInput>>(donors => donors.SelectMany(d => d.DonorIds).Order().SequenceEqual(new[] { 1, 2, 3 })));
             await matchProbabilityService.Received(2).CalculateMatchProbability(
                 Arg.Any<SingleDonorMatchProbabilityInput>(),
                 Arg.Any<SubjectGenotypeSet>(),
@@ -152,18 +153,21 @@ namespace Atlas.MatchPrediction.Test.Services
             calls.Should().Equal("upload", "upload", "complete");
         }
 
+        /// <summary>
+        /// The standalone path (one call per donor, outside search) can never use a stored set, so it computes live with
+        /// no lookup and sends no usage event, which would otherwise be one event per donor.
+        /// </summary>
         [Test]
-        public async Task RunMatchPredictionAlgorithm_ResolvesPrecomputeForTheDonorAndCompletes()
+        public async Task RunMatchPredictionAlgorithm_ComputesLiveWithoutResolvingOrCompletingPrecompute()
         {
             var input = SingleDonorMatchProbabilityInputBuilder.Valid.WithDonorId(5).Build();
+            input.UsePrecomputedGenotypeSets = true;
 
             await matchPredictionAlgorithm.RunMatchPredictionAlgorithm(input);
 
-            await genotypeSetSourceResolver.Received(1).Resolve(input, Arg.Is<IReadOnlyCollection<int>>(ids => ids.SequenceEqual(new[] { 5 })));
-            await genotypeSetBatchCompleter.Received(1).Complete(
-                input,
-                batchContext,
-                Arg.Is<IReadOnlyCollection<DonorGenotypeSetBatchOutcome>>(o => o.Count == 1));
+            await genotypeSetSourceResolver.DidNotReceiveWithAnyArgs().Resolve(default, default);
+            await genotypeSetBatchCompleter.DidNotReceiveWithAnyArgs().Complete(default, default, default);
+            await matchProbabilityService.Received(1).CalculateMatchProbability(input, Arg.Any<SubjectGenotypeSet>(), null);
         }
     }
 }

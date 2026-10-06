@@ -17,7 +17,10 @@ public interface IDonorGenotypeSetBatchCompleter
     /// Stores the batch's live-computed donor sets for reuse, as best effort, then sends the batch's one
     /// <see cref="DonorGenotypeSetBatchCompleter.UsageEventName"/> event. Never throws.
     /// </summary>
-    /// <remarks>Call after the batch's results are uploaded, so the store can only ever delay the next batch, not this one's results.</remarks>
+    /// <remarks>
+    /// Call after the batch's results are uploaded. The batch still ends only when this returns, so the store does delay
+    /// the end of the batch; the writer's short lock timeout keeps that delay small.
+    /// </remarks>
     Task Complete(
         IdentifiedMatchProbabilityRequest request,
         DonorGenotypeSetBatchContext batchContext,
@@ -123,6 +126,7 @@ internal class DonorGenotypeSetBatchCompleter : IDonorGenotypeSetBatchCompleter
                 { "AllowedLociKey", batchContext.AllowedLociKey },
                 { "UsePrecomputedGenotypeSets", batchContext.UsePrecomputedGenotypeSets.ToString() },
                 { "UsePrecomputedGenotypeSetsSource", batchContext.UsePrecomputedGenotypeSetsSource.ToString() },
+                { "PrecomputeMode", batchContext.Mode.ToString() },
                 { "MatchingAlgorithmDataRefreshRecordId", batchContext.MatchingAlgorithmDataRefreshRecordId?.ToString(CultureInfo.InvariantCulture) },
             };
 
@@ -132,7 +136,7 @@ internal class DonorGenotypeSetBatchCompleter : IDonorGenotypeSetBatchCompleter
                 { "DonorIdCount", outcomes.Sum(o => o.DonorIdCount) },
                 { "PrecomputedCount", outcomes.Count(o => o.Source == DonorGenotypeSetSource.Precomputed) },
                 { "StoredCount", storeResult.StoredCount },
-                { "StoreSkippedHlaChanged", storeResult.SkippedHlaChangedCount },
+                { "StoreSkippedDonorChanged", storeResult.SkippedDonorChangedCount },
                 { "StoreSkippedDatabaseChanged", storeResult.SkippedDatabaseChangedCount },
             };
 

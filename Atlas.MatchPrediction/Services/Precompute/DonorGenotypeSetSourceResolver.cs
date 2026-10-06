@@ -20,7 +20,7 @@ public interface IDonorGenotypeSetSourceResolver
     /// Call once per batch, before its donors run, and pass the result down. Not once per donor: the parallel path
     /// gives each donor its own scope, and the read is one SQL round trip for the whole batch.
     /// </remarks>
-    Task<DonorGenotypeSetBatchContext> Resolve(IdentifiedMatchProbabilityRequest request, IReadOnlyCollection<int> donorIds);
+    Task<DonorGenotypeSetBatchContext> Resolve(IdentifiedMatchProbabilityRequest request, IReadOnlyCollection<DonorInput> donors);
 }
 
 internal class DonorGenotypeSetSourceResolver : IDonorGenotypeSetSourceResolver
@@ -42,25 +42,22 @@ internal class DonorGenotypeSetSourceResolver : IDonorGenotypeSetSourceResolver
     }
 
     /// <inheritdoc />
-    public async Task<DonorGenotypeSetBatchContext> Resolve(IdentifiedMatchProbabilityRequest request, IReadOnlyCollection<int> donorIds)
+    public async Task<DonorGenotypeSetBatchContext> Resolve(IdentifiedMatchProbabilityRequest request, IReadOnlyCollection<DonorInput> donors)
     {
-        // Resolved here, per batch, and not when the search is submitted, so that turning the kill-switch off also
-        // affects a search that is already running and leaves the override null. The request wins in both directions.
-        var source = request.UsePrecomputedGenotypeSets.HasValue
-            ? UsePrecomputedGenotypeSetsSource.Request
-            : UsePrecomputedGenotypeSetsSource.FeatureFlag;
-        var usePrecomputedGenotypeSets = request.UsePrecomputedGenotypeSets ?? settings.UsePrecomputedGenotypeSets;
+        // Resolved here, per batch, and not when the search is submitted, so that changing the kill-switch also affects
+        // a search that is already running.
+        var (usePrecomputedGenotypeSets, source) = Decide(settings.Mode, request.UsePrecomputedGenotypeSets);
 
         if (!usePrecomputedGenotypeSets)
         {
             // No read at all: when the path is off, nothing precomputed is trusted, not even partly.
-            return DonorGenotypeSetBatchContext.Disabled(source, request.MatchingAlgorithmDataRefreshRecordId);
+            return DonorGenotypeSetBatchContext.Disabled(source, settings.Mode, request.MatchingAlgorithmDataRefreshRecordId);
         }
 
         PrecomputedDonorGenotypeSetLookup lookup;
         try
         {
-            lookup = await reader.GetDonorGenotypeSets(donorIds, AllowedLoci(request), request.MatchingAlgorithmDataRefreshRecordId);
+            lookup = await reader.GetDonorGenotypeSets(donors, AllowedLoci(request), request.MatchingAlgorithmDataRefreshRecordId);
         }
         catch (Exception exception)
         {
@@ -68,8 +65,24 @@ internal class DonorGenotypeSetSourceResolver : IDonorGenotypeSetSourceResolver
             lookup = PrecomputedDonorGenotypeSetLookup.Unavailable(DonorGenotypeSetSource.ReadFailed);
         }
 
-        return DonorGenotypeSetBatchContext.Enabled(source, request.MatchingAlgorithmDataRefreshRecordId, lookup);
+        return DonorGenotypeSetBatchContext.Enabled(source, settings.Mode, request.MatchingAlgorithmDataRefreshRecordId, lookup);
     }
+
+    /// <summary>
+    /// <see cref="PrecomputedGenotypeSetMode.ForceLive"/> is the hard off and ignores the request. In the other two
+    /// modes, a request that sets the override wins, in either direction; a request that leaves it null gets the mode's
+    /// default.
+    /// </summary>
+    internal static (bool UsePrecomputedGenotypeSets, UsePrecomputedGenotypeSetsSource Source) Decide(
+        PrecomputedGenotypeSetMode mode,
+        bool? requestOverride) =>
+        mode switch
+        {
+            PrecomputedGenotypeSetMode.ForceLive => (false, UsePrecomputedGenotypeSetsSource.FeatureFlag),
+            _ when requestOverride.HasValue => (requestOverride.Value, UsePrecomputedGenotypeSetsSource.Request),
+            PrecomputedGenotypeSetMode.DefaultPrecomputed => (true, UsePrecomputedGenotypeSetsSource.FeatureFlag),
+            _ => (false, UsePrecomputedGenotypeSetsSource.FeatureFlag)
+        };
 
     private void LogReadFailure(IdentifiedMatchProbabilityRequest request, Exception exception)
     {

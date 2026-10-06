@@ -229,7 +229,7 @@ public class DonorImportPrecomputeTests
             AllowedLociKey allowedLociKey) =>
             inner.GetDonorSubjectGenotypeSets(donorIds, allowedLociKey);
 
-        public Task<TypingGuardedUpsertResult> UpsertDonorAssignmentsWhereTypingUnchanged(IReadOnlyCollection<TypingGuardedDonorAssignment> assignments) =>
-            inner.UpsertDonorAssignmentsWhereTypingUnchanged(assignments);
+        public Task<GuardedUpsertResult> UpsertDonorAssignmentsWhereDonorUnchanged(IReadOnlyCollection<GuardedDonorAssignment> assignments) =>
+            inner.UpsertDonorAssignmentsWhereDonorUnchanged(assignments);
     }
 }

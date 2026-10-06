@@ -106,7 +106,7 @@ internal class MatchProbabilityService : IMatchProbabilityService
         );
 
         var genotypeSetToStore = ShouldStore(genotypeSetSource, batchContext)
-            ? ToStore(singleDonorMatchProbabilityInput.Donor.DonorIds, donorHla, donorFrequencySetId, matcherResult.DonorGenotypeSet)
+            ? ToStore(singleDonorMatchProbabilityInput.Donor, donorHla, donorFrequencySetId, matcherResult.DonorGenotypeSet)
             : null;
 
         // Capture the donor genotype count (0 when unrepresented), so it is read before the guard below.
@@ -131,11 +131,16 @@ internal class MatchProbabilityService : IMatchProbabilityService
 
     /// <summary>
     /// A live set is stored only when the batch can store, and only for a donor that a stored row could have covered
-    /// but did not: no row, a row for another frequency set, or a row that could not be decoded.
+    /// but did not: no row, or a row for another frequency set.
     /// </summary>
+    /// <remarks>
+    /// Not for <see cref="DonorGenotypeSetSource.DecodeFailed"/>: the bad row has the same key as the live set, so a
+    /// store would find it and change nothing. The next Data Refresh rebuilds it. Not for
+    /// <see cref="DonorGenotypeSetSource.TypingChanged"/>: the donor's current typing is not the one computed here.
+    /// </remarks>
     private static bool ShouldStore(DonorGenotypeSetSource source, DonorGenotypeSetBatchContext batchContext) =>
         batchContext is { CanStore: true }
-        && source is DonorGenotypeSetSource.NoRow or DonorGenotypeSetSource.StaleFrequencySet or DonorGenotypeSetSource.DecodeFailed;
+        && source is DonorGenotypeSetSource.NoRow or DonorGenotypeSetSource.StaleFrequencySet;
 
     /// <remarks>
     /// Encoded here, per donor, so a batch holds only payload bytes until it stores them, not every donor's genotypes.
@@ -143,7 +148,7 @@ internal class MatchProbabilityService : IMatchProbabilityService
     /// Storing is best effort, so a set that cannot be encoded is simply not stored: it must not fail the donor's result.
     /// </remarks>
     private DonorGenotypeSetToStore ToStore(
-        IReadOnlyCollection<int> donorIds,
+        DonorInput donor,
         PhenotypeInfo<string> donorHla,
         int donorFrequencySetId,
         SubjectGenotypeSet donorGenotypeSet)
@@ -151,8 +156,10 @@ internal class MatchProbabilityService : IMatchProbabilityService
         try
         {
             return new DonorGenotypeSetToStore(
-                donorIds.ToList(),
+                donor.DonorIds.ToList(),
                 donorHla,
+                donor.DonorFrequencySetMetadata?.RegistryCode,
+                donor.DonorFrequencySetMetadata?.EthnicityCode,
                 donorFrequencySetId,
                 donorGenotypeSet.IsUnrepresented,
                 donorGenotypeSet.IsUnrepresented ? null : SubjectGenotypeSetPayload.Encode(donorGenotypeSet));
@@ -162,7 +169,7 @@ internal class MatchProbabilityService : IMatchProbabilityService
             logger.SendException(exception, LogLevel.Warn, new Dictionary<string, string>
             {
                 { "EventName", "Precomputed genotype set encode failed" },
-                { "DonorIds", string.Join(",", donorIds) },
+                { "DonorIds", string.Join(",", donor.DonorIds) },
             });
             return null;
         }

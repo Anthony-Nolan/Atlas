@@ -61,10 +61,11 @@ namespace Atlas.MatchPrediction.ExternalInterface
             using (logger.RunTimed("Run Match Prediction Algorithm"))
             {
                 var patientGenotypeSet = await genotypeSetService.GetPatientGenotypeSet(singleDonorMatchProbabilityInput);
-                var batchContext = await genotypeSetSourceResolver.Resolve(singleDonorMatchProbabilityInput, singleDonorMatchProbabilityInput.Donor.DonorIds);
-                var result = await matchProbabilityService.CalculateMatchProbability(singleDonorMatchProbabilityInput, patientGenotypeSet, batchContext);
 
-                await genotypeSetBatchCompleter.Complete(singleDonorMatchProbabilityInput, batchContext, [ToOutcome(singleDonorMatchProbabilityInput, result)]);
+                // Always live, with no precompute lookup and no usage event. This is the standalone match prediction
+                // path (one call per donor, outside search), which has no record of the matching database and so could
+                // never use a stored set; an event per donor would only add volume.
+                var result = await matchProbabilityService.CalculateMatchProbability(singleDonorMatchProbabilityInput, patientGenotypeSet);
 
                 return result.Response.Round(4);
             }
@@ -89,7 +90,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
                 // Once per batch, not per donor: one read of the stored rows, and one decision about the kill-switch.
                 var batchContext = await genotypeSetSourceResolver.Resolve(
                     multipleDonorMatchProbabilityInput,
-                    matchProbabilityInputs.SelectMany(i => i.Donor.DonorIds).Distinct().ToList());
+                    multipleDonorMatchProbabilityInput.Donors);
                 var outcomes = new List<DonorGenotypeSetBatchOutcome>(matchProbabilityInputs.Count);
 
                 foreach (var matchProbabilityInput in matchProbabilityInputs)
@@ -103,7 +104,8 @@ namespace Atlas.MatchPrediction.ExternalInterface
                     }
                 }
 
-                // After every donor's results are uploaded, so storing for reuse never delays this batch's results.
+                // After every donor's results are uploaded. This activity returns only after the store, so the store
+                // does delay the end of the batch, and so of the search. The store's lock timeout keeps that delay short.
                 await genotypeSetBatchCompleter.Complete(multipleDonorMatchProbabilityInput, batchContext, outcomes);
 
                 return fileNames;

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,6 +12,8 @@ using Atlas.MatchingAlgorithm.Data.Repositories.Precompute;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using AwesomeAssertions;
+using Dapper;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -27,6 +30,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute;
 public class SubjectGenotypeSetSearchRepositoryTests
 {
     private const AllowedLociKey Key = AllowedLociKey.ABCDrb1Dqb1;
+    private const string DefaultRegistryCode = "reg";
+    private const string DefaultEthnicityCode = "eth";
 
     private string transientConnectionString;
     private ISubjectGenotypeSetRepository repository;
@@ -62,6 +67,7 @@ public class SubjectGenotypeSetSearchRepositoryTests
 
         stored.Keys.Should().BeEquivalentTo([1, 2]);
         stored[1].HaplotypeFrequencySetId.Should().Be(7);
+        stored[1].HlaTypingKey.Should().Be(valueIds.Single(kv => kv.Key.HaplotypeFrequencySetId == 7).Key.HlaTypingKey);
         stored[1].IsUnrepresented.Should().BeFalse();
         stored[1].SubjectGenotypeSetData.Should().Equal(1, 2, 3);
         stored[2].IsUnrepresented.Should().BeTrue();
@@ -87,43 +93,43 @@ public class SubjectGenotypeSetSearchRepositoryTests
     }
 
     [Test]
-    public async Task UpsertDonorAssignmentsWhereTypingUnchanged_ForDonorsWhoseTypingIsUnchanged_WritesTheirAssignments()
+    public async Task UpsertDonorAssignmentsWhereDonorUnchanged_ForDonorsWhoseTypingIsUnchanged_WritesTheirAssignments()
     {
         var typing = Typing("a");
         await InsertDonors((1, typing), (2, typing));
         var valueId = await NewValueId();
 
-        var result = await repository.UpsertDonorAssignmentsWhereTypingUnchanged([Guarded(1, valueId, typing), Guarded(2, valueId, typing)]);
+        var result = await repository.UpsertDonorAssignmentsWhereDonorUnchanged([Guarded(1, valueId, typing), Guarded(2, valueId, typing)]);
 
         result.UpsertedCount.Should().Be(2);
-        result.SkippedTypingChangedCount.Should().Be(0);
+        result.SkippedDonorChangedCount.Should().Be(0);
         (await StoredAssignments()).Should().BeEquivalentTo([(1, Key, valueId), (2, Key, valueId)]);
     }
 
     [Test]
-    public async Task UpsertDonorAssignmentsWhereTypingUnchanged_SkipsADonorWhoseTypingChanged_AndADonorThatIsGone()
+    public async Task UpsertDonorAssignmentsWhereDonorUnchanged_SkipsADonorWhoseTypingChanged_AndADonorThatIsGone()
     {
         await InsertDonors((1, Typing("now")), (2, Typing("a")));
         var valueId = await NewValueId();
 
-        var result = await repository.UpsertDonorAssignmentsWhereTypingUnchanged([
+        var result = await repository.UpsertDonorAssignmentsWhereDonorUnchanged([
             Guarded(1, valueId, Typing("before")),
             Guarded(2, valueId, Typing("a")),
             Guarded(3, valueId, Typing("a")),
         ]);
 
         result.UpsertedCount.Should().Be(1);
-        result.SkippedTypingChangedCount.Should().Be(2);
+        result.SkippedDonorChangedCount.Should().Be(2);
         (await StoredAssignments()).Should().BeEquivalentTo([(2, Key, valueId)]);
     }
 
     [Test]
-    public async Task UpsertDonorAssignmentsWhereTypingUnchanged_TreatsNullAndEmptyAsTheSameTyping()
+    public async Task UpsertDonorAssignmentsWhereDonorUnchanged_TreatsNullAndEmptyAsTheSameTyping()
     {
         await InsertDonors((1, Typing("a").SetPosition(Locus.Dqb1, LocusPosition.One, null)));
         var valueId = await NewValueId();
 
-        var result = await repository.UpsertDonorAssignmentsWhereTypingUnchanged([
+        var result = await repository.UpsertDonorAssignmentsWhereDonorUnchanged([
             Guarded(1, valueId, Typing("a").SetPosition(Locus.Dqb1, LocusPosition.One, string.Empty))
         ]);
 
@@ -131,13 +137,13 @@ public class SubjectGenotypeSetSearchRepositoryTests
     }
 
     [Test]
-    public async Task UpsertDonorAssignmentsWhereTypingUnchanged_IgnoresADpb1Change()
+    public async Task UpsertDonorAssignmentsWhereDonorUnchanged_IgnoresADpb1Change()
     {
         // DPB1 is not a match prediction locus, so it does not change the genotype set.
         await InsertDonors((1, Typing("a").SetPosition(Locus.Dpb1, LocusPosition.One, "DPB1*NOW")));
         var valueId = await NewValueId();
 
-        var result = await repository.UpsertDonorAssignmentsWhereTypingUnchanged([
+        var result = await repository.UpsertDonorAssignmentsWhereDonorUnchanged([
             Guarded(1, valueId, Typing("a").SetPosition(Locus.Dpb1, LocusPosition.One, "DPB1*BEFORE"))
         ]);
 
@@ -145,7 +151,7 @@ public class SubjectGenotypeSetSearchRepositoryTests
     }
 
     [Test]
-    public async Task UpsertDonorAssignmentsWhereTypingUnchanged_ReplacesAStaleAssignment_AndIsSafeToRepeat()
+    public async Task UpsertDonorAssignmentsWhereDonorUnchanged_ReplacesAStaleAssignment_AndIsSafeToRepeat()
     {
         var typing = Typing("a");
         await InsertDonors((1, typing));
@@ -153,22 +159,86 @@ public class SubjectGenotypeSetSearchRepositoryTests
         var freshValueId = await NewValueId();
         await repository.UpsertDonorAssignments([new DonorSubjectGenotypeSetAssignment(1, Key, staleValueId)]);
 
-        await repository.UpsertDonorAssignmentsWhereTypingUnchanged([Guarded(1, freshValueId, typing)]);
-        await repository.UpsertDonorAssignmentsWhereTypingUnchanged([Guarded(1, freshValueId, typing)]);
+        await repository.UpsertDonorAssignmentsWhereDonorUnchanged([Guarded(1, freshValueId, typing)]);
+        await repository.UpsertDonorAssignmentsWhereDonorUnchanged([Guarded(1, freshValueId, typing)]);
 
         (await StoredAssignments()).Should().BeEquivalentTo([(1, Key, freshValueId)]);
     }
 
+    /// <summary>
+    /// The registry and ethnicity codes choose the frequency set. A donor whose codes changed after matching must not be
+    /// pointed back at a value computed with its old frequency set, over the import's correct row.
+    /// </summary>
     [Test]
-    public async Task UpsertDonorAssignmentsWhereTypingUnchanged_ForNoAssignments_DoesNothing()
+    public async Task UpsertDonorAssignmentsWhereDonorUnchanged_SkipsADonorWhoseRegistryOrEthnicityCodeChanged()
     {
-        var result = await repository.UpsertDonorAssignmentsWhereTypingUnchanged([]);
+        var typing = Typing("a");
+        await InsertDonors((1, typing, "reg-now", "eth"), (2, typing, "reg", "eth-now"), (3, typing, "reg", "eth"));
+        var valueId = await NewValueId();
 
-        result.Should().Be(new TypingGuardedUpsertResult(0, 0));
+        var result = await repository.UpsertDonorAssignmentsWhereDonorUnchanged([
+            Guarded(1, valueId, typing, "reg-before", "eth"),
+            Guarded(2, valueId, typing, "reg", "eth-before"),
+            Guarded(3, valueId, typing, "reg", "eth"),
+        ]);
+
+        result.UpsertedCount.Should().Be(1);
+        result.SkippedDonorChangedCount.Should().Be(2);
+        (await StoredAssignments()).Should().BeEquivalentTo([(3, Key, valueId)]);
     }
 
-    private static TypingGuardedDonorAssignment Guarded(int donorId, int valueId, PhenotypeInfo<string> typing) =>
-        new(new DonorSubjectGenotypeSetAssignment(donorId, Key, valueId), typing);
+    [Test]
+    public async Task UpsertDonorAssignmentsWhereDonorUnchanged_TreatsNullAndEmptyCodesAsTheSame()
+    {
+        var typing = Typing("a");
+        await InsertDonors((1, typing, "reg", null));
+        var valueId = await NewValueId();
+
+        var result = await repository.UpsertDonorAssignmentsWhereDonorUnchanged([Guarded(1, valueId, typing, "reg", string.Empty)]);
+
+        result.UpsertedCount.Should().Be(1);
+    }
+
+    /// <summary>
+    /// A best-effort store must not wait for minutes behind another writer: with the session's short lock timeout, a
+    /// held table lock makes it fail fast (error 1222), and the caller logs and skips the store.
+    /// </summary>
+    [Test]
+    public async Task UpsertDonorAssignmentsWhereDonorUnchanged_WhenTheTableIsLockedByAnotherTransaction_FailsFastWithALockTimeout()
+    {
+        var typing = Typing("a");
+        await InsertDonors((1, typing));
+        var valueId = await NewValueId();
+
+        await using var blocker = new SqlConnection(transientConnectionString);
+        await blocker.OpenAsync();
+        await using var blockingTransaction = (SqlTransaction) await blocker.BeginTransactionAsync();
+        await blocker.ExecuteAsync("SELECT TOP (1) 1 FROM DonorSubjectGenotypeSets WITH (TABLOCKX, HOLDLOCK)", transaction: blockingTransaction);
+
+        var stopwatch = Stopwatch.StartNew();
+        var act = () => repository.UpsertDonorAssignmentsWhereDonorUnchanged([Guarded(1, valueId, typing)]);
+
+        (await act.Should().ThrowAsync<SqlException>()).Which.Number.Should().Be(1222);
+        stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(30));
+
+        await blockingTransaction.RollbackAsync();
+    }
+
+    [Test]
+    public async Task UpsertDonorAssignmentsWhereDonorUnchanged_ForNoAssignments_DoesNothing()
+    {
+        var result = await repository.UpsertDonorAssignmentsWhereDonorUnchanged([]);
+
+        result.Should().Be(new GuardedUpsertResult(0, 0));
+    }
+
+    private static GuardedDonorAssignment Guarded(
+        int donorId,
+        int valueId,
+        PhenotypeInfo<string> typing,
+        string registryCode = DefaultRegistryCode,
+        string ethnicityCode = DefaultEthnicityCode) =>
+        new(new DonorSubjectGenotypeSetAssignment(donorId, Key, valueId), typing, registryCode, ethnicityCode);
 
     /// <summary>A typing with a distinct name at every match prediction locus, and at DPB1.</summary>
     private static PhenotypeInfo<string> Typing(string prefix) =>
@@ -180,7 +250,10 @@ public class SubjectGenotypeSetSearchRepositoryTests
     private SubjectGenotypeSetKey NewKey(int frequencySetId = 1, AllowedLociKey allowedLociKey = Key) =>
         new($"{++nextHlaTypingKeySuffix:D64}", frequencySetId, allowedLociKey);
 
-    private async Task InsertDonors(params (int DonorId, PhenotypeInfo<string> Typing)[] donors)
+    private Task InsertDonors(params (int DonorId, PhenotypeInfo<string> Typing)[] donors) =>
+        InsertDonors(donors.Select(d => (d.DonorId, d.Typing, DefaultRegistryCode, DefaultEthnicityCode)).ToArray());
+
+    private async Task InsertDonors(params (int DonorId, PhenotypeInfo<string> Typing, string RegistryCode, string EthnicityCode)[] donors)
     {
         await using var context = new ContextFactory().Create(transientConnectionString);
         context.Donors.AddRange(donors.Select(d => new Donor
@@ -189,6 +262,8 @@ public class SubjectGenotypeSetSearchRepositoryTests
             DonorType = DonorType.Adult,
             IsAvailableForSearch = true,
             ExternalDonorCode = $"donor-{d.DonorId}",
+            RegistryCode = d.RegistryCode,
+            EthnicityCode = d.EthnicityCode,
             A_1 = d.Typing.A.Position1, A_2 = d.Typing.A.Position2,
             B_1 = d.Typing.B.Position1, B_2 = d.Typing.B.Position2,
             C_1 = d.Typing.C.Position1, C_2 = d.Typing.C.Position2,

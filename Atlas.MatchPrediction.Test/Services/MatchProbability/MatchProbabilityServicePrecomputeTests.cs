@@ -2,11 +2,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.MatchPrediction;
+using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
+using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
@@ -88,7 +90,7 @@ internal class MatchProbabilityServicePrecomputeTests
     [Test]
     public async Task CalculateMatchProbability_WhenPrecomputeDisabled_ComputesLiveAndStoresNothing()
     {
-        var context = DonorGenotypeSetBatchContext.Disabled(UsePrecomputedGenotypeSetsSource.FeatureFlag, DataRefreshRecordId);
+        var context = DonorGenotypeSetBatchContext.Disabled(UsePrecomputedGenotypeSetsSource.FeatureFlag, PrecomputedGenotypeSetMode.ForceLive, DataRefreshRecordId);
 
         var result = await matchProbabilityService.CalculateMatchProbability(Input(), patientGenotypeSet, context);
 
@@ -103,7 +105,7 @@ internal class MatchProbabilityServicePrecomputeTests
         var stored = SetWithGenotypes(2, 0.25m);
         var context = EnabledContext(new Dictionary<int, PrecomputedDonorGenotypeSetRow>
         {
-            { DonorId, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, false, SubjectGenotypeSetPayload.Encode(stored)) }
+            { DonorId, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, false, SubjectGenotypeSetPayload.Encode(stored), true) }
         });
 
         var result = await matchProbabilityService.CalculateMatchProbability(Input(), patientGenotypeSet, context);
@@ -120,7 +122,7 @@ internal class MatchProbabilityServicePrecomputeTests
     {
         var context = EnabledContext(new Dictionary<int, PrecomputedDonorGenotypeSetRow>
         {
-            { DonorId, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, true, null) }
+            { DonorId, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, true, null, true) }
         });
 
         var result = await matchProbabilityService.CalculateMatchProbability(Input(), patientGenotypeSet, context);
@@ -137,7 +139,7 @@ internal class MatchProbabilityServicePrecomputeTests
         input.Donor.DonorIds = [DonorId, 2, 3];
         var context = EnabledContext(new Dictionary<int, PrecomputedDonorGenotypeSetRow>
         {
-            { 3, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, false, SubjectGenotypeSetPayload.Encode(SetWithGenotypes(1, 1m))) }
+            { 3, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, false, SubjectGenotypeSetPayload.Encode(SetWithGenotypes(1, 1m)), true) }
         });
 
         var result = await matchProbabilityService.CalculateMatchProbability(input, patientGenotypeSet, context);
@@ -150,6 +152,7 @@ internal class MatchProbabilityServicePrecomputeTests
     {
         var input = Input();
         input.Donor.DonorIds = [DonorId, 2];
+        input.Donor.DonorFrequencySetMetadata = new FrequencySetMetadata { RegistryCode = "reg", EthnicityCode = "eth" };
         var context = EnabledContext(new Dictionary<int, PrecomputedDonorGenotypeSetRow>());
 
         var result = await matchProbabilityService.CalculateMatchProbability(input, patientGenotypeSet, context);
@@ -162,6 +165,8 @@ internal class MatchProbabilityServicePrecomputeTests
         toStore.DonorIds.Should().BeEquivalentTo([DonorId, 2]);
         toStore.HaplotypeFrequencySetId.Should().Be(DonorFrequencySetId);
         toStore.DonorHla.Should().Be(input.Donor.DonorHla.ToPhenotypeInfo());
+        toStore.RegistryCode.Should().Be("reg");
+        toStore.EthnicityCode.Should().Be("eth");
         toStore.IsUnrepresented.Should().BeFalse();
         var decoded = SubjectGenotypeSetPayload.Decode(toStore.SubjectGenotypeSetData);
         decoded.Genotypes.Should().HaveCount(liveDonorGenotypeSet.Genotypes.Count);
@@ -174,7 +179,7 @@ internal class MatchProbabilityServicePrecomputeTests
         var context = EnabledContext(new Dictionary<int, PrecomputedDonorGenotypeSetRow>
         {
             // Unrepresented under the old set: that flag must not be trusted either.
-            { DonorId, new PrecomputedDonorGenotypeSetRow(OtherFrequencySetId, true, null) }
+            { DonorId, new PrecomputedDonorGenotypeSetRow(OtherFrequencySetId, true, null, true) }
         });
 
         var result = await matchProbabilityService.CalculateMatchProbability(Input(), patientGenotypeSet, context);
@@ -186,18 +191,82 @@ internal class MatchProbabilityServicePrecomputeTests
     }
 
     [Test]
-    public async Task CalculateMatchProbability_WithUndecodableRow_ComputesLiveAndReturnsSetToStore()
+    public async Task CalculateMatchProbability_WithUndecodableRow_ComputesLiveAndStoresNothing()
     {
         var context = EnabledContext(new Dictionary<int, PrecomputedDonorGenotypeSetRow>
         {
-            { DonorId, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, false, [1, 2, 3]) }
+            { DonorId, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, false, [1, 2, 3], true) }
         });
 
         var result = await matchProbabilityService.CalculateMatchProbability(Input(), patientGenotypeSet, context);
 
         result.GenotypeSetSource.Should().Be(DonorGenotypeSetSource.DecodeFailed);
-        result.GenotypeSetToStore.Should().NotBeNull();
+        // The bad row has the same key as the live set, so a store could not repair it; the next Data Refresh does.
+        result.GenotypeSetToStore.Should().BeNull();
         await genotypeMatcher.Received(1).MatchPatientDonorGenotypes(Arg.Is<GenotypeMatcherInput>(x => x.DonorGenotypeSet == null));
+    }
+
+    /// <summary>
+    /// The donor was updated to a new typing after matching read it, and the import stored a set for the new typing. The
+    /// frequency set is the same, so only the typing check stops the new typing's set being used for the old typing.
+    /// </summary>
+    [Test]
+    public async Task CalculateMatchProbability_WithRowOnlyForAnotherTyping_ComputesLiveAndStoresNothing()
+    {
+        var context = EnabledContext(new Dictionary<int, PrecomputedDonorGenotypeSetRow>
+        {
+            { DonorId, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, false, SubjectGenotypeSetPayload.Encode(SetWithGenotypes(2, 1m)), false) }
+        });
+
+        var result = await matchProbabilityService.CalculateMatchProbability(Input(), patientGenotypeSet, context);
+
+        result.GenotypeSetSource.Should().Be(DonorGenotypeSetSource.TypingChanged);
+        result.GenotypeSetToStore.Should().BeNull();
+        await genotypeMatcher.Received(1).MatchPatientDonorGenotypes(Arg.Is<GenotypeMatcherInput>(x => x.DonorGenotypeSet == null));
+    }
+
+    /// <summary>
+    /// A grouped input: donor 1 changed typing after matching (its row is for the new typing), donor 2 did not and has
+    /// no row. Donor 1's row must not be used for the group, and the group is still stored, for donor 2's sake - the
+    /// writer's guard skips donor 1.
+    /// </summary>
+    [Test]
+    public async Task CalculateMatchProbability_ForGroupWithOneChangedDonorAndOneMissingRow_ComputesLiveAndReturnsSetToStore()
+    {
+        var input = Input();
+        input.Donor.DonorIds = [DonorId, 2];
+        var context = EnabledContext(new Dictionary<int, PrecomputedDonorGenotypeSetRow>
+        {
+            { DonorId, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, false, SubjectGenotypeSetPayload.Encode(SetWithGenotypes(2, 1m)), false) }
+        });
+
+        var result = await matchProbabilityService.CalculateMatchProbability(input, patientGenotypeSet, context);
+
+        result.GenotypeSetSource.Should().Be(DonorGenotypeSetSource.NoRow);
+        result.GenotypeSetToStore.DonorIds.Should().BeEquivalentTo([DonorId, 2]);
+        await genotypeMatcher.Received(1).MatchPatientDonorGenotypes(Arg.Is<GenotypeMatcherInput>(x => x.DonorGenotypeSet == null));
+    }
+
+    /// <summary>
+    /// A grouped input where the changed donor comes first: the unchanged donor's row, for the search's typing, is used,
+    /// and the changed donor's row is not.
+    /// </summary>
+    [Test]
+    public async Task CalculateMatchProbability_ForGroupWithOneChangedDonorFirst_UsesTheUnchangedDonorsRow()
+    {
+        var input = Input();
+        input.Donor.DonorIds = [DonorId, 2];
+        var context = EnabledContext(new Dictionary<int, PrecomputedDonorGenotypeSetRow>
+        {
+            { DonorId, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, false, SubjectGenotypeSetPayload.Encode(SetWithGenotypes(5, 1m)), false) },
+            { 2, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, false, SubjectGenotypeSetPayload.Encode(SetWithGenotypes(2, 0.5m)), true) }
+        });
+
+        var result = await matchProbabilityService.CalculateMatchProbability(input, patientGenotypeSet, context);
+
+        result.GenotypeSetSource.Should().Be(DonorGenotypeSetSource.Precomputed);
+        await genotypeMatcher.Received(1).MatchPatientDonorGenotypes(Arg.Is<GenotypeMatcherInput>(x =>
+            x.DonorGenotypeSet != null && x.DonorGenotypeSet.Genotypes.Count == 2 && x.DonorGenotypeSet.SumOfLikelihoods == 0.5m));
     }
 
     [Test]
@@ -219,6 +288,7 @@ internal class MatchProbabilityServicePrecomputeTests
     {
         var context = DonorGenotypeSetBatchContext.Enabled(
             UsePrecomputedGenotypeSetsSource.Request,
+            PrecomputedGenotypeSetMode.DefaultLive,
             DataRefreshRecordId,
             PrecomputedDonorGenotypeSetLookup.Unavailable(reason));
 
@@ -234,6 +304,7 @@ internal class MatchProbabilityServicePrecomputeTests
     private static DonorGenotypeSetBatchContext EnabledContext(Dictionary<int, PrecomputedDonorGenotypeSetRow> rows) =>
         DonorGenotypeSetBatchContext.Enabled(
             UsePrecomputedGenotypeSetsSource.FeatureFlag,
+            PrecomputedGenotypeSetMode.DefaultPrecomputed,
             DataRefreshRecordId,
             new PrecomputedDonorGenotypeSetLookup("ABCDrb1Dqb1", null, rows));
 

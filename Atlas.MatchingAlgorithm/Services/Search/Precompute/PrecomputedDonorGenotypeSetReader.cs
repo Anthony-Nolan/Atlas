@@ -2,8 +2,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
+using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
+using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.Precompute;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Precompute;
@@ -45,7 +48,7 @@ public class PrecomputedDonorGenotypeSetReader : IPrecomputedDonorGenotypeSetRea
 
     /// <inheritdoc />
     public async Task<PrecomputedDonorGenotypeSetLookup> GetDonorGenotypeSets(
-        IReadOnlyCollection<int> donorIds,
+        IReadOnlyCollection<DonorInput> donors,
         IReadOnlySet<Locus> allowedLoci,
         int? matchingAlgorithmDataRefreshRecordId)
     {
@@ -66,15 +69,30 @@ public class PrecomputedDonorGenotypeSetReader : IPrecomputedDonorGenotypeSetRea
             return PrecomputedDonorGenotypeSetLookup.Unavailable(DonorGenotypeSetSource.ActiveDatabaseChanged, allowedLociKey.ToString());
         }
 
+        // The key of the typing the search has for each donor id: the typing matching read, shared by every id in its
+        // donor input. A stored row follows the donor's CURRENT typing, which an import can change after matching.
+        var searchTypingKeyByDonorId = donors
+            .SelectMany(donor =>
+            {
+                var typingKey = SubjectGenotypeSetKeyGenerator.GenerateHlaTypingKey(donor.DonorHla.ToPhenotypeInfo(), allowedLociKey);
+                return donor.DonorIds.Select(donorId => (DonorId: donorId, TypingKey: typingKey));
+            })
+            .GroupBy(x => x.DonorId)
+            .ToDictionary(g => g.Key, g => g.First().TypingKey);
+
         var stored = await repositoryFactory
             .GetForDatabase(activeRecord.Database)
-            .GetDonorSubjectGenotypeSets(donorIds, allowedLociKey);
+            .GetDonorSubjectGenotypeSets(searchTypingKeyByDonorId.Keys.ToList(), allowedLociKey);
 
         return new PrecomputedDonorGenotypeSetLookup(
             allowedLociKey.ToString(),
             null,
             stored.ToDictionary(
                 s => s.Key,
-                s => new PrecomputedDonorGenotypeSetRow(s.Value.HaplotypeFrequencySetId, s.Value.IsUnrepresented, s.Value.SubjectGenotypeSetData)));
+                s => new PrecomputedDonorGenotypeSetRow(
+                    s.Value.HaplotypeFrequencySetId,
+                    s.Value.IsUnrepresented,
+                    s.Value.SubjectGenotypeSetData,
+                    ComputedFromSearchTyping: s.Value.HlaTypingKey == searchTypingKeyByDonorId[s.Key])));
     }
 }

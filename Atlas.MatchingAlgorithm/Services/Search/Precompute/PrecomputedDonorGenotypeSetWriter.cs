@@ -16,18 +16,18 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Precompute;
 /// </summary>
 /// <remarks>
 /// <para>
-/// A donor gets here when it had no usable row: a failed precompute in a donor import or a data refresh, a row for a
-/// since-replaced frequency set, or a row that would not decode. The set it stores is exactly what the precompute
-/// would have stored - the same genotype set service, the same frequency set lookup, the same nomenclature version
-/// (that of the pinned database) and the same key - so a row written here and a row written by a refresh are the
-/// same row.
+/// A donor gets here when it had no row, or a row for a since-replaced frequency set. Today only the differential
+/// donor import (ATL-232) precomputes rows, so this covers donors it has not reached yet and donors whose pre-computation
+/// failed; the Data Refresh stage (ATL-233) is planned. The set stored here is exactly what the precompute would have
+/// stored - the same genotype set service, the same frequency set lookup, the same nomenclature version (that of the
+/// pinned database) and the same key - so a row written here and a row written by the precompute are the same row.
 /// </para>
 ///
 /// <para>
 /// <b>Two guards.</b> Nothing is written unless the database matching used is still active, checked again here just
 /// before the write; the dormant database is never written, so a refresh that is filling it is not affected. And an
-/// assignment is written only while the donor's typing is still the one the set was computed from (see
-/// <see cref="ISubjectGenotypeSetRepository.UpsertDonorAssignmentsWhereTypingUnchanged"/>).
+/// assignment is written only while the donor's typing, registry code and ethnicity code are still the ones the set was
+/// computed from (see <see cref="ISubjectGenotypeSetRepository.UpsertDonorAssignmentsWhereDonorUnchanged"/>).
 /// </para>
 ///
 /// <para>
@@ -80,13 +80,15 @@ public class PrecomputedDonorGenotypeSetWriter : IPrecomputedDonorGenotypeSetWri
             .Select(s => new SubjectGenotypeSetValueToStore(s.Key, s.Set.IsUnrepresented, s.Set.SubjectGenotypeSetData))
             .ToList());
 
-        var upsertResult = await repository.UpsertDonorAssignmentsWhereTypingUnchanged(toStore
-            .SelectMany(s => s.Set.DonorIds.Select(donorId => new TypingGuardedDonorAssignment(
+        var upsertResult = await repository.UpsertDonorAssignmentsWhereDonorUnchanged(toStore
+            .SelectMany(s => s.Set.DonorIds.Select(donorId => new GuardedDonorAssignment(
                 new DonorSubjectGenotypeSetAssignment(donorId, allowedLociKey, valueIds[s.Key]),
-                s.Set.DonorHla)))
+                s.Set.DonorHla,
+                s.Set.RegistryCode,
+                s.Set.EthnicityCode)))
             .ToList());
 
-        return new DonorGenotypeSetStoreResult(upsertResult.UpsertedCount, upsertResult.SkippedTypingChangedCount, 0);
+        return new DonorGenotypeSetStoreResult(upsertResult.UpsertedCount, upsertResult.SkippedDonorChangedCount, 0);
     }
 
     /// <summary>

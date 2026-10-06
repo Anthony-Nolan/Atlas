@@ -13,6 +13,7 @@ using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.MatchProbability;
+using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Services.Precompute;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
@@ -50,7 +51,7 @@ namespace Atlas.MatchPrediction.Test.Services
             sut = new ParallelMatchPredictionAlgorithm(
                 genotypeSetService, resultUploader, logger, serviceScopeFactory, genotypeSetSourceResolver, genotypeSetBatchCompleter);
 
-            batchContext = DonorGenotypeSetBatchContext.Disabled(UsePrecomputedGenotypeSetsSource.FeatureFlag, null);
+            batchContext = DonorGenotypeSetBatchContext.Disabled(UsePrecomputedGenotypeSetsSource.FeatureFlag, PrecomputedGenotypeSetMode.ForceLive, null);
             genotypeSetSourceResolver.Resolve(default, default).ReturnsForAnyArgs(batchContext);
 
             var patientGenotypeSet = new SubjectGenotypeSet(false, new List<GenotypeAtDesiredResolutions>(), 0.1m);
@@ -233,7 +234,7 @@ namespace Atlas.MatchPrediction.Test.Services
             var calls = new List<string>();
             resultUploader.WhenForAnyArgs(u => u.UploadMatchPredictionBatchResult(default, default, default)).Do(_ => calls.Add("upload"));
             genotypeSetBatchCompleter.WhenForAnyArgs(c => c.Complete(default, default, default)).Do(_ => calls.Add("complete"));
-            var toStore = new DonorGenotypeSetToStore([2, 3], new PhenotypeInfo<string>("hla"), 7, false, [1]);
+            var toStore = new DonorGenotypeSetToStore([2, 3], new PhenotypeInfo<string>("hla"), "reg", "eth", 7, false, [1]);
             matchProbabilityService.CalculateMatchProbability(default, default, default).ReturnsForAnyArgs(call =>
                 call.Arg<SingleDonorMatchProbabilityInput>().Donor.DonorIds.Contains(1)
                     ? new MatchProbabilityResult(new MatchProbabilityResponse(null, new HashSet<Locus>()), 0, DonorGenotypeSetSource.Precomputed)
@@ -252,7 +253,7 @@ namespace Atlas.MatchPrediction.Test.Services
 
             await genotypeSetSourceResolver.Received(1).Resolve(
                 input,
-                Arg.Is<IReadOnlyCollection<int>>(ids => ids.Order().SequenceEqual(new[] { 1, 2, 3 })));
+                Arg.Is<IReadOnlyCollection<DonorInput>>(donors => donors.SelectMany(d => d.DonorIds).Order().SequenceEqual(new[] { 1, 2, 3 })));
             await matchProbabilityService.Received(2).CalculateMatchProbability(
                 Arg.Any<SingleDonorMatchProbabilityInput>(),
                 Arg.Any<SubjectGenotypeSet>(),

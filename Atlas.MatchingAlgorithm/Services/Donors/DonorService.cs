@@ -113,8 +113,10 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
 
             using (var transactionScope = new OptionalAsyncTransactionScope(runAllHlaInsertionsInASingleTransactionScope))
             {
-                await CreateDonorBatch(newDonors, targetDatabase, runAllHlaInsertionsInASingleTransactionScope);
+                // First, before any write to Donors: search's guarded write-back locks DonorSubjectGenotypeSets and then
+                // reads Donors, so taking the locks in the same order here means the two cannot deadlock (ATL-221).
                 await DeletePrecomputedGenotypeSets(updatedDonors, targetDatabase);
+                await CreateDonorBatch(newDonors, targetDatabase, runAllHlaInsertionsInASingleTransactionScope);
                 await UpdateDonorBatch(updatedDonors, targetDatabase, runAllHlaInsertionsInASingleTransactionScope);
                 transactionScope.Complete();
             }
