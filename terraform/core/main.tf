@@ -59,11 +59,6 @@ module "donor_import" {
   sql_database            = azurerm_mssql_database.atlas-database-shared
   sql_server              = azurerm_mssql_server.atlas_sql_server
 
-  servicebus_namespace_authorization_rules = {
-    write-only = azurerm_servicebus_namespace_authorization_rule.write-only
-    read-write = azurerm_servicebus_namespace_authorization_rule.read-write
-  }
-
   servicebus_topics = {
     alerts        = module.support.general.alerts_servicebus_topic
     notifications = module.support.general.notifications_servicebus_topic
@@ -130,12 +125,6 @@ module "matching_algorithm" {
   shared_function_storage        = azurerm_storage_account.function_storage
   sql_database_shared            = azurerm_mssql_database.atlas-database-shared
   sql_server                     = azurerm_mssql_server.atlas_sql_server
-
-  servicebus_namespace_authorization_rules = {
-    read-write = azurerm_servicebus_namespace_authorization_rule.read-write
-    read-only  = azurerm_servicebus_namespace_authorization_rule.read-only
-    write-only = azurerm_servicebus_namespace_authorization_rule.write-only
-  }
 
   servicebus_topics = {
     updated-searchable-donors = module.donor_import.service_bus.updated_searchable_donors_topic
@@ -229,13 +218,6 @@ module "match_prediction" {
   sql_database            = azurerm_mssql_database.atlas-database-shared
   mac_import_table        = module.multiple_allele_code_lookup.storage_table
 
-  servicebus_namespace_authorization_rules = {
-    manage     = azurerm_servicebus_namespace_authorization_rule.manage
-    read-write = azurerm_servicebus_namespace_authorization_rule.read-write
-    read-only  = azurerm_servicebus_namespace_authorization_rule.read-only
-    write-only = azurerm_servicebus_namespace_authorization_rule.write-only
-  }
-
   servicebus_topics = {
     alerts          = module.support.general.alerts_servicebus_topic
     notifications   = module.support.general.notifications_servicebus_topic
@@ -314,11 +296,6 @@ module "repeat_search" {
   matching_transient_b_database_kv_ref   = module.matching_algorithm.sql_database.transient_b_database_kv_ref
   original-search-matching-results-topic = module.matching_algorithm.service_bus.matching_results_topic
   servicebus_namespace                   = azurerm_servicebus_namespace.general
-  servicebus_namespace_authorization_rules = {
-    read-write = azurerm_servicebus_namespace_authorization_rule.read-write
-    read-only  = azurerm_servicebus_namespace_authorization_rule.read-only
-    write-only = azurerm_servicebus_namespace_authorization_rule.write-only
-  }
   servicebus_topics = {
     alerts          = module.support.general.alerts_servicebus_topic
     notifications   = module.support.general.notifications_servicebus_topic
@@ -374,11 +351,6 @@ module "search_tracking" {
   azure_app_configuration = azurerm_app_configuration.atlas_app_configuration
   key_vault               = local.key_vault_module_handoff
   servicebus_namespace    = azurerm_servicebus_namespace.general
-  servicebus_namespace_authorization_rules = {
-    read-write = azurerm_servicebus_namespace_authorization_rule.read-write
-    read-only  = azurerm_servicebus_namespace_authorization_rule.read-only
-    write-only = azurerm_servicebus_namespace_authorization_rule.write-only
-  }
   shared_function_storage = azurerm_storage_account.function_storage
   sql_database            = azurerm_mssql_database.atlas-database-shared
   sql_server              = azurerm_mssql_server.atlas_sql_server

@@ -36,14 +36,6 @@ variable "shared_function_storage" {
   })
 }
 
-variable "servicebus_namespace_authorization_rules" {
-  type = object({
-    read-write = object({ primary_connection_string = string })
-    read-only  = object({ primary_connection_string = string })
-    write-only = object({ primary_connection_string = string })
-  })
-}
-
 variable "sql_database" {
   type = object({
     name = string
