@@ -1,5 +1,5 @@
 locals {
-  atlas_match_prediction_container_app_name = lower("${var.general.environment}-atlas-match-prediction-ca")
+  atlas_match_prediction_container_app_name = lower("${var.general.environment}-atlas-match-pred-ca")
 }
 
 resource "azurerm_container_app" "atlas_match_prediction" {
@@ -124,7 +124,7 @@ resource "azurerm_container_app" "atlas_match_prediction" {
       }
       env {
         name  = "MatchPredictionRequests__MaxParallelism"
-        value = tostring(var.MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM)
+        value = tostring(var.CONTAINER_REQUESTS_MAX_PARALLELISM)
       }
       env {
         name  = "GenotypeImputation__MaximumExpandedGenotypesPerInput"
