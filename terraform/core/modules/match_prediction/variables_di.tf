@@ -16,9 +16,8 @@ variable "application_insights" {
 
 variable "azure_storage" {
   type = object({
-    id                        = string
-    name                      = string
-    primary_connection_string = string
+    id   = string
+    name = string
   })
 }
 
@@ -39,15 +38,6 @@ variable "shared_function_storage" {
 variable "mac_import_table" {
   type = object({
     name = string
-  })
-}
-
-variable "servicebus_namespace_authorization_rules" {
-  type = object({
-    manage     = object({ primary_connection_string = string })
-    read-write = object({ primary_connection_string = string })
-    read-only  = object({ primary_connection_string = string })
-    write-only = object({ primary_connection_string = string })
   })
 }
 
