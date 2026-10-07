@@ -43,8 +43,11 @@ cd terraform/core
 terraform init -reconfigure \
   -backend-config="storage_account_name=novaterraform" \
   -backend-config="container_name=terraform-state" \
-  -backend-config="resource_group_name=AN-RESOURCE-GROUP"
+  -backend-config="resource_group_name=AN-RESOURCE-GROUP" \
+  -backend-config="subscription_id=f37d6d06-4bc8-4146-add7-fe2911b47e11"
 ```
+
+The state storage account lives in the "Anthony Nolan Subscription", not the per-environment subscription, so `subscription_id` must be set for the backend only. Do not set `ARM_SUBSCRIPTION_ID`, which would also override the provider's per-environment subscription. Requires `az login` first.
 
 ### 2. Select the workspace for the chosen environment
 
