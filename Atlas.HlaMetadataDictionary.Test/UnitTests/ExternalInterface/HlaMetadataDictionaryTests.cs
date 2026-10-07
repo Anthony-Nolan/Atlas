@@ -83,7 +83,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
 
             await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
 
-            await recreateMetadataService.DidNotReceiveWithAnyArgs().RefreshAllHlaMetadata(null);
+            await recreateMetadataService.DidNotReceiveWithAnyArgs().RefreshAllHlaMetadata(null, default);
         }
 
         [Test]
@@ -93,7 +93,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
 
             await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
 
-            await recreateMetadataService.ReceivedWithAnyArgs().RefreshAllHlaMetadata(null);
+            await recreateMetadataService.ReceivedWithAnyArgs().RefreshAllHlaMetadata(null, default);
         }
 
         [Test]
@@ -103,7 +103,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
 
             await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.LatestForced);
 
-            await recreateMetadataService.Received().RefreshAllHlaMetadata(DefaultVersion);
+            await recreateMetadataService.Received().RefreshAllHlaMetadata(DefaultVersion, Arg.Any<DateTime>());
         }
 
         [Test]
@@ -113,7 +113,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
 
             await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Active);
 
-            await recreateMetadataService.ReceivedWithAnyArgs().RefreshAllHlaMetadata(null);
+            await recreateMetadataService.ReceivedWithAnyArgs().RefreshAllHlaMetadata(null, default);
         }
 
         [Test]
@@ -123,7 +123,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
 
             await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Specific("different-version"));
 
-            await recreateMetadataService.ReceivedWithAnyArgs().RefreshAllHlaMetadata(null);
+            await recreateMetadataService.ReceivedWithAnyArgs().RefreshAllHlaMetadata(null, default);
         }
 
         [Test]
@@ -167,7 +167,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
             var dataWasRewritten = false;
 
             recreateMetadataService
-                .When(s => s.RefreshAllHlaMetadata(Arg.Any<string>()))
+                .When(s => s.RefreshAllHlaMetadata(Arg.Any<string>(), Arg.Any<DateTime>()))
                 .Do(_ => dataWasRewritten = true);
             recreationRepository
                 .When(r => r.RecordRecreation(Arg.Any<string>()))
@@ -202,10 +202,64 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
                 .When(r => r.RecordRecreation(Arg.Any<string>()))
                 .Do(_ => throw new Exception("storage is unavailable"));
 
-            var version = await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Specific(DefaultVersion));
+            var result = await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Specific(DefaultVersion));
 
-            version.Should().Be(DefaultVersion);
+            result.HlaNomenclatureVersion.Should().Be(DefaultVersion);
             cacheInvalidator.Received().InvalidateCaches(DefaultVersion);
+        }
+
+        [Test]
+        public async Task RecreateHlaMetadataDictionary_WhenDictionaryIsRecreated_ReturnsUtcSnapshotUsedToRecreateTables()
+        {
+            DateTime? snapshotUsedToRecreateTables = null;
+            recreateMetadataService
+                .When(s => s.RefreshAllHlaMetadata(Arg.Any<string>(), Arg.Any<DateTime>()))
+                .Do(call => snapshotUsedToRecreateTables = call.ArgAt<DateTime>(1));
+            var timeBeforeRecreation = DateTime.UtcNow.AddMilliseconds(-1);
+
+            var result = await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Specific(DefaultVersion));
+
+            result.SnapshotUtc.Should().NotBeNull();
+            result.SnapshotUtc.Should().Be(snapshotUsedToRecreateTables);
+            result.SnapshotUtc!.Value.Kind.Should().Be(DateTimeKind.Utc);
+            result.SnapshotUtc.Value.Should().BeOnOrAfter(timeBeforeRecreation).And.BeOnOrBefore(DateTime.UtcNow);
+        }
+
+        [Test]
+        public async Task RecreateHlaMetadataDictionary_WhenDictionaryIsRecreated_ReturnsSnapshotToWholeMilliseconds()
+        {
+            var result = await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Specific(DefaultVersion));
+
+            (result.SnapshotUtc!.Value.Ticks % TimeSpan.TicksPerMillisecond).Should().Be(0);
+        }
+
+        [Test]
+        public async Task RecreateHlaMetadataDictionary_WhenDictionaryIsRecreated_ReturnsRecreatedVersion()
+        {
+            var result = await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Specific("different-version"));
+
+            result.HlaNomenclatureVersion.Should().Be("different-version");
+        }
+
+        [Test]
+        public async Task RecreateHlaMetadataDictionary_WhenDictionaryIsNotRecreated_ReturnsNoSnapshot()
+        {
+            wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().Returns(DefaultVersion);
+
+            var result = await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
+
+            result.HlaNomenclatureVersion.Should().Be(DefaultVersion);
+            result.SnapshotUtc.Should().BeNull();
+        }
+
+        [Test]
+        public void GetLatestStableHlaNomenclatureVersion_ReturnsLatestVersionFromWmda()
+        {
+            wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().Returns("newer-version");
+
+            var version = hlaMetadataDictionary.GetLatestStableHlaNomenclatureVersion();
+
+            version.Should().Be("newer-version");
         }
     }
 }

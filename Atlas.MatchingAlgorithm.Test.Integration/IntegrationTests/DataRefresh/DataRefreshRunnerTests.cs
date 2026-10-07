@@ -65,5 +65,19 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
             timesOfExpectedStages.Should().NotContainNulls();
             timesOfExpectedStages.Should().BeInAscendingOrder();
         }
+
+        [Test]
+        public async Task DataRefresh_RecordsHlaNomenclatureVersionAndHlaMetadataDictionarySnapshot()
+        {
+            var refreshRecord = new DataRefreshRecord {Database = "DatabaseA"};
+            var refreshRecordId = await dataRefreshHistoryRepository.Create(refreshRecord);
+
+            await dataRefreshRunner.RefreshData(refreshRecordId);
+
+            var record = await dataRefreshHistoryRepository.GetRecord(refreshRecordId);
+            record.HlaNomenclatureVersion.Should().NotBeNullOrEmpty();
+            record.HlaMetadataDictionarySnapshotUtc.Should().NotBeNull();
+            record.HlaMetadataDictionarySnapshotUtc.Should().BeOnOrBefore(record.MetadataDictionaryRefreshCompleted!.Value);
+        }
     }
 }

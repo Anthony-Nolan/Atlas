@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
@@ -67,7 +66,7 @@ public partial class DataRefreshRunnerTests
                 .With(r => r.HlaNomenclatureVersion, oldVersion)
                 .Build()
         );
-        hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.LatestForced).Returns(newVersion);
+        hlaMetadataDictionary.GetLatestStableHlaNomenclatureVersion().Returns(newVersion);
 
         await dataRefreshRunner.RefreshData(default);
 

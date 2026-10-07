@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
@@ -30,6 +31,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
     [TestFixture]
     public partial class DataRefreshRunnerTests
     {
+        private const string LatestHlaVersion = "latestHlaVersion";
+        private static readonly DateTime SnapshotUtc = new(2026, 10, 5, 15, 4, 7, 123, DateTimeKind.Utc);
+
         private IActiveDatabaseProvider activeDatabaseProvider;
         private IAzureDatabaseManager azureDatabaseManager;
         private IDonorImportRepository donorImportRepository;
@@ -62,6 +66,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(DataRefreshRecordBuilder.New.Build());
             transientRepositoryFactory.GetDonorImportRepository().Returns(donorImportRepository);
 
+            hlaMetadataDictionary.GetLatestStableHlaNomenclatureVersion().Returns(LatestHlaVersion);
+            hlaMetadataDictionary.RecreateHlaMetadataDictionary(default).ReturnsForAnyArgs(call =>
+                new HlaMetadataDictionaryRecreationResult(call.Arg<CreationBehaviour>()?.SpecificVersion, SnapshotUtc));
+
             dataRefreshRunner = BuildDataRefreshRunner();
         }
 
@@ -77,10 +85,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         public async Task RefreshData_ReportsHlaMetadataWasRecreated_WithRefreshHlaNomenclatureVersion()
         {
             const string hlaNomenclatureVersion = "3390";
-            hlaMetadataDictionary.IsActiveVersionDifferentFromLatestVersion().Returns(true);
-            hlaMetadataDictionary
-                .RecreateHlaMetadataDictionary(CreationBehaviour.LatestForced)
-                .Returns(hlaNomenclatureVersion);
+            hlaMetadataDictionary.GetLatestStableHlaNomenclatureVersion().Returns(hlaNomenclatureVersion);
 
             var returnedHlaVersion = await dataRefreshRunner.RefreshData(default);
 
@@ -98,15 +103,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         [Test]
         public async Task RefreshData_WhenRunningMetadataDictionaryStep_RecordsLatestVersion()
         {
-            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
-                DataRefreshRecordBuilder.New.Build()
-            );
-            var version = "latestHlaVersion";
-            hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.LatestForced).Returns(version);
-
             await dataRefreshRunner.RefreshData(default);
 
-            await dataRefreshHistoryRepository.Received().UpdateExecutionDetails(Arg.Any<int>(), version);
+            await dataRefreshHistoryRepository.Received().UpdateExecutionDetails(Arg.Any<int>(), LatestHlaVersion);
         }
 
         [Test]
@@ -118,20 +117,93 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             await dataRefreshRunner.RefreshData(default);
 
-            await hlaMetadataDictionary.Received().RecreateHlaMetadataDictionary(CreationBehaviour.LatestForced);
+            await hlaMetadataDictionary.Received().RecreateHlaMetadataDictionary(
+                Arg.Is<CreationBehaviour>(b => b.ShouldForce && b.SpecificVersion == LatestHlaVersion));
         }
 
         [Test]
         public async Task RefreshData_WhenRunningFromScratch_PassesRefreshHlaVersionToLaterSteps()
         {
             const string hlaNomenclatureVersion = "3390";
-            hlaMetadataDictionary
-                .RecreateHlaMetadataDictionary(CreationBehaviour.LatestForced)
-                .Returns(hlaNomenclatureVersion);
+            hlaMetadataDictionary.GetLatestStableHlaNomenclatureVersion().Returns(hlaNomenclatureVersion);
 
             await dataRefreshRunner.RefreshData(default);
 
             await hlaProcessor.Received().UpdateDonorHla(hlaNomenclatureVersion, Arg.Any<Func<int, Task>>());
+        }
+
+        [Test]
+        public async Task RefreshData_WhenRunningFromScratch_RecordsVersionBeforeRecreatingDictionary()
+        {
+            var calls = new List<string>();
+            dataRefreshHistoryRepository
+                .When(r => r.UpdateExecutionDetails(Arg.Any<int>(), LatestHlaVersion, Arg.Any<DateTime?>()))
+                .Do(_ => calls.Add("record version"));
+            hlaMetadataDictionary
+                .When(d => d.RecreateHlaMetadataDictionary(Arg.Any<CreationBehaviour>()))
+                .Do(_ => calls.Add("recreate dictionary"));
+
+            await dataRefreshRunner.RefreshData(default);
+
+            calls.Should().Equal("record version", "recreate dictionary");
+        }
+
+        [Test]
+        public async Task RefreshData_WhenRunningFromScratch_RecreatesDictionaryAtLatestVersion()
+        {
+            await dataRefreshRunner.RefreshData(default);
+
+            await hlaMetadataDictionary.Received(1).RecreateHlaMetadataDictionary(
+                Arg.Is<CreationBehaviour>(b => b.CreationMode == CreationBehaviour.Mode.Specific && b.SpecificVersion == LatestHlaVersion));
+        }
+
+        [Test]
+        public async Task RefreshData_WhenRunningFromScratch_RecordsDictionarySnapshot()
+        {
+            await dataRefreshRunner.RefreshData(default);
+
+            await dataRefreshHistoryRepository.Received(1).MarkHlaMetadataDictionaryRefreshAsComplete(Arg.Any<DataRefreshRecord>(), SnapshotUtc);
+        }
+
+        [Test]
+        public async Task RefreshData_WhenVersionRecordedButDictionaryStageIncomplete_RecreatesAtRecordedVersionWithoutReadingLatest()
+        {
+            const string recordedVersion = "recordedHlaVersion";
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
+                DataRefreshRecordBuilder.New.With(r => r.HlaNomenclatureVersion, recordedVersion).Build());
+
+            await dataRefreshRunner.RefreshData(default);
+
+            hlaMetadataDictionary.DidNotReceive().GetLatestStableHlaNomenclatureVersion();
+            await dataRefreshHistoryRepository.DidNotReceiveWithAnyArgs().UpdateExecutionDetails(default, default, default);
+            await hlaMetadataDictionary.Received(1).RecreateHlaMetadataDictionary(
+                Arg.Is<CreationBehaviour>(b => b.CreationMode == CreationBehaviour.Mode.Specific && b.SpecificVersion == recordedVersion));
+            await dataRefreshHistoryRepository.Received(1).MarkHlaMetadataDictionaryRefreshAsComplete(Arg.Any<DataRefreshRecord>(), SnapshotUtc);
+            await hlaProcessor.Received().UpdateDonorHla(recordedVersion, Arg.Any<Func<int, Task>>());
+        }
+
+        [Test]
+        public async Task RefreshData_WhenDictionaryStageComplete_DoesNotRecreateDictionaryOrRecordSnapshot()
+        {
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
+                DataRefreshRecordBuilder.New.WithStageCompleted(DataRefreshStage.MetadataDictionaryRefresh).Build());
+
+            await dataRefreshRunner.RefreshData(default);
+
+            hlaMetadataDictionary.DidNotReceive().GetLatestStableHlaNomenclatureVersion();
+            await hlaMetadataDictionary.DidNotReceiveWithAnyArgs().RecreateHlaMetadataDictionary(default);
+            await dataRefreshHistoryRepository.DidNotReceiveWithAnyArgs().MarkHlaMetadataDictionaryRefreshAsComplete(default, default);
+        }
+
+        [Test]
+        public async Task RefreshData_WhenDictionaryWasNotRecreated_ThrowsWithoutCompletingStage()
+        {
+            hlaMetadataDictionary.RecreateHlaMetadataDictionary(default)
+                .ReturnsForAnyArgs(new HlaMetadataDictionaryRecreationResult(LatestHlaVersion, null));
+
+            await dataRefreshRunner.Invoking(r => r.RefreshData(default)).Should().ThrowAsync<InvalidOperationException>();
+
+            await dataRefreshHistoryRepository.DidNotReceiveWithAnyArgs().MarkHlaMetadataDictionaryRefreshAsComplete(default, default);
         }
 
         [Test]

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using Atlas.HlaMetadataDictionary.InternalModels;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
@@ -16,7 +17,13 @@ namespace Atlas.HlaMetadataDictionary.Repositories
     internal interface ITableReferenceRepository
     {
         Task<string> GetCurrentTableReference(string tablePrefix);
-        string GetNewTableReference(string tablePrefix);
+
+        /// <param name="tablePrefix">The functional prefix and HLA nomenclature version of the table.</param>
+        /// <param name="snapshotUtc">
+        /// Ends the new table's name, so that tables written by the same recreation can be identified as one snapshot.
+        /// </param>
+        string GetNewTableReference(string tablePrefix, DateTime snapshotUtc);
+
         Task UpdateTableReference(string tablePrefix, string tableReference);
     }
 
@@ -24,6 +31,12 @@ namespace Atlas.HlaMetadataDictionary.Repositories
     {
         private readonly ITableClientFactory factory;
         private const string CloudTableReference = "TableReferences";
+
+        /// <summary>
+        /// 24-hour clock, so that names sort in the order the tables were created.
+        /// </summary>
+        private const string SnapshotFormat = "yyyyMMddHHmmssfff";
+
         private TableClient tableClient;
 
         public TableReferenceRepository(ITableClientFactory factory)
@@ -40,10 +53,9 @@ namespace Atlas.HlaMetadataDictionary.Repositories
                 : await InsertAndReturnNewTableReference(tablePrefix);
         }
 
-        public string GetNewTableReference(string tablePrefix)
+        public string GetNewTableReference(string tablePrefix, DateTime snapshotUtc)
         {
-            var timeStamp = $"{DateTime.Now:yyyyMMddhhmmssfff}";
-            return tablePrefix + timeStamp;
+            return tablePrefix + snapshotUtc.ToString(SnapshotFormat, CultureInfo.InvariantCulture);
         }
 
         public async Task UpdateTableReference(string tablePrefix, string tableReference)
@@ -69,7 +81,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories
 
         private async Task<string> InsertAndReturnNewTableReference(string tablePrefix)
         {           
-            var newReference = GetNewTableReference(tablePrefix);
+            var newReference = GetNewTableReference(tablePrefix, DateTime.UtcNow);
             await UpdateTableReference(tablePrefix, newReference);
             return newReference;
         }

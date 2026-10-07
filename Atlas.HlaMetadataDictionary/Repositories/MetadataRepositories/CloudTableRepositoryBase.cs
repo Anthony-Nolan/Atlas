@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
@@ -63,10 +64,10 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
             await TableData(hlaNomenclatureVersion);
         }
 
-        protected async Task RecreateDataTable(IEnumerable<TStorable> tableContents, string hlaNomenclatureVersion)
+        protected async Task RecreateDataTable(IEnumerable<TStorable> tableContents, string hlaNomenclatureVersion, DateTime snapshotUtc)
         {
             var tablePrefix = VersionedTableReferencePrefix(hlaNomenclatureVersion);
-            var newDataTable = await CreateNewDataTable(tablePrefix);
+            var newDataTable = await CreateNewDataTable(tablePrefix, snapshotUtc);
 
 
             await newDataTable.BatchInsert(tableContents.Select(rowData => new HlaMetadataTableRow(rowData).ToTableEntity()));
@@ -171,9 +172,9 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
             return item;
         }
 
-        private async Task<TableClient> CreateNewDataTable(string tablePrefix)
+        private async Task<TableClient> CreateNewDataTable(string tablePrefix, DateTime snapshotUtc)
         {
-            var dataTableReference = tableReferenceRepository.GetNewTableReference(tablePrefix);
+            var dataTableReference = tableReferenceRepository.GetNewTableReference(tablePrefix, snapshotUtc);
             return await tableFactory.GetTable(dataTableReference);
         }
     }

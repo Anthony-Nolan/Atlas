@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -38,7 +39,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
             return Task.CompletedTask;
         }
 
-        public Task RecreateHlaMetadataTable(IEnumerable<ISerialisableHlaMetadata> metadata, string hlaNomenclatureVersion)
+        public Task RecreateHlaMetadataTable(IEnumerable<ISerialisableHlaMetadata> metadata, string hlaNomenclatureVersion, DateTime snapshotUtc)
         {
             // No operation needed
             return Task.CompletedTask;

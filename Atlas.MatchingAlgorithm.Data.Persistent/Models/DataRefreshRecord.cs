@@ -31,7 +31,19 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
         [Required]
         public string Database { get; set; }
 
+        /// <summary>
+        /// Recorded before the HLA Metadata Dictionary is recreated, and kept for every later attempt of this run.
+        /// </summary>
         public string HlaNomenclatureVersion { get; set; }
+
+        /// <summary>
+        /// Identifies the HLA Metadata Dictionary snapshot this run created, in UTC: every HLA Metadata Dictionary table
+        /// the run wrote ends its name with this time, formatted as <c>yyyyMMddHHmmssfff</c>.
+        /// Set once the dictionary has been recreated, and kept for every later attempt of this run.
+        /// Null for runs from before it was recorded.
+        /// </summary>
+        public DateTime? HlaMetadataDictionarySnapshotUtc { get; set; }
+
         public bool? WasSuccessful { get; set; }
 
         public DateTime? DataDeletionCompleted { get; set; }

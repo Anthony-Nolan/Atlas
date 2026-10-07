@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
@@ -119,7 +118,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
                 .Build();
             dataRefreshRunner = BuildDataRefreshRunner(settings);
             activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseA);
-            hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.LatestForced).Throws(new Exception());
+            hlaMetadataDictionary.RecreateHlaMetadataDictionary(default).ThrowsForAnyArgs(new Exception());
 
             try
             {

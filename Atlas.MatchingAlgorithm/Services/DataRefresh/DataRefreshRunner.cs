@@ -238,21 +238,43 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         }
 
         // TODO: ATLAS-355: We expect to extract this to somewhere else in the future.
+        /// <remarks>
+        /// A run has exactly one HLA Nomenclature version and one HLA Metadata Dictionary snapshot, however many attempts it takes:
+        /// - The version is read from WMDA only once, and recorded BEFORE the dictionary is recreated. An attempt that stops
+        ///   during recreation therefore leaves the version behind, and the next attempt recreates under that same version,
+        ///   even if WMDA has published a newer one since.
+        /// - The snapshot is recorded together with the stage completion. Until then, every attempt recreates the dictionary,
+        ///   and the snapshot of the last recreation is the one recorded. Once recorded, no later attempt recreates it again.
+        /// </remarks>
         private async Task RefreshHlaMetadataDictionary(DataRefreshRecord refreshRecord)
         {
             if (string.IsNullOrEmpty(refreshRecord.HlaNomenclatureVersion))
             {
-                // Always rebuild, even when the active version is already the latest one:
-                // a forced refresh on an unchanged version must still repair the dictionary.
-                var newHlaNomenclatureVersion = await activeVersionHlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.LatestForced);
-                refreshRecord.HlaNomenclatureVersion = newHlaNomenclatureVersion; //Later steps will make use of this value.
-                loggingContext.HlaNomenclatureVersion = newHlaNomenclatureVersion;
-                await dataRefreshHistoryRepository.UpdateExecutionDetails(refreshRecord.Id, newHlaNomenclatureVersion);
-                await dataRefreshHistoryRepository.MarkStageAsComplete(refreshRecord, DataRefreshStage.MetadataDictionaryRefresh);
+                var latestHlaNomenclatureVersion = activeVersionHlaMetadataDictionary.GetLatestStableHlaNomenclatureVersion();
+                refreshRecord.HlaNomenclatureVersion = latestHlaNomenclatureVersion; //Later steps will make use of this value.
+                await dataRefreshHistoryRepository.UpdateExecutionDetails(refreshRecord.Id, latestHlaNomenclatureVersion);
             }
 
-            // If the Hla version is already populated, then we are continuing an existing run and we already have an HLA Nomenclature for this run.
-            // We MUST continue with that same version, (which fortunately we know must already exist, so no need to re-create it)
+            loggingContext.HlaNomenclatureVersion = refreshRecord.HlaNomenclatureVersion;
+
+            if (refreshRecord.IsStageComplete(DataRefreshStage.MetadataDictionaryRefresh))
+            {
+                // We are continuing a run that already recreated the dictionary. We MUST continue with that same dictionary.
+                return;
+            }
+
+            // Always rebuild, even when the run's version is already the active one:
+            // a forced refresh on an unchanged version must still repair the dictionary.
+            var recreation = await activeVersionHlaMetadataDictionary.RecreateHlaMetadataDictionary(
+                CreationBehaviour.Specific(refreshRecord.HlaNomenclatureVersion));
+
+            var snapshotUtc = recreation.SnapshotUtc ?? throw new InvalidOperationException(
+                $"HLA Metadata Dictionary was not recreated at HLA Nomenclature version {refreshRecord.HlaNomenclatureVersion}, " +
+                "so there is no snapshot to record.");
+
+            logger.SendTrace($"{LoggingPrefix} HLA Metadata Dictionary recreated at HLA Nomenclature version " +
+                             $"{refreshRecord.HlaNomenclatureVersion}, snapshot {snapshotUtc:O}.");
+            await dataRefreshHistoryRepository.MarkHlaMetadataDictionaryRefreshAsComplete(refreshRecord, snapshotUtc);
         }
 
         private async Task ExecuteDataRefreshStage(

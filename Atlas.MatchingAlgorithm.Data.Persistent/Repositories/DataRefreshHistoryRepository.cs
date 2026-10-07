@@ -34,6 +34,13 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         Task MarkStageAsComplete(DataRefreshRecord record, DataRefreshStage stage);
 
         /// <summary>
+        /// Records the HLA Metadata Dictionary snapshot the run created, and marks the
+        /// <see cref="DataRefreshStage.MetadataDictionaryRefresh"/> stage as complete, in one write: a record never shows
+        /// the stage as complete without the snapshot it produced.
+        /// </summary>
+        Task MarkHlaMetadataDictionaryRefreshAsComplete(DataRefreshRecord record, DateTime snapshotUtc);
+
+        /// <summary>
         /// Attempts to take the run-level lease on a record, so that only one invocation processes it at a time.
         /// The claim succeeds if the record is still open and is either unleased, leased to <paramref name="owner"/>
         /// already, or held by an owner whose lease has expired.
@@ -159,6 +166,14 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         public async Task MarkStageAsComplete(DataRefreshRecord record, DataRefreshStage stage)
         {
             record.SetStageCompletionTime(stage, DateTime.UtcNow);
+            await Context.SaveChangesAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task MarkHlaMetadataDictionaryRefreshAsComplete(DataRefreshRecord record, DateTime snapshotUtc)
+        {
+            record.HlaMetadataDictionarySnapshotUtc = snapshotUtc;
+            record.SetStageCompletionTime(DataRefreshStage.MetadataDictionaryRefresh, DateTime.UtcNow);
             await Context.SaveChangesAsync();
         }
 

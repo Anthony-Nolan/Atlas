@@ -19,7 +19,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 {
     public interface IHlaMetadataDictionary
     {
-        Task<string> RecreateHlaMetadataDictionary(CreationBehaviour recreationBehaviour);
+        Task<HlaMetadataDictionaryRecreationResult> RecreateHlaMetadataDictionary(CreationBehaviour recreationBehaviour);
         Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, TargetHlaCategory targetHlaCategory);
 
         /// <summary>
@@ -82,6 +82,9 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         /// </summary>
         /// <returns>True if the versions are different, otherwise false.</returns>
         bool IsActiveVersionDifferentFromLatestVersion();
+
+        /// <returns>The latest stable version of the HLA Nomenclature published by WMDA.</returns>
+        string GetLatestStableHlaNomenclatureVersion();
 
         string HlaNomenclatureVersion { get; }
     }
@@ -159,30 +162,43 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             return active != latest;
         }
 
-        public async Task<string> RecreateHlaMetadataDictionary(CreationBehaviour recreationBehaviour)
+        public string GetLatestStableHlaNomenclatureVersion() => wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion();
+
+        public async Task<HlaMetadataDictionaryRecreationResult> RecreateHlaMetadataDictionary(CreationBehaviour recreationBehaviour)
         {
             var version = IdentifyVersionToRecreate(recreationBehaviour);
 
             if (ShouldRecreate(recreationBehaviour))
             {
+                // Taken once, so that every table written by this recreation carries the same snapshot in its name.
+                var snapshotUtc = TruncateToMilliseconds(DateTime.UtcNow);
+
                 logger.SendTrace($"HLA-METADATA-DICTIONARY REFRESH: Recreating HLA Metadata dictionary for desired HLA Nomenclature version.");
-                await recreateMetadataService.RefreshAllHlaMetadata(version);
-                logger.SendTrace($"HLA-METADATA-DICTIONARY REFRESH: HLA Metadata dictionary recreated at HLA Nomenclature version: {version}");
+                await recreateMetadataService.RefreshAllHlaMetadata(version, snapshotUtc);
+                logger.SendTrace(
+                    $"HLA-METADATA-DICTIONARY REFRESH: HLA Metadata dictionary recreated at HLA Nomenclature version: {version}, snapshot: {snapshotUtc:O}");
 
                 // Only on the branch that actually rewrote storage, and only once storage has been rewritten: a
                 // consumer that drops its cache before the new data is in place would simply re-cache the old data.
                 // Every route that rewrites storage - a data refresh, or a manual refresh, forced or not - passes
                 // through here, so all of them stamp alike.
                 await RecordRecreationAndDropLocalCaches(version);
-            }
-            else
-            {
-                logger.SendTrace(
-                    $"HLA-METADATA-DICTIONARY REFRESH: HLA Metadata dictionary was already using the desired HLA Nomenclature version, so did not update.");
+
+                return new HlaMetadataDictionaryRecreationResult(version, snapshotUtc);
             }
 
-            return version;
+            logger.SendTrace(
+                $"HLA-METADATA-DICTIONARY REFRESH: HLA Metadata dictionary was already using the desired HLA Nomenclature version, so did not update.");
+
+            return new HlaMetadataDictionaryRecreationResult(version, null);
         }
+
+        /// <summary>
+        /// Table names only hold the snapshot to the millisecond, so the snapshot itself is cut to match: the value a
+        /// caller records then names the tables exactly.
+        /// </summary>
+        private static DateTime TruncateToMilliseconds(DateTime dateTime) =>
+            new(dateTime.Ticks - dateTime.Ticks % TimeSpan.TicksPerMillisecond, dateTime.Kind);
 
         /// <summary>
         /// Stamps this recreation for other processes to notice, and drops this one's own cached copy at once.
