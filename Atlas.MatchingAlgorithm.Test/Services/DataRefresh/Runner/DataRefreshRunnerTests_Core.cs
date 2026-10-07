@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
@@ -17,6 +18,7 @@ using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
+using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
@@ -40,6 +42,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         private IHlaMetadataDictionary hlaMetadataDictionary;
         private IDonorImporter donorImporter;
         private IHlaProcessor hlaProcessor;
+        private IDonorGenotypePrecomputationStage donorGenotypePrecomputationStage;
         private IDonorUpdateProcessor donorUpdateProcessor;
         private IDataRefreshSupportNotificationSender dataRefreshNotificationSender;
         private IDataRefreshHistoryRepository dataRefreshHistoryRepository;
@@ -58,6 +61,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             hlaMetadataDictionary = Substitute.For<IHlaMetadataDictionary>();
             donorImporter = Substitute.For<IDonorImporter>();
             hlaProcessor = Substitute.For<IHlaProcessor>();
+            donorGenotypePrecomputationStage = Substitute.For<IDonorGenotypePrecomputationStage>();
             donorUpdateProcessor = Substitute.For<IDonorUpdateProcessor>();
             logger = Substitute.For<IMatchingAlgorithmImportLogger>();
             dataRefreshNotificationSender = Substitute.For<IDataRefreshSupportNotificationSender>();
@@ -207,6 +211,55 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         }
 
         [Test]
+        public async Task RefreshData_RunsTheDonorGenotypePrecomputationAfterIndexRecreationAndBeforeScalingTearDown()
+        {
+            var settings = DataRefreshSettingsBuilder.New
+                .With(s => s.ActiveDatabaseSize, AzureDatabaseSize.S4.ToString())
+                .Build();
+            dataRefreshRunner = BuildDataRefreshRunner(settings);
+
+            await dataRefreshRunner.RefreshData(default);
+
+            Received.InOrder(() =>
+            {
+                donorImportRepository.CreateHlaTableIndexes();
+                donorGenotypePrecomputationStage.Run(Arg.Any<DataRefreshRecord>(), Arg.Any<DataRefreshStageExecutionMode>(), Arg.Any<CancellationToken>());
+                azureDatabaseManager.UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.S4, Arg.Any<int?>());
+            });
+        }
+
+        [Test]
+        public async Task RefreshData_RunsTheDonorGenotypePrecomputationForTheRecord_WithTheLeaseToken_AndMarksItComplete()
+        {
+            var record = DataRefreshRecordBuilder.New.Build();
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(record);
+            using var cancellationTokenSource = new CancellationTokenSource();
+
+            await dataRefreshRunner.RefreshData(record.Id, cancellationTokenSource.Token);
+
+            await donorGenotypePrecomputationStage.Received(1)
+                .Run(record, DataRefreshStageExecutionMode.FromScratch, cancellationTokenSource.Token);
+            await dataRefreshHistoryRepository.Received(1).MarkStageAsComplete(record, DataRefreshStage.DonorGenotypePrecomputation);
+        }
+
+        [Test]
+        public async Task RefreshData_WhenTheDonorGenotypePrecomputationFails_DoesNotMarkItCompleteAndScalesTheDatabaseToDormantSize()
+        {
+            var settings = DataRefreshSettingsBuilder.New
+                .With(s => s.DormantDatabaseSize, AzureDatabaseSize.S0.ToString())
+                .Build();
+            dataRefreshRunner = BuildDataRefreshRunner(settings);
+            donorGenotypePrecomputationStage.Run(default, default, default).ThrowsAsyncForAnyArgs(new InvalidOperationException());
+
+            var act = () => dataRefreshRunner.RefreshData(default);
+
+            await act.Should().ThrowAsync<InvalidOperationException>();
+            await dataRefreshHistoryRepository.DidNotReceive()
+                .MarkStageAsComplete(Arg.Any<DataRefreshRecord>(), DataRefreshStage.DonorGenotypePrecomputation);
+            await azureDatabaseManager.Received().UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.S0, Arg.Any<int?>());
+        }
+
+        [Test]
         public async Task RefreshData_WhenTeardownFails_SendsAlert()
         {
             const AzureDatabaseSize databaseSize = AzureDatabaseSize.S0;
@@ -244,6 +297,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
                 Substitute.For<IActiveHlaNomenclatureVersionAccessor>(),
                 donorImporter,
                 hlaProcessor,
+                donorGenotypePrecomputationStage,
                 donorUpdateProcessor,
                 logger,
                 dataRefreshNotificationSender,

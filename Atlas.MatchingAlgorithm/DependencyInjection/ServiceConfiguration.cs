@@ -325,8 +325,9 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         }
 
         /// <summary>
-        /// The Data Refresh side of the donor genotype precomputation stage: the publisher of the batch messages, and the
-        /// sweeps that the timers of the data refresh app run. The workers are registered on their own.
+        /// The Data Refresh side of the donor genotype precomputation stage: the stage, the publisher of the batch messages,
+        /// the sweeps that the timers of the data refresh app run, and the cancel of the run of a failed refresh. The workers
+        /// are registered on their own.
         /// </summary>
         private static void RegisterDonorGenotypePrecomputationServices(
             this IServiceCollection services,
@@ -348,6 +349,10 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
             services.AddScoped<IDonorGenotypePrecomputationBatchDispatcher, DonorGenotypePrecomputationBatchDispatcher>();
             services.AddScoped<IDonorGenotypePrecomputationSweeper, DonorGenotypePrecomputationSweeper>();
+            services.AddScoped<IDonorGenotypePrecomputationRunCanceller, DonorGenotypePrecomputationRunCanceller>();
+
+            services.TryAddSingleton(TimeProvider.System);
+            services.AddScoped<IDonorGenotypePrecomputationStage, DonorGenotypePrecomputationStage>();
         }
 
         /// <summary>

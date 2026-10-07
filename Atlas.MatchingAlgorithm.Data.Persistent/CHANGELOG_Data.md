@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## 4.1.0
+
+### DataRefreshHistory
+
+* `DonorGenotypePrecomputationCompleted` - new column: when the donor genotype precomputation stage of the refresh
+  completed. The stage runs after `IndexRecreationCompleted` and before `DatabaseScalingTearDownCompleted`.
+ 
 * Added nullable column `HlaMetadataDictionarySnapshotUtc` to `MatchingAlgorithmPersistent.DataRefreshHistory`.
   It holds the UTC time that identifies the HLA Metadata Dictionary tables a data refresh run created. Existing rows are not filled in.
 * Data workflow change: a data refresh run now records `HlaNomenclatureVersion` before it recreates the HLA Metadata Dictionary,

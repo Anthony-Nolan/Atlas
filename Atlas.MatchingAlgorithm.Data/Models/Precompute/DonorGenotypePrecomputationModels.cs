@@ -141,8 +141,34 @@ public sealed record DonorGenotypePrecomputationFailureSummary(
 
     /// <summary>0 for a run with no donors.</summary>
     public double FailedDonorFraction => TotalDonorCount == 0 ? 0 : (double)FailedDonorCount / TotalDonorCount;
+
+    /// <summary>
+    /// True when more donors failed than the threshold allows. A threshold of 0 allows no failed donor.
+    /// </summary>
+    /// <param name="maxFailedDonorFraction">The largest failed-donor fraction that the stage accepts, from 0 to 1.</param>
+    public bool IsAboveThreshold(double maxFailedDonorFraction) => FailedDonorFraction > maxFailedDonorFraction;
 }
 
 /// <summary>One failure of a run.</summary>
 /// <param name="GroupId">Null when the whole batch failed.</param>
 public sealed record DonorGenotypePrecomputationFailureSample(int BatchId, int? GroupId, string? FailureMessage);
+
+/// <summary>What the build of a run made, and how long each of its steps took.</summary>
+/// <param name="Status">
+/// The status that the build gave the run: <see cref="DonorGenotypePrecomputationRunStatus.Running"/>, or
+/// <see cref="DonorGenotypePrecomputationRunStatus.Completed"/> when there were no donors, so no batches.
+/// </param>
+/// <param name="TotalDonorCount">The donors in <c>Donors</c>.</param>
+/// <param name="TotalDonorAssignmentCount">The group-donor rows: one for each donor at each <see cref="AllowedLociKey"/>.</param>
+/// <param name="Steps">The steps of the build, in order.</param>
+public sealed record DonorGenotypePrecomputationBuildResult(
+    DonorGenotypePrecomputationRunStatus Status,
+    int TotalDonorCount,
+    int TotalGroupCount,
+    int TotalBatchCount,
+    int TotalDonorAssignmentCount,
+    IReadOnlyList<DonorGenotypePrecomputationBuildStep> Steps);
+
+/// <summary>One step of the build of a run.</summary>
+/// <param name="RowCount">The rows that the step wrote.</param>
+public sealed record DonorGenotypePrecomputationBuildStep(string Name, int RowCount, TimeSpan Duration);

@@ -21,9 +21,9 @@ resource "azurerm_container_app" "atlas_precompute_worker" {
   }
 
   template {
-    // Always zero, deliberately not a variable. The worker is only needed during a data refresh, and it does not start
-    // without an open refresh record (it cannot tell which database to write), so a warm replica would crash-loop
-    // between refreshes. All replicas must also be gone before the next refresh, so that each starts against its target.
+    // Always zero, deliberately not a variable. The worker is only needed during a data refresh, so a warm replica
+    // between refreshes would only add cost. It can start at any time: for each message, it reads the database from
+    // the refresh record that the message names.
     min_replicas                = 0
     max_replicas                = var.PRECOMPUTE_WORKER_CONTAINER_MAX_REPLICAS
     polling_interval_in_seconds = var.PRECOMPUTE_WORKER_CONTAINER_SCALE_RULE_POLLING_INTERVAL_SECONDS

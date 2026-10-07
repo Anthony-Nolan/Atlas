@@ -86,6 +86,8 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
         /// </summary>
         public DateTime? LeaseExpiresUtc { get; set; }
 
+        public DateTime? DonorGenotypePrecomputationCompleted { get; set; }
+
         public bool IsStageComplete(DataRefreshStage stage) => GetStageCompletionTime(stage) != null;
 
         internal DateTime? GetStageCompletionTime(DataRefreshStage stage) =>
@@ -99,6 +101,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
                 DataRefreshStage.DonorHlaProcessing => DonorHlaProcessingCompleted,
                 DataRefreshStage.DatabaseScalingTearDown => DatabaseScalingTearDownCompleted,
                 DataRefreshStage.IndexRecreation => IndexRecreationCompleted,
+                DataRefreshStage.DonorGenotypePrecomputation => DonorGenotypePrecomputationCompleted,
                 DataRefreshStage.QueuedDonorUpdateProcessing => QueuedDonorUpdatesCompleted,
                 _ => throw new ArgumentOutOfRangeException(nameof(stage))
             };
@@ -130,6 +133,9 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
                     break;
                 case DataRefreshStage.IndexRecreation:
                     IndexRecreationCompleted = value;
+                    break;
+                case DataRefreshStage.DonorGenotypePrecomputation:
+                    DonorGenotypePrecomputationCompleted = value;
                     break;
                 case DataRefreshStage.QueuedDonorUpdateProcessing:
                     QueuedDonorUpdatesCompleted = value;
