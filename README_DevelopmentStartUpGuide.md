@@ -78,9 +78,17 @@ It's highly recommended that you read the sections outside ZtH in parallel with 
 - Create the topic, `data-refresh-requests` with subscription `matching-algorithm`.
 - Create the topic, `completed-data-refresh-jobs`. It needs no subscription: the refresh publishes a completion message to it when the job ends.
 - Create the topic, `donor-genotype-precomputation-requests` with subscription `precomputation-worker`. The donor genotype precomputation workers read the subscription, and `MatchingAlgorithm.Functions.DataRefresh` reads its dead-letter queue.
+- Set up the donor genotype precomputation worker, `Atlas.MatchingAlgorithm.PrecomputeWorker`. It computes the work of data refresh stage 65 (see the [Matching Algorithm README](README_MatchingAlgorithm.md#donor-genotype-precomputation-data-refresh-stage-65)).
+  - Its settings are in `appsettings.json`, with local defaults for SQL Server and Azurite.
+  - Override `MessagingServiceBus:ConnectionString` and `ApplicationInsights:InstrumentationKey` with user secrets, as for the [Match Prediction worker](README_MatchPredictionAlgorithm.md#worker-project-configuration).
 - Run `MatchingAlgorithm.Functions.DataRefresh` and in Swagger UI (or any other API development environment) trigger the `SubmitDataRefreshRequestManual` endpoint.
   - Set `forceDataRefresh` to `true`.
   - You should get a 200 Success response almost immediately but the refresh itself will take ~15 minute to run (do NOT close the function app down until it's complete!).
+- After you trigger the refresh, run `Atlas.MatchingAlgorithm.PrecomputeWorker` too. Keep it running until the refresh is complete.
+  - Start the worker after the trigger. The worker reads the open data refresh record when it starts, and it does not start if no record is open.
+  - Stage 65 waits until the worker has processed every batch. If no worker runs, the refresh waits, and sends a stall alert after `DataRefresh:Precompute:StallAlertMinutes` (60 by default).
+  - On the first refresh, there is no haplotype frequency set yet (you import one in the next step). So every batch fails, and the requeue timer sends each batch again `DataRefresh:Precompute:MaxBatchRetries` times, every 5 minutes. Then stage 65 sends a high-priority failure alert, and the refresh continues. Set `MaxBatchRetries` to `0` in `local.settings.json` to make this faster.
+  - To store the donor genotype sets, run the data refresh again after you import the haplotype frequency set.
 - Monitor the `notifications` topic to ensure the refresh succeeded; a failure will be reported via `alerts` topic.
 
 #### Importing Haplotype Frequency Sets

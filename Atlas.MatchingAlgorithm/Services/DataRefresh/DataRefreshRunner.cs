@@ -18,6 +18,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
+using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Settings;
 using EnumStringValues;
@@ -28,10 +29,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
     {
         /// <summary>
         /// Performs all pre-processing required for running of the search algorithm:
-        /// - Scales up target database 
+        /// - Scales up target database
         /// - Recreates HlaMetadata Dictionary
         /// - Imports all donors
         /// - Processes HLA for imported donors
+        /// - Precomputes the genotype sets of all donors
         /// - Scales down target database
         /// </summary>
         /// <param name="cancellationToken">
@@ -58,6 +60,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
         private readonly IDonorImporter donorImporter;
         private readonly IHlaProcessor hlaProcessor;
+        private readonly IDonorGenotypePrecomputationStage donorGenotypePrecomputationStage;
         private readonly IDonorUpdateProcessor differentialDonorUpdateProcessor;
         private readonly IMatchingAlgorithmImportLogger logger;
 
@@ -96,6 +99,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             // But if it *were* to occur then we definitely don't want to have to *re*-re-create them just to do the final 2 steps.
             {DataRefreshStage.IndexRecreation, true},
 
+            // When this stage is complete, its run is complete and its staging data is gone, so nothing is left to do.
+            {DataRefreshStage.DonorGenotypePrecomputation, true},
+
             // Failing to scale down the Database has a cost impact, and it is possible for someone to manually scale the DB back up between interruption and retry.
             // Re-performing this stage if the database is already at the required level is very quick.
             {DataRefreshStage.DatabaseScalingTearDown, false},
@@ -114,6 +120,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
             IDonorImporter donorImporter,
             IHlaProcessor hlaProcessor,
+            IDonorGenotypePrecomputationStage donorGenotypePrecomputationStage,
             IDonorUpdateProcessor differentialDonorUpdateProcessor,
             IMatchingAlgorithmImportLogger logger,
             IDataRefreshSupportNotificationSender dataRefreshNotificationSender,
@@ -126,6 +133,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             donorImportRepository = repositoryFactory.GetDonorImportRepository();
             this.donorImporter = donorImporter;
             this.hlaProcessor = hlaProcessor;
+            this.donorGenotypePrecomputationStage = donorGenotypePrecomputationStage;
             this.differentialDonorUpdateProcessor = differentialDonorUpdateProcessor;
             this.logger = logger;
             this.dataRefreshNotificationSender = dataRefreshNotificationSender;
@@ -343,6 +351,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     break;
                 case DataRefreshStage.IndexRecreation:
                     await donorImportRepository.CreateHlaTableIndexes();
+                    break;
+                case DataRefreshStage.DonorGenotypePrecomputation:
+                    await donorGenotypePrecomputationStage.Run(refreshRecord, executionMode, cancellationToken);
                     break;
 
                 case DataRefreshStage.DatabaseScalingTearDown:

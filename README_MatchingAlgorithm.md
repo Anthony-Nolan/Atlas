@@ -157,6 +157,10 @@ The solution is split across multiple projects:
 - Atlas.MatchingAlgorithm.Functions.DonorManagement
   - Azure functions app responsible only for ongoing donor imports / updates
   - Needs to be an independent app so that the three-monthly full data refresh can disable these functions for the duration of the refresh
+- Atlas.MatchingAlgorithm.PrecomputeWorker
+  - Worker service (not a functions app) that computes the donor genotype sets of data refresh stage 65
+  - Runs on Azure Container Apps, and scales on the messages of its Service Bus subscription
+  - See [Donor Genotype Precomputation](#donor-genotype-precomputation-data-refresh-stage-65)
 
 #### Test Projects
 
@@ -214,6 +218,128 @@ For each donor, we expand all hla into corresponding p-groups, and store a relat
 - Start the job by triggering the `ProcessDonorHla` function
 - The job is expected to take multiple hours to run
 - The job will only be re-run in full when WMDA publish a new version of the HLA Nomenclature (every 3 months).
+
+### Donor Genotype Precomputation (Data Refresh stage 65)
+
+The data refresh stores the imputed genotype set of each donor, so that a search does not have to impute the donor
+again. Each donor gets one row in `DonorSubjectGenotypeSets` for each of the four combinations of loci
+(`AllowedLociKey`):
+
+| `AllowedLociKey` | Loci |
+|---|---|
+| `ABCDrb1Dqb1` | A, B, C, DRB1, DQB1 |
+| `ABCDrb1` | A, B, C, DRB1 |
+| `ABDrb1Dqb1` | A, B, DRB1, DQB1 |
+| `ABDrb1` | A, B, DRB1 |
+
+Each row points to a row in `SubjectGenotypeSetValues`. Donors that need the same value share one value row. Both tables
+are in the transient database.
+
+Stage 65 (`DonorGenotypePrecomputation`) runs after the index recreation (stage 60) and before the scale-down of the
+database (stage 70). So the database is still at the refresh size while the stage runs. The stage writes only to the
+dormant database: the database that the refresh fills.
+
+#### How the stage works
+
+1. **Build.** The stage groups the donors with set-based SQL, over all donors at once. A group holds the donors that
+   have the same typing at the loci of one `AllowedLociKey`, the same registry code and the same ethnicity code. So the
+   stage computes each distinct value only one time. The lowest donor id of a group is its representative. The stage
+   cuts the groups into batches of `GroupsPerBatch` groups. The groups of one registry and ethnicity are next to each
+   other, so a batch usually needs only one haplotype frequency set.
+2. **Dispatch.** The stage sends one message for each batch to the `donor-genotype-precomputation-requests` topic. The
+   message holds only ids. The worker reads the batch from the database.
+3. **Compute.** The precomputation workers (`Atlas.MatchingAlgorithm.PrecomputeWorker`) read the
+   `precomputation-worker` subscription. For each group of a batch, a worker imputes the genotype set of the
+   representative donor, with the haplotype frequency set of the registry and ethnicity of the group. Then it stores
+   the values, writes the donor rows, and records the result of the batch. A worker writes to the database of the open
+   refresh record. It reads this record when it starts.
+4. **Timers.** Functions of the Data Refresh app move the batches and the run. They act only on a running run of an
+   open refresh record that has completed stage 60.
+   - `RequeueFailedPrecomputationBatches` (every 5 minutes): sends a failed or abandoned batch again, up to
+     `MaxBatchRetries` times. After that, it marks the batch as permanently failed.
+   - `MarkAbandonedPrecomputationBatches` (every 15 minutes): marks a batch as abandoned when the lease of its worker
+     has expired.
+   - `AbandonDeadLetteredPrecomputationBatches`: marks the batch of a dead-lettered message as abandoned.
+   - `FinaliseCompletedPrecomputationRuns` (every 5 minutes): completes the run when every batch has results or has
+     permanently failed.
+5. **Wait.** The stage reads the run every `PollIntervalSeconds`, and logs the count of batches in each status. When no
+   batch finishes for `StallAlertMinutes`, the stage sends one high-priority stall alert. It can send another alert only
+   after a batch finishes again. A poll that fails with a temporary database error does not stop the stage: it reads
+   the run again at the next poll. When the polls fail for `StallAlertMinutes`, the stage fails.
+6. **Report.** When the run is complete, the stage counts the failed donors. A failed donor has no stored genotype set
+   for one or more `AllowedLociKey` values. If donors failed, the stage sends one alert: medium priority when the failed
+   donors are at or below `MaxFailedDonorFraction` of all donors, high priority when they are above it. The data refresh
+   continues in both cases. Then the stage removes its staging data (the groups and their donors).
+
+#### Failures
+
+- An HLA typing that the HLA Metadata Dictionary does not accept fails only its group. The other groups of the batch
+  continue.
+- A temporary error (for example, a database, storage or network error) fails the batch. The requeue timer sends the
+  batch again. A retry computes only the groups that have no value yet.
+- An unknown error is a temporary error.
+- A group uses the haplotype frequency set of its registry and ethnicity. If that set does not exist, it uses the set of
+  the registry, and then the global set. If no global set exists, its batch fails until it has no retries left.
+- A batch that fails more than `MaxGroupFailuresPerBatch` groups fails as a whole, and is sent again.
+
+#### Continuation
+
+The run row (`DonorGenotypePrecomputationRuns`) is the state of the stage. If the refresh stops during stage 65, the
+next attempt continues from the run:
+
+- A run that has not completed its build: the stage builds it again from the start.
+- A running run: the stage sends the pending batches, and waits again. The workers continue while the refresh is
+  stopped.
+- A complete run: the stage reports the failures, if it did not report them before.
+
+A batch can be computed more than one time. This does no harm: a value is stored only one time, and the donor rows are
+an upsert.
+
+When the refresh fails, it cancels the run and removes the staging data. The workers then skip the messages of that
+run. `RunDataRefreshCleanup` does the same for each refresh record that it closes. The data deletion (stage 20) of the
+next refresh removes all the precomputation tables of the database.
+
+Stage 80 (queued donor updates) also precomputes the donors that it writes, as the Donor Management app does for a
+donor update.
+
+#### Settings
+
+Data Refresh app (`DataRefresh:Precompute:*`):
+
+| Setting | Default | Description |
+|---|---|---|
+| `RequestsTopic` | none | The topic of the batch messages: `donor-genotype-precomputation-requests`. |
+| `RequestsSubscription` | none | The subscription of the workers: `precomputation-worker`. The app reads its dead-letter queue. |
+| `FinaliseRunsCronSchedule` | none | The finalise timer. The template uses every 5 minutes. |
+| `AbandonBatchesCronSchedule` | none | The abandon timer. The template uses every 15 minutes. |
+| `RequeueBatchesCronSchedule` | none | The requeue timer. The template uses every 5 minutes. |
+| `MaxBatchRetries` | 3 | How many times a failed or abandoned batch is sent again. |
+| `GroupsPerBatch` | 1000 | The groups in one batch. A run keeps the value that it was built with. |
+| `PollIntervalSeconds` | 60 | How often the stage reads the run while it waits. |
+| `StallAlertMinutes` | 60 | How long no batch can finish before the stage sends a stall alert. Also how long the polls of the stage can fail with a temporary error before the stage fails. |
+| `MaxFailedDonorFraction` | 0.001 | The fraction of all donors, from 0 to 1, that can fail before the failure alert is high priority. 0 makes every failure high priority. |
+
+The stage checks `GroupsPerBatch`, `PollIntervalSeconds`, `StallAlertMinutes` and `MaxFailedDonorFraction` when it
+starts. A value that is out of range fails the refresh before the stage does any work.
+
+Precomputation worker (`PrecomputeWorker:*`):
+
+| Setting | Default | Description |
+|---|---|---|
+| `MaxConcurrentCalls` | 1 | The batches that one replica processes at the same time. |
+| `PrefetchCount` | 0 | The messages that one replica fetches before it needs them. |
+| `BatchLeaseMinutes` | 60 | How long the claim of a batch holds. After that, a timer can mark the batch as abandoned. |
+| `MaxAutoLockRenewalMinutes` | 60 | How long the worker renews the lock of a message. |
+| `MaxGroupFailuresPerBatch` | 100 | The failed groups that a batch can have and still succeed. |
+
+A batch must finish within `BatchLeaseMinutes` and `MaxAutoLockRenewalMinutes`. If it does not, another worker can
+compute the batch again. `MaxConcurrentCalls` multiplied by the maximum replica count must stay below the worker and
+session limits of the transient database at the refresh size.
+
+The worker also reads the `HaplotypeFrequencySetCache:*` settings. Set `AwaitConsolidatedFrequencyWarm` to `true` (see
+[the Match Prediction README](README_MatchPredictionAlgorithm.md#haplotypefrequencysetcacheawaitconsolidatedfrequencywarm)),
+and set a long `SetCacheExpiryMinutes` (the worker `appsettings.json` uses 1440). The workers move through the
+registries and ethnicities together, so a short expiry makes a worker load a large set again while it still uses it.
 
 ### Matching Implementation
 

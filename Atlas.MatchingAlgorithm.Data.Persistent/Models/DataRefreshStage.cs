@@ -38,6 +38,12 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
         /// </summary>
         IndexRecreation = 60,
         /// <summary>
+        /// Precomputation of the genotype sets of all donors. The stage groups the donors that need the same value, sends the
+        /// groups to the precomputation workers in batches, and waits until every batch is done. It runs while the database
+        /// is still at the size for the refresh.
+        /// </summary>
+        DonorGenotypePrecomputation = 65,
+        /// <summary>
         /// Scaling of database to appropriate size for live usage.
         /// </summary>
         DatabaseScalingTearDown = 70,
