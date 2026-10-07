@@ -67,26 +67,29 @@ public class DonorGenotypePrecomputationBatchDispatcherTests
     [Test]
     public async Task DispatchPendingBatches_PublishesOneMessagePerPendingBatch_WithTheIdsOfTheRun()
     {
-        var batchIds = GivenPendingBatches(3);
+        var batches = GivenPendingBatches(3);
 
         await dispatcher.DispatchPendingBatches(run, PendingBatchSelection.All);
 
-        publishedChunks.SelectMany(chunk => chunk).Should().BeEquivalentTo(batchIds.Select(batchId => new DonorGenotypePrecomputationBatchRequest
+        publishedChunks.SelectMany(chunk => chunk).Should().BeEquivalentTo(batches.Select(batch => new DonorGenotypePrecomputationBatchRequest
         {
             DataRefreshRecordId = run.DataRefreshRecordId,
             RunId = run.RunId,
-            BatchId = batchId
+            BatchId = batch.BatchId
         }));
     }
 
     [Test]
-    public async Task DispatchPendingBatches_MovesThePublishedBatchesToRequested()
+    public async Task DispatchPendingBatches_MovesThePublishedBatchesToRequested_WithTheRetryCountsItRead()
     {
-        var batchIds = GivenPendingBatches(3);
+        // The retry count lets the update leave a batch that the requeue sweep sent back after this read.
+        var batches = GivenPendingBatches(3);
 
         await dispatcher.DispatchPendingBatches(run, PendingBatchSelection.All);
 
-        await repository.Received(1).MarkBatchesRequested(run.RunId, Arg.Is<IReadOnlyCollection<int>>(ids => ids.SequenceEqual(batchIds)));
+        await repository.Received(1).MarkBatchesRequested(
+            run.RunId,
+            Arg.Is<IReadOnlyCollection<PendingDonorGenotypePrecomputationBatch>>(marked => marked.SequenceEqual(batches)));
     }
 
     [Test]
@@ -101,7 +104,7 @@ public class DonorGenotypePrecomputationBatchDispatcherTests
         Received.InOrder(() =>
         {
             publisher.BatchPublish(Arg.Any<IEnumerable<DonorGenotypePrecomputationBatchRequest>>());
-            repository.MarkBatchesRequested(run.RunId, Arg.Any<IReadOnlyCollection<int>>());
+            repository.MarkBatchesRequested(run.RunId, Arg.Any<IReadOnlyCollection<PendingDonorGenotypePrecomputationBatch>>());
         });
     }
 
@@ -122,13 +125,13 @@ public class DonorGenotypePrecomputationBatchDispatcherTests
     public async Task DispatchPendingBatches_ForMoreBatchesThanOneChunk_SendsThemAllAChunkAtATime()
     {
         const int extraBatchCount = 5;
-        var batchIds = GivenPendingBatches(DonorGenotypePrecomputationBatchDispatcher.ChunkSize + extraBatchCount);
+        var batches = GivenPendingBatches(DonorGenotypePrecomputationBatchDispatcher.ChunkSize + extraBatchCount);
 
         var publishedCount = await dispatcher.DispatchPendingBatches(run, PendingBatchSelection.All);
 
         publishedChunks.Select(chunk => chunk.Count).Should().Equal(DonorGenotypePrecomputationBatchDispatcher.ChunkSize, extraBatchCount);
-        publishedChunks.SelectMany(chunk => chunk).Select(request => request.BatchId).Should().Equal(batchIds);
-        publishedCount.Should().Be(batchIds.Count);
+        publishedChunks.SelectMany(chunk => chunk).Select(request => request.BatchId).Should().Equal(batches.Select(batch => batch.BatchId));
+        publishedCount.Should().Be(batches.Count);
     }
 
     [TestCase(PendingBatchSelection.All)]
@@ -137,8 +140,8 @@ public class DonorGenotypePrecomputationBatchDispatcherTests
     {
         await dispatcher.DispatchPendingBatches(run, selection);
 
-        await repository.Received().GetPendingBatchIds(run.RunId, selection, Arg.Any<int>(), Arg.Any<int>());
-        await repository.DidNotReceive().GetPendingBatchIds(
+        await repository.Received().GetPendingBatches(run.RunId, selection, Arg.Any<int>(), Arg.Any<int>());
+        await repository.DidNotReceive().GetPendingBatches(
             Arg.Any<int>(), Arg.Is<PendingBatchSelection>(other => other != selection), Arg.Any<int>(), Arg.Any<int>());
     }
 
@@ -166,13 +169,13 @@ public class DonorGenotypePrecomputationBatchDispatcherTests
     [Test]
     public async Task DispatchPendingBatches_LogsOnceForTheWholeDispatch()
     {
-        var batchIds = GivenPendingBatches(DonorGenotypePrecomputationBatchDispatcher.ChunkSize + 1);
+        var batches = GivenPendingBatches(DonorGenotypePrecomputationBatchDispatcher.ChunkSize + 1);
 
         await dispatcher.DispatchPendingBatches(run, PendingBatchSelection.All);
 
         var log = logger.Collector.GetSnapshot().Should().ContainSingle().Which;
         log.Level.Should().Be(LogLevel.Information);
-        log.GetStructuredStateValue("BatchCount").Should().Be(batchIds.Count.ToString());
+        log.GetStructuredStateValue("BatchCount").Should().Be(batches.Count.ToString());
         log.GetStructuredStateValue(nameof(PendingBatchSelection)).Should().Be(nameof(PendingBatchSelection.All));
         log.GetStructuredStateValue(nameof(DonorGenotypePrecomputationRunLocation.RunId)).Should().Be(run.RunId.ToString());
     }
@@ -181,12 +184,14 @@ public class DonorGenotypePrecomputationBatchDispatcherTests
     /// The repository reads pending batches after an id, in id order, as the real one does. The ids have gaps, like the ids
     /// of a run whose other batches are done.
     /// </summary>
-    private IReadOnlyList<int> GivenPendingBatches(int count)
+    private IReadOnlyList<PendingDonorGenotypePrecomputationBatch> GivenPendingBatches(int count)
     {
-        var batchIds = Enumerable.Range(1, count).Select(i => i * 3).ToList();
+        var batches = Enumerable.Range(1, count)
+            .Select(i => new PendingDonorGenotypePrecomputationBatch(i * 3, fixture.Create<int>()))
+            .ToList();
 
         var readCount = 0;
-        repository.GetPendingBatchIds(default, default, default, default).ReturnsForAnyArgs(callInfo =>
+        repository.GetPendingBatches(default, default, default, default).ReturnsForAnyArgs(callInfo =>
         {
             if (++readCount > MaxReadsPerDispatch)
             {
@@ -195,9 +200,9 @@ public class DonorGenotypePrecomputationBatchDispatcherTests
 
             var afterBatchId = callInfo.ArgAt<int>(2);
             var maxCount = callInfo.ArgAt<int>(3);
-            return batchIds.Where(batchId => batchId > afterBatchId).Take(maxCount).ToList();
+            return batches.Where(batch => batch.BatchId > afterBatchId).Take(maxCount).ToList();
         });
 
-        return batchIds;
+        return batches;
     }
 }

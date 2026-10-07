@@ -24,6 +24,12 @@ public interface IDonorGenotypePrecomputationBatchDispatcher
     /// </para>
     ///
     /// <para>
+    /// <b>The stage and the requeue sweep both dispatch, and they can overlap.</b> Between the publish and the status update,
+    /// a worker can fail a batch and the sweep can send it back. The status update then leaves that batch to the sweep (see
+    /// <see cref="Data.Repositories.Precompute.IDonorGenotypePrecomputationRepository.MarkBatchesRequested"/>).
+    /// </para>
+    ///
+    /// <para>
     /// A chunk at a time, in id order, so a dispatch of all the batches of a full run holds one chunk of messages in
     /// memory, and a failed dispatch has sent a prefix of the batches.
     /// </para>
@@ -62,22 +68,22 @@ internal class DonorGenotypePrecomputationBatchDispatcher : IDonorGenotypePrecom
         var afterBatchId = 0;
         while (true)
         {
-            var batchIds = await repository.GetPendingBatchIds(run.RunId, selection, afterBatchId, ChunkSize);
-            if (batchIds.Count == 0)
+            var batches = await repository.GetPendingBatches(run.RunId, selection, afterBatchId, ChunkSize);
+            if (batches.Count == 0)
             {
                 break;
             }
 
-            await publisher.BatchPublish(batchIds.Select(batchId => new DonorGenotypePrecomputationBatchRequest
+            await publisher.BatchPublish(batches.Select(batch => new DonorGenotypePrecomputationBatchRequest
             {
                 DataRefreshRecordId = run.DataRefreshRecordId,
                 RunId = run.RunId,
-                BatchId = batchId
+                BatchId = batch.BatchId
             }));
-            await repository.MarkBatchesRequested(run.RunId, batchIds);
+            await repository.MarkBatchesRequested(run.RunId, batches);
 
-            publishedCount += batchIds.Count;
-            afterBatchId = batchIds[^1];
+            publishedCount += batches.Count;
+            afterBatchId = batches[^1].BatchId;
         }
 
         if (publishedCount > 0)

@@ -73,6 +73,14 @@ public sealed record SweptDonorGenotypePrecomputationBatch(
     int RetryCount,
     string? FailureMessage);
 
+/// <summary>A <see cref="DonorGenotypePrecomputationBatchStatus.Pending"/> batch, as a dispatch read it.</summary>
+/// <param name="RetryCount">
+/// The retry count when the dispatch read the batch. The dispatch moves the batch to requested only while the count is
+/// the same: a batch that failed and was sent back in the meantime has a higher count, and its new message is the
+/// sweep's to send.
+/// </param>
+public sealed record PendingDonorGenotypePrecomputationBatch(int BatchId, int RetryCount);
+
 /// <summary>
 /// Which <see cref="DonorGenotypePrecomputationBatchStatus.Pending"/> batches a dispatch sends. Two senders share the
 /// pending batches, and they must not send the same ones.

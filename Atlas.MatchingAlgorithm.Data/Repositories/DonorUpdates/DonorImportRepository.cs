@@ -34,7 +34,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
         /// <summary>
         /// Removes all donors, and all pre-processed data - including the precomputed subject genotype sets
-        /// (<see cref="SubjectGenotypeSetValue"/> / <see cref="DonorSubjectGenotypeSet"/>)
+        /// (<see cref="SubjectGenotypeSetValue"/> / <see cref="DonorSubjectGenotypeSet"/>), and the run, batch and staging
+        /// tables of the donor genotype precomputation stage
         /// </summary>
         Task RemoveAllDonorInformation();
 
@@ -106,6 +107,16 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         private const string DropAllSubjectGenotypeSetsSql = @"
 TRUNCATE TABLE [DonorSubjectGenotypeSets];
 TRUNCATE TABLE [SubjectGenotypeSetValues];";
+
+        // Must not be removed from the data refresh wipe either. The build of the precomputation stage gives the group ids
+        // itself, from 1, so the groups of a run that stopped before its staging data was removed would collide with the
+        // next build on this database. Also, the stage keeps one run per database, and its state machine reads the run and
+        // batch rows of that run only.
+        private const string DropAllDonorGenotypePrecomputationRunsSql = @"
+TRUNCATE TABLE [DonorGenotypePrecomputationGroupDonors];
+TRUNCATE TABLE [DonorGenotypePrecomputationGroups];
+TRUNCATE TABLE [DonorGenotypePrecomputationBatches];
+TRUNCATE TABLE [DonorGenotypePrecomputationRuns];";
 
         private static string BuildDropAllPreProcessedDonorHlaSql() =>
             AllHlaTables.Select(table => $"TRUNCATE TABLE [{table}];").StringJoinWithNewline();
@@ -244,6 +255,7 @@ END
                 await conn.ExecuteAsync(DropAllDonorsSql, commandTimeout: 300);
                 await conn.ExecuteAsync(DropAllDonorManagementLogsSql, commandTimeout: 300);
                 await conn.ExecuteAsync(DropAllSubjectGenotypeSetsSql, commandTimeout: 300);
+                await conn.ExecuteAsync(DropAllDonorGenotypePrecomputationRunsSql, commandTimeout: 300);
             }
         }
 

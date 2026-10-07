@@ -92,19 +92,30 @@ public interface IDonorGenotypePrecomputationRepository
     Task<bool> TryMarkBatchFailed(int batchId, Guid leaseOwner, DonorGenotypePrecomputationBatchFailure failure);
 
     /// <summary>
-    /// Up to <paramref name="maxCount"/> ids of <see cref="DonorGenotypePrecomputationBatchStatus.Pending"/> batches, in id
+    /// Up to <paramref name="maxCount"/> <see cref="DonorGenotypePrecomputationBatchStatus.Pending"/> batches, in id
     /// order, after <paramref name="afterBatchId"/>. The id bound lets a dispatch go through the batches a chunk at a time
     /// and finish, even when some of them stay pending.
     /// </summary>
-    Task<IReadOnlyList<int>> GetPendingBatchIds(int runId, PendingBatchSelection selection, int afterBatchId, int maxCount);
+    Task<IReadOnlyList<PendingDonorGenotypePrecomputationBatch>> GetPendingBatches(
+        int runId,
+        PendingBatchSelection selection,
+        int afterBatchId,
+        int maxCount);
 
     /// <summary>
     /// Moves the given batches from <see cref="DonorGenotypePrecomputationBatchStatus.Pending"/> to
     /// <see cref="DonorGenotypePrecomputationBatchStatus.Requested"/>, after their messages are published. A batch that a
     /// worker claimed in the meantime stays as it is.
     /// </summary>
+    /// <remarks>
+    /// <b>Only while the retry count is the one the dispatch read.</b> The messages go out before this update, so a worker
+    /// can claim a batch and fail it, and the requeue sweep can send it back to pending, before the update runs. The sweep
+    /// gives the batch a new retry count and sends its own message for it. Without the check, this update would move that
+    /// batch to requested, the sweep would find no pending batch to send, and the batch would wait for a message that
+    /// never comes.
+    /// </remarks>
     /// <returns>The number of batches moved.</returns>
-    Task<int> MarkBatchesRequested(int runId, IReadOnlyCollection<int> batchIds);
+    Task<int> MarkBatchesRequested(int runId, IReadOnlyCollection<PendingDonorGenotypePrecomputationBatch> batches);
 
     /// <summary>
     /// Moves every <see cref="DonorGenotypePrecomputationBatchStatus.InProgress"/> batch whose lease has expired to
@@ -368,8 +379,10 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
                                                WHERE {OwnerCanFinishCondition}
                                                """;
 
-    private const string SelectPendingBatchIdsSql = $"""
-                                                     SELECT TOP (@MaxCount) {nameof(Batch.Id)}
+    private const string SelectPendingBatchesSql = $"""
+                                                     SELECT TOP (@MaxCount)
+                                                         {nameof(Batch.Id)} AS {nameof(PendingDonorGenotypePrecomputationBatch.BatchId)},
+                                                         {nameof(Batch.RetryCount)}
                                                      FROM {BatchesTableName}
                                                      WHERE {nameof(Batch.RunId)} = @RunId
                                                        AND {nameof(Batch.Status)} = '{nameof(BatchStatus.Pending)}'
@@ -386,6 +399,7 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
                                                         {nameof(Batch.StatusDateUtc)} = SYSUTCDATETIME()
                                                     WHERE {nameof(Batch.RunId)} = @RunId
                                                       AND {nameof(Batch.Status)} = '{nameof(BatchStatus.Pending)}'
+                                                      AND {nameof(Batch.RetryCount)} = @RetryCount
                                                       AND {nameof(Batch.Id)} IN @BatchIds
                                                     """;
 
@@ -751,11 +765,15 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<int>> GetPendingBatchIds(int runId, PendingBatchSelection selection, int afterBatchId, int maxCount)
+    public async Task<IReadOnlyList<PendingDonorGenotypePrecomputationBatch>> GetPendingBatches(
+        int runId,
+        PendingBatchSelection selection,
+        int afterBatchId,
+        int maxCount)
     {
         await using var connection = await OpenConnection();
-        var ids = await connection.QueryAsync<int>(
-            SelectPendingBatchIdsSql,
+        var batches = await connection.QueryAsync<PendingDonorGenotypePrecomputationBatch>(
+            SelectPendingBatchesSql,
             new
             {
                 RunId = runId,
@@ -766,27 +784,31 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
             commandTimeout: CommandTimeoutInSeconds
         );
 
-        return [.. ids];
+        return [.. batches];
     }
 
     /// <inheritdoc />
-    public async Task<int> MarkBatchesRequested(int runId, IReadOnlyCollection<int> batchIds)
+    public async Task<int> MarkBatchesRequested(int runId, IReadOnlyCollection<PendingDonorGenotypePrecomputationBatch> batches)
     {
-        if (batchIds.Count == 0)
+        if (batches.Count == 0)
         {
             return 0;
         }
 
         await using var connection = await OpenConnection();
 
+        // One statement per retry count. The batches of one dispatch almost always share one count.
         var movedCount = 0;
-        foreach (var chunk in batchIds.Distinct().Chunk(MaxIdsPerStatement))
+        foreach (var batchesWithOneRetryCount in batches.Distinct().GroupBy(batch => batch.RetryCount))
         {
-            movedCount += await connection.ExecuteAsync(
-                MarkBatchesRequestedSql,
-                new { RunId = runId, BatchIds = chunk },
-                commandTimeout: CommandTimeoutInSeconds
-            );
+            foreach (var chunk in batchesWithOneRetryCount.Select(batch => batch.BatchId).Chunk(MaxIdsPerStatement))
+            {
+                movedCount += await connection.ExecuteAsync(
+                    MarkBatchesRequestedSql,
+                    new { RunId = runId, RetryCount = batchesWithOneRetryCount.Key, BatchIds = chunk },
+                    commandTimeout: CommandTimeoutInSeconds
+                );
+            }
         }
 
         return movedCount;

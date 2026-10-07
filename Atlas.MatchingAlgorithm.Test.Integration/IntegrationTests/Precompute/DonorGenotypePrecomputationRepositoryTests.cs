@@ -479,25 +479,25 @@ public class DonorGenotypePrecomputationRepositoryTests
     }
 
     [Test]
-    public async Task GetPendingBatchIds_ReturnsThePendingBatchesAfterTheBound_InIdOrder_UpToTheMaximum()
+    public async Task GetPendingBatches_ReturnsThePendingBatchesAfterTheBound_InIdOrder_UpToTheMaximum_WithTheirRetryCounts()
     {
         var run = await InsertRun();
         var pendingBatches = new List<DonorGenotypePrecomputationBatch>();
         for (var i = 0; i < 5; i++)
         {
-            pendingBatches.Add(await InsertBatch(run.Id));
+            pendingBatches.Add(await InsertBatch(run.Id, BatchStatus.Pending, b => b.RetryCount = fixture.Create<int>()));
         }
 
         await InsertBatch(run.Id, BatchStatus.Requested);
         await InsertBatch((await InsertRun()).Id);
 
-        var ids = await repository.GetPendingBatchIds(run.Id, PendingBatchSelection.All, afterBatchId: pendingBatches[0].Id, maxCount: 3);
+        var batches = await repository.GetPendingBatches(run.Id, PendingBatchSelection.All, afterBatchId: pendingBatches[0].Id, maxCount: 3);
 
-        ids.Should().Equal(pendingBatches.Skip(1).Take(3).Select(batch => batch.Id));
+        batches.Should().Equal(pendingBatches.Skip(1).Take(3).Select(batch => new PendingDonorGenotypePrecomputationBatch(batch.Id, batch.RetryCount)));
     }
 
     [Test]
-    public async Task GetPendingBatchIds_ForTheRequeuedBatches_ReturnsOnlyThePendingBatchesThatHaveRetries()
+    public async Task GetPendingBatches_ForTheRequeuedBatches_ReturnsOnlyThePendingBatchesThatHaveRetries()
     {
         // The requeue sweep sends only the batches that it sent back. The others are the stage's to send, and two senders
         // of one batch would put two messages on the topic for it.
@@ -506,9 +506,9 @@ public class DonorGenotypePrecomputationRepositoryTests
         var requeued = await InsertBatch(run.Id, BatchStatus.Pending, b => b.RetryCount = 1);
         await InsertBatch(run.Id, BatchStatus.Requested, b => b.RetryCount = 1);
 
-        var ids = await repository.GetPendingBatchIds(run.Id, PendingBatchSelection.Requeued, afterBatchId: 0, maxCount: 10);
+        var batches = await repository.GetPendingBatches(run.Id, PendingBatchSelection.Requeued, afterBatchId: 0, maxCount: 10);
 
-        ids.Should().Equal(requeued.Id);
+        batches.Select(batch => batch.BatchId).Should().Equal(requeued.Id);
     }
 
     [Test]
@@ -519,7 +519,7 @@ public class DonorGenotypePrecomputationRepositoryTests
         var pendingNotGiven = await InsertBatch(run.Id);
         var claimedMeanwhile = await InsertBatch(run.Id, BatchStatus.InProgress);
 
-        var movedCount = await repository.MarkBatchesRequested(run.Id, [pending.Id, claimedMeanwhile.Id]);
+        var movedCount = await repository.MarkBatchesRequested(run.Id, [AsRead(pending), AsRead(claimedMeanwhile)]);
 
         movedCount.Should().Be(1);
         var storedPending = await StoredBatch(pending.Id);
@@ -530,13 +530,46 @@ public class DonorGenotypePrecomputationRepositoryTests
     }
 
     [Test]
+    public async Task MarkBatchesRequested_WhenTheSweepSentTheBatchBackSinceTheRead_LeavesItPendingForTheSweep()
+    {
+        // The dispatch read the batch, and published its message. A worker failed the batch, and the requeue sweep sent it
+        // back to pending, all before this update. The sweep sends its own message for the batch, and only while the batch
+        // is pending: moved to requested here, it would wait for a message that never comes.
+        var run = await InsertRun();
+        var batch = await InsertBatch(run.Id);
+        var readByTheDispatch = AsRead(batch);
+        var claim = NewClaim(run, batch);
+        await repository.TryClaimBatch(claim);
+        await repository.TryMarkBatchFailed(batch.Id, claim.LeaseOwner, fixture.Create<DonorGenotypePrecomputationBatchFailure>());
+        await repository.RequeueRetryableBatches(run.Id, MaxBatchRetries);
+
+        var movedCount = await repository.MarkBatchesRequested(run.Id, [readByTheDispatch]);
+
+        movedCount.Should().Be(0);
+        (await StoredBatch(batch.Id)).Status.Should().Be(BatchStatus.Pending);
+        (await repository.GetPendingBatches(run.Id, PendingBatchSelection.Requeued, 0, 10)).Select(b => b.BatchId).Should().Equal(batch.Id);
+    }
+
+    [Test]
+    public async Task MarkBatchesRequested_ForBatchesWithDifferentRetryCounts_MovesEachOne()
+    {
+        var run = await InsertRun();
+        var first = await InsertBatch(run.Id, BatchStatus.Pending, b => b.RetryCount = 1);
+        var second = await InsertBatch(run.Id, BatchStatus.Pending, b => b.RetryCount = 2);
+
+        var movedCount = await repository.MarkBatchesRequested(run.Id, [AsRead(first), AsRead(second)]);
+
+        movedCount.Should().Be(2);
+    }
+
+    [Test]
     public async Task MarkBatchesRequested_ForMoreBatchesThanOneStatementTakes_MovesThemAll()
     {
         // SQL Server allows 2,100 parameters in one command, and a caller can pass any number of ids.
         var run = await InsertRun();
         var batchIds = await InsertPendingBatches(run.Id, DonorGenotypePrecomputationRepository.MaxIdsPerStatement + 5);
 
-        var movedCount = await repository.MarkBatchesRequested(run.Id, batchIds);
+        var movedCount = await repository.MarkBatchesRequested(run.Id, [.. batchIds.Select(id => new PendingDonorGenotypePrecomputationBatch(id, 0))]);
 
         movedCount.Should().Be(batchIds.Count);
     }
@@ -932,8 +965,8 @@ public class DonorGenotypePrecomputationRepositoryTests
 
         await repository.ResetFailedBatchesForManualRetry(run.Id);
 
-        (await repository.GetPendingBatchIds(run.Id, PendingBatchSelection.Requeued, 0, 10)).Should().BeEmpty();
-        (await repository.GetPendingBatchIds(run.Id, PendingBatchSelection.All, 0, 10)).Should().Equal(batch.Id);
+        (await repository.GetPendingBatches(run.Id, PendingBatchSelection.Requeued, 0, 10)).Should().BeEmpty();
+        (await repository.GetPendingBatches(run.Id, PendingBatchSelection.All, 0, 10)).Select(b => b.BatchId).Should().Equal(batch.Id);
     }
 
     [TestCase(RunStatus.Building)]
@@ -983,6 +1016,9 @@ public class DonorGenotypePrecomputationRepositoryTests
         (await context.DonorGenotypePrecomputationRuns.AnyAsync(r => r.Id == run.Id)).Should().BeTrue();
         (await context.DonorGenotypePrecomputationBatches.AnyAsync(b => b.Id == batch.Id)).Should().BeTrue();
     }
+
+    /// <summary>The batch as a dispatch reads it.</summary>
+    private static PendingDonorGenotypePrecomputationBatch AsRead(DonorGenotypePrecomputationBatch batch) => new(batch.Id, batch.RetryCount);
 
     private DonorGenotypePrecomputationBatchClaim NewClaim(DonorGenotypePrecomputationRun run, DonorGenotypePrecomputationBatch batch) =>
         new(run.DataRefreshRecordId, run.Id, batch.Id, fixture.Create<Guid>(), LeaseDuration, IsRedelivery: false);
