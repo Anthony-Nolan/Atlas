@@ -77,6 +77,7 @@ It's highly recommended that you read the sections outside ZtH in parallel with 
 - Open up Service Bus Explorer and connect to your local development Service Bus.
 - Create the topic, `data-refresh-requests` with subscription `matching-algorithm`.
 - Create the topic, `completed-data-refresh-jobs`. It needs no subscription: the refresh publishes a completion message to it when the job ends.
+- Create the topic, `donor-genotype-precomputation-requests` with subscription `precomputation-worker`. The donor genotype precomputation workers read the subscription, and `MatchingAlgorithm.Functions.DataRefresh` reads its dead-letter queue.
 - Run `MatchingAlgorithm.Functions.DataRefresh` and in Swagger UI (or any other API development environment) trigger the `SubmitDataRefreshRequestManual` endpoint.
   - Set `forceDataRefresh` to `true`.
   - You should get a 200 Success response almost immediately but the refresh itself will take ~15 minute to run (do NOT close the function app down until it's complete!).

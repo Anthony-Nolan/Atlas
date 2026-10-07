@@ -87,7 +87,9 @@ public class DonorImportPrecomputeTests
 
         var precomputer = new DonorGenotypeSetPrecomputer(
             frequencyLookupService,
-            new SubjectGenotypeSetPrecomputeService(failingUpsertRepositoryFactory, genotypeSetService),
+            new SubjectGenotypeSetPrecomputeService(
+                new SubjectGenotypeSetValueService(failingUpsertRepositoryFactory, genotypeSetService),
+                failingUpsertRepositoryFactory),
             Injection.Provider.GetService<IMatchingAlgorithmImportLogger>());
 
         service = new DonorManagementService(
@@ -208,6 +210,9 @@ public class DonorImportPrecomputeTests
 
         public IPGroupRepository GetPGroupRepositoryForDatabase(TransientDatabase targetDatabase) =>
             inner.GetPGroupRepositoryForDatabase(targetDatabase);
+
+        public IDonorGenotypePrecomputationRepository GetDonorGenotypePrecomputationRepositoryForDatabase(TransientDatabase targetDatabase) =>
+            inner.GetDonorGenotypePrecomputationRepositoryForDatabase(targetDatabase);
     }
 
     private sealed class FailingUpsertRepository(ISubjectGenotypeSetRepository inner, Func<bool> shouldFail) : ISubjectGenotypeSetRepository

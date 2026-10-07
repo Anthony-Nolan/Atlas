@@ -77,7 +77,7 @@ public static class SubjectGenotypeSetKeyGenerator
     /// Null and empty give the same string, deliberately: <c>StringBuilder.Append</c> adds nothing for either. The
     /// matching algorithm reads both as an untyped position, so two donors that differ only this way must share one row.
     /// Imputation does NOT read them the same - it sends an empty name to the HLA Metadata Dictionary, which throws. The
-    /// shared row is correct because <see cref="SubjectGenotypeSetPrecomputeService"/> changes each empty name to null
+    /// shared row is correct because <see cref="SubjectGenotypeSetValueService"/> changes each empty name to null
     /// before it imputes.
     /// </remarks>
     internal static string Canonicalise(PhenotypeInfo<string> hlaTyping, IReadOnlySet<Locus> allowedLoci)

@@ -73,6 +73,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 _ => new AzureAuthenticationSettings(),
                 _ => new AzureDatabaseManagementSettings(),
                 OptionsReaderFor<DataRefreshSettings>(),
+                _ => new DonorGenotypePrecomputationSettings(),
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),

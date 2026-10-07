@@ -237,7 +237,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
 
             var realPrecomputer = new DonorGenotypeSetPrecomputer(
                 frequencyLookupService,
-                new SubjectGenotypeSetPrecomputeService(repositoryFactory, genotypeSetService),
+                new SubjectGenotypeSetPrecomputeService(
+                    new SubjectGenotypeSetValueService(repositoryFactory, genotypeSetService),
+                    repositoryFactory),
                 logger);
 
             var donors = new[]

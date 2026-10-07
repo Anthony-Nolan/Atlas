@@ -125,6 +125,175 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
                     b.ToTable("Donors");
                 });
 
+            modelBuilder.Entity("Atlas.MatchingAlgorithm.Data.Models.Entities.DonorGenotypePrecomputationBatch", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BatchNumber")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CompletedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DispatchedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DonorAssignmentCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FailedGroupCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FailureException")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FailureMessage")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<int>("FirstGroupId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GroupCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LastGroupId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("LeaseExpiresUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("LeaseOwner")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RunId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<DateTime>("StatusDateUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RunId", "BatchNumber")
+                        .IsUnique();
+
+                    b.HasIndex("RunId", "Status");
+
+                    b.ToTable("DonorGenotypePrecomputationBatches");
+                });
+
+            modelBuilder.Entity("Atlas.MatchingAlgorithm.Data.Models.Entities.DonorGenotypePrecomputationGroup", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("AllowedLociKey")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<int>("DonorCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FailureMessage")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<int>("RepresentativeDonorId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RunId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SubjectGenotypeSetValueId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DonorGenotypePrecomputationGroups");
+                });
+
+            modelBuilder.Entity("Atlas.MatchingAlgorithm.Data.Models.Entities.DonorGenotypePrecomputationGroupDonor", b =>
+                {
+                    b.Property<int>("GroupId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DonorId")
+                        .HasColumnType("int");
+
+                    b.HasKey("GroupId", "DonorId");
+
+                    b.ToTable("DonorGenotypePrecomputationGroupDonors");
+                });
+
+            modelBuilder.Entity("Atlas.MatchingAlgorithm.Data.Models.Entities.DonorGenotypePrecomputationRun", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CompletedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DataRefreshRecordId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GroupsPerBatch")
+                        .HasColumnType("int");
+
+                    b.Property<string>("HlaNomenclatureVersion")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<int>("ManualRetryCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<DateTime>("StatusDateUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("TotalBatchCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalDonorAssignmentCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalDonorCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalGroupCount")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DataRefreshRecordId")
+                        .IsUnique();
+
+                    b.ToTable("DonorGenotypePrecomputationRuns");
+                });
+
             modelBuilder.Entity("Atlas.MatchingAlgorithm.Data.Models.Entities.DonorManagementLog", b =>
                 {
                     b.Property<int>("Id")
