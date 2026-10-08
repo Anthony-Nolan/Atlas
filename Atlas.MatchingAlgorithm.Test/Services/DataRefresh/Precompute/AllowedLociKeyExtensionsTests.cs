@@ -78,4 +78,19 @@ public class AllowedLociKeyExtensionsTests
 
         act.Should().Throw<ArgumentOutOfRangeException>();
     }
+
+    [TestCaseSource(nameof(ExpectedLoci))]
+    public void TryToAllowedLociKey_ForTheLociAKeyNames_ReturnsTrueAndThatKey(AllowedLociKey key, Locus[] loci)
+    {
+        AllowedLociKeyExtensions.TryToAllowedLociKey(loci.ToHashSet(), out var found).Should().BeTrue();
+        found.Should().Be(key);
+    }
+
+    [Test]
+    public void TryToAllowedLociKey_ForALocusSetNoKeyNames_ReturnsFalseWithoutThrowing()
+    {
+        // e.g. a search with match criteria at A, B and C only, or one that includes DPB1.
+        AllowedLociKeyExtensions.TryToAllowedLociKey(new HashSet<Locus> { Locus.A, Locus.B, Locus.C }, out _).Should().BeFalse();
+        AllowedLociKeyExtensions.TryToAllowedLociKey(new HashSet<Locus> { Locus.A, Locus.B, Locus.Drb1, Locus.Dpb1 }, out _).Should().BeFalse();
+    }
 }

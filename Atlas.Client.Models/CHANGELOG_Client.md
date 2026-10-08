@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 4.1.0
 * `ResultSet` model has been extended with a new optional property, `MatchingAlgorithmDataRefreshRecordId`. It identifies the matching algorithm data refresh record (and so the transient donor database) that matching ran against. It is `null` for result sets created before this version.
+* `SearchRequest` model has been extended with a new optional property, `UsePrecomputedGenotypeSets`. It overrides the default of the match prediction kill-switch for precomputed donor genotype sets, for one search, in either direction. `null` (the default) leaves the decision to the kill-switch. While the kill-switch is in `ForceLive` mode, the value is ignored.
 
 ### 3.0.0
 * Updated .NET version from 6.0 to 8.0

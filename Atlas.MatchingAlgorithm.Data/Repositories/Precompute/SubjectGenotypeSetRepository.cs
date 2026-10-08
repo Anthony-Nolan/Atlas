@@ -4,6 +4,8 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
+using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Models.Precompute;
 using Atlas.MatchingAlgorithm.Data.Services;
@@ -78,6 +80,48 @@ public interface ISubjectGenotypeSetRepository
     /// </para>
     /// </remarks>
     Task DeleteDonorAssignments(IReadOnlyCollection<int> donorIds);
+
+    /// <summary>
+    /// The stored genotype set of each given donor at one locus combination, for search (ATL-221). Donors with no row
+    /// are absent from the result.
+    /// </summary>
+    Task<IReadOnlyDictionary<int, StoredDonorSubjectGenotypeSet>> GetDonorSubjectGenotypeSets(IReadOnlyCollection<int> donorIds, AllowedLociKey allowedLociKey);
+
+    /// <summary>
+    /// As <see cref="UpsertDonorAssignments"/>, but writes an assignment only while its donor in <c>Donors</c> still has
+    /// the typing, registry code and ethnicity code the value was computed from. For search, which stores a donor it
+    /// computed live (ATL-221).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Why the guard.</b> Search reads a donor when it matches, and computes the donor's set later. A differential
+    /// import can update the donor in between: it deletes the donor's assignments and writes the new typing or codes
+    /// in one transaction, then precomputes the new set. Without the guard, search could then point the donor back at
+    /// a set for its OLD typing or frequency set, over the import's correct row.
+    /// </para>
+    ///
+    /// <para>
+    /// <b>Lock order.</b> One transaction takes the exclusive table lock on <c>DonorSubjectGenotypeSets</c> first, then
+    /// reads <c>Donors</c> with shared locks (<c>READCOMMITTEDLOCK</c>, as read-committed snapshot would read an older
+    /// version), then upserts. The import deletes assignments first in its transaction, before it inserts or updates
+    /// <c>Donors</c> (<c>DonorService.CreateOrUpdateDonorsWithHla</c>), so the two take their locks in the same order.
+    /// Whichever transaction gets the table lock first runs first: either this one writes for the unchanged donor and
+    /// the import then deletes it, or the import commits first and this one finds the donor changed.
+    /// </para>
+    ///
+    /// <para>
+    /// <b>Always yields.</b> The session runs with <c>DEADLOCK_PRIORITY LOW</c>, so if a deadlock happens anyway (lock
+    /// escalation, say), this best-effort write is the victim, never the import. And with a short
+    /// <c>LOCK_TIMEOUT</c>, so a wait behind an import or another batch's upsert ends in error 1222 after
+    /// <see cref="SubjectGenotypeSetRepository.GuardedUpsertLockTimeoutMilliseconds"/>, not after minutes.
+    /// </para>
+    ///
+    /// <para>
+    /// Not retried: a deadlock victim's or timed-out transaction is gone, and the caller treats the whole store as
+    /// best effort - the donor is computed live again by the next search, and stored then.
+    /// </para>
+    /// </remarks>
+    Task<GuardedUpsertResult> UpsertDonorAssignmentsWhereDonorUnchanged(IReadOnlyCollection<GuardedDonorAssignment> assignments);
 }
 
 /// <summary>
@@ -149,6 +193,109 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
     private const string DeleteDonorAssignmentsSql = $"""
         DELETE FROM {AssignmentsTableName}
         WHERE {nameof(DonorSubjectGenotypeSet.DonorId)} IN @DonorIds
+        """;
+
+    /// <summary>
+    /// A seek on the unique (DonorId, AllowedLociKey) index per donor, then the value row by its primary key. The typing
+    /// key is returned so the caller can check that the row was computed from the typing it has.
+    /// </summary>
+    private const string SelectDonorSubjectGenotypeSetsSql = $"""
+        SELECT
+            a.{nameof(DonorSubjectGenotypeSet.DonorId)},
+            v.{nameof(SubjectGenotypeSetValue.HlaTypingKey)},
+            v.{nameof(SubjectGenotypeSetValue.HaplotypeFrequencySetId)},
+            v.{nameof(SubjectGenotypeSetValue.IsUnrepresented)},
+            v.{nameof(SubjectGenotypeSetValue.SubjectGenotypeSetData)}
+        FROM {AssignmentsTableName} a
+        INNER JOIN {ValuesTableName} v
+            ON v.{nameof(SubjectGenotypeSetValue.Id)} = a.{nameof(DonorSubjectGenotypeSet.SubjectGenotypeSetValueId)}
+        WHERE a.{nameof(DonorSubjectGenotypeSet.AllowedLociKey)} = @AllowedLociKey
+          AND a.{nameof(DonorSubjectGenotypeSet.DonorId)} IN @DonorIds
+        """;
+
+    private const string DonorsTableName = "Donors";
+
+    /// <summary>
+    /// The typing columns the guarded upsert compares: the match prediction loci. DPB1 is left out, as match prediction
+    /// never imputes it, so a DPB1 change does not change a donor's genotype set.
+    /// </summary>
+    private static readonly (string Column, Locus Locus, LocusPosition Position)[] GuardedTypingColumns =
+    [
+        (nameof(Donor.A_1), Locus.A, LocusPosition.One),
+        (nameof(Donor.A_2), Locus.A, LocusPosition.Two),
+        (nameof(Donor.B_1), Locus.B, LocusPosition.One),
+        (nameof(Donor.B_2), Locus.B, LocusPosition.Two),
+        (nameof(Donor.C_1), Locus.C, LocusPosition.One),
+        (nameof(Donor.C_2), Locus.C, LocusPosition.Two),
+        (nameof(Donor.DQB1_1), Locus.Dqb1, LocusPosition.One),
+        (nameof(Donor.DQB1_2), Locus.Dqb1, LocusPosition.Two),
+        (nameof(Donor.DRB1_1), Locus.Drb1, LocusPosition.One),
+        (nameof(Donor.DRB1_2), Locus.Drb1, LocusPosition.Two),
+    ];
+
+    /// <summary>The donor columns that choose the frequency set, which the guarded upsert also compares.</summary>
+    private static readonly string[] GuardedFrequencySetColumns = [nameof(Donor.RegistryCode), nameof(Donor.EthnicityCode)];
+
+    /// <summary>Every donor column the guarded upsert compares.</summary>
+    private static readonly string[] GuardedColumns = GuardedTypingColumns.Select(c => c.Column).Concat(GuardedFrequencySetColumns).ToArray();
+
+    /// <summary>
+    /// How long the guarded upsert waits for a lock before it gives up (error 1222). A store is only a saving for the
+    /// next search, and the batch's result is published only after it, so a long wait is worse than a skipped store.
+    /// </summary>
+    internal const int GuardedUpsertLockTimeoutMilliseconds = 5000;
+
+    private static readonly string SetGuardedUpsertSessionOptionsSql = $"""
+        SET LOCK_TIMEOUT {GuardedUpsertLockTimeoutMilliseconds};
+        SET DEADLOCK_PRIORITY LOW;
+        """;
+
+    /// <summary>
+    /// Pooled connections keep session options, so the next user of this connection must not inherit the short lock
+    /// timeout or the low deadlock priority.
+    /// </summary>
+    private const string ResetGuardedUpsertSessionOptionsSql = """
+        SET LOCK_TIMEOUT -1;
+        SET DEADLOCK_PRIORITY NORMAL;
+        """;
+
+    /// <summary>
+    /// The same table name and key columns as <see cref="CreateAssignmentStagingTableSql"/>, plus the typing and codes
+    /// each value was computed from, so <see cref="UpsertStagedAssignmentsSql"/> runs over it unchanged.
+    /// </summary>
+    private static readonly string CreateGuardedAssignmentStagingTableSql = $"""
+        CREATE TABLE {AssignmentStagingTableName} (
+            {nameof(DonorSubjectGenotypeSet.DonorId)}                   int          NOT NULL,
+            {nameof(DonorSubjectGenotypeSet.AllowedLociKey)}            nvarchar(16) COLLATE DATABASE_DEFAULT NOT NULL,
+            {nameof(DonorSubjectGenotypeSet.SubjectGenotypeSetValueId)} int          NOT NULL,
+            {string.Join(",\n    ", GuardedColumns.Select(c => $"{c} nvarchar(max) COLLATE DATABASE_DEFAULT NULL"))},
+            PRIMARY KEY (
+                {nameof(DonorSubjectGenotypeSet.DonorId)},
+                {nameof(DonorSubjectGenotypeSet.AllowedLociKey)}))
+        """;
+
+    /// <summary>
+    /// Takes the exclusive table lock that <see cref="UpsertStagedAssignmentsSql"/> would take anyway, but before
+    /// <c>Donors</c> is read - see <see cref="ISubjectGenotypeSetRepository.UpsertDonorAssignmentsWhereDonorUnchanged"/>
+    /// for why the order matters. <c>TOP (1)</c> rather than <c>TOP (0)</c>, which the optimiser answers without
+    /// touching the table, and so without the lock.
+    /// </summary>
+    private const string LockAssignmentsTableSql = $"""
+        SELECT TOP (1) 1 FROM {AssignmentsTableName} WITH (TABLOCKX, HOLDLOCK)
+        """;
+
+    /// <summary>
+    /// Drops the staged assignments whose donor's current typing, registry code or ethnicity code is not the staged
+    /// one. Null and empty compare equal, as they do for the typing key and the matching algorithm. A donor that is no
+    /// longer in <c>Donors</c> is dropped too. <c>READCOMMITTEDLOCK</c> makes the read wait for an uncommitted donor
+    /// update, rather than read the version before it, which read-committed snapshot would do.
+    /// </summary>
+    private static readonly string DeleteStagedAssignmentsWithChangedDonorSql = $"""
+        DELETE s FROM {AssignmentStagingTableName} s
+        WHERE NOT EXISTS (
+            SELECT 1 FROM {DonorsTableName} d WITH (READCOMMITTEDLOCK)
+            WHERE d.{nameof(Donor.DonorId)} = s.{nameof(DonorSubjectGenotypeSet.DonorId)}
+              AND {string.Join("\n      AND ", GuardedColumns.Select(c => $"ISNULL(d.{c}, N'') = ISNULL(s.{c}, N'')"))})
         """;
 
     /// <summary>
@@ -387,6 +534,130 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
         }
     }
 
+    /// <inheritdoc />
+    public async Task<IReadOnlyDictionary<int, StoredDonorSubjectGenotypeSet>> GetDonorSubjectGenotypeSets(
+        IReadOnlyCollection<int> donorIds,
+        AllowedLociKey allowedLociKey)
+    {
+        var stored = new Dictionary<int, StoredDonorSubjectGenotypeSet>();
+        if (donorIds == null || donorIds.Count == 0)
+        {
+            return stored;
+        }
+
+        await using var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString());
+        await connection.OpenAsync();
+
+        // Chunked for the same parameter limit as the delete.
+        foreach (var chunk in donorIds.Distinct().Chunk(DeleteChunkSize))
+        {
+            var rows = await connection.QueryAsync<StoredDonorSubjectGenotypeSetRow>(
+                SelectDonorSubjectGenotypeSetsSql,
+                new { AllowedLociKey = allowedLociKey.ToString(), DonorIds = chunk },
+                commandTimeout: CommandTimeoutInSeconds);
+
+            foreach (var row in rows)
+            {
+                stored[row.DonorId] = new StoredDonorSubjectGenotypeSet(
+                    row.DonorId, row.HlaTypingKey, row.HaplotypeFrequencySetId, row.IsUnrepresented, row.SubjectGenotypeSetData);
+            }
+        }
+
+        return stored;
+    }
+
+    /// <inheritdoc />
+    public async Task<GuardedUpsertResult> UpsertDonorAssignmentsWhereDonorUnchanged(IReadOnlyCollection<GuardedDonorAssignment> assignments)
+    {
+        if (assignments == null || assignments.Count == 0)
+        {
+            return new GuardedUpsertResult(0, 0);
+        }
+
+        // Validates and drops exact repeats, as the unguarded upsert does. The donor state of a repeat is taken from its
+        // first occurrence: one (donor, combination) pair cannot have been computed from two typings and agree on a value.
+        var distinctAssignments = DistinctAssignments(assignments.Select(a => a.Assignment).ToList());
+        var guardByAssignment = assignments
+            .GroupBy(a => (a.Assignment.DonorId, a.Assignment.AllowedLociKey))
+            .ToDictionary(g => g.Key, g => g.First());
+
+        // One connection and one local transaction, not a TransactionScope: the temp table, the lock and the reads must
+        // all be on one session, and a scope would promote to a distributed transaction the moment a second connection
+        // opened, which .NET on Linux cannot run.
+        await using var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString());
+        await connection.OpenAsync();
+        await connection.ExecuteAsync(SetGuardedUpsertSessionOptionsSql, commandTimeout: CommandTimeoutInSeconds);
+
+        try
+        {
+            await using var transaction = (SqlTransaction) await connection.BeginTransactionAsync();
+
+            await connection.ExecuteAsync(CreateGuardedAssignmentStagingTableSql, transaction: transaction, commandTimeout: CommandTimeoutInSeconds);
+            await StageGuardedAssignments(connection, transaction, distinctAssignments, guardByAssignment);
+
+            await connection.ExecuteAsync(LockAssignmentsTableSql, transaction: transaction, commandTimeout: CommandTimeoutInSeconds);
+            var skipped = await connection.ExecuteAsync(DeleteStagedAssignmentsWithChangedDonorSql, transaction: transaction, commandTimeout: CommandTimeoutInSeconds);
+            await connection.ExecuteAsync(UpsertStagedAssignmentsSql, transaction: transaction, commandTimeout: CommandTimeoutInSeconds);
+
+            await transaction.CommitAsync();
+
+            return new GuardedUpsertResult(distinctAssignments.Count - skipped, skipped);
+        }
+        finally
+        {
+            try
+            {
+                await connection.ExecuteAsync(ResetGuardedUpsertSessionOptionsSql, commandTimeout: CommandTimeoutInSeconds);
+            }
+            catch (SqlException)
+            {
+                // The connection is broken, and the pool discards a broken connection, options and all. Throwing here
+                // would only hide the original failure.
+            }
+        }
+    }
+
+    private static async Task StageGuardedAssignments(
+        SqlConnection connection,
+        SqlTransaction transaction,
+        IReadOnlyCollection<DonorSubjectGenotypeSetAssignment> assignments,
+        IReadOnlyDictionary<(int DonorId, AllowedLociKey AllowedLociKey), GuardedDonorAssignment> guardByAssignment)
+    {
+        var dataTable = new DataTable();
+        dataTable.Columns.Add(new DataColumn(nameof(DonorSubjectGenotypeSet.DonorId), typeof(int)));
+        dataTable.Columns.Add(new DataColumn(nameof(DonorSubjectGenotypeSet.AllowedLociKey), typeof(string)));
+        dataTable.Columns.Add(new DataColumn(nameof(DonorSubjectGenotypeSet.SubjectGenotypeSetValueId), typeof(int)));
+        foreach (var column in GuardedColumns)
+        {
+            dataTable.Columns.Add(new DataColumn(column, typeof(string)));
+        }
+
+        foreach (var assignment in assignments)
+        {
+            var guard = guardByAssignment[(assignment.DonorId, assignment.AllowedLociKey)];
+            var row = dataTable.NewRow();
+            row[nameof(DonorSubjectGenotypeSet.DonorId)] = assignment.DonorId;
+            row[nameof(DonorSubjectGenotypeSet.AllowedLociKey)] = assignment.AllowedLociKey.ToString();
+            row[nameof(DonorSubjectGenotypeSet.SubjectGenotypeSetValueId)] = assignment.SubjectGenotypeSetValueId;
+            foreach (var (column, locus, position) in GuardedTypingColumns)
+            {
+                row[column] = (object) guard.ExpectedHla?.GetPosition(locus, position) ?? DBNull.Value;
+            }
+
+            row[nameof(Donor.RegistryCode)] = (object) guard.ExpectedRegistryCode ?? DBNull.Value;
+            row[nameof(Donor.EthnicityCode)] = (object) guard.ExpectedEthnicityCode ?? DBNull.Value;
+
+            dataTable.Rows.Add(row);
+        }
+
+        using var bulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, transaction);
+        bulkCopy.BulkCopyTimeout = CommandTimeoutInSeconds;
+        bulkCopy.DestinationTableName = AssignmentStagingTableName;
+        AddColumnMappings(bulkCopy, dataTable.Columns.Cast<DataColumn>().Select(column => column.ColumnName));
+
+        await bulkCopy.WriteToServerAsync(dataTable);
+    }
+
     /// <summary>
     /// One assignment per (donor, combination). Exact repeats are dropped - they are the same instruction twice. Two
     /// different value ids for one pair are a caller bug with no right answer, so they fail here, before anything is
@@ -561,5 +832,14 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
         public string AllowedLociKey { get; init; }
 
         internal SubjectGenotypeSetKey ToKey() => new(HlaTypingKey, HaplotypeFrequencySetId, Enum.Parse<AllowedLociKey>(AllowedLociKey));
+    }
+
+    private sealed class StoredDonorSubjectGenotypeSetRow
+    {
+        public int DonorId { get; init; }
+        public string HlaTypingKey { get; init; }
+        public int HaplotypeFrequencySetId { get; init; }
+        public bool IsUnrepresented { get; init; }
+        public byte[] SubjectGenotypeSetData { get; init; }
     }
 }

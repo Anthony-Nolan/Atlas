@@ -1,3 +1,4 @@
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 
 namespace Atlas.MatchingAlgorithm.Data.Models.Precompute;
@@ -22,3 +23,33 @@ public sealed record SubjectGenotypeSetValueToStore(SubjectGenotypeSetKey Key, b
 
 /// <summary>One <c>DonorSubjectGenotypeSets</c> row: which stored value this donor uses at this locus combination.</summary>
 public sealed record DonorSubjectGenotypeSetAssignment(int DonorId, AllowedLociKey AllowedLociKey, int SubjectGenotypeSetValueId);
+
+/// <summary>
+/// A donor's stored genotype set at one locus combination, as search reads it. <see cref="SubjectGenotypeSetData"/> is
+/// null exactly when <see cref="IsUnrepresented"/> is true.
+/// </summary>
+/// <param name="HlaTypingKey">The typing key of the stored value, so the reader can check it was computed from the typing the search has.</param>
+public sealed record StoredDonorSubjectGenotypeSet(
+    int DonorId,
+    string HlaTypingKey,
+    int HaplotypeFrequencySetId,
+    bool IsUnrepresented,
+    byte[] SubjectGenotypeSetData);
+
+/// <summary>
+/// An assignment to write only while the donor in <c>Donors</c> still has the typing, registry code and ethnicity code
+/// that the value was computed from. Only the match prediction loci are compared - DPB1 does not change the set. The
+/// registry and ethnicity codes choose the frequency set, so a change to either can change the set too.
+/// </summary>
+public sealed record GuardedDonorAssignment(
+    DonorSubjectGenotypeSetAssignment Assignment,
+    PhenotypeInfo<string> ExpectedHla,
+    string ExpectedRegistryCode,
+    string ExpectedEthnicityCode);
+
+/// <summary>The outcome of <c>UpsertDonorAssignmentsWhereDonorUnchanged</c>, in assignments.</summary>
+/// <param name="UpsertedCount">Assignments whose donor was unchanged, and which now point at the given value.</param>
+/// <param name="SkippedDonorChangedCount">
+/// Assignments not written, because the donor's typing, registry code or ethnicity code has changed, or the donor is gone.
+/// </param>
+public sealed record GuardedUpsertResult(int UpsertedCount, int SkippedDonorChangedCount);

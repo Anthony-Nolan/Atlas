@@ -37,6 +37,7 @@ using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
+using Atlas.MatchingAlgorithm.Services.Search.Precompute;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.AntigenMatching;
@@ -48,6 +49,7 @@ using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
+using Atlas.MatchPrediction.Services.Precompute;
 using GenotypeImputationSettings = Atlas.MatchPrediction.ExternalInterface.Settings.GenotypeImputationSettings;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Azure.Identity;
@@ -383,6 +385,38 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
             services.RegisterSubjectGenotypeSetPrecompute();
             services.Replace(ServiceDescriptor.Scoped<IDonorGenotypeSetPrecomputer, DonorGenotypeSetPrecomputer>());
+        }
+
+        /// <summary>
+        /// Gives match prediction read and write access to the precomputed genotype sets in the transient databases, for
+        /// search (ATL-221). Call it after <c>RegisterMatchPredictionAlgorithm</c>: it replaces the no-op reader and writer
+        /// that method registers.
+        /// </summary>
+        /// <remarks>
+        /// Registers only what the reader and writer need - the connection strings, the data refresh history (to find
+        /// which database is active) and the genotype set repository - and none of the rest of the matching algorithm,
+        /// so a match prediction host needs no matching settings beyond the three SQL connection strings.
+        /// </remarks>
+        public static void RegisterPrecomputedDonorGenotypeSetAccess(
+            this IServiceCollection services,
+            Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
+            Func<IServiceProvider, string> fetchTransientASqlConnectionString,
+            Func<IServiceProvider, string> fetchTransientBSqlConnectionString)
+        {
+            services.TryAddScoped(sp => new ConnectionStrings
+            {
+                Persistent = fetchPersistentSqlConnectionString(sp),
+                TransientA = fetchTransientASqlConnectionString(sp),
+                TransientB = fetchTransientBSqlConnectionString(sp),
+            });
+            services.TryAddScoped<StaticallyChosenTransientSqlConnectionStringProviderFactory>();
+            services.TryAddScoped<ISubjectGenotypeSetRepositoryFactory, SubjectGenotypeSetRepositoryFactory>();
+
+            services.TryAddScoped(sp => new ContextFactory().Create(fetchPersistentSqlConnectionString(sp)));
+            services.TryAddScoped<IDataRefreshHistoryRepository, DataRefreshHistoryRepository>();
+
+            services.Replace(ServiceDescriptor.Scoped<IPrecomputedDonorGenotypeSetReader, PrecomputedDonorGenotypeSetReader>());
+            services.Replace(ServiceDescriptor.Scoped<IPrecomputedDonorGenotypeSetWriter, PrecomputedDonorGenotypeSetWriter>());
         }
 
         /// <summary>

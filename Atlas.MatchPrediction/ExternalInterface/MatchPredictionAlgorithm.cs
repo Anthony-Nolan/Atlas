@@ -11,6 +11,7 @@ using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
+using Atlas.MatchPrediction.Services.Precompute;
 using Atlas.Common.Utils.Extensions;
 
 namespace Atlas.MatchPrediction.ExternalInterface
@@ -31,6 +32,8 @@ namespace Atlas.MatchPrediction.ExternalInterface
         private readonly IGenotypeSetService genotypeSetService;
         private readonly IHaplotypeFrequencyService haplotypeFrequencyService;
         private readonly ISearchDonorResultUploader resultUploader;
+        private readonly IDonorGenotypeSetSourceResolver genotypeSetSourceResolver;
+        private readonly IDonorGenotypeSetBatchCompleter genotypeSetBatchCompleter;
         private readonly IAtlasLogger logger;
 
         public MatchPredictionAlgorithm(
@@ -39,13 +42,17 @@ namespace Atlas.MatchPrediction.ExternalInterface
             // ReSharper disable once SuggestBaseTypeForParameterInConstructor
             IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
             IHaplotypeFrequencyService haplotypeFrequencyService,
-            ISearchDonorResultUploader resultUploader)
+            ISearchDonorResultUploader resultUploader,
+            IDonorGenotypeSetSourceResolver genotypeSetSourceResolver,
+            IDonorGenotypeSetBatchCompleter genotypeSetBatchCompleter)
         {
             this.matchProbabilityService = matchProbabilityService;
             this.genotypeSetService = genotypeSetService;
             this.logger = logger;
             this.haplotypeFrequencyService = haplotypeFrequencyService;
             this.resultUploader = resultUploader;
+            this.genotypeSetSourceResolver = genotypeSetSourceResolver;
+            this.genotypeSetBatchCompleter = genotypeSetBatchCompleter;
         }
 
         /// <inheritdoc />
@@ -54,7 +61,12 @@ namespace Atlas.MatchPrediction.ExternalInterface
             using (logger.RunTimed("Run Match Prediction Algorithm"))
             {
                 var patientGenotypeSet = await genotypeSetService.GetPatientGenotypeSet(singleDonorMatchProbabilityInput);
+
+                // Always live, with no precompute lookup and no usage event. This is the standalone match prediction
+                // path (one call per donor, outside search), which has no record of the matching database and so could
+                // never use a stored set; an event per donor would only add volume.
                 var result = await matchProbabilityService.CalculateMatchProbability(singleDonorMatchProbabilityInput, patientGenotypeSet);
+
                 return result.Response.Round(4);
             }
         }
@@ -75,19 +87,33 @@ namespace Atlas.MatchPrediction.ExternalInterface
 
                 var patientGenotypeSet = await genotypeSetService.GetPatientGenotypeSet(matchProbabilityInputs.First());
 
+                // Once per batch, not per donor: one read of the stored rows, and one decision about the kill-switch.
+                var batchContext = await genotypeSetSourceResolver.Resolve(
+                    multipleDonorMatchProbabilityInput,
+                    multipleDonorMatchProbabilityInput.Donors);
+                var outcomes = new List<DonorGenotypeSetBatchOutcome>(matchProbabilityInputs.Count);
+
                 foreach (var matchProbabilityInput in matchProbabilityInputs)
                 {
                     using (logger.RunTimed("Run Match Prediction Algorithm per donor"))
                     {
-                        var result = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput, patientGenotypeSet);
+                        var result = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput, patientGenotypeSet, batchContext);
                         var matchProbabilityInputFileNames = await resultUploader.UploadSearchDonorResults(searchRequestId, matchProbabilityInput.Donor.DonorIds, result.Response);
                         fileNames = fileNames.Merge(matchProbabilityInputFileNames);
+                        outcomes.Add(ToOutcome(matchProbabilityInput, result));
                     }
                 }
+
+                // After every donor's results are uploaded. This activity returns only after the store, so the store
+                // does delay the end of the batch, and so of the search. The store's lock timeout keeps that delay short.
+                await genotypeSetBatchCompleter.Complete(multipleDonorMatchProbabilityInput, batchContext, outcomes);
 
                 return fileNames;
             }
         }
+
+        private static DonorGenotypeSetBatchOutcome ToOutcome(SingleDonorMatchProbabilityInput input, MatchProbabilityResult result) =>
+            new(input.Donor.DonorIds.Count, result.GenotypeSetSource, result.GenotypeSetToStore);
 
         public async Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySet(HaplotypeFrequencySetInput haplotypeFrequencySetInput)
         {

@@ -91,6 +91,22 @@ internal class MatchPredictionInputBuilderTests
             Arg.Any<int>());
     }
 
+    [TestCase(true)]
+    [TestCase(false)]
+    [TestCase(null)]
+    public void BuildMatchPredictionInputs_PassesUsePrecomputedGenotypeSetsOnUnresolved(bool? usePrecomputedGenotypeSets)
+    {
+        var resultSet = BuildResultSet();
+        resultSet.SearchRequest.UsePrecomputedGenotypeSets = usePrecomputedGenotypeSets;
+
+        builder.BuildMatchPredictionInputs(resultSet);
+
+        donorInputBatcher.Received(1).BatchDonorInputs(
+            Arg.Is<IdentifiedMatchProbabilityRequest>(r => r.UsePrecomputedGenotypeSets == usePrecomputedGenotypeSets),
+            Arg.Any<IEnumerable<DonorInput>>(),
+            Arg.Any<int>());
+    }
+
     private OriginalMatchingAlgorithmResultSet BuildResultSet() =>
         new()
         {

@@ -66,6 +66,8 @@ namespace Atlas.Functions.Services
                 SearchRequestId = resultSet.SearchRequestId,
                 MatchingAlgorithmHlaNomenclatureVersion = resultSet.MatchingAlgorithmHlaNomenclatureVersion,
                 MatchingAlgorithmDataRefreshRecordId = resultSet.MatchingAlgorithmDataRefreshRecordId,
+                // Passed on unresolved: match prediction resolves it against the kill-switch once per donor batch.
+                UsePrecomputedGenotypeSets = resultSet.SearchRequest.UsePrecomputedGenotypeSets,
                 ExcludedLoci = ExcludedLoci(resultSet.SearchRequest.MatchCriteria),
                 PatientHla = resultSet.SearchRequest.SearchHlaData.ToPhenotypeInfo().ToPhenotypeInfoTransfer(),
                 PatientFrequencySetMetadata = new FrequencySetMetadata
