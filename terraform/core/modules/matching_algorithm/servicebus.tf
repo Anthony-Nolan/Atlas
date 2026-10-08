@@ -123,3 +123,29 @@ resource "azurerm_servicebus_subscription" "audit-completed-data-refresh-jobs" {
   max_delivery_count                   = var.default_servicebus_settings.default-message-retries
   dead_lettering_on_message_expiration = false
 }
+// Requests of the donor genotype precomputation (Data Refresh stage 65): the Data Refresh app publishes one message per
+// batch, the precompute worker container app consumes them and writes results straight to SQL - there is no results topic.
+resource "azurerm_servicebus_topic" "donor-genotype-precomputation-requests" {
+  name                  = "donor-genotype-precomputation-requests"
+  namespace_id          = var.servicebus_namespace.id
+  auto_delete_on_idle   = var.default_servicebus_settings.long-expiry
+  default_message_ttl   = var.default_servicebus_settings.long-expiry
+  max_size_in_megabytes = var.default_servicebus_settings.default-bus-size
+  support_ordering      = true
+}
+
+// The worker auto-renews the lock for up to PrecomputeWorker:MaxAutoLockRenewalMinutes, so lock_duration only sets how
+// soon the message of a crashed or scaled-in replica comes back. The worker completes the message for every batch
+// outcome, a failed batch included, and abandons it only on an exception, so deliveries are spent only on infrastructure
+// faults. A message that runs out of deliveries is dead-lettered; the Data Refresh app then marks its batch abandoned,
+// and the requeue sweep retries the batch up to DataRefresh:Precompute:MaxBatchRetries times, each with a new message.
+// Messages must be dead-lettered on expiry too: an expired message that is just dropped leaves its batch requested forever.
+resource "azurerm_servicebus_subscription" "precomputation-worker" {
+  name                                 = "precomputation-worker"
+  topic_id                             = azurerm_servicebus_topic.donor-genotype-precomputation-requests.id
+  auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
+  default_message_ttl                  = var.default_servicebus_settings.long-expiry
+  lock_duration                        = var.default_servicebus_settings.default-read-lock
+  max_delivery_count                   = 5
+  dead_lettering_on_message_expiration = true
+}

@@ -105,6 +105,22 @@ variable "DATA_REFRESH_WATCHDOG_GRACE_DURATION_MINUTES" {
   type = number
 }
 
+variable "DATA_REFRESH_PRECOMPUTE_ABANDON_BATCHES_CRON_SCHEDULE" {
+  type = string
+}
+
+variable "DATA_REFRESH_PRECOMPUTE_FINALISE_RUNS_CRON_SCHEDULE" {
+  type = string
+}
+
+variable "DATA_REFRESH_PRECOMPUTE_MAX_BATCH_RETRIES" {
+  type = number
+}
+
+variable "DATA_REFRESH_PRECOMPUTE_REQUEUE_BATCHES_CRON_SCHEDULE" {
+  type = string
+}
+
 variable "IP_RESTRICTION_SETTINGS" {
   type    = list(string)
   default = []
@@ -177,6 +193,63 @@ variable "RESULTS_BATCH_SIZE" {
 variable "SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC" {
   type     = number
   nullable = true
+}
+
+// Precompute worker Container App release variables
+
+variable "PRECOMPUTE_WORKER_CONTAINER_IMAGE_TAG" {
+  type    = string
+  default = "latest"
+}
+
+variable "PRECOMPUTE_WORKER_CONTAINER_CPU" {
+  type    = number
+  default = 2.0
+}
+
+variable "PRECOMPUTE_WORKER_CONTAINER_MEMORY" {
+  type    = string
+  default = "4Gi"
+}
+
+variable "PRECOMPUTE_WORKER_CONTAINER_MAX_REPLICAS" {
+  type    = number
+  default = 10
+}
+
+variable "PRECOMPUTE_WORKER_CONTAINER_SCALE_RULE_MESSAGE_COUNT" {
+  type    = number
+  default = 1
+}
+
+variable "PRECOMPUTE_WORKER_CONTAINER_SCALE_RULE_POLLING_INTERVAL_SECONDS" {
+  type    = number
+  default = 30
+}
+
+variable "PRECOMPUTE_WORKER_MAX_CONCURRENT_CALLS" {
+  type    = number
+  default = 1
+}
+
+variable "PRECOMPUTE_WORKER_PREFETCH_COUNT" {
+  type    = number
+  default = 0
+}
+
+variable "PRECOMPUTE_WORKER_MAX_AUTO_LOCK_RENEWAL_MINUTES" {
+  type    = number
+  default = 60
+}
+
+variable "PRECOMPUTE_WORKER_BATCH_LEASE_MINUTES" {
+  type    = number
+  default = 60
+}
+
+variable "PRECOMPUTE_WORKER_MAX_GROUP_FAILURES_PER_BATCH" {
+  type    = number
+  default = 100
 }
 
 // External SQL variables
