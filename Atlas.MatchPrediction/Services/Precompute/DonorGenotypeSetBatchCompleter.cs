@@ -17,6 +17,7 @@ public interface IDonorGenotypeSetBatchCompleter
     /// Stores the batch's live-computed donor sets for reuse, as best effort, then sends the batch's one
     /// <see cref="DonorGenotypeSetBatchCompleter.UsageEventName"/> event. Never throws.
     /// </summary>
+    /// <param name="patientGenotypeSetSource">Where the batch's patient genotype set came from; logged on the event.</param>
     /// <remarks>
     /// Call after the batch's results are uploaded. The batch still ends only when this returns, so the store does delay
     /// the end of the batch; the writer's short lock timeout keeps that delay small.
@@ -24,7 +25,8 @@ public interface IDonorGenotypeSetBatchCompleter
     Task Complete(
         IdentifiedMatchProbabilityRequest request,
         DonorGenotypeSetBatchContext batchContext,
-        IReadOnlyCollection<DonorGenotypeSetBatchOutcome> outcomes);
+        IReadOnlyCollection<DonorGenotypeSetBatchOutcome> outcomes,
+        PatientGenotypeSetSource patientGenotypeSetSource);
 }
 
 internal class DonorGenotypeSetBatchCompleter : IDonorGenotypeSetBatchCompleter
@@ -49,10 +51,11 @@ internal class DonorGenotypeSetBatchCompleter : IDonorGenotypeSetBatchCompleter
     public async Task Complete(
         IdentifiedMatchProbabilityRequest request,
         DonorGenotypeSetBatchContext batchContext,
-        IReadOnlyCollection<DonorGenotypeSetBatchOutcome> outcomes)
+        IReadOnlyCollection<DonorGenotypeSetBatchOutcome> outcomes,
+        PatientGenotypeSetSource patientGenotypeSetSource)
     {
         var storeResult = await StoreBestEffort(request, batchContext, outcomes);
-        SendUsageEvent(request, batchContext, outcomes, storeResult);
+        SendUsageEvent(request, batchContext, outcomes, storeResult, patientGenotypeSetSource);
     }
 
     private async Task<DonorGenotypeSetStoreResult> StoreBestEffort(
@@ -116,7 +119,8 @@ internal class DonorGenotypeSetBatchCompleter : IDonorGenotypeSetBatchCompleter
         IdentifiedMatchProbabilityRequest request,
         DonorGenotypeSetBatchContext batchContext,
         IReadOnlyCollection<DonorGenotypeSetBatchOutcome> outcomes,
-        DonorGenotypeSetStoreResult storeResult)
+        DonorGenotypeSetStoreResult storeResult,
+        PatientGenotypeSetSource patientGenotypeSetSource)
     {
         try
         {
@@ -128,6 +132,7 @@ internal class DonorGenotypeSetBatchCompleter : IDonorGenotypeSetBatchCompleter
                 { "UsePrecomputedGenotypeSetsSource", batchContext.UsePrecomputedGenotypeSetsSource.ToString() },
                 { "PrecomputeMode", batchContext.Mode.ToString() },
                 { "MatchingAlgorithmDataRefreshRecordId", batchContext.MatchingAlgorithmDataRefreshRecordId?.ToString(CultureInfo.InvariantCulture) },
+                { "PatientGenotypeSetSource", patientGenotypeSetSource.ToString() },
             };
 
             var metrics = new Dictionary<string, double>

@@ -34,6 +34,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
         private readonly ISearchDonorResultUploader resultUploader;
         private readonly IDonorGenotypeSetSourceResolver genotypeSetSourceResolver;
         private readonly IDonorGenotypeSetBatchCompleter genotypeSetBatchCompleter;
+        private readonly IPatientGenotypeSetProvider patientGenotypeSetProvider;
         private readonly IAtlasLogger logger;
 
         public MatchPredictionAlgorithm(
@@ -44,7 +45,8 @@ namespace Atlas.MatchPrediction.ExternalInterface
             IHaplotypeFrequencyService haplotypeFrequencyService,
             ISearchDonorResultUploader resultUploader,
             IDonorGenotypeSetSourceResolver genotypeSetSourceResolver,
-            IDonorGenotypeSetBatchCompleter genotypeSetBatchCompleter)
+            IDonorGenotypeSetBatchCompleter genotypeSetBatchCompleter,
+            IPatientGenotypeSetProvider patientGenotypeSetProvider)
         {
             this.matchProbabilityService = matchProbabilityService;
             this.genotypeSetService = genotypeSetService;
@@ -53,6 +55,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
             this.resultUploader = resultUploader;
             this.genotypeSetSourceResolver = genotypeSetSourceResolver;
             this.genotypeSetBatchCompleter = genotypeSetBatchCompleter;
+            this.patientGenotypeSetProvider = patientGenotypeSetProvider;
         }
 
         /// <inheritdoc />
@@ -85,12 +88,13 @@ namespace Atlas.MatchPrediction.ExternalInterface
                     return fileNames;
                 }
 
-                var patientGenotypeSet = await genotypeSetService.GetPatientGenotypeSet(matchProbabilityInputs.First());
-
                 // Once per batch, not per donor: one read of the stored rows, and one decision about the kill-switch.
                 var batchContext = await genotypeSetSourceResolver.Resolve(
                     multipleDonorMatchProbabilityInput,
                     multipleDonorMatchProbabilityInput.Donors);
+
+                var (patientGenotypeSet, patientGenotypeSetSource) =
+                    await patientGenotypeSetProvider.Get(matchProbabilityInputs.First(), batchContext);
                 var outcomes = new List<DonorGenotypeSetBatchOutcome>(matchProbabilityInputs.Count);
 
                 foreach (var matchProbabilityInput in matchProbabilityInputs)
@@ -106,7 +110,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
 
                 // After every donor's results are uploaded. This activity returns only after the store, so the store
                 // does delay the end of the batch, and so of the search. The store's lock timeout keeps that delay short.
-                await genotypeSetBatchCompleter.Complete(multipleDonorMatchProbabilityInput, batchContext, outcomes);
+                await genotypeSetBatchCompleter.Complete(multipleDonorMatchProbabilityInput, batchContext, outcomes, patientGenotypeSetSource);
 
                 return fileNames;
             }

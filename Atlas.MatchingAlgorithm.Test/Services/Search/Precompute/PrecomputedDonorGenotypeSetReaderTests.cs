@@ -58,7 +58,7 @@ internal class PrecomputedDonorGenotypeSetReaderTests
     [Test]
     public async Task GetDonorGenotypeSets_WhenPinnedRecordIsStillActive_ReadsTheRowsFromItsDatabase()
     {
-        var lookup = await reader.GetDonorGenotypeSets(Donors, FiveLoci, PinnedRecordId);
+        var lookup = await reader.GetDonorGenotypeSets(Donors, FiveLoci, PinnedRecordId, null);
 
         repositoryFactory.Received(1).GetForDatabase(TransientDatabase.DatabaseB);
         await repository.Received(1).GetDonorSubjectGenotypeSets(
@@ -86,7 +86,7 @@ internal class PrecomputedDonorGenotypeSetReaderTests
             { 2, new StoredDonorSubjectGenotypeSet(2, SearchTypingKey, 7, false, [2]) }
         });
 
-        var lookup = await reader.GetDonorGenotypeSets(Donors, FiveLoci, PinnedRecordId);
+        var lookup = await reader.GetDonorGenotypeSets(Donors, FiveLoci, PinnedRecordId, null);
 
         lookup.Rows[1].ComputedFromSearchTyping.Should().BeFalse();
         lookup.Rows[2].ComputedFromSearchTyping.Should().BeTrue();
@@ -106,7 +106,8 @@ internal class PrecomputedDonorGenotypeSetReaderTests
         var lookup = await reader.GetDonorGenotypeSets(
             [new DonorInput { DonorIds = [1], DonorHla = withEmpty.ToPhenotypeInfoTransfer() }],
             FiveLoci,
-            PinnedRecordId);
+            PinnedRecordId,
+            null);
 
         lookup.Rows[1].ComputedFromSearchTyping.Should().BeTrue();
     }
@@ -116,7 +117,7 @@ internal class PrecomputedDonorGenotypeSetReaderTests
     {
         historyRepository.GetActiveRecord().Returns(new ActiveDataRefreshRecord(PinnedRecordId + 1, TransientDatabase.DatabaseA, "3440"));
 
-        var lookup = await reader.GetDonorGenotypeSets(Donors, FiveLoci, PinnedRecordId);
+        var lookup = await reader.GetDonorGenotypeSets(Donors, FiveLoci, PinnedRecordId, null);
 
         lookup.BatchFallbackReason.Should().Be(DonorGenotypeSetSource.ActiveDatabaseChanged);
         lookup.Rows.Should().BeEmpty();
@@ -128,7 +129,7 @@ internal class PrecomputedDonorGenotypeSetReaderTests
     {
         historyRepository.GetActiveRecord().Returns((ActiveDataRefreshRecord) null);
 
-        var lookup = await reader.GetDonorGenotypeSets(Donors, FiveLoci, PinnedRecordId);
+        var lookup = await reader.GetDonorGenotypeSets(Donors, FiveLoci, PinnedRecordId, null);
 
         lookup.BatchFallbackReason.Should().Be(DonorGenotypeSetSource.ActiveDatabaseChanged);
         repositoryFactory.DidNotReceiveWithAnyArgs().GetForDatabase(default);
@@ -137,7 +138,7 @@ internal class PrecomputedDonorGenotypeSetReaderTests
     [Test]
     public async Task GetDonorGenotypeSets_WithNoPinnedRecord_ReturnsActiveDatabaseUnknown()
     {
-        var lookup = await reader.GetDonorGenotypeSets(Donors, FiveLoci, null);
+        var lookup = await reader.GetDonorGenotypeSets(Donors, FiveLoci, null, null);
 
         lookup.BatchFallbackReason.Should().Be(DonorGenotypeSetSource.ActiveDatabaseUnknown);
         historyRepository.DidNotReceive().GetActiveRecord();
@@ -147,7 +148,7 @@ internal class PrecomputedDonorGenotypeSetReaderTests
     [Test]
     public async Task GetDonorGenotypeSets_ForLociThatAreNotOneOfTheFourKeys_ReturnsUncoveredAllowedLoci()
     {
-        var lookup = await reader.GetDonorGenotypeSets(Donors, new HashSet<Locus> { Locus.A, Locus.B, Locus.C }, PinnedRecordId);
+        var lookup = await reader.GetDonorGenotypeSets(Donors, new HashSet<Locus> { Locus.A, Locus.B, Locus.C }, PinnedRecordId, null);
 
         lookup.BatchFallbackReason.Should().Be(DonorGenotypeSetSource.UncoveredAllowedLoci);
         lookup.AllowedLociKey.Should().BeNull();
@@ -157,9 +158,124 @@ internal class PrecomputedDonorGenotypeSetReaderTests
     [Test]
     public async Task GetDonorGenotypeSets_ReadsTheActiveRecordFreshOnEveryCall()
     {
-        await reader.GetDonorGenotypeSets(Donors, FiveLoci, PinnedRecordId);
-        await reader.GetDonorGenotypeSets(Donors, FiveLoci, PinnedRecordId);
+        await reader.GetDonorGenotypeSets(Donors, FiveLoci, PinnedRecordId, null);
+        await reader.GetDonorGenotypeSets(Donors, FiveLoci, PinnedRecordId, null);
 
         historyRepository.Received(2).GetActiveRecord();
+    }
+
+    [Test]
+    public async Task GetDonorGenotypeSets_WithAPatientKey_ReadsThePatientRowByItsKeyFromThePinnedDatabase()
+    {
+        var patientKey = new PatientGenotypeSetKey("patient-key", 9, "ABCDrb1Dqb1");
+        repository.GetSubjectGenotypeSetValue(default).ReturnsForAnyArgs(new StoredSubjectGenotypeSetValue(false, [4, 5]));
+
+        var lookup = await reader.GetDonorGenotypeSets(Donors, FiveLoci, PinnedRecordId, patientKey);
+
+        lookup.PatientRow.IsUnrepresented.Should().BeFalse();
+        lookup.PatientRow.SubjectGenotypeSetData.Should().Equal(4, 5);
+        repositoryFactory.Received().GetForDatabase(TransientDatabase.DatabaseB);
+        await repository.Received(1).GetSubjectGenotypeSetValue(new SubjectGenotypeSetKey("patient-key", 9, AllowedLociKey.ABCDrb1Dqb1));
+    }
+
+    [Test]
+    public async Task GetDonorGenotypeSets_WhenThePatientKeyHasNoRow_HasNoPatientRow()
+    {
+        repository.GetSubjectGenotypeSetValue(default).ReturnsForAnyArgs((StoredSubjectGenotypeSetValue)null);
+
+        var lookup = await reader.GetDonorGenotypeSets(Donors, FiveLoci, PinnedRecordId, new PatientGenotypeSetKey("patient-key", 9, "ABCDrb1Dqb1"));
+
+        lookup.PatientRow.Should().BeNull();
+    }
+
+    [Test]
+    public async Task GetDonorGenotypeSets_WithoutAPatientKey_DoesNotReadAPatientRow()
+    {
+        var lookup = await reader.GetDonorGenotypeSets(Donors, FiveLoci, PinnedRecordId, null);
+
+        lookup.PatientRow.Should().BeNull();
+        await repository.DidNotReceiveWithAnyArgs().GetSubjectGenotypeSetValue(default);
+    }
+
+    [Test]
+    public async Task GetDonorGenotypeSets_WithAPatientKeyForOtherLoci_DoesNotReadAPatientRow()
+    {
+        var lookup = await reader.GetDonorGenotypeSets(Donors, FiveLoci, PinnedRecordId, new PatientGenotypeSetKey("patient-key", 9, "ABDrb1"));
+
+        lookup.PatientRow.Should().BeNull();
+        await repository.DidNotReceiveWithAnyArgs().GetSubjectGenotypeSetValue(default);
+    }
+
+    [Test]
+    public async Task GetDonorGenotypeSets_WhenThePinnedRecordIsNoLongerActive_DoesNotReadThePatientRow()
+    {
+        historyRepository.GetActiveRecord().Returns(new ActiveDataRefreshRecord(PinnedRecordId + 1, TransientDatabase.DatabaseA, "3330"));
+
+        var lookup = await reader.GetDonorGenotypeSets(Donors, FiveLoci, PinnedRecordId, new PatientGenotypeSetKey("patient-key", 9, "ABCDrb1Dqb1"));
+
+        lookup.BatchFallbackReason.Should().Be(DonorGenotypeSetSource.ActiveDatabaseChanged);
+        lookup.PatientRow.Should().BeNull();
+        await repository.DidNotReceiveWithAnyArgs().GetSubjectGenotypeSetValue(default);
+    }
+
+    [TestCase(true)]
+    [TestCase(false)]
+    public async Task FindPatientGenotypeSet_BuildsTheKeyFromTheTypingFrequencySetAndLociAndChecksTheStore(bool exists)
+    {
+        var expectedKey = new SubjectGenotypeSetKey(SearchTypingKey, 9, AllowedLociKey.ABCDrb1Dqb1);
+        repository.GetExistingValueIds(default).ReturnsForAnyArgs(exists
+            ? new Dictionary<SubjectGenotypeSetKey, int> { { expectedKey, 100 } }
+            : new Dictionary<SubjectGenotypeSetKey, int>());
+
+        var lookup = await reader.FindPatientGenotypeSet(SearchTyping, 9, FiveLoci, PinnedRecordId);
+
+        lookup.UnavailableReason.Should().BeNull();
+        lookup.Key.Should().Be(new PatientGenotypeSetKey(SearchTypingKey, 9, "ABCDrb1Dqb1"));
+        lookup.Exists.Should().Be(exists);
+        repositoryFactory.Received().GetForDatabase(TransientDatabase.DatabaseB);
+        await repository.Received(1).GetExistingValueIds(Arg.Is<IReadOnlyCollection<SubjectGenotypeSetKey>>(keys => keys.Single() == expectedKey));
+    }
+
+    /// <summary>A patient's key must equal a donor's for the same typing, so that one can reuse the other's row.</summary>
+    [Test]
+    public async Task FindPatientGenotypeSet_TreatsEmptyAndNullNamesAlike()
+    {
+        var withEmpty = SearchTyping.SetPosition(Locus.C, LocusPosition.Two, string.Empty);
+        var withNull = SearchTyping.SetPosition(Locus.C, LocusPosition.Two, null);
+        repository.GetExistingValueIds(default).ReturnsForAnyArgs(new Dictionary<SubjectGenotypeSetKey, int>());
+
+        var fromEmpty = await reader.FindPatientGenotypeSet(withEmpty, 9, FiveLoci, PinnedRecordId);
+        var fromNull = await reader.FindPatientGenotypeSet(withNull, 9, FiveLoci, PinnedRecordId);
+
+        fromEmpty.Key.Should().Be(fromNull.Key);
+    }
+
+    [Test]
+    public async Task FindPatientGenotypeSet_WhenThePinnedRecordIsNoLongerActive_ReturnsActiveDatabaseChanged()
+    {
+        historyRepository.GetActiveRecord().Returns(new ActiveDataRefreshRecord(PinnedRecordId + 1, TransientDatabase.DatabaseA, "3330"));
+
+        var lookup = await reader.FindPatientGenotypeSet(SearchTyping, 9, FiveLoci, PinnedRecordId);
+
+        lookup.UnavailableReason.Should().Be(DonorGenotypeSetSource.ActiveDatabaseChanged);
+        lookup.Key.Should().BeNull();
+        repositoryFactory.DidNotReceiveWithAnyArgs().GetForDatabase(default);
+    }
+
+    [Test]
+    public async Task FindPatientGenotypeSet_WithNoPinnedRecord_ReturnsActiveDatabaseUnknown()
+    {
+        var lookup = await reader.FindPatientGenotypeSet(SearchTyping, 9, FiveLoci, null);
+
+        lookup.UnavailableReason.Should().Be(DonorGenotypeSetSource.ActiveDatabaseUnknown);
+        historyRepository.DidNotReceive().GetActiveRecord();
+    }
+
+    [Test]
+    public async Task FindPatientGenotypeSet_ForLociThatAreNotOneOfTheFourKeys_ReturnsUncoveredAllowedLoci()
+    {
+        var lookup = await reader.FindPatientGenotypeSet(SearchTyping, 9, new HashSet<Locus> { Locus.A, Locus.B, Locus.C }, PinnedRecordId);
+
+        lookup.UnavailableReason.Should().Be(DonorGenotypeSetSource.UncoveredAllowedLoci);
     }
 }

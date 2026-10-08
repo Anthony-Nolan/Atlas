@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Models;
 
@@ -35,6 +36,11 @@ public sealed class DonorGenotypeSetBatchContext
 
     private readonly IReadOnlyDictionary<int, PrecomputedDonorGenotypeSetRow> rows;
 
+    /// <summary>The batch's patient key (see <see cref="IdentifiedMatchProbabilityRequest.PatientGenotypeSetKey"/>); null when it has none.</summary>
+    public PatientGenotypeSetKey PatientGenotypeSetKey { get; }
+
+    private readonly PrecomputedPatientGenotypeSetRow patientRow;
+
     /// <summary>
     /// True when a donor computed live should be stored for reuse: the switch is on, the rows were read, and so the
     /// transient database matching used was still active at the start of the batch. The writer checks that again
@@ -49,7 +55,9 @@ public sealed class DonorGenotypeSetBatchContext
         string allowedLociKey,
         int? matchingAlgorithmDataRefreshRecordId,
         DonorGenotypeSetSource? batchFallbackReason,
-        IReadOnlyDictionary<int, PrecomputedDonorGenotypeSetRow> rows)
+        IReadOnlyDictionary<int, PrecomputedDonorGenotypeSetRow> rows,
+        PatientGenotypeSetKey patientGenotypeSetKey,
+        PrecomputedPatientGenotypeSetRow patientRow)
     {
         UsePrecomputedGenotypeSets = usePrecomputedGenotypeSets;
         UsePrecomputedGenotypeSetsSource = source;
@@ -58,20 +66,26 @@ public sealed class DonorGenotypeSetBatchContext
         MatchingAlgorithmDataRefreshRecordId = matchingAlgorithmDataRefreshRecordId;
         BatchFallbackReason = batchFallbackReason;
         this.rows = rows ?? NoRows;
+        PatientGenotypeSetKey = patientGenotypeSetKey;
+        this.patientRow = patientRow;
     }
 
     public static DonorGenotypeSetBatchContext Disabled(
         UsePrecomputedGenotypeSetsSource source,
         PrecomputedGenotypeSetMode mode,
-        int? matchingAlgorithmDataRefreshRecordId) =>
-        new(false, source, mode, null, matchingAlgorithmDataRefreshRecordId, DonorGenotypeSetSource.PrecomputeDisabled, NoRows);
+        int? matchingAlgorithmDataRefreshRecordId,
+        PatientGenotypeSetKey patientGenotypeSetKey = null) =>
+        new(false, source, mode, null, matchingAlgorithmDataRefreshRecordId, DonorGenotypeSetSource.PrecomputeDisabled, NoRows,
+            patientGenotypeSetKey, null);
 
     public static DonorGenotypeSetBatchContext Enabled(
         UsePrecomputedGenotypeSetsSource source,
         PrecomputedGenotypeSetMode mode,
         int? matchingAlgorithmDataRefreshRecordId,
-        PrecomputedDonorGenotypeSetLookup lookup) =>
-        new(true, source, mode, lookup.AllowedLociKey, matchingAlgorithmDataRefreshRecordId, lookup.BatchFallbackReason, lookup.Rows);
+        PrecomputedDonorGenotypeSetLookup lookup,
+        PatientGenotypeSetKey patientGenotypeSetKey = null) =>
+        new(true, source, mode, lookup.AllowedLociKey, matchingAlgorithmDataRefreshRecordId, lookup.BatchFallbackReason, lookup.Rows,
+            patientGenotypeSetKey, lookup.PatientRow);
 
     /// <summary>
     /// Finds and decodes the stored genotype set of a donor input.
@@ -165,5 +179,67 @@ public sealed class DonorGenotypeSetBatchContext
         }
 
         return DonorGenotypeSetSource.NoRow;
+    }
+
+    /// <summary>
+    /// Finds and decodes the batch's stored patient genotype set.
+    /// </summary>
+    /// <param name="patientFrequencySetId">The patient frequency set this batch uses.</param>
+    /// <param name="genotypeSet">The decoded set when the result is <see cref="PatientGenotypeSetSource.Precomputed"/>; otherwise null.</param>
+    /// <remarks>
+    /// The row is used only when it was stored with the frequency set the batch uses: a new set can be activated after
+    /// the warm step. The typing is not checked again: the key was built from this search's patient typing.
+    /// </remarks>
+    public PatientGenotypeSetSource TryGetPrecomputedPatientGenotypeSet(int patientFrequencySetId, out SubjectGenotypeSet genotypeSet)
+    {
+        genotypeSet = null;
+
+        if (BatchFallbackReason != null)
+        {
+            return BatchFallbackReason.Value switch
+            {
+                DonorGenotypeSetSource.UncoveredAllowedLoci => PatientGenotypeSetSource.UncoveredAllowedLoci,
+                DonorGenotypeSetSource.ActiveDatabaseChanged => PatientGenotypeSetSource.ActiveDatabaseChanged,
+                DonorGenotypeSetSource.ActiveDatabaseUnknown => PatientGenotypeSetSource.ActiveDatabaseUnknown,
+                DonorGenotypeSetSource.ReadFailed => PatientGenotypeSetSource.ReadFailed,
+                _ => PatientGenotypeSetSource.PrecomputeDisabled
+            };
+        }
+
+        if (PatientGenotypeSetKey == null)
+        {
+            return PatientGenotypeSetSource.NoKey;
+        }
+
+        if (PatientGenotypeSetKey.HaplotypeFrequencySetId != patientFrequencySetId)
+        {
+            return PatientGenotypeSetSource.StaleFrequencySet;
+        }
+
+        if (patientRow == null)
+        {
+            return PatientGenotypeSetSource.NoRow;
+        }
+
+        if (patientRow.IsUnrepresented)
+        {
+            genotypeSet = new SubjectGenotypeSet(true, new List<GenotypeAtDesiredResolutions>(), 0m);
+            return PatientGenotypeSetSource.Precomputed;
+        }
+
+        if (patientRow.SubjectGenotypeSetData == null)
+        {
+            return PatientGenotypeSetSource.DecodeFailed;
+        }
+
+        try
+        {
+            genotypeSet = SubjectGenotypeSetPayload.Decode(patientRow.SubjectGenotypeSetData);
+            return PatientGenotypeSetSource.Precomputed;
+        }
+        catch (InvalidDataException)
+        {
+            return PatientGenotypeSetSource.DecodeFailed;
+        }
     }
 }

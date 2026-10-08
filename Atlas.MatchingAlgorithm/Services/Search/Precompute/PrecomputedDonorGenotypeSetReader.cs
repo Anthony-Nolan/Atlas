@@ -2,9 +2,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
+using Atlas.MatchingAlgorithm.Data.Models.Precompute;
+using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
+using Atlas.MatchingAlgorithm.Data.Repositories.Precompute;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.Precompute;
@@ -12,8 +16,9 @@ using Atlas.MatchPrediction.Services.Precompute;
 namespace Atlas.MatchingAlgorithm.Services.Search.Precompute;
 
 /// <summary>
-/// Reads the precomputed genotype sets of a match prediction batch's donors from the transient database that matching
-/// used - and only while that database is still the active one (ATL-221, ATL-433).
+/// Reads the precomputed genotype sets of a match prediction batch's donors (ATL-221), and of the search's patient
+/// (ATL-426), from the transient database that matching used - and only while that database is still the active one
+/// (ATL-433).
 /// </summary>
 /// <remarks>
 /// <para>
@@ -50,24 +55,18 @@ public class PrecomputedDonorGenotypeSetReader : IPrecomputedDonorGenotypeSetRea
     public async Task<PrecomputedDonorGenotypeSetLookup> GetDonorGenotypeSets(
         IReadOnlyCollection<DonorInput> donors,
         IReadOnlySet<Locus> allowedLoci,
-        int? matchingAlgorithmDataRefreshRecordId)
+        int? matchingAlgorithmDataRefreshRecordId,
+        PatientGenotypeSetKey patientGenotypeSetKey)
     {
-        // The search validator should prevent any other locus set, but an uncovered set must be computed live, not fail.
-        if (!AllowedLociKeyExtensions.TryToAllowedLociKey(allowedLoci, out var allowedLociKey))
+        var unavailableReason = Pin(allowedLoci, matchingAlgorithmDataRefreshRecordId, out var allowedLociKey, out var activeRecord);
+        if (unavailableReason != null)
         {
-            return PrecomputedDonorGenotypeSetLookup.Unavailable(DonorGenotypeSetSource.UncoveredAllowedLoci);
+            return PrecomputedDonorGenotypeSetLookup.Unavailable(
+                unavailableReason.Value,
+                unavailableReason == DonorGenotypeSetSource.UncoveredAllowedLoci ? null : allowedLociKey.ToString());
         }
 
-        if (matchingAlgorithmDataRefreshRecordId == null)
-        {
-            return PrecomputedDonorGenotypeSetLookup.Unavailable(DonorGenotypeSetSource.ActiveDatabaseUnknown, allowedLociKey.ToString());
-        }
-
-        var activeRecord = dataRefreshHistoryRepository.GetActiveRecord();
-        if (activeRecord == null || activeRecord.Id != matchingAlgorithmDataRefreshRecordId)
-        {
-            return PrecomputedDonorGenotypeSetLookup.Unavailable(DonorGenotypeSetSource.ActiveDatabaseChanged, allowedLociKey.ToString());
-        }
+        var repository = repositoryFactory.GetForDatabase(activeRecord.Database);
 
         // The key of the typing the search has for each donor id: the typing matching read, shared by every id in its
         // donor input. A stored row follows the donor's CURRENT typing, which an import can change after matching.
@@ -80,9 +79,7 @@ public class PrecomputedDonorGenotypeSetReader : IPrecomputedDonorGenotypeSetRea
             .GroupBy(x => x.DonorId)
             .ToDictionary(g => g.Key, g => g.First().TypingKey);
 
-        var stored = await repositoryFactory
-            .GetForDatabase(activeRecord.Database)
-            .GetDonorSubjectGenotypeSets(searchTypingKeyByDonorId.Keys.ToList(), allowedLociKey);
+        var stored = await repository.GetDonorSubjectGenotypeSets(searchTypingKeyByDonorId.Keys.ToList(), allowedLociKey);
 
         return new PrecomputedDonorGenotypeSetLookup(
             allowedLociKey.ToString(),
@@ -93,6 +90,86 @@ public class PrecomputedDonorGenotypeSetReader : IPrecomputedDonorGenotypeSetRea
                     s.Value.HaplotypeFrequencySetId,
                     s.Value.IsUnrepresented,
                     s.Value.SubjectGenotypeSetData,
-                    ComputedFromSearchTyping: s.Value.HlaTypingKey == searchTypingKeyByDonorId[s.Key])));
+                    ComputedFromSearchTyping: s.Value.HlaTypingKey == searchTypingKeyByDonorId[s.Key])),
+            await ReadPatientRow(repository, patientGenotypeSetKey, allowedLociKey));
+    }
+
+    /// <inheritdoc />
+    public async Task<PatientGenotypeSetLookup> FindPatientGenotypeSet(
+        PhenotypeInfo<string> patientHla,
+        int haplotypeFrequencySetId,
+        IReadOnlySet<Locus> allowedLoci,
+        int? matchingAlgorithmDataRefreshRecordId)
+    {
+        var unavailableReason = Pin(allowedLoci, matchingAlgorithmDataRefreshRecordId, out var allowedLociKey, out var activeRecord);
+        if (unavailableReason != null)
+        {
+            return PatientGenotypeSetLookup.Unavailable(unavailableReason.Value);
+        }
+
+        // The key generator treats null and empty names the same, so the patient's key matches a donor's for the same typing.
+        var key = new SubjectGenotypeSetKey(
+            SubjectGenotypeSetKeyGenerator.GenerateHlaTypingKey(patientHla, allowedLociKey),
+            haplotypeFrequencySetId,
+            allowedLociKey);
+
+        var existing = await repositoryFactory.GetForDatabase(activeRecord.Database).GetExistingValueIds([key]);
+
+        return new PatientGenotypeSetLookup(
+            new PatientGenotypeSetKey(key.HlaTypingKey, key.HaplotypeFrequencySetId, key.AllowedLociKey.ToString()),
+            existing.ContainsKey(key),
+            null);
+    }
+
+    /// <summary>
+    /// The checks every read starts with: the loci map to a precomputed key, and the record matching used is known and
+    /// still active. Returns null when they pass, and the reason otherwise.
+    /// </summary>
+    private DonorGenotypeSetSource? Pin(
+        IReadOnlySet<Locus> allowedLoci,
+        int? matchingAlgorithmDataRefreshRecordId,
+        out AllowedLociKey allowedLociKey,
+        out ActiveDataRefreshRecord activeRecord)
+    {
+        activeRecord = null;
+
+        // The search validator should prevent any other locus set, but an uncovered set must be computed live, not fail.
+        if (!AllowedLociKeyExtensions.TryToAllowedLociKey(allowedLoci, out allowedLociKey))
+        {
+            return DonorGenotypeSetSource.UncoveredAllowedLoci;
+        }
+
+        if (matchingAlgorithmDataRefreshRecordId == null)
+        {
+            return DonorGenotypeSetSource.ActiveDatabaseUnknown;
+        }
+
+        activeRecord = dataRefreshHistoryRepository.GetActiveRecord();
+        if (activeRecord == null || activeRecord.Id != matchingAlgorithmDataRefreshRecordId)
+        {
+            return DonorGenotypeSetSource.ActiveDatabaseChanged;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// The patient's stored row, read under the same pinning as the donors' rows. A key for other loci (not possible
+    /// within one search) is not read, and the patient is then computed live.
+    /// </summary>
+    private static async Task<PrecomputedPatientGenotypeSetRow> ReadPatientRow(
+        ISubjectGenotypeSetRepository repository,
+        PatientGenotypeSetKey patientGenotypeSetKey,
+        AllowedLociKey allowedLociKey)
+    {
+        if (patientGenotypeSetKey == null || patientGenotypeSetKey.AllowedLociKey != allowedLociKey.ToString())
+        {
+            return null;
+        }
+
+        var stored = await repository.GetSubjectGenotypeSetValue(
+            new SubjectGenotypeSetKey(patientGenotypeSetKey.HlaTypingKey, patientGenotypeSetKey.HaplotypeFrequencySetId, allowedLociKey));
+
+        return stored == null ? null : new PrecomputedPatientGenotypeSetRow(stored.IsUnrepresented, stored.SubjectGenotypeSetData);
     }
 }

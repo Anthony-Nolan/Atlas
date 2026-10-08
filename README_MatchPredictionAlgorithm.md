@@ -155,7 +155,8 @@ Donor genotype sets can be computed ahead of time and stored in the transient ma
 donor import writes them, for the donors it adds or updates (ATL-232). A Data Refresh stage that fills them for every
 donor is planned (ATL-233); there is no separate backfill. Search also stores the donors it computes live (see below).
 When search finds a usable stored set for a donor, it decodes that set and uses it for match counting. It does not run
-imputation, truncation or the P group conversion for that donor (ATL-221). The patient is always computed live.
+imputation, truncation or the P group conversion for that donor (ATL-221). The patient's set is stored and reused too,
+once per search (ATL-426, see [Precomputed patient genotype set](#precomputed-patient-genotype-set-search)).
 
 ### Switching it on and off
 The kill-switch is a mode setting:
@@ -236,7 +237,7 @@ end of the batch and of the search. Its lock timeout keeps that delay short. Gua
 Each donor batch sends one Application Insights event, `Precomputed genotype sets used`.
 - Properties: `SearchRequestId`, `AllowedLociKey`, `UsePrecomputedGenotypeSets` (the resolved value),
   `UsePrecomputedGenotypeSetsSource` (`Request`, or `FeatureFlag` when the mode decided), `PrecomputeMode`,
-  `MatchingAlgorithmDataRefreshRecordId`.
+  `MatchingAlgorithmDataRefreshRecordId`, `PatientGenotypeSetSource` (see below).
 - Metrics: `DonorCount` (donor inputs), `DonorIdCount` (donors), `PrecomputedCount`, one count for each outcome in the
   table above, and `StoredCount`, `StoreSkippedDonorChanged`, `StoreSkippedDatabaseChanged` (in donors).
 
@@ -253,6 +254,58 @@ customEvents
     PrecomputedCount = sum(todouble(customMeasurements.PrecomputedCount) * itemCount),
     NoRow = sum(todouble(customMeasurements.NoRow) * itemCount)
 ```
+
+## Precomputed patient genotype set (search)
+Without this, each match prediction batch imputes the patient again, so a search with N batches imputes the same patient
+N times. Instead, the patient's set is stored once per search, and each batch decodes it (ATL-426). It follows the same
+mode, request override and database rules as the donor sets above.
+
+### The warm step, once per search
+Before the batches are uploaded, `Atlas.Functions` (`MatchPredictionInputBuilder`, for both the sequential and the
+parallel path, and for repeat search) runs `PatientGenotypeSetWarmer`:
+1. If the precomputed path is off for the search (the mode table above), it stops.
+2. It finds the patient's haplotype frequency set, with the same lookup the live path uses.
+3. It builds the key `(typing key, frequency set id, allowed loci key)`. This is the same key a donor with the same typing
+   and frequency set has, so the two share one stored row.
+4. If a row with the key is stored, it uses it (`Hit`). Otherwise it computes the set exactly as a batch would, and
+   stores it (`Created`).
+5. It puts the key on the search's request, so every batch input carries it (`PatientGenotypeSetKey`). The parallel
+   Worker reads it from the batch blob.
+
+Only a `SubjectGenotypeSetValues` row is written; a patient never gets a `DonorSubjectGenotypeSets` row. The step is
+best effort: if it fails, it logs the error, leaves the key empty, and the batches compute the patient live. It is safe
+to repeat, for example when the activity is retried: the second run finds the row.
+
+**Which database.** As for donors, the step reads and writes only the database of the data refresh record that matching
+used, and only while it is still the active one. It checks again just before writing. If a swap happens after that
+check, the row lands in the old database. It is still correct there (it was computed with that database's nomenclature
+version), and the next Data Refresh wipes it. So no clean-up is needed. Patient rows, like all stored rows, are wiped
+with the tables at the start of every Data Refresh.
+
+### The batch read
+Each batch reads the patient's row together with its donors' rows, under the same checks. It uses the stored set only
+when all of these hold; otherwise it computes the patient live, as before. Batches never write the patient's set.
+
+| `PatientGenotypeSetSource` | Meaning |
+|---|---|
+| `Precomputed` | The stored set was decoded and used. The patient was not imputed for this batch. |
+| `NoKey` | The batch has no key: the warm step did not store the set (path off at the time, a database swap, or an error). |
+| `NoRow` | No stored row has the key. |
+| `StaleFrequencySet` | The batch now uses a different patient frequency set from the one in the key (a new set was imported after the warm step). |
+| `DecodeFailed` | The stored row could not be decoded. |
+| `UncoveredAllowedLoci`, `ActiveDatabaseChanged`, `ActiveDatabaseUnknown`, `ReadFailed`, `PrecomputeDisabled` | The batch-wide reasons in the donor table above. |
+
+The batch decides the mode again, so changing the mode after the warm step still applies: in `ForceLive` the patient is
+computed live even when the batch has a key.
+
+### Logging
+- The warm step sends one event per search, `Precomputed patient genotype set warmed`.
+  - Properties: `SearchRequestId`, `Result` (`Hit`, `Created`, `Skipped` or `Failed`), `Reason` (why it was skipped:
+    `PrecomputeDisabled`, `ActiveDatabaseChanged`, `ActiveDatabaseUnknown` or `UncoveredAllowedLoci`), `AllowedLociKey`,
+    `HaplotypeFrequencySetId`, `PrecomputeMode`, `MatchingAlgorithmDataRefreshRecordId`, and the exception type and message
+    when it failed.
+  - Metric: `PatientGenotypeCount`, when the set was computed.
+- Each batch's `Precomputed genotype sets used` event has the property `PatientGenotypeSetSource`.
 
 ## Match Prediction Requests
 - Match prediction requests (outside of search) can be submitted to the http-triggered function within the Match prediction project.

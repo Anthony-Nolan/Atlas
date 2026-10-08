@@ -88,6 +88,12 @@ public interface ISubjectGenotypeSetRepository
     Task<IReadOnlyDictionary<int, StoredDonorSubjectGenotypeSet>> GetDonorSubjectGenotypeSets(IReadOnlyCollection<int> donorIds, AllowedLociKey allowedLociKey);
 
     /// <summary>
+    /// The stored value with the given key, whether or not any donor points at it; null when there is none. For the
+    /// patient's set in search (ATL-426), which is stored as a value only.
+    /// </summary>
+    Task<StoredSubjectGenotypeSetValue> GetSubjectGenotypeSetValue(SubjectGenotypeSetKey key);
+
+    /// <summary>
     /// As <see cref="UpsertDonorAssignments"/>, but writes an assignment only while its donor in <c>Donors</c> still has
     /// the typing, registry code and ethnicity code the value was computed from. For search, which stores a donor it
     /// computed live (ATL-221).
@@ -211,6 +217,17 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
             ON v.{nameof(SubjectGenotypeSetValue.Id)} = a.{nameof(DonorSubjectGenotypeSet.SubjectGenotypeSetValueId)}
         WHERE a.{nameof(DonorSubjectGenotypeSet.AllowedLociKey)} = @AllowedLociKey
           AND a.{nameof(DonorSubjectGenotypeSet.DonorId)} IN @DonorIds
+        """;
+
+    /// <summary>One seek on the unique key index.</summary>
+    private const string SelectValueByKeySql = $"""
+        SELECT
+            {nameof(SubjectGenotypeSetValue.IsUnrepresented)},
+            {nameof(SubjectGenotypeSetValue.SubjectGenotypeSetData)}
+        FROM {ValuesTableName}
+        WHERE {nameof(SubjectGenotypeSetValue.HlaTypingKey)} = @HlaTypingKey
+          AND {nameof(SubjectGenotypeSetValue.HaplotypeFrequencySetId)} = @HaplotypeFrequencySetId
+          AND {nameof(SubjectGenotypeSetValue.AllowedLociKey)} = @AllowedLociKey
         """;
 
     private const string DonorsTableName = "Donors";
@@ -567,6 +584,25 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
     }
 
     /// <inheritdoc />
+    public async Task<StoredSubjectGenotypeSetValue> GetSubjectGenotypeSetValue(SubjectGenotypeSetKey key)
+    {
+        await using var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString());
+        await connection.OpenAsync();
+
+        var row = await connection.QuerySingleOrDefaultAsync<StoredValueRow>(
+            SelectValueByKeySql,
+            new
+            {
+                key.HlaTypingKey,
+                key.HaplotypeFrequencySetId,
+                AllowedLociKey = key.AllowedLociKey.ToString()
+            },
+            commandTimeout: CommandTimeoutInSeconds);
+
+        return row == null ? null : new StoredSubjectGenotypeSetValue(row.IsUnrepresented, row.SubjectGenotypeSetData);
+    }
+
+    /// <inheritdoc />
     public async Task<GuardedUpsertResult> UpsertDonorAssignmentsWhereDonorUnchanged(IReadOnlyCollection<GuardedDonorAssignment> assignments)
     {
         if (assignments == null || assignments.Count == 0)
@@ -832,6 +868,12 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
         public string AllowedLociKey { get; init; }
 
         internal SubjectGenotypeSetKey ToKey() => new(HlaTypingKey, HaplotypeFrequencySetId, Enum.Parse<AllowedLociKey>(AllowedLociKey));
+    }
+
+    private sealed class StoredValueRow
+    {
+        public bool IsUnrepresented { get; init; }
+        public byte[] SubjectGenotypeSetData { get; init; }
     }
 
     private sealed class StoredDonorSubjectGenotypeSetRow

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.ResultSet;
@@ -11,6 +12,7 @@ using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.Functions.Settings;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
+using Atlas.MatchPrediction.Services.Precompute;
 using EnumStringValues;
 using Microsoft.Extensions.Options;
 
@@ -18,7 +20,11 @@ namespace Atlas.Functions.Services
 {
     public interface IMatchPredictionInputBuilder
     {
-        IEnumerable<MultipleDonorMatchProbabilityInput> BuildMatchPredictionInputs(
+        /// <summary>
+        /// Builds the search's match prediction batch inputs. Also stores the patient's genotype set, once per search,
+        /// when the search uses stored sets, and puts its key on every batch (<see cref="IPatientGenotypeSetWarmer"/>).
+        /// </summary>
+        Task<IEnumerable<MultipleDonorMatchProbabilityInput>> BuildMatchPredictionInputs(
             ResultSet<MatchingAlgorithmResult> matchingResultSet,
             int? batchSizeOverride = null);
     }
@@ -27,26 +33,33 @@ namespace Atlas.Functions.Services
     {
         private readonly IAtlasLogger logger;
         private readonly IDonorInputBatcher donorInputBatcher;
+        private readonly IPatientGenotypeSetWarmer patientGenotypeSetWarmer;
         private readonly int matchPredictionBatchSize;
 
         public MatchPredictionInputBuilder(
             ISearchLogger<SearchLoggingContext> logger,
             IDonorInputBatcher donorInputBatcher,
+            IPatientGenotypeSetWarmer patientGenotypeSetWarmer,
             IOptions<OrchestrationSettings> orchestrationSettings)
         {
             this.logger = logger;
             this.donorInputBatcher = donorInputBatcher;
+            this.patientGenotypeSetWarmer = patientGenotypeSetWarmer;
             matchPredictionBatchSize = orchestrationSettings.Value.MatchPredictionBatchSize;
         }
 
         /// <inheritdoc />
-        public IEnumerable<MultipleDonorMatchProbabilityInput> BuildMatchPredictionInputs(
+        public async Task<IEnumerable<MultipleDonorMatchProbabilityInput>> BuildMatchPredictionInputs(
             ResultSet<MatchingAlgorithmResult> matchingResultSet,
             int? batchSizeOverride = null)
         {
             using (logger.RunTimed($"Building match prediction inputs: {matchingResultSet.SearchRequestId}"))
             {
                 var nonDonorInput = BuildSearchRequestMatchPredictionInput(matchingResultSet);
+
+                // Once per search, before the batch inputs are copied from it, so every batch carries the key.
+                nonDonorInput.PatientGenotypeSetKey = await patientGenotypeSetWarmer.Warm(nonDonorInput);
+
                 var donorInputs = matchingResultSet.Results.Select(BuildPerDonorMatchPredictionInput);
 
                 return donorInputBatcher.BatchDonorInputs(nonDonorInput, donorInputs, batchSizeOverride > 0 ? batchSizeOverride.Value : matchPredictionBatchSize).ToList();

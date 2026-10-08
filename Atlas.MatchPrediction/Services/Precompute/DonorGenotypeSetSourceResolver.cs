@@ -14,7 +14,7 @@ public interface IDonorGenotypeSetSourceResolver
 {
     /// <summary>
     /// Decides whether a donor batch uses precomputed genotype sets and, if it does, reads the stored rows of all its
-    /// donors at once.
+    /// donors at once, and the patient's row when the batch has a patient key.
     /// </summary>
     /// <remarks>
     /// Call once per batch, before its donors run, and pass the result down. Not once per donor: the parallel path
@@ -51,13 +51,15 @@ internal class DonorGenotypeSetSourceResolver : IDonorGenotypeSetSourceResolver
         if (!usePrecomputedGenotypeSets)
         {
             // No read at all: when the path is off, nothing precomputed is trusted, not even partly.
-            return DonorGenotypeSetBatchContext.Disabled(source, settings.Mode, request.MatchingAlgorithmDataRefreshRecordId);
+            return DonorGenotypeSetBatchContext.Disabled(
+                source, settings.Mode, request.MatchingAlgorithmDataRefreshRecordId, request.PatientGenotypeSetKey);
         }
 
         PrecomputedDonorGenotypeSetLookup lookup;
         try
         {
-            lookup = await reader.GetDonorGenotypeSets(donors, AllowedLoci(request), request.MatchingAlgorithmDataRefreshRecordId);
+            lookup = await reader.GetDonorGenotypeSets(
+                donors, AllowedLoci(request), request.MatchingAlgorithmDataRefreshRecordId, request.PatientGenotypeSetKey);
         }
         catch (Exception exception)
         {
@@ -65,7 +67,8 @@ internal class DonorGenotypeSetSourceResolver : IDonorGenotypeSetSourceResolver
             lookup = PrecomputedDonorGenotypeSetLookup.Unavailable(DonorGenotypeSetSource.ReadFailed);
         }
 
-        return DonorGenotypeSetBatchContext.Enabled(source, settings.Mode, request.MatchingAlgorithmDataRefreshRecordId, lookup);
+        return DonorGenotypeSetBatchContext.Enabled(
+            source, settings.Mode, request.MatchingAlgorithmDataRefreshRecordId, lookup, request.PatientGenotypeSetKey);
     }
 
     /// <summary>

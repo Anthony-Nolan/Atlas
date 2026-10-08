@@ -88,6 +88,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
             MatchProbabilityRequestId = initial.MatchProbabilityRequestId;
             SearchRequestId = initial.SearchRequestId;
             MatchingAlgorithmDataRefreshRecordId = initial.MatchingAlgorithmDataRefreshRecordId;
+            PatientGenotypeSetKey = initial.PatientGenotypeSetKey;
         }
 
         protected IdentifiedMatchProbabilityRequest(MatchProbabilityRequestBase initialWithoutIds) : base(initialWithoutIds)
@@ -110,7 +111,22 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         /// Only set for search; `null` when the search was matched before this value was recorded.
         /// </summary>
         public int? MatchingAlgorithmDataRefreshRecordId { get; set; }
+
+        /// <summary>
+        /// The key of the patient's stored genotype set, found or created once per search before the batches are
+        /// uploaded. Only set for search; `null` when the search does not use stored sets or the set could not be
+        /// stored, in which case each batch computes the patient live.
+        /// </summary>
+        public PatientGenotypeSetKey PatientGenotypeSetKey { get; set; }
     }
+
+    /// <summary>
+    /// Identifies one stored genotype set (a <c>SubjectGenotypeSetValues</c> row in the matching database).
+    /// </summary>
+    /// <param name="HlaTypingKey">Hash of the typing at the loci of <paramref name="AllowedLociKey"/>.</param>
+    /// <param name="HaplotypeFrequencySetId">The haplotype frequency set the genotype set was computed with.</param>
+    /// <param name="AllowedLociKey">The name of the allowed-loci combination, for example <c>ABCDrb1Dqb1</c>.</param>
+    public record PatientGenotypeSetKey(string HlaTypingKey, int HaplotypeFrequencySetId, string AllowedLociKey);
 
     /// <summary>
     /// Contains information needed to run a match probability request, excluding donor data

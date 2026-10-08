@@ -34,6 +34,7 @@ namespace Atlas.MatchPrediction.Test.Services
         private IMatchPredictionLogger<MatchProbabilityLoggingContext> logger;
         private IDonorGenotypeSetSourceResolver genotypeSetSourceResolver;
         private IDonorGenotypeSetBatchCompleter genotypeSetBatchCompleter;
+        private IPatientGenotypeSetProvider patientGenotypeSetProvider;
         private DonorGenotypeSetBatchContext batchContext;
         private IMatchPredictionAlgorithm matchPredictionAlgorithm;
 
@@ -47,6 +48,7 @@ namespace Atlas.MatchPrediction.Test.Services
             logger = Substitute.For<IMatchPredictionLogger<MatchProbabilityLoggingContext>>();
             genotypeSetSourceResolver = Substitute.For<IDonorGenotypeSetSourceResolver>();
             genotypeSetBatchCompleter = Substitute.For<IDonorGenotypeSetBatchCompleter>();
+            patientGenotypeSetProvider = Substitute.For<IPatientGenotypeSetProvider>();
             matchPredictionAlgorithm = new MatchPredictionAlgorithm(
                 matchProbabilityService,
                 genotypeSetService,
@@ -54,7 +56,8 @@ namespace Atlas.MatchPrediction.Test.Services
                 haplotypeFrequencyService,
                 resultUploader,
                 genotypeSetSourceResolver,
-                genotypeSetBatchCompleter);
+                genotypeSetBatchCompleter,
+                patientGenotypeSetProvider);
 
             batchContext = DonorGenotypeSetBatchContext.Disabled(UsePrecomputedGenotypeSetsSource.FeatureFlag, PrecomputedGenotypeSetMode.ForceLive, null);
             genotypeSetSourceResolver.Resolve(default, default).ReturnsForAnyArgs(batchContext);
@@ -64,6 +67,7 @@ namespace Atlas.MatchPrediction.Test.Services
 
             var patientGenotypeSet = new SubjectGenotypeSet(false, new List<GenotypeAtDesiredResolutions>(), 0.1m);
             genotypeSetService.GetPatientGenotypeSet(default).ReturnsForAnyArgs(patientGenotypeSet);
+            patientGenotypeSetProvider.Get(default, default).ReturnsForAnyArgs((patientGenotypeSet, PatientGenotypeSetSource.PrecomputeDisabled));
 
             matchProbabilityService.CalculateMatchProbability(default, default).ReturnsForAnyArgs(
                 new MatchProbabilityResult(new MatchProbabilityResponse(null, new HashSet<Locus>()), 0));
@@ -76,7 +80,7 @@ namespace Atlas.MatchPrediction.Test.Services
         public async Task RunMatchPredictionAlgorithmBatch_ExpandsPatientGenotypesOnceAndReusesThemForEachDonor()
         {
             var patientGenotypeSet = new SubjectGenotypeSet(false, new List<GenotypeAtDesiredResolutions>(), 0.1m);
-            genotypeSetService.GetPatientGenotypeSet(default).ReturnsForAnyArgs(patientGenotypeSet);
+            patientGenotypeSetProvider.Get(default, default).ReturnsForAnyArgs((patientGenotypeSet, PatientGenotypeSetSource.PrecomputeDisabled));
 
             var input = new MultipleDonorMatchProbabilityInput(new IdentifiedMatchProbabilityRequest
             {
@@ -93,8 +97,7 @@ namespace Atlas.MatchPrediction.Test.Services
 
             await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatch(input);
 
-            await genotypeSetService.Received(1).GetPatientGenotypeSet(
-                Arg.Any<SingleDonorMatchProbabilityInput>());
+            await patientGenotypeSetProvider.Received(1).Get(Arg.Any<SingleDonorMatchProbabilityInput>(), batchContext);
             await matchProbabilityService.Received(2).CalculateMatchProbability(
                 Arg.Any<SingleDonorMatchProbabilityInput>(),
                 Arg.Is<SubjectGenotypeSet>(x => ReferenceEquals(x, patientGenotypeSet)),
@@ -123,7 +126,7 @@ namespace Atlas.MatchPrediction.Test.Services
         {
             var calls = new List<string>();
             resultUploader.WhenForAnyArgs(u => u.UploadSearchDonorResults(default, default, default)).Do(_ => calls.Add("upload"));
-            genotypeSetBatchCompleter.WhenForAnyArgs(c => c.Complete(default, default, default)).Do(_ => calls.Add("complete"));
+            genotypeSetBatchCompleter.WhenForAnyArgs(c => c.Complete(default, default, default, default)).Do(_ => calls.Add("complete"));
             matchProbabilityService.CalculateMatchProbability(default, default, default).ReturnsForAnyArgs(
                 new MatchProbabilityResult(new MatchProbabilityResponse(null, new HashSet<Locus>()), 0, DonorGenotypeSetSource.NoRow));
 
@@ -149,8 +152,43 @@ namespace Atlas.MatchPrediction.Test.Services
                 input,
                 batchContext,
                 Arg.Is<IReadOnlyCollection<DonorGenotypeSetBatchOutcome>>(o =>
-                    o.Count == 2 && o.All(x => x.Source == DonorGenotypeSetSource.NoRow) && o.Sum(x => x.DonorIdCount) == 3));
+                    o.Count == 2 && o.All(x => x.Source == DonorGenotypeSetSource.NoRow) && o.Sum(x => x.DonorIdCount) == 3),
+                PatientGenotypeSetSource.PrecomputeDisabled);
             calls.Should().Equal("upload", "upload", "complete");
+        }
+
+        [Test]
+        public async Task RunMatchPredictionAlgorithmBatch_ResolvesTheBatchBeforeGettingThePatientSetAndLogsWhereItCameFrom()
+        {
+            var calls = new List<string>();
+            genotypeSetSourceResolver.WhenForAnyArgs(r => r.Resolve(default, default)).Do(_ => calls.Add("resolve"));
+            patientGenotypeSetProvider.Get(default, default).ReturnsForAnyArgs(call =>
+            {
+                calls.Add("patient");
+                return (new SubjectGenotypeSet(false, new List<GenotypeAtDesiredResolutions>(), 0.1m), PatientGenotypeSetSource.Precomputed);
+            });
+            var input = new MultipleDonorMatchProbabilityInput(new IdentifiedMatchProbabilityRequest { SearchRequestId = "search-request-id" })
+            {
+                Donors = new List<DonorInput> { DonorInputBuilder.Default.WithDonorIds(1).Build() }
+            };
+
+            await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatch(input);
+
+            calls.Should().Equal("resolve", "patient");
+            await patientGenotypeSetProvider.Received(1).Get(Arg.Any<SingleDonorMatchProbabilityInput>(), batchContext);
+            await genotypeSetService.DidNotReceiveWithAnyArgs().GetPatientGenotypeSet(default);
+            await genotypeSetBatchCompleter.Received(1).Complete(
+                input, batchContext, Arg.Any<IReadOnlyCollection<DonorGenotypeSetBatchOutcome>>(), PatientGenotypeSetSource.Precomputed);
+        }
+
+        [Test]
+        public async Task RunMatchPredictionAlgorithmBatch_WithNoDonors_GetsNoPatientSet()
+        {
+            var input = new MultipleDonorMatchProbabilityInput(new IdentifiedMatchProbabilityRequest()) { Donors = new List<DonorInput>() };
+
+            await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatch(input);
+
+            await patientGenotypeSetProvider.DidNotReceiveWithAnyArgs().Get(default, default);
         }
 
         /// <summary>
@@ -166,7 +204,7 @@ namespace Atlas.MatchPrediction.Test.Services
             await matchPredictionAlgorithm.RunMatchPredictionAlgorithm(input);
 
             await genotypeSetSourceResolver.DidNotReceiveWithAnyArgs().Resolve(default, default);
-            await genotypeSetBatchCompleter.DidNotReceiveWithAnyArgs().Complete(default, default, default);
+            await genotypeSetBatchCompleter.DidNotReceiveWithAnyArgs().Complete(default, default, default, default);
             await matchProbabilityService.Received(1).CalculateMatchProbability(input, Arg.Any<SubjectGenotypeSet>(), null);
         }
     }

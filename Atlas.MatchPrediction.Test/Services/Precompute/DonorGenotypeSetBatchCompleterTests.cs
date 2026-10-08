@@ -58,7 +58,7 @@ internal class DonorGenotypeSetBatchCompleterTests
             new(1, DonorGenotypeSetSource.TypingChanged, null),
         };
 
-        await completer.Complete(Request(), EnabledContext(), outcomes);
+        await completer.Complete(Request(), EnabledContext(), outcomes, PatientGenotypeSetSource.Precomputed);
 
         logger.Received(1).SendEvent(DonorGenotypeSetBatchCompleter.UsageEventName, LogLevel.Info, Arg.Any<Dictionary<string, string>>(), Arg.Any<Dictionary<string, double>>());
         loggedProps["SearchRequestId"].Should().Be(SearchRequestId);
@@ -67,6 +67,7 @@ internal class DonorGenotypeSetBatchCompleterTests
         loggedProps["UsePrecomputedGenotypeSetsSource"].Should().Be("FeatureFlag");
         loggedProps["PrecomputeMode"].Should().Be("DefaultPrecomputed");
         loggedProps["MatchingAlgorithmDataRefreshRecordId"].Should().Be("42");
+        loggedProps["PatientGenotypeSetSource"].Should().Be("Precomputed");
 
         loggedMetrics["DonorCount"].Should().Be(6);
         loggedMetrics["DonorIdCount"].Should().Be(9);
@@ -95,7 +96,7 @@ internal class DonorGenotypeSetBatchCompleterTests
             new(2, DonorGenotypeSetSource.StaleFrequencySet, ToStore(11, 12)),
         };
 
-        await completer.Complete(Request(), EnabledContext(), outcomes);
+        await completer.Complete(Request(), EnabledContext(), outcomes, PatientGenotypeSetSource.Precomputed);
 
         await writer.Received(1).Store(
             Arg.Is<IReadOnlyCollection<DonorGenotypeSetToStore>>(sets => sets.SelectMany(s => s.DonorIds).Order().SequenceEqual(new[] { 10, 11, 12 })),
@@ -106,7 +107,7 @@ internal class DonorGenotypeSetBatchCompleterTests
     [Test]
     public async Task Complete_WithNothingToStore_DoesNotCallTheWriter()
     {
-        await completer.Complete(Request(), EnabledContext(), [new(1, DonorGenotypeSetSource.Precomputed, null)]);
+        await completer.Complete(Request(), EnabledContext(), [new(1, DonorGenotypeSetSource.Precomputed, null)], PatientGenotypeSetSource.Precomputed);
 
         await writer.DidNotReceiveWithAnyArgs().Store(default, default, default);
     }
@@ -120,7 +121,7 @@ internal class DonorGenotypeSetBatchCompleterTests
             DataRefreshRecordId,
             PrecomputedDonorGenotypeSetLookup.Unavailable(DonorGenotypeSetSource.ActiveDatabaseChanged));
 
-        await completer.Complete(Request(), context, [new(1, DonorGenotypeSetSource.ActiveDatabaseChanged, ToStore(1))]);
+        await completer.Complete(Request(), context, [new(1, DonorGenotypeSetSource.ActiveDatabaseChanged, ToStore(1))], PatientGenotypeSetSource.ActiveDatabaseChanged);
 
         await writer.DidNotReceiveWithAnyArgs().Store(default, default, default);
         loggedMetrics["ActiveDatabaseChanged"].Should().Be(1);
@@ -131,7 +132,7 @@ internal class DonorGenotypeSetBatchCompleterTests
     {
         writer.Store(default, default, default).ThrowsAsyncForAnyArgs(new Exception("deadlock victim"));
 
-        var act = () => completer.Complete(Request(), EnabledContext(), [new(1, DonorGenotypeSetSource.NoRow, ToStore(1))]);
+        var act = () => completer.Complete(Request(), EnabledContext(), [new(1, DonorGenotypeSetSource.NoRow, ToStore(1))], PatientGenotypeSetSource.NoRow);
 
         await act.Should().NotThrowAsync();
 
@@ -149,7 +150,7 @@ internal class DonorGenotypeSetBatchCompleterTests
     {
         var context = DonorGenotypeSetBatchContext.Disabled(UsePrecomputedGenotypeSetsSource.Request, PrecomputedGenotypeSetMode.DefaultLive, DataRefreshRecordId);
 
-        await completer.Complete(Request(), context, [new(1, DonorGenotypeSetSource.PrecomputeDisabled, null), new(4, DonorGenotypeSetSource.PrecomputeDisabled, null)]);
+        await completer.Complete(Request(), context, [new(1, DonorGenotypeSetSource.PrecomputeDisabled, null), new(4, DonorGenotypeSetSource.PrecomputeDisabled, null)], PatientGenotypeSetSource.PrecomputeDisabled);
 
         loggedProps["UsePrecomputedGenotypeSets"].Should().Be("False");
         loggedProps["UsePrecomputedGenotypeSetsSource"].Should().Be("Request");
