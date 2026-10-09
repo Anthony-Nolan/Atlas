@@ -72,7 +72,7 @@ internal class PatientGenotypeSetWarmerTests
         var request = Request();
         var expectedSet = SubjectGenotypeSetPayloadTests.CanonicalV1Set();
 
-        var key = await warmer.Warm(request);
+        var key = await warmer.Warm(request, hasDonors: true);
 
         key.Should().Be(Key);
         await genotypeSetService.Received(1).GetPatientGenotypeSet(
@@ -93,7 +93,7 @@ internal class PatientGenotypeSetWarmerTests
         var request = Request();
         request.ExcludedLoci = [Locus.C];
 
-        await warmer.Warm(request);
+        await warmer.Warm(request, hasDonors: true);
 
         await haplotypeFrequencyService.Received(1).GetSingleHaplotypeFrequencySet(request.PatientFrequencySetMetadata);
         await reader.Received(1).FindPatientGenotypeSet(
@@ -108,7 +108,7 @@ internal class PatientGenotypeSetWarmerTests
     {
         reader.FindPatientGenotypeSet(default, default, default, default).ReturnsForAnyArgs(new PatientGenotypeSetLookup(Key, true, null));
 
-        var key = await warmer.Warm(Request());
+        var key = await warmer.Warm(Request(), hasDonors: true);
 
         key.Should().Be(Key);
         await genotypeSetService.DidNotReceiveWithAnyArgs().GetPatientGenotypeSet(default, default);
@@ -122,7 +122,7 @@ internal class PatientGenotypeSetWarmerTests
         genotypeSetService.GetPatientGenotypeSet(default, default)
             .ReturnsForAnyArgs(new SubjectGenotypeSet(true, new List<GenotypeAtDesiredResolutions>(), 0m));
 
-        var key = await warmer.Warm(Request());
+        var key = await warmer.Warm(Request(), hasDonors: true);
 
         key.Should().Be(Key);
         await writer.Received(1).StorePatientGenotypeSet(Key, true, null, DataRefreshRecordId);
@@ -137,7 +137,7 @@ internal class PatientGenotypeSetWarmerTests
         var request = Request();
         request.UsePrecomputedGenotypeSets = requestOverride;
 
-        var key = await warmer.Warm(request);
+        var key = await warmer.Warm(request, hasDonors: true);
 
         key.Should().BeNull();
         await reader.DidNotReceiveWithAnyArgs().FindPatientGenotypeSet(default, default, default, default);
@@ -152,7 +152,7 @@ internal class PatientGenotypeSetWarmerTests
     {
         reader.FindPatientGenotypeSet(default, default, default, default).ReturnsForAnyArgs(PatientGenotypeSetLookup.Unavailable(reason));
 
-        var key = await warmer.Warm(Request());
+        var key = await warmer.Warm(Request(), hasDonors: true);
 
         key.Should().BeNull();
         await genotypeSetService.DidNotReceiveWithAnyArgs().GetPatientGenotypeSet(default, default);
@@ -164,7 +164,7 @@ internal class PatientGenotypeSetWarmerTests
     {
         writer.StorePatientGenotypeSet(default, default, default, default).ReturnsForAnyArgs(false);
 
-        var key = await warmer.Warm(Request());
+        var key = await warmer.Warm(Request(), hasDonors: true);
 
         key.Should().BeNull();
         AssertEvent("Skipped", "ActiveDatabaseChanged");
@@ -175,7 +175,7 @@ internal class PatientGenotypeSetWarmerTests
     {
         genotypeSetService.GetPatientGenotypeSet(default, default).ThrowsAsyncForAnyArgs(new Exception("hmd is down"));
 
-        var act = () => warmer.Warm(Request());
+        var act = () => warmer.Warm(Request(), hasDonors: true);
 
         (await act.Should().NotThrowAsync()).Which.Should().BeNull();
         await writer.DidNotReceiveWithAnyArgs().StorePatientGenotypeSet(default, default, default, default);
@@ -189,7 +189,7 @@ internal class PatientGenotypeSetWarmerTests
     {
         writer.StorePatientGenotypeSet(default, default, default, default).ThrowsAsyncForAnyArgs(new Exception("sql is down"));
 
-        var act = () => warmer.Warm(Request());
+        var act = () => warmer.Warm(Request(), hasDonors: true);
 
         (await act.Should().NotThrowAsync()).Which.Should().BeNull();
         AssertEvent("Failed", null, LogLevel.Warn);
@@ -200,9 +200,26 @@ internal class PatientGenotypeSetWarmerTests
     {
         logger.WhenForAnyArgs(l => l.SendEvent(default, default, default, default)).Throw(new Exception("app insights is down"));
 
-        var key = await warmer.Warm(Request());
+        var key = await warmer.Warm(Request(), hasDonors: true);
 
         key.Should().Be(Key);
+    }
+
+    /// <summary>
+    /// With no donors there are no batches to use the set - often the case for a repeat search - so the step must not
+    /// pay for an imputation and a store that nothing reads.
+    /// </summary>
+    [Test]
+    public async Task Warm_WhenMatchingFoundNoDonors_DoesNothingAndLogsNoDonors()
+    {
+        var key = await warmer.Warm(Request(), hasDonors: false);
+
+        key.Should().BeNull();
+        await haplotypeFrequencyService.DidNotReceiveWithAnyArgs().GetSingleHaplotypeFrequencySet(default);
+        await reader.DidNotReceiveWithAnyArgs().FindPatientGenotypeSet(default, default, default, default);
+        await genotypeSetService.DidNotReceiveWithAnyArgs().GetPatientGenotypeSet(default, default);
+        await writer.DidNotReceiveWithAnyArgs().StorePatientGenotypeSet(default, default, default, default);
+        AssertEvent("Skipped", "NoDonors");
     }
 
     private void AssertEvent(string result, string reason, LogLevel level = LogLevel.Info)

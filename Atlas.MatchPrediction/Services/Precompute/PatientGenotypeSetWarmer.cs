@@ -24,13 +24,19 @@ public interface IPatientGenotypeSetWarmer
     /// The key; null when the search does not use stored sets, or when the set is not stored. Each batch then computes
     /// the patient live, as before.
     /// </returns>
+    /// <param name="request">The search's match prediction request.</param>
+    /// <param name="hasDonors">
+    /// False when matching found no donors. There are then no batches to use the set, so nothing is looked up, computed
+    /// or stored - a repeat search often has no new donors - and the event says the step was skipped (<c>NoDonors</c>).
+    /// </param>
     /// <remarks>Safe to repeat, so a retried activity is fine: a stored set is found, not stored again.</remarks>
-    Task<PatientGenotypeSetKey> Warm(IdentifiedMatchProbabilityRequest request);
+    Task<PatientGenotypeSetKey> Warm(IdentifiedMatchProbabilityRequest request, bool hasDonors);
 }
 
 internal class PatientGenotypeSetWarmer : IPatientGenotypeSetWarmer
 {
     internal const string WarmedEventName = "Precomputed patient genotype set warmed";
+    internal const string NoDonorsReason = "NoDonors";
 
     internal enum WarmResult
     {
@@ -71,11 +77,17 @@ internal class PatientGenotypeSetWarmer : IPatientGenotypeSetWarmer
     }
 
     /// <inheritdoc />
-    public async Task<PatientGenotypeSetKey> Warm(IdentifiedMatchProbabilityRequest request)
+    public async Task<PatientGenotypeSetKey> Warm(IdentifiedMatchProbabilityRequest request, bool hasDonors)
     {
         PatientGenotypeSetKey key = null;
         try
         {
+            if (!hasDonors)
+            {
+                SendEvent(request, WarmResult.Skipped, NoDonorsReason, null, null);
+                return null;
+            }
+
             // The same decision the batches make. A batch decides again, so a mode change after this step still wins.
             var (usePrecomputedGenotypeSets, _) = DonorGenotypeSetSourceResolver.Decide(settings.Mode, request.UsePrecomputedGenotypeSets);
             if (!usePrecomputedGenotypeSets)

@@ -263,7 +263,8 @@ mode, request override and database rules as the donor sets above.
 ### The warm step, once per search
 Before the batches are uploaded, `Atlas.Functions` (`MatchPredictionInputBuilder`, for both the sequential and the
 parallel path, and for repeat search) runs `PatientGenotypeSetWarmer`:
-1. If the precomputed path is off for the search (the mode table above), it stops.
+1. If matching found no donors, it stops: there are no batches to use the set. A repeat search often has no new
+   donors. If the precomputed path is off for the search (the mode table above), it stops too.
 2. It finds the patient's haplotype frequency set, with the same lookup the live path uses.
 3. It builds the key `(typing key, frequency set id, allowed loci key)`. This is the same key a donor with the same typing
    and frequency set has, so the two share one stored row.
@@ -301,7 +302,7 @@ computed live even when the batch has a key.
 ### Logging
 - The warm step sends one event per search, `Precomputed patient genotype set warmed`.
   - Properties: `SearchRequestId`, `Result` (`Hit`, `Created`, `Skipped` or `Failed`), `Reason` (why it was skipped:
-    `PrecomputeDisabled`, `ActiveDatabaseChanged`, `ActiveDatabaseUnknown` or `UncoveredAllowedLoci`), `AllowedLociKey`,
+    `NoDonors`, `PrecomputeDisabled`, `ActiveDatabaseChanged`, `ActiveDatabaseUnknown` or `UncoveredAllowedLoci`), `AllowedLociKey`,
     `HaplotypeFrequencySetId`, `PrecomputeMode`, `MatchingAlgorithmDataRefreshRecordId`, and the exception type and message
     when it failed.
   - Metric: `PatientGenotypeCount`, when the set was computed.

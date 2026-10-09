@@ -118,13 +118,15 @@ internal class MatchPredictionInputBuilderTests
     {
         var resultSet = BuildResultSet();
         resultSet.MatchingAlgorithmDataRefreshRecordId = 42;
+        resultSet.Results = [BuildResult(1)];
         var key = new PatientGenotypeSetKey("typing-key", 7, "ABCDrb1Dqb1");
-        patientGenotypeSetWarmer.Warm(default).ReturnsForAnyArgs(key);
+        patientGenotypeSetWarmer.Warm(default, default).ReturnsForAnyArgs(key);
 
         await builder.BuildMatchPredictionInputs(resultSet);
 
-        await patientGenotypeSetWarmer.Received(1).Warm(Arg.Is<IdentifiedMatchProbabilityRequest>(r =>
-            r.SearchRequestId == resultSet.SearchRequestId && r.MatchingAlgorithmDataRefreshRecordId == 42));
+        await patientGenotypeSetWarmer.Received(1).Warm(
+            Arg.Is<IdentifiedMatchProbabilityRequest>(r => r.SearchRequestId == resultSet.SearchRequestId && r.MatchingAlgorithmDataRefreshRecordId == 42),
+            true);
         donorInputBatcher.Received(1).BatchDonorInputs(
             Arg.Is<IdentifiedMatchProbabilityRequest>(r => r.PatientGenotypeSetKey == key),
             Arg.Any<IEnumerable<DonorInput>>(),
@@ -134,7 +136,7 @@ internal class MatchPredictionInputBuilderTests
     [Test]
     public async Task BuildMatchPredictionInputs_WhenTheWarmStepGivesNoKey_LeavesTheKeyNull()
     {
-        patientGenotypeSetWarmer.Warm(default).ReturnsForAnyArgs((PatientGenotypeSetKey)null);
+        patientGenotypeSetWarmer.Warm(default, default).ReturnsForAnyArgs((PatientGenotypeSetKey)null);
 
         await builder.BuildMatchPredictionInputs(BuildResultSet());
 
@@ -143,6 +145,24 @@ internal class MatchPredictionInputBuilderTests
             Arg.Any<IEnumerable<DonorInput>>(),
             Arg.Any<int>());
     }
+
+    [Test]
+    public async Task BuildMatchPredictionInputs_WhenMatchingFoundNoDonors_TellsTheWarmStepThereAreNone()
+    {
+        var resultSet = BuildResultSet();
+        resultSet.Results = [];
+
+        await builder.BuildMatchPredictionInputs(resultSet);
+
+        await patientGenotypeSetWarmer.Received(1).Warm(Arg.Any<IdentifiedMatchProbabilityRequest>(), false);
+    }
+
+    private static MatchingAlgorithmResult BuildResult(int donorId) => new()
+    {
+        AtlasDonorId = donorId,
+        MatchingResult = new MatchingResult { DonorHla = new PhenotypeInfoTransfer<string>() },
+        MatchingDonorInfo = new MatchingDonorInfo { EthnicityCode = "eth", RegistryCode = "reg" }
+    };
 
     private OriginalMatchingAlgorithmResultSet BuildResultSet() =>
         new()

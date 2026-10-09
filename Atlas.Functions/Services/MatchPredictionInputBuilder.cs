@@ -56,11 +56,11 @@ namespace Atlas.Functions.Services
             using (logger.RunTimed($"Building match prediction inputs: {matchingResultSet.SearchRequestId}"))
             {
                 var nonDonorInput = BuildSearchRequestMatchPredictionInput(matchingResultSet);
+                var donorInputs = matchingResultSet.Results.Select(BuildPerDonorMatchPredictionInput).ToList();
 
-                // Once per search, before the batch inputs are copied from it, so every batch carries the key.
-                nonDonorInput.PatientGenotypeSetKey = await patientGenotypeSetWarmer.Warm(nonDonorInput);
-
-                var donorInputs = matchingResultSet.Results.Select(BuildPerDonorMatchPredictionInput);
+                // Once per search, before the batch inputs are copied from it, so every batch carries the key. With no
+                // donors there are no batches to use the set, so the warm step only logs that it was skipped.
+                nonDonorInput.PatientGenotypeSetKey = await patientGenotypeSetWarmer.Warm(nonDonorInput, hasDonors: donorInputs.Count > 0);
 
                 return donorInputBatcher.BatchDonorInputs(nonDonorInput, donorInputs, batchSizeOverride > 0 ? batchSizeOverride.Value : matchPredictionBatchSize).ToList();
             }
