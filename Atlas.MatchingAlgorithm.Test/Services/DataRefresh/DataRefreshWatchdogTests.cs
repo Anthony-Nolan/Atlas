@@ -1,16 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
+using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Exceptions;
+using Atlas.MatchingAlgorithm.Models.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
+using AutoFixture;
 using AutoFixture.Dsl;
 using AwesomeAssertions;
 using NSubstitute;
@@ -29,19 +33,43 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         private IDataRefreshHistoryRepository dataRefreshHistoryRepository;
         private IDataRefreshServiceBusClient serviceBusClient;
         private IMatchingAlgorithmImportLogger logger;
+        private Fixture fixture;
 
         private IDataRefreshWatchdog dataRefreshWatchdog;
 
         [SetUp]
         public void SetUp()
         {
+            fixture = new Fixture();
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
             serviceBusClient = Substitute.For<IDataRefreshServiceBusClient>();
             logger = Substitute.For<IMatchingAlgorithmImportLogger>();
 
             dataRefreshHistoryRepository.GetStalledRefreshRecordIds(default).ReturnsForAnyArgs(new List<int>());
+            dataRefreshHistoryRepository.GetPausedRefreshRecords().Returns(new List<DataRefreshRecord>());
 
             dataRefreshWatchdog = BuildDataRefreshWatchdog();
+        }
+
+        [Test]
+        public async Task RecoverStalledRefreshes_LogsOneWarningForEachPausedRecord_WithTheDecisionEndpoint_AndPublishesNothingForIt()
+        {
+            var pausedRecords = fixture.CreateMany<int>()
+                .Select(id => DataRefreshRecordBuilder.New.With(r => r.Id, id).PausedForManualDecision().Build())
+                .ToList();
+            dataRefreshHistoryRepository.GetPausedRefreshRecords().Returns(pausedRecords);
+
+            await dataRefreshWatchdog.RecoverStalledRefreshes();
+
+            foreach (var record in pausedRecords)
+            {
+                logger.Received(1).SendTrace(
+                    Arg.Is<string>(message => message.Contains($"record {record.Id} is paused")
+                                              && message.Contains(ResolvePausedDataRefreshRequest.EndpointName)),
+                    LogLevel.Warn);
+            }
+
+            await serviceBusClient.DidNotReceiveWithAnyArgs().PublishToRequestTopic(default);
         }
 
         private IDataRefreshWatchdog BuildDataRefreshWatchdog(DataRefreshSettings dataRefreshSettings = null)

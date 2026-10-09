@@ -9,6 +9,8 @@ using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.Utility;
 using Atlas.MatchingAlgorithm.Settings.Azure;
+using AutoFixture;
+using AwesomeAssertions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
@@ -21,12 +23,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.AzureManagement
         private IAzureDatabaseManagementClient azureManagementClient;
         private IThreadSleeper threadSleeper;
         private IMatchingAlgorithmImportLogger logger;
+        private Fixture fixture;
 
         private IAzureDatabaseManager azureDatabaseManager;
 
         [SetUp]
         public void SetUp()
         {
+            fixture = new Fixture();
             azureManagementClient = Substitute.For<IAzureDatabaseManagementClient>();
             threadSleeper = Substitute.For<IThreadSleeper>();
             logger = Substitute.For<IMatchingAlgorithmImportLogger>();
@@ -182,6 +186,73 @@ namespace Atlas.MatchingAlgorithm.Test.Services.AzureManagement
 
             Assert.ThrowsAsync<Exception>(() => azureDatabaseManager.UpdateDatabaseSize(databaseName, AzureDatabaseSize.S3, null));
         }
+
+        [Test]
+        public async Task StartDatabaseScaling_SendsTheChange_AndReturnsTheOperationWithNoPoll()
+        {
+            var databaseName = fixture.Create<string>();
+            var size = fixture.Create<AzureDatabaseSize>();
+            var autoPause = fixture.Create<int>();
+            var operationTime = fixture.Create<DateTime>();
+            azureManagementClient.TriggerDatabaseScaling(databaseName, size, autoPause).Returns(operationTime);
+
+            var operation = await azureDatabaseManager.StartDatabaseScaling(databaseName, size, autoPause);
+
+            operation.Should().Be(new DatabaseScalingOperation(databaseName, size, operationTime));
+            await azureManagementClient.DidNotReceiveWithAnyArgs().GetDatabaseOperations(default);
+            threadSleeper.DidNotReceiveWithAnyArgs().Sleep(default);
+        }
+
+        [Test]
+        public async Task StartDatabaseScaling_WhenAzureRefusesTheChange_Throws()
+        {
+            azureManagementClient.TriggerDatabaseScaling(default, default, default)
+                .ThrowsAsyncForAnyArgs(new AzureManagementException(fixture.Create<string>()));
+
+            var act = () => azureDatabaseManager.StartDatabaseScaling(fixture.Create<string>(), fixture.Create<AzureDatabaseSize>(), null);
+
+            await act.Should().ThrowAsync<AzureManagementException>();
+        }
+
+        [Test]
+        public async Task WaitForDatabaseScaling_PollsUntilTheOperationEnds()
+        {
+            var operation = fixture.Create<DatabaseScalingOperation>();
+            azureManagementClient.GetDatabaseOperations(operation.DatabaseName).Returns(
+                OperationsWith(AzureDatabaseOperationState.Pending, operation.StartTime.Value),
+                OperationsWith(AzureDatabaseOperationState.InProgress, operation.StartTime.Value),
+                OperationsWith(AzureDatabaseOperationState.Succeeded, operation.StartTime.Value));
+
+            await azureDatabaseManager.WaitForDatabaseScaling(operation);
+
+            await azureManagementClient.Received(3).GetDatabaseOperations(operation.DatabaseName);
+            await azureManagementClient.DidNotReceiveWithAnyArgs().TriggerDatabaseScaling(default, default, default);
+        }
+
+        [Test]
+        public async Task WaitForDatabaseScaling_WhenTheOperationFails_Throws()
+        {
+            var operation = fixture.Create<DatabaseScalingOperation>();
+            azureManagementClient.GetDatabaseOperations(operation.DatabaseName)
+                .Returns(OperationsWith(AzureDatabaseOperationState.Failed, operation.StartTime.Value));
+
+            var act = () => azureDatabaseManager.WaitForDatabaseScaling(operation);
+
+            await act.Should().ThrowAsync<AzureManagementException>();
+        }
+
+        [Test]
+        public async Task WaitForDatabaseScaling_WhenNothingWasSent_ReturnsWithNoPoll()
+        {
+            var operation = new DatabaseScalingOperation(fixture.Create<string>(), fixture.Create<AzureDatabaseSize>(), null);
+
+            await azureDatabaseManager.WaitForDatabaseScaling(operation);
+
+            await azureManagementClient.DidNotReceiveWithAnyArgs().GetDatabaseOperations(default);
+        }
+
+        private static List<DatabaseOperation> OperationsWith(AzureDatabaseOperationState state, DateTime startTime) =>
+            [new DatabaseOperation { State = state, StartTime = startTime }];
 
         [Test]
         public void UpdateDatabaseSize_WhenOperationNotSuccessful_ThrowsException()

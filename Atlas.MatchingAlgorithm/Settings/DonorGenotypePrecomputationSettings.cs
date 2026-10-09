@@ -59,12 +59,13 @@ public class DonorGenotypePrecomputationSettings
     public int StallAlertMinutes { get; set; } = 60;
 
     /// <summary>
-    /// The largest fraction of the donors of a run, from 0 to 1, that can fail before the stage sends a high-priority
-    /// alert. At or below it, the alert is of medium priority. 0 makes every failure high priority.
+    /// The largest fraction of the donors of a run, from 0 to 1, that can fail before the data refresh pauses for a manual
+    /// decision. 0 pauses the refresh at any failure. 1 never pauses it.
     /// </summary>
     /// <remarks>
-    /// A failed donor has no stored genotype set for at least one combination of loci. The data refresh continues in both
-    /// cases.
+    /// A failed donor has no stored genotype set for at least one combination of loci. At or below the threshold, the
+    /// stage sends a medium-priority summary, and the data refresh continues. Above it, the refresh scales the database
+    /// down, sends a high-priority alert, and waits for a decision on the <c>ResolvePausedDataRefresh</c> endpoint.
     /// </remarks>
     public double MaxFailedDonorFraction { get; set; } = 0.001;
 }

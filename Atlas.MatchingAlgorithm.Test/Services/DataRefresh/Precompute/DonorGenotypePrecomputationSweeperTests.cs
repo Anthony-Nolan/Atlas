@@ -99,6 +99,47 @@ public class DonorGenotypePrecomputationSweeperTests
         repositoryFactory.DidNotReceiveWithAnyArgs().GetDonorGenotypePrecomputationRepositoryForDatabase(default);
     }
 
+    [TestCase(Finalise)]
+    [TestCase(Abandon)]
+    [TestCase(Requeue)]
+    public async Task Sweep_WhenTheOpenRefreshIsPaused_ReadsNoTransientDatabase(string sweep)
+    {
+        // The paused database is scaled down, and can auto-pause: a query every few minutes would keep it awake.
+        var (record, _) = GivenAnOpenRefreshWithARun();
+        record.AwaitingManualDecisionSinceUtc = fixture.Create<DateTime>();
+
+        await RunSweep(sweep);
+
+        repositoryFactory.DidNotReceiveWithAnyArgs().GetDonorGenotypePrecomputationRepositoryForDatabase(default);
+    }
+
+    [Test]
+    public async Task Sweep_WhenTheOpenRefreshHasAPendingDecision_ReadsNoTransientDatabase(
+        [Values(Finalise, Abandon, Requeue)] string sweep,
+        [Values] DataRefreshManualDecision decision)
+    {
+        // A read could start the resume of an auto-paused database just before the refresh scales it.
+        var (record, _) = GivenAnOpenRefreshWithARun();
+        record.PendingManualDecision = decision;
+
+        await RunSweep(sweep);
+
+        repositoryFactory.DidNotReceiveWithAnyArgs().GetDonorGenotypePrecomputationRepositoryForDatabase(default);
+    }
+
+    [TestCase(Finalise)]
+    [TestCase(Abandon)]
+    [TestCase(Requeue)]
+    public async Task Sweep_WhenTheOpenRefreshHasCompletedThePrecomputation_ReadsNoTransientDatabase(string sweep)
+    {
+        var (record, _) = GivenAnOpenRefreshWithARun();
+        record.DonorGenotypePrecomputationCompleted = fixture.Create<DateTime>();
+
+        await RunSweep(sweep);
+
+        repositoryFactory.DidNotReceiveWithAnyArgs().GetDonorGenotypePrecomputationRepositoryForDatabase(default);
+    }
+
     [Test]
     public async Task Sweep_WhenTheRunIsNotRunning_ChangesNothing(
         [Values(Finalise, Abandon, Requeue)] string sweep,
@@ -373,6 +414,18 @@ public class DonorGenotypePrecomputationSweeperTests
         // Only the runs of open refreshes are swept, so the batch of a refresh that has ended needs nothing.
         GivenAnOpenRefreshWithARun();
         var request = fixture.Create<DonorGenotypePrecomputationBatchRequest>();
+
+        await sweeper.AbandonDeadLetteredBatch(DeadLetter(JsonConvert.SerializeObject(request)));
+
+        repositoryFactory.DidNotReceiveWithAnyArgs().GetDonorGenotypePrecomputationRepositoryForDatabase(default);
+    }
+
+    [Test]
+    public async Task AbandonDeadLetteredBatch_WhenTheRefreshOfTheMessageIsPaused_ReadsNoTransientDatabase()
+    {
+        var (record, run) = GivenAnOpenRefreshWithARun();
+        record.AwaitingManualDecisionSinceUtc = fixture.Create<DateTime>();
+        var request = RequestOf(record, run);
 
         await sweeper.AbandonDeadLetteredBatch(DeadLetter(JsonConvert.SerializeObject(request)));
 

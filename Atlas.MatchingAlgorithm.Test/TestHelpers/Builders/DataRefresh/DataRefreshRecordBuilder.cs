@@ -25,6 +25,18 @@ public static class DataRefreshRecordBuilder
         return builder.With(r => r.WasSuccessful, true).With(r => r.RefreshEndUtc, DateTime.UtcNow);
     }
 
+    public static IPostprocessComposer<DataRefreshRecord> PausedForManualDecision(this IPostprocessComposer<DataRefreshRecord> builder)
+    {
+        return builder.With(r => r.AwaitingManualDecisionSinceUtc, DateTime.UtcNow.AddHours(-1));
+    }
+
+    public static IPostprocessComposer<DataRefreshRecord> WithPendingManualDecision(
+        this IPostprocessComposer<DataRefreshRecord> builder,
+        DataRefreshManualDecision decision)
+    {
+        return builder.With(r => r.PendingManualDecision, decision);
+    }
+
     public static IPostprocessComposer<DataRefreshRecord> WithStageCompleted(this IPostprocessComposer<DataRefreshRecord> builder, DataRefreshStage stage)
     {
         return stage switch

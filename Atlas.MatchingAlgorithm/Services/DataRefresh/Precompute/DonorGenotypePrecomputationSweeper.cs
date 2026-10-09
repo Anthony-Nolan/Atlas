@@ -35,6 +35,14 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 /// run exists, and the dormant database can be scaled down and paused. A query of it every few minutes would keep it
 /// awake, or fail while it resumes.
 /// </para>
+///
+/// <para>
+/// <b>For the same reason, a timer does not read the run of a record that is paused for a manual decision, that has a
+/// pending decision, or that has completed the stage.</b> While a record is paused, its database is scaled down, and can
+/// auto-pause. After a decision, a read could start the resume of the database just before the refresh scales it, and
+/// Azure refuses a scale operation while the database resumes. A pending retry moves the run back to running only after
+/// the database is scaled up, and the stage clears the decision before it sends a batch.
+/// </para>
 /// </remarks>
 public interface IDonorGenotypePrecomputationSweeper
 {
@@ -139,6 +147,16 @@ internal class DonorGenotypePrecomputationSweeper : IDonorGenotypePrecomputation
             return;
         }
 
+        // The run of a paused record is complete, so no batch of it waits for a message. Its database is scaled down.
+        if (record.AwaitingManualDecisionSinceUtc != null)
+        {
+            logger.LogInformation(
+                LoggingPrefix + " Batch {BatchId} of a dead-lettered message was left as it is: its data refresh record {DataRefreshRecordId} " +
+                "is paused for a manual decision.",
+                request.BatchId, request.DataRefreshRecordId);
+            return;
+        }
+
         var database = record.Database.ParseToEnum<TransientDatabase>();
         var reason = $"The message was dead-lettered. {message.DeadLetterReason}: {message.DeadLetterErrorDescription}";
 
@@ -229,16 +247,20 @@ internal class DonorGenotypePrecomputationSweeper : IDonorGenotypePrecomputation
     }
 
     /// <summary>
-    /// Runs <paramref name="sweep"/> on the running run of each open refresh record that has recreated its indexes. A
-    /// failure of one record does not stop the others; they are thrown together at the end.
+    /// Runs <paramref name="sweep"/> on the running run of each open refresh record that has recreated its indexes, and
+    /// that is in the stage: not paused, with no pending manual decision, and with the stage not complete. A failure of one
+    /// record does not stop the others; they are thrown together at the end.
     /// </summary>
     private async Task ForEachRunningRun(
         string sweepName,
         Func<DonorGenotypePrecomputationRunLocation, IDonorGenotypePrecomputationRepository, Task> sweep)
     {
-        // Before the indexes are recreated, the stage has not started, and the database can be scaled down.
+        // Outside the stage, the database can be scaled down, and a read would keep it awake.
         var records = dataRefreshHistoryRepository.GetIncompleteRefreshJobs()
-            .Where(record => record.IsStageComplete(DataRefreshStage.IndexRecreation))
+            .Where(record => record.IsStageComplete(DataRefreshStage.IndexRecreation)
+                             && !record.IsStageComplete(DataRefreshStage.DonorGenotypePrecomputation)
+                             && record.AwaitingManualDecisionSinceUtc == null
+                             && record.PendingManualDecision == null)
             .ToList();
 
         var failures = new List<Exception>();

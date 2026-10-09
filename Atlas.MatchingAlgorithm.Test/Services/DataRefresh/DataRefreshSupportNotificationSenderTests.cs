@@ -5,7 +5,10 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.Notifications;
 using Atlas.MatchingAlgorithm.Data.Models.Precompute;
+using Atlas.MatchingAlgorithm.Data.Persistent.Models;
+using Atlas.MatchingAlgorithm.Models.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
+using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 using AutoFixture;
 using NSubstitute;
 using NUnit.Framework;
@@ -67,21 +70,60 @@ public class DataRefreshSupportNotificationSenderTests
             Arg.Any<string>());
     }
 
-    [TestCase(2, 1000, 0.001, TestName = "Above the threshold")]
-    [TestCase(1, 1000, 0, TestName = "One failed donor with a threshold of 0")]
-    public async Task SendPrecomputationFailureSummary_AboveTheThreshold_SendsAHighPriorityAlert(
-        int failedDonorCount,
-        int totalDonorCount,
-        double maxFailedDonorFraction)
+    [Test]
+    public async Task SendPrecomputationPausedAlert_SendsAHighPriorityAlertThatNamesTheRecordTheRunTheEndpointAndTheDecisions()
     {
-        var summary = FailureSummary(failedDonorCount, totalDonorCount);
+        var recordId = fixture.Create<int>();
+        var report = PausedReport();
 
-        await sender.SendPrecomputationFailureSummary(fixture.Create<int>(), fixture.Create<int>(), summary, maxFailedDonorFraction);
+        await sender.SendPrecomputationPausedAlert(recordId, report, true);
+
+        await notificationSender.Received(1).SendAlert(
+            Arg.Is<string>(summary => summary.StartsWith("Data refresh paused") && summary.Contains($"#{recordId}")),
+            Arg.Is<string>(description =>
+                description.Contains($"run {report.RunId}")
+                && description.Contains($"\"DataRefreshRecordId\": {recordId}")
+                && description.Contains(ResolvePausedDataRefreshRequest.EndpointName)
+                && Enum.GetNames<DataRefreshManualDecision>().All(decision => description.Contains($"- {decision}:"))),
+            Priority.High,
+            Arg.Any<string>());
+    }
+
+    [Test]
+    public async Task SendPrecomputationPausedAlert_ListsEverySample()
+    {
+        var report = PausedReport();
+
+        await sender.SendPrecomputationPausedAlert(fixture.Create<int>(), report, true);
 
         await notificationSender.Received(1).SendAlert(
             Arg.Any<string>(),
-            Arg.Is<string>(description => description.Contains("above the threshold") && description.Contains("The data refresh continued.")),
-            Priority.High,
+            Arg.Is<string>(description => report.FailureSummary.Samples.All(sample => description.Contains(sample.FailureMessage))),
+            Arg.Any<Priority>(),
+            Arg.Any<string>());
+    }
+
+    [Test]
+    public async Task SendPrecomputationPausedAlert_WhenTheScaleDownStarted_SaysThatTheDatabaseIsScalingDown()
+    {
+        await sender.SendPrecomputationPausedAlert(fixture.Create<int>(), PausedReport(), true);
+
+        await notificationSender.Received(1).SendAlert(
+            Arg.Any<string>(),
+            Arg.Is<string>(description => description.Contains("is scaling the dormant database down")),
+            Arg.Any<Priority>(),
+            Arg.Any<string>());
+    }
+
+    [Test]
+    public async Task SendPrecomputationPausedAlert_WhenAzureRefusedTheScaleDown_SaysToScaleTheDatabaseDownByHand()
+    {
+        await sender.SendPrecomputationPausedAlert(fixture.Create<int>(), PausedReport(), false);
+
+        await notificationSender.Received(1).SendAlert(
+            Arg.Any<string>(),
+            Arg.Is<string>(description => description.Contains("Scale it down by hand")),
+            Arg.Any<Priority>(),
             Arg.Any<string>());
     }
 
@@ -109,4 +151,11 @@ public class DataRefreshSupportNotificationSenderTests
             failedDonorCount,
             totalDonorCount,
             fixture.CreateMany<DonorGenotypePrecomputationFailureSample>().ToList());
+
+    private DonorGenotypePrecomputationFailureReport PausedReport() =>
+        new(
+            fixture.Create<int>(),
+            FailureSummary(fixture.Create<int>(), fixture.Create<int>()),
+            fixture.Create<double>(),
+            fixture.Create<int>());
 }

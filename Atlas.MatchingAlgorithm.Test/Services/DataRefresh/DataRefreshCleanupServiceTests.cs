@@ -163,6 +163,26 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
 
         [Test]
+        public async Task RunDataRefreshCleanup_WhenARecordIsPaused_ClosesItAsFailed_ClearsItsManualDecisionState_AndCancelsItsRun()
+        {
+            var record = DataRefreshRecordBuilder.New
+                .With(r => r.Id, fixture.Create<int>())
+                .PausedForManualDecision()
+                .Build();
+            dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(new List<DataRefreshRecord> {record});
+
+            await dataRefreshCleanupService.RunDataRefreshCleanup();
+
+            Received.InOrder(() =>
+            {
+                dataRefreshHistoryRepository.UpdateExecutionDetails(record.Id, Arg.Any<string>(), Arg.Is<DateTime?>(end => end.HasValue));
+                dataRefreshHistoryRepository.UpdateSuccessFlag(record.Id, false);
+                dataRefreshHistoryRepository.ClearManualDecisionState(record.Id);
+                precomputationRunCanceller.CancelRun(record);
+            });
+        }
+
+        [Test]
         public async Task RunDataRefreshCleanup_WhenNoJobsInProgress_DoesNotCancelAnyPrecomputationRun()
         {
             dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(new List<DataRefreshRecord>());

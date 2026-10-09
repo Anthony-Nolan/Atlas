@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Data.Models.Precompute;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
+using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.Precompute;
 using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
@@ -40,6 +41,17 @@ public interface IDonorGenotypePrecomputationStage
     /// <b>The stage waits in this invocation.</b> The workers compute the batches, and the timers of the data refresh app
     /// complete the run when every batch is done. The stage reads the run until then.
     /// </para>
+    ///
+    /// <para>
+    /// <b>Above the failure threshold, the stage does not complete.</b> It keeps the run and its staging data, and returns
+    /// <see cref="DonorGenotypePrecomputationStageResult.AwaitingManualDecision"/>: the data refresh pauses.
+    /// </para>
+    ///
+    /// <para>
+    /// <b>A pending <see cref="DataRefreshManualDecision.RetryFailedBatches"/> decision</b> is applied before the stage
+    /// sends batches: the stage resets the failed batches of the run, clears the decision, and then sends only the reset
+    /// batches. Until the stage sends them, no message is out, so an attempt that stops at any step can do the steps again.
+    /// </para>
     /// </remarks>
     /// <param name="refreshRecord">The record of the refresh. It must name the dormant database.</param>
     /// <param name="executionMode">Only logged.</param>
@@ -48,9 +60,13 @@ public interface IDonorGenotypePrecomputationStage
     /// </param>
     /// <exception cref="InvalidDataRefreshConfigurationException">A setting of the stage is out of range.</exception>
     /// <exception cref="InvalidOperationException">
-    /// The record does not name the dormant database, or the run of the record was cancelled.
+    /// The record does not name the dormant database, or the run of the record was cancelled, or a manual retry cannot be
+    /// applied because the run is not complete with failures or its staging data is gone.
     /// </exception>
-    Task Run(DataRefreshRecord refreshRecord, DataRefreshStageExecutionMode executionMode, CancellationToken cancellationToken);
+    Task<DonorGenotypePrecomputationStageResult> Run(
+        DataRefreshRecord refreshRecord,
+        DataRefreshStageExecutionMode executionMode,
+        CancellationToken cancellationToken);
 }
 
 /// <inheritdoc />
@@ -62,6 +78,7 @@ internal class DonorGenotypePrecomputationStage : IDonorGenotypePrecomputationSt
     private readonly IActiveDatabaseProvider activeDatabaseProvider;
     private readonly IDonorGenotypePrecomputationBatchDispatcher dispatcher;
     private readonly IDataRefreshSupportNotificationSender notificationSender;
+    private readonly IDataRefreshHistoryRepository dataRefreshHistoryRepository;
     private readonly DonorGenotypePrecomputationSettings settings;
     private readonly TimeProvider timeProvider;
     private readonly ILogger<DonorGenotypePrecomputationStage> logger;
@@ -71,6 +88,7 @@ internal class DonorGenotypePrecomputationStage : IDonorGenotypePrecomputationSt
         IActiveDatabaseProvider activeDatabaseProvider,
         IDonorGenotypePrecomputationBatchDispatcher dispatcher,
         IDataRefreshSupportNotificationSender notificationSender,
+        IDataRefreshHistoryRepository dataRefreshHistoryRepository,
         DonorGenotypePrecomputationSettings settings,
         TimeProvider timeProvider,
         ILogger<DonorGenotypePrecomputationStage> logger)
@@ -79,13 +97,17 @@ internal class DonorGenotypePrecomputationStage : IDonorGenotypePrecomputationSt
         this.activeDatabaseProvider = activeDatabaseProvider;
         this.dispatcher = dispatcher;
         this.notificationSender = notificationSender;
+        this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
         this.settings = settings;
         this.timeProvider = timeProvider;
         this.logger = logger;
     }
 
     /// <inheritdoc />
-    public async Task Run(DataRefreshRecord refreshRecord, DataRefreshStageExecutionMode executionMode, CancellationToken cancellationToken)
+    public async Task<DonorGenotypePrecomputationStageResult> Run(
+        DataRefreshRecord refreshRecord,
+        DataRefreshStageExecutionMode executionMode,
+        CancellationToken cancellationToken)
     {
         // Both checks come before any database call: a bad setting or a wrong database must not show only after hours of work.
         ValidateSettings();
@@ -97,6 +119,11 @@ internal class DonorGenotypePrecomputationStage : IDonorGenotypePrecomputationSt
             LoggingPrefix + " The stage starts for data refresh record {DataRefreshRecordId} ({TargetDatabase}) as {ExecutionMode}. " +
             "Run {RunId} is {RunStatus}.",
             refreshRecord.Id, database, executionMode, run?.Id, run?.Status);
+
+        if (refreshRecord.PendingManualDecision == DataRefreshManualDecision.RetryFailedBatches)
+        {
+            run = await ApplyManualRetry(refreshRecord, database, run, repository);
+        }
 
         if (run is null or { Status: RunStatus.Building })
         {
@@ -118,7 +145,7 @@ internal class DonorGenotypePrecomputationStage : IDonorGenotypePrecomputationSt
             run = await WaitUntilTheRunIsComplete(refreshRecord, database, run.Id, repository, cancellationToken);
         }
 
-        await ReportTheFailures(refreshRecord, database, run, repository);
+        return await ReportTheFailures(refreshRecord, database, run, repository);
     }
 
     private void ValidateSettings()
@@ -153,6 +180,58 @@ internal class DonorGenotypePrecomputationStage : IDonorGenotypePrecomputationSt
         }
 
         return dormantDatabase;
+    }
+
+    /// <summary>
+    /// Applies a pending <see cref="DataRefreshManualDecision.RetryFailedBatches"/> decision: resets the failed batches of a
+    /// run that is complete with failures, then clears the decision. The caller then sends the reset batches.
+    /// </summary>
+    /// <remarks>
+    /// A run that is running already was reset by an earlier attempt that stopped before it cleared the decision: no
+    /// second reset. The reset works only on a run that is complete with failures, so it cannot reset twice.
+    /// </remarks>
+    /// <returns>The run after the reset.</returns>
+    private async Task<Run> ApplyManualRetry(
+        DataRefreshRecord refreshRecord,
+        TransientDatabase database,
+        Run? run,
+        IDonorGenotypePrecomputationRepository repository)
+    {
+        if (run is { Status: RunStatus.CompletedWithFailures })
+        {
+            var runId = run.Id;
+            if (!await repository.HasStagingData())
+            {
+                throw new InvalidOperationException(
+                    $"Donor genotype precomputation run {runId} of data refresh record {refreshRecord.Id} has no staging data, so its " +
+                    "failed batches cannot be computed again. Request a new data refresh.");
+            }
+
+            var resetBatchCount = await repository.ResetFailedBatchesForManualRetry(runId);
+            run = await repository.GetRun(refreshRecord.Id)
+                  ?? throw new InvalidOperationException($"Run {runId} of data refresh record {refreshRecord.Id} is gone after its reset.");
+            logger.LogWarning(
+                LoggingPrefix + " Manual retry of run {RunId} of data refresh record {DataRefreshRecordId} ({TargetDatabase}): " +
+                "{ResetBatchCount} failed batch(es) were reset. Manual retries of the run: {ManualRetryCount}. The run is {RunStatus}.",
+                run.Id, refreshRecord.Id, database, resetBatchCount, run.ManualRetryCount, run.Status);
+        }
+        else if (run is { Status: RunStatus.Running })
+        {
+            logger.LogWarning(
+                LoggingPrefix + " Manual retry of run {RunId} of data refresh record {DataRefreshRecordId} ({TargetDatabase}): the run " +
+                "is running already, so an earlier attempt reset its failed batches.",
+                run.Id, refreshRecord.Id, database);
+        }
+        else
+        {
+            throw new InvalidOperationException(
+                $"Data refresh record {refreshRecord.Id} has a pending manual retry, but its donor genotype precomputation run " +
+                $"{run?.Id} is {run?.Status.ToString() ?? "missing"}. Only a run that is complete with failures can be retried. " +
+                "Request a new data refresh.");
+        }
+
+        await dataRefreshHistoryRepository.ClearPendingManualDecision(refreshRecord);
+        return run;
     }
 
     private async Task<Run> Build(
@@ -292,14 +371,16 @@ internal class DonorGenotypePrecomputationStage : IDonorGenotypePrecomputationSt
     }
 
     /// <summary>
-    /// Sends the failures of the run, if it has any, then removes the staging data. The data refresh goes on in all cases.
+    /// Reports the failures of the run, if it has any. At or below the threshold: sends the summary, removes the staging
+    /// data, and completes. Above the threshold: keeps the run and its staging data, and returns
+    /// <see cref="DonorGenotypePrecomputationStageResult.AwaitingManualDecision"/>. The caller sends the alert.
     /// </summary>
     /// <remarks>
-    /// The alert comes before the removal: a stop between the two sends the alert again, and never loses it. The removal is
-    /// the last step, so a run with no staging data was reported before, and is not reported again. A run with no donors
+    /// The summary comes before the removal: a stop between the two sends the summary again, and never loses it. The removal
+    /// is the last step, so a run with no staging data was reported before, and is not reported again. A run with no donors
     /// has no staging data either.
     /// </remarks>
-    private async Task ReportTheFailures(
+    private async Task<DonorGenotypePrecomputationStageResult> ReportTheFailures(
         DataRefreshRecord refreshRecord,
         TransientDatabase database,
         Run run,
@@ -311,22 +392,36 @@ internal class DonorGenotypePrecomputationStage : IDonorGenotypePrecomputationSt
                 LoggingPrefix + " Run {RunId} of data refresh record {DataRefreshRecordId} ({TargetDatabase}) is {RunStatus}, and has no " +
                 "staging data to report. The stage is complete.",
                 run.Id, refreshRecord.Id, database, run.Status);
-            return;
+            return DonorGenotypePrecomputationStageResult.Complete;
         }
 
         if (run.Status == RunStatus.CompletedWithFailures)
         {
             var summary = await repository.GetFailureSummary(run.Id)
                           ?? throw new InvalidOperationException($"Run {run.Id} of data refresh record {refreshRecord.Id} is gone.");
-            var isAboveThreshold = summary.IsAboveThreshold(settings.MaxFailedDonorFraction);
-            logger.Log(
-                isAboveThreshold ? LogLevel.Error : LogLevel.Warning,
+
+            if (summary.IsAboveThreshold(settings.MaxFailedDonorFraction))
+            {
+                logger.LogError(
+                    LoggingPrefix + " Run {RunId} of data refresh record {DataRefreshRecordId} ({TargetDatabase}) is complete with failures: " +
+                    "{FailedDonorCount} of {TotalDonorCount} donors failed ({FailedDonorFraction:P3}). This is above the threshold of " +
+                    "{MaxFailedDonorFraction:P3}. {PermanentlyFailedBatchCount} batch(es) failed permanently, and {FailedGroupCount} " +
+                    "group(s) failed in the other batches. Manual retries of the run: {ManualRetryCount}. The run and its staging data " +
+                    "stay, and the data refresh pauses for a manual decision.",
+                    run.Id, refreshRecord.Id, database, summary.FailedDonorCount, summary.TotalDonorCount, summary.FailedDonorFraction,
+                    settings.MaxFailedDonorFraction, summary.PermanentlyFailedBatchCount, summary.FailedGroupCount, run.ManualRetryCount);
+
+                return DonorGenotypePrecomputationStageResult.AwaitingManualDecision(
+                    new DonorGenotypePrecomputationFailureReport(run.Id, summary, settings.MaxFailedDonorFraction, run.ManualRetryCount));
+            }
+
+            logger.LogWarning(
                 LoggingPrefix + " Run {RunId} of data refresh record {DataRefreshRecordId} ({TargetDatabase}) is complete with failures: " +
-                "{FailedDonorCount} of {TotalDonorCount} donors failed ({FailedDonorFraction:P3}). Above the threshold of " +
-                "{MaxFailedDonorFraction:P3}: {IsAboveThreshold}. {PermanentlyFailedBatchCount} batch(es) failed permanently, and " +
-                "{FailedGroupCount} group(s) failed in the other batches. The data refresh continues.",
+                "{FailedDonorCount} of {TotalDonorCount} donors failed ({FailedDonorFraction:P3}). This is at or below the threshold of " +
+                "{MaxFailedDonorFraction:P3}. {PermanentlyFailedBatchCount} batch(es) failed permanently, and {FailedGroupCount} " +
+                "group(s) failed in the other batches. The data refresh continues.",
                 run.Id, refreshRecord.Id, database, summary.FailedDonorCount, summary.TotalDonorCount, summary.FailedDonorFraction,
-                settings.MaxFailedDonorFraction, isAboveThreshold, summary.PermanentlyFailedBatchCount, summary.FailedGroupCount);
+                settings.MaxFailedDonorFraction, summary.PermanentlyFailedBatchCount, summary.FailedGroupCount);
 
             await notificationSender.SendPrecomputationFailureSummary(refreshRecord.Id, run.Id, summary, settings.MaxFailedDonorFraction);
         }
@@ -338,6 +433,7 @@ internal class DonorGenotypePrecomputationStage : IDonorGenotypePrecomputationSt
         }
 
         await repository.TruncateStagingTables();
+        return DonorGenotypePrecomputationStageResult.Complete;
     }
 
     private void LogProgress(DataRefreshRecord refreshRecord, TransientDatabase database, int runId, DonorGenotypePrecomputationBatchCounts counts) =>

@@ -107,6 +107,48 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
             (await ReadRecord(recordId)).LeaseOwner.Should().BeNull();
         }
 
+        [Test]
+        public async Task TryClaimRefreshLease_WhenRecordIsPausedWithNoLease_DoesNotClaimIt()
+        {
+            // A redelivered or replayed request must not resume a paused record: only a manual decision ends the pause.
+            var recordId = await dataRefreshHistoryRepository.Create(DataRefreshRecordBuilder.New.PausedForManualDecision().Build());
+
+            var claimed = await dataRefreshHistoryRepository.TryClaimRefreshLease(recordId, Guid.NewGuid(), DateTime.UtcNow, LeaseDuration);
+
+            claimed.Should().BeFalse();
+            (await ReadRecord(recordId)).LeaseOwner.Should().BeNull();
+        }
+
+        [Test]
+        public async Task TryClaimRefreshLease_WhenRecordIsPausedWithAnExpiredLease_DoesNotClaimIt()
+        {
+            var deadOwner = Guid.NewGuid();
+            var recordId = await dataRefreshHistoryRepository.Create(DataRefreshRecordBuilder.New
+                .PausedForManualDecision()
+                .With(r => r.LeaseOwner, deadOwner)
+                .With(r => r.LeaseExpiresUtc, DateTime.UtcNow.AddHours(-2))
+                .Build());
+
+            var claimed = await dataRefreshHistoryRepository.TryClaimRefreshLease(recordId, Guid.NewGuid(), DateTime.UtcNow, LeaseDuration);
+
+            claimed.Should().BeFalse();
+            (await ReadRecord(recordId)).LeaseOwner.Should().Be(deadOwner);
+        }
+
+        [TestCase(DataRefreshManualDecision.Complete)]
+        [TestCase(DataRefreshManualDecision.RetryFailedBatches)]
+        public async Task TryClaimRefreshLease_AfterAManualDecision_ClaimsTheRecord(DataRefreshManualDecision decision)
+        {
+            var recordId = await dataRefreshHistoryRepository.Create(DataRefreshRecordBuilder.New.PausedForManualDecision().Build());
+            await dataRefreshHistoryRepository.TryTakeManualDecision(recordId, decision, DateTime.UtcNow, Guid.NewGuid().ToString());
+            var owner = Guid.NewGuid();
+
+            var claimed = await dataRefreshHistoryRepository.TryClaimRefreshLease(recordId, owner, DateTime.UtcNow, LeaseDuration);
+
+            claimed.Should().BeTrue();
+            (await ReadRecord(recordId)).LeaseOwner.Should().Be(owner);
+        }
+
         #endregion
 
         #region Renewing
