@@ -31,7 +31,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Precompute;
 public class DonorGenotypePrecomputationBatchProcessorTests
 {
     private Fixture fixture;
-    private DonorGenotypePrecomputationTarget target;
+    private TransientDatabase database;
     private DonorGenotypePrecomputationBatchRequest request;
     private ClaimedDonorGenotypePrecomputationBatch claimedBatch;
     private DonorGenotypePrecomputationWorkerSettings settings;
@@ -56,7 +56,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
     public void SetUp()
     {
         fixture = new Fixture();
-        target = fixture.Create<DonorGenotypePrecomputationTarget>();
+        database = fixture.Create<TransientDatabase>();
         request = fixture.Create<DonorGenotypePrecomputationBatchRequest>();
         claimedBatch = fixture.Build<ClaimedDonorGenotypePrecomputationBatch>()
             .With(batch => batch.BatchId, request.BatchId)
@@ -77,8 +77,8 @@ public class DonorGenotypePrecomputationBatchProcessorTests
         subjectGenotypeSetRepository = Substitute.For<ISubjectGenotypeSetRepository>();
 
         repositoryFactory = Substitute.For<IStaticallyChosenDatabaseRepositoryFactory>();
-        repositoryFactory.GetDonorGenotypePrecomputationRepositoryForDatabase(target.Database).Returns(repository);
-        repositoryFactory.GetSubjectGenotypeSetRepositoryForDatabase(target.Database).Returns(subjectGenotypeSetRepository);
+        repositoryFactory.GetDonorGenotypePrecomputationRepositoryForDatabase(database).Returns(repository);
+        repositoryFactory.GetSubjectGenotypeSetRepositoryForDatabase(database).Returns(subjectGenotypeSetRepository);
 
         valueService = Substitute.For<ISubjectGenotypeSetValueService>();
         EveryValueIsStored();
@@ -95,7 +95,6 @@ public class DonorGenotypePrecomputationBatchProcessorTests
 
         processor = new DonorGenotypePrecomputationBatchProcessor(
             repositoryFactory,
-            target,
             valueService,
             frequencySetLookup,
             settings,
@@ -107,7 +106,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
     [TestCase(true)]
     public async Task ProcessBatch_ClaimsTheBatchOfTheMessage_ForTheLeaseOfTheSettings(bool isRedelivery)
     {
-        await processor.ProcessBatch(request, isRedelivery);
+        await processor.ProcessBatch(request, database, isRedelivery);
 
         await repository.Received(1).TryClaimBatch(Arg.Is<DonorGenotypePrecomputationBatchClaim>(claim =>
             claim.DataRefreshRecordId == request.DataRefreshRecordId
@@ -118,13 +117,13 @@ public class DonorGenotypePrecomputationBatchProcessorTests
     }
 
     [Test]
-    public async Task ProcessBatch_UsesTheDatabaseOfTheTarget()
+    public async Task ProcessBatch_UsesTheGivenDatabase()
     {
-        // The message names no database: the worker reads the database of its refresh once, when it starts.
-        await processor.ProcessBatch(request, false);
+        // The message names no database: the worker reads the database of the refresh record of the message.
+        await processor.ProcessBatch(request, database, false);
 
-        repositoryFactory.DidNotReceive().GetDonorGenotypePrecomputationRepositoryForDatabase(target.Database.Other());
-        repositoryFactory.DidNotReceive().GetSubjectGenotypeSetRepositoryForDatabase(target.Database.Other());
+        repositoryFactory.DidNotReceive().GetDonorGenotypePrecomputationRepositoryForDatabase(database.Other());
+        repositoryFactory.DidNotReceive().GetSubjectGenotypeSetRepositoryForDatabase(database.Other());
     }
 
     [Test]
@@ -132,7 +131,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
     {
         repository.TryClaimBatch(default).ReturnsForAnyArgs((ClaimedDonorGenotypePrecomputationBatch)null);
 
-        var result = await processor.ProcessBatch(request, false);
+        var result = await processor.ProcessBatch(request, database, false);
 
         result.Should().Be(BatchResult.Skipped);
         await repository.DidNotReceiveWithAnyArgs().GetGroupsToCompute(default, default, default);
@@ -144,7 +143,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
     [Test]
     public async Task ProcessBatch_ReadsTheGroupsOfTheRangeOfTheBatch()
     {
-        await processor.ProcessBatch(request, false);
+        await processor.ProcessBatch(request, database, false);
 
         await repository.Received(1).GetGroupsToCompute(claimedBatch.RunId, claimedBatch.FirstGroupId, claimedBatch.LastGroupId);
     }
@@ -154,7 +153,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
     {
         var groups = GivenGroups(3);
 
-        await processor.ProcessBatch(request, false);
+        await processor.ProcessBatch(request, database, false);
 
         var outcomes = RecordedOutcomes();
         outcomes.Select(outcome => outcome.GroupId).Should().BeEquivalentTo(groups.Select(group => group.GroupId));
@@ -167,7 +166,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
         var group = GivenGroups(1).Single();
         var frequencySet = frequencySets[(group.RegistryCode, group.EthnicityCode)];
 
-        await processor.ProcessBatch(request, false);
+        await processor.ProcessBatch(request, database, false);
 
         await valueService.Received(1).GetOrComputeValueIds(
             Arg.Is<IReadOnlyList<SubjectGenotypeSetValueRequest>>(requests =>
@@ -175,7 +174,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
                 && requests.Single().HlaTyping.Equals(group.HlaTyping)
                 && requests.Single().AllowedLociKey == group.AllowedLociKey),
             claimedBatch.HlaNomenclatureVersion,
-            target.Database);
+            database);
     }
 
     [Test]
@@ -184,7 +183,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
         var pair = NewPair();
         GivenGroups(3, pair);
 
-        await processor.ProcessBatch(request, false);
+        await processor.ProcessBatch(request, database, false);
 
         await frequencySetLookup.Received(1).GetSingleHaplotypeFrequencySet(Arg.Is<FrequencySetMetadata>(metadata =>
             metadata.RegistryCode == pair.RegistryCode && metadata.EthnicityCode == pair.EthnicityCode));
@@ -199,7 +198,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
         var groups = new[] { NewGroup(laterSetPair), NewGroup(earlierSetPair), NewGroup(laterSetPair), NewGroup(earlierSetPair) };
         GivenGroups(groups);
 
-        await processor.ProcessBatch(request, false);
+        await processor.ProcessBatch(request, database, false);
 
         await valueService.Received(1).GetOrComputeValueIds(
             Arg.Is<IReadOnlyList<SubjectGenotypeSetValueRequest>>(requests =>
@@ -214,7 +213,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
         var assignments = fixture.CreateMany<DonorSubjectGenotypeSetAssignment>(DonorGenotypePrecomputationBatchProcessor.DonorAssignmentChunkSize + 1).ToList();
         repository.GetDonorAssignments(claimedBatch.RunId, claimedBatch.FirstGroupId, claimedBatch.LastGroupId).Returns(assignments);
 
-        await processor.ProcessBatch(request, false);
+        await processor.ProcessBatch(request, database, false);
 
         var upserts = subjectGenotypeSetRepository.ReceivedCalls()
             .Where(call => call.GetMethodInfo().Name == nameof(ISubjectGenotypeSetRepository.UpsertDonorAssignments))
@@ -230,7 +229,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
         GivenGroups(2);
         repository.GetDonorAssignments(default, default, default).ReturnsForAnyArgs(fixture.CreateMany<DonorSubjectGenotypeSetAssignment>().ToList());
 
-        await processor.ProcessBatch(request, false);
+        await processor.ProcessBatch(request, database, false);
 
         Received.InOrder(() =>
         {
@@ -245,7 +244,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
     {
         GivenGroups(2);
 
-        var result = await processor.ProcessBatch(request, false);
+        var result = await processor.ProcessBatch(request, database, false);
 
         result.Should().Be(BatchResult.ResultsReceived);
         await repository.Received(1).TryMarkBatchResultsReceived(claimedBatch.BatchId, ClaimedLeaseOwner(), 0);
@@ -259,7 +258,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
         var failure = new HlaMetadataDictionaryException(fixture.Create<string>(), fixture.Create<string>(), fixture.Create<string>());
         GivenTheValueOf(groups[1], new SubjectGenotypeSetValueOutcome(null, new SubjectGenotypeSetValueFailure(PrecomputeErrorKind.KnownPermanent, failure)));
 
-        var result = await processor.ProcessBatch(request, false);
+        var result = await processor.ProcessBatch(request, database, false);
 
         result.Should().Be(BatchResult.ResultsReceived);
         RecordedOutcomes().Should().ContainSingle(outcome => outcome.GroupId == groups[1].GroupId)
@@ -273,7 +272,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
         var group = NewGroup(NewPair()) with { HlaTyping = null };
         GivenGroups(group);
 
-        await processor.ProcessBatch(request, false);
+        await processor.ProcessBatch(request, database, false);
 
         RecordedOutcomes().Should().ContainSingle().Which.Should().Match<Outcome>(outcome =>
             outcome.GroupId == group.GroupId && outcome.FailureMessage.Contains(group.RepresentativeDonorId.ToString()));
@@ -289,7 +288,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
         var failure = new InvalidOperationException(fixture.Create<string>());
         GivenTheValueOf(groups[0], new SubjectGenotypeSetValueOutcome(null, new SubjectGenotypeSetValueFailure(PrecomputeErrorKind.Unknown, failure)));
 
-        var result = await processor.ProcessBatch(request, false);
+        var result = await processor.ProcessBatch(request, database, false);
 
         result.Should().Be(BatchResult.Failed);
         RecordedOutcomes().Should().ContainSingle().Which.GroupId.Should().Be(groups[1].GroupId);
@@ -310,7 +309,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
             [new SubjectGenotypeSetValueOutcome(nextValueId, null), new SubjectGenotypeSetValueOutcome(null, null)],
             stop));
 
-        var result = await processor.ProcessBatch(request, false);
+        var result = await processor.ProcessBatch(request, database, false);
 
         result.Should().Be(BatchResult.Failed);
         RecordedOutcomes().Should().ContainSingle().Which.Should().Be(Outcome.Stored(firstComputed.GroupId, nextValueId));
@@ -330,7 +329,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
             GivenTheValueOf(group, PermanentFailure());
         }
 
-        var result = await processor.ProcessBatch(request, false);
+        var result = await processor.ProcessBatch(request, database, false);
 
         result.Should().Be(BatchResult.Failed);
         await repository.Received(1).TryMarkBatchFailed(claimedBatch.BatchId, Arg.Any<Guid>(),
@@ -346,7 +345,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
             GivenTheValueOf(group, PermanentFailure());
         }
 
-        var result = await processor.ProcessBatch(request, false);
+        var result = await processor.ProcessBatch(request, database, false);
 
         result.Should().Be(BatchResult.ResultsReceived);
     }
@@ -358,7 +357,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
         var stop = new TimeoutException(fixture.Create<string>());
         frequencySetLookup.GetSingleHaplotypeFrequencySet(default).ThrowsAsyncForAnyArgs(stop);
 
-        var result = await processor.ProcessBatch(request, false);
+        var result = await processor.ProcessBatch(request, database, false);
 
         result.Should().Be(BatchResult.Failed);
         await valueService.DidNotReceiveWithAnyArgs().GetOrComputeValueIds(default, default, default);
@@ -378,7 +377,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
         frequencySetLookup.GetSingleHaplotypeFrequencySet(Arg.Is<FrequencySetMetadata>(metadata => metadata.RegistryCode == pairWithNoSet.RegistryCode))
             .ThrowsAsync(failure);
 
-        var result = await processor.ProcessBatch(request, false);
+        var result = await processor.ProcessBatch(request, database, false);
 
         result.Should().Be(BatchResult.Failed);
         RecordedOutcomes().Should().ContainSingle().Which.GroupId.Should().Be(otherGroup.GroupId);
@@ -393,7 +392,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
         GivenGroups(1);
         repository.TryMarkBatchResultsReceived(default, default, default).ReturnsForAnyArgs(false);
 
-        var result = await processor.ProcessBatch(request, false);
+        var result = await processor.ProcessBatch(request, database, false);
 
         result.Should().Be(BatchResult.LeaseLost);
     }
@@ -406,7 +405,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
         var failure = new InvalidOperationException(fixture.Create<string>());
         repository.RecordGroupOutcomes(default, default).ThrowsAsyncForAnyArgs(failure);
 
-        var act = () => processor.ProcessBatch(request, false);
+        var act = () => processor.ProcessBatch(request, database, false);
 
         (await act.Should().ThrowAsync<InvalidOperationException>()).Which.Should().BeSameAs(failure);
     }
@@ -417,7 +416,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
         // A batch whose values an earlier attempt stored, but which stopped before its donor rows or its result.
         GivenGroups();
 
-        var result = await processor.ProcessBatch(request, false);
+        var result = await processor.ProcessBatch(request, database, false);
 
         result.Should().Be(BatchResult.ResultsReceived);
         await repository.Received(1).GetDonorAssignments(claimedBatch.RunId, claimedBatch.FirstGroupId, claimedBatch.LastGroupId);
@@ -430,7 +429,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
         var otherPairOfTheSameSet = NewPair(frequencySetId: frequencySets[sharedSetPair].Id);
         GivenGroups(NewGroup(sharedSetPair), NewGroup(otherPairOfTheSameSet), NewGroup(NewPair()));
 
-        await processor.ProcessBatch(request, false);
+        await processor.ProcessBatch(request, database, false);
 
         metrics.Received(1).RecordBatch(BatchResult.ResultsReceived, Arg.Any<TimeSpan>(), 3, 2);
     }
