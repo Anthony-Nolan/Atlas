@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 using Azure.Messaging.ServiceBus;
 
@@ -21,8 +23,8 @@ internal sealed record MessageDecision(MessageSettlement Settlement, string? Dea
 }
 
 /// <summary>
-/// Handles one message of the requests subscription: reads the batch that it names, and processes it in a scope of its
-/// own.
+/// Handles one message of the requests subscription: reads the database of the data refresh record that the message
+/// names, and processes the batch of the message in that database, in a scope of its own.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -32,8 +34,14 @@ internal sealed record MessageDecision(MessageSettlement Settlement, string? Dea
 /// </para>
 ///
 /// <para>
-/// <b>Abandon</b> when the batch could not be finished, for example because the database failed: Service Bus delivers
-/// the message again, and after its last delivery dead-letters it.
+/// <b>Complete, as skipped,</b> when the data refresh record of the message is not open: the refresh has ended or was
+/// cancelled, so the batch is not the worker's to take. A redelivery would find the same, and the dead-letter trigger
+/// also leaves the batch of a record that is not open.
+/// </para>
+///
+/// <para>
+/// <b>Abandon</b> when the record could not be read, or the batch could not be finished, for example because a database
+/// failed: Service Bus delivers the message again, and after its last delivery dead-letters it.
 /// </para>
 ///
 /// <para>
@@ -45,6 +53,7 @@ internal sealed record MessageDecision(MessageSettlement Settlement, string? Dea
 /// </remarks>
 internal class DonorGenotypePrecomputationMessageHandler(
     IServiceScopeFactory serviceScopeFactory,
+    IDonorGenotypePrecomputationMetrics metrics,
     ILogger<DonorGenotypePrecomputationMessageHandler> logger)
 {
     internal const string UnreadableBodyReason = "UnreadableBody";
@@ -65,8 +74,25 @@ internal class DonorGenotypePrecomputationMessageHandler(
         try
         {
             await using var scope = serviceScopeFactory.CreateAsyncScope();
+
+            var startTimestamp = Stopwatch.GetTimestamp();
+            var database = await DonorGenotypePrecomputationTargetReader.ReadDatabase(
+                scope.ServiceProvider.GetRequiredService<IDataRefreshHistoryRepository>(),
+                request.DataRefreshRecordId);
+
+            if (database is null)
+            {
+                // Debug, like a batch that the claim skips: after a failed refresh, every message that is left comes here.
+                // The metric counts them.
+                logger.LogDebug(
+                    "Batch {BatchId} of run {RunId} was skipped: its data refresh record {DataRefreshRecordId} is not open.",
+                    request.BatchId, request.RunId, request.DataRefreshRecordId);
+                metrics.RecordBatch(DonorGenotypePrecomputationBatchResult.Skipped, Stopwatch.GetElapsedTime(startTimestamp), 0, 0);
+                return MessageDecision.Complete;
+            }
+
             var processor = scope.ServiceProvider.GetRequiredService<IDonorGenotypePrecomputationBatchProcessor>();
-            await processor.ProcessBatch(request, isRedelivery);
+            await processor.ProcessBatch(request, database.Value, isRedelivery);
 
             return MessageDecision.Complete;
         }

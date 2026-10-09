@@ -1,24 +1,29 @@
-using Atlas.MatchingAlgorithm.Data.Persistent.Models;
-using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 using AutoFixture;
 using AwesomeAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
-using NSubstitute;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.PrecomputeWorker.Test;
 
 /// <summary>
-/// The registration of the worker host. The services are validated, not resolved: resolving the batch processor builds the
-/// HLA Metadata Dictionary, which connects to storage.
+/// The registration of the worker host. The services of a batch are validated, not resolved: resolving the batch processor
+/// builds the HLA Metadata Dictionary, which connects to storage. The services that the host starts are resolved.
 /// </summary>
 [TestFixture]
 internal class StartupTests
 {
     private static readonly ServiceProviderOptions ValidatingOptions = new() { ValidateOnBuild = true, ValidateScopes = true };
+
+    /// <summary>Nothing listens on port 1, so a connection fails at once.</summary>
+    private const string UnreachableSqlConnectionString =
+        "Server=tcp:127.0.0.1,1;Database=Atlas;User ID=test;Password=test;Connect Timeout=1;TrustServerCertificate=True;";
+
+    /// <summary>A connection string in a valid format. The client connects only when it receives, and no test starts it.</summary>
+    private const string ServiceBusConnectionString = "Endpoint=sb://localhost/;SharedAccessKeyName=test;SharedAccessKey=test";
 
     private Fixture fixture = null!;
 
@@ -55,35 +60,39 @@ internal class StartupTests
     }
 
     [Test]
-    public void Configure_RegistersTheTargetAsASingleton()
+    public async Task Configure_WithNoReachableDatabase_CreatesTheHostedServices_AndReportsHealthy()
     {
-        // The worker reads its target once, and uses that database until it stops.
-        WorkerServices().Should().ContainSingle(descriptor => descriptor.ServiceType == typeof(DonorGenotypePrecomputationTarget))
-            .Which.Lifetime.Should().Be(ServiceLifetime.Singleton);
+        // As outside a data refresh, or before a release has migrated the databases. The host creates its hosted services
+        // and serves its health checks when it starts, so none of them can read a database.
+        await using var provider = WorkerServices(SettingsWithNoReachableDatabase()).BuildServiceProvider(ValidatingOptions);
+        var healthChecks = provider.GetRequiredService<HealthCheckService>();
+
+        var hostedServices = provider.GetServices<IHostedService>().ToList();
+        var live = await healthChecks.CheckHealthAsync(check => check.Tags.Contains("live"));
+        var ready = await healthChecks.CheckHealthAsync(check => check.Tags.Contains("ready"));
+
+        hostedServices.Should().Contain(service => service is DonorGenotypePrecomputationWorker);
+        live.Status.Should().Be(HealthStatus.Healthy);
+        ready.Status.Should().Be(HealthStatus.Healthy);
     }
 
-    [Test]
-    public async Task Configure_ReadsTheTargetFromTheOpenDataRefreshRecord_Once()
+    /// <summary>
+    /// Every database is unreachable. The other settings are only the ones that the hosted services need to be created.
+    /// </summary>
+    private Dictionary<string, string?> SettingsWithNoReachableDatabase() => new()
     {
-        var database = fixture.Create<TransientDatabase>();
-        var record = fixture.Build<DataRefreshRecord>().With(r => r.Database, database.ToString()).Create();
-        var dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
-        dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns([record]);
-        var services = WorkerServices();
-        services.AddScoped(_ => dataRefreshHistoryRepository);
-        await using var provider = services.BuildServiceProvider(ValidatingOptions);
+        ["ConnectionStrings:PersistentSql"] = UnreachableSqlConnectionString,
+        ["ConnectionStrings:SqlA"] = UnreachableSqlConnectionString,
+        ["ConnectionStrings:SqlB"] = UnreachableSqlConnectionString,
+        ["ConnectionStrings:MatchPredictionSql"] = UnreachableSqlConnectionString,
+        ["MessagingServiceBus:ConnectionString"] = ServiceBusConnectionString,
+        ["PrecomputeWorker:RequestsTopic"] = fixture.Create<string>(),
+        ["PrecomputeWorker:RequestsSubscription"] = fixture.Create<string>()
+    };
 
-        var firstTarget = provider.GetRequiredService<DonorGenotypePrecomputationTarget>();
-        var secondTarget = provider.GetRequiredService<DonorGenotypePrecomputationTarget>();
-
-        firstTarget.Should().Be(new DonorGenotypePrecomputationTarget(record.Id, database));
-        secondTarget.Should().BeSameAs(firstTarget);
-        dataRefreshHistoryRepository.Received(1).GetIncompleteRefreshJobs();
-    }
-
-    private static ServiceCollection WorkerServices()
+    private static ServiceCollection WorkerServices(Dictionary<string, string?>? settings = null)
     {
-        var configuration = new ConfigurationBuilder().AddInMemoryCollection().Build();
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(settings).Build();
         var services = new ServiceCollection();
         services.AddSingleton<IConfiguration>(configuration);
         services.AddLogging();

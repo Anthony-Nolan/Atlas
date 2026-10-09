@@ -47,15 +47,10 @@ public static class Startup
         services.AddScoped<StaticallyChosenTransientSqlConnectionStringProviderFactory>();
         services.AddScoped<IStaticallyChosenDatabaseRepositoryFactory, StaticallyChosenDatabaseRepositoryFactory>();
 
-        // The persistent database, only to read the target of the worker. The target is a singleton, so the worker reads
-        // it once. The hosted worker takes the target, so the read happens when the host starts.
+        // The persistent database, only to read the data refresh record of each message. Nothing reads it when the host
+        // starts, so the worker starts outside a data refresh too.
         services.AddScoped(sp => new ContextFactory().Create(ConnectionStringReader("PersistentSql")(sp)));
         services.AddScoped<IDataRefreshHistoryRepository, DataRefreshHistoryRepository>();
-        services.AddSingleton(sp =>
-        {
-            using var scope = sp.CreateScope();
-            return DonorGenotypePrecomputationTargetReader.Read(scope.ServiceProvider.GetRequiredService<IDataRefreshHistoryRepository>());
-        });
 
         services.AddScoped<ISubjectGenotypeSetValueService, SubjectGenotypeSetValueService>();
         services.AddSingleton<IDonorGenotypePrecomputationMetrics, DonorGenotypePrecomputationMetrics>();

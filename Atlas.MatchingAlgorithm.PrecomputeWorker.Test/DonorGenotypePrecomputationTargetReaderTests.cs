@@ -1,6 +1,5 @@
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
-using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 using AutoFixture;
 using AwesomeAssertions;
 using NSubstitute;
@@ -12,53 +11,67 @@ namespace Atlas.MatchingAlgorithm.PrecomputeWorker.Test;
 internal class DonorGenotypePrecomputationTargetReaderTests
 {
     private Fixture fixture = null!;
-    private List<DataRefreshRecord> openRecords = null!;
+    private Dictionary<int, TransientDatabase> openRecordDatabases = null!;
     private IDataRefreshHistoryRepository dataRefreshHistoryRepository = null!;
 
     [SetUp]
     public void SetUp()
     {
         fixture = new Fixture();
-        openRecords = [];
+        openRecordDatabases = [];
         dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
-        dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(_ => openRecords);
+        dataRefreshHistoryRepository.GetIncompleteRefreshJobDatabases().Returns(_ => openRecordDatabases);
     }
 
     [TestCase(TransientDatabase.DatabaseA)]
     [TestCase(TransientDatabase.DatabaseB)]
-    public void Read_ReturnsTheOpenDataRefreshRecord_AndTheDatabaseThatItFills(TransientDatabase database)
+    public async Task ReadDatabase_WhenTheRecordIsOpen_ReturnsItsDatabase(TransientDatabase database)
     {
-        var record = GivenAnOpenRecord(database);
+        var recordId = GivenAnOpenRecord(database);
 
-        var target = DonorGenotypePrecomputationTargetReader.Read(dataRefreshHistoryRepository);
+        var target = await DonorGenotypePrecomputationTargetReader.ReadDatabase(dataRefreshHistoryRepository, recordId);
 
-        target.Should().Be(new DonorGenotypePrecomputationTarget(record.Id, database));
+        target.Should().Be(database);
     }
 
     [Test]
-    public void Read_WhenNoDataRefreshRecordIsOpen_Throws()
+    public async Task ReadDatabase_WhenNoRecordIsOpen_ReturnsNull()
     {
-        // The stage sends messages only while its refresh is open, so the worker has no database to write.
-        var act = () => DonorGenotypePrecomputationTargetReader.Read(dataRefreshHistoryRepository);
+        // Outside a data refresh: a message that waited from a refresh that has ended.
+        var target = await DonorGenotypePrecomputationTargetReader.ReadDatabase(dataRefreshHistoryRepository, fixture.Create<int>());
 
-        act.Should().Throw<InvalidOperationException>();
+        target.Should().BeNull();
     }
 
     [Test]
-    public void Read_WhenMoreThanOneDataRefreshRecordIsOpen_ThrowsWithTheirIds()
+    public async Task ReadDatabase_WhenTheRecordIsClosedOrDoesNotExist_AndAnotherRecordIsOpen_ReturnsNull()
     {
-        // The requester starts no refresh while another is open. The worker does not guess which record is the real one.
-        var records = new[] { GivenAnOpenRecord(TransientDatabase.DatabaseA), GivenAnOpenRecord(TransientDatabase.DatabaseB) };
+        // The repository returns only the open records. A message of an earlier refresh must not write to the database of
+        // the refresh that runs now.
+        GivenAnOpenRecord(fixture.Create<TransientDatabase>());
 
-        var act = () => DonorGenotypePrecomputationTargetReader.Read(dataRefreshHistoryRepository);
+        var target = await DonorGenotypePrecomputationTargetReader.ReadDatabase(dataRefreshHistoryRepository, fixture.Create<int>());
 
-        act.Should().Throw<InvalidOperationException>().Which.Message.Should().ContainAll(records.Select(record => record.Id.ToString()));
+        target.Should().BeNull();
     }
 
-    private DataRefreshRecord GivenAnOpenRecord(TransientDatabase database)
+    [Test]
+    public async Task ReadDatabase_WhenMoreThanOneRecordIsOpen_ReturnsTheDatabaseOfTheRecordOfTheMessage()
     {
-        var record = fixture.Build<DataRefreshRecord>().With(r => r.Database, database.ToString()).Create();
-        openRecords.Add(record);
-        return record;
+        // The message names its record, so the other open records do not matter.
+        var database = fixture.Create<TransientDatabase>();
+        GivenAnOpenRecord(database.Other());
+        var recordId = GivenAnOpenRecord(database);
+
+        var target = await DonorGenotypePrecomputationTargetReader.ReadDatabase(dataRefreshHistoryRepository, recordId);
+
+        target.Should().Be(database);
+    }
+
+    private int GivenAnOpenRecord(TransientDatabase database)
+    {
+        var recordId = fixture.Create<int>();
+        openRecordDatabases.Add(recordId, database);
+        return recordId;
     }
 }
