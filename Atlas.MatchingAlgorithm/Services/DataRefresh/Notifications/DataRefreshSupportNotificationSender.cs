@@ -1,7 +1,11 @@
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.Notifications;
 using Atlas.MatchingAlgorithm.Config;
+using Atlas.MatchingAlgorithm.Data.Models.Entities;
+using Atlas.MatchingAlgorithm.Data.Models.Precompute;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications
 {
@@ -16,6 +20,26 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications
         Task SendFailureAlert(int recordId);
         Task SendTeardownFailureAlert(int recordId);
         Task SendRequestManualTeardownNotification();
+
+        /// <summary>
+        /// A high-priority alert: no batch of the donor genotype precomputation run has finished for
+        /// <paramref name="timeWithoutProgress"/>, and the data refresh waits for the run.
+        /// </summary>
+        Task SendPrecomputationStallAlert(
+            int recordId,
+            int runId,
+            TimeSpan timeWithoutProgress,
+            DonorGenotypePrecomputationBatchCounts batchCounts);
+
+        /// <summary>
+        /// The failures of a donor genotype precomputation run that has finished: high priority above the threshold, else
+        /// medium. The data refresh continues in both cases.
+        /// </summary>
+        Task SendPrecomputationFailureSummary(
+            int recordId,
+            int runId,
+            DonorGenotypePrecomputationFailureSummary failureSummary,
+            double maxFailedDonorFraction);
     }
     
     public class DataRefreshSupportNotificationSender: IDataRefreshSupportNotificationSender
@@ -32,9 +56,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications
             await notificationSender.SendNotification(summary, description, NotificationConstants.OriginatorName);
         }
 
-        private async Task SendAlert(string summary, string description)
+        private async Task SendAlert(string summary, string description, Priority priority = Priority.High)
         {
-            await notificationSender.SendAlert(summary, description, Priority.High, NotificationConstants.OriginatorName);
+            await notificationSender.SendAlert(summary, description, priority, NotificationConstants.OriginatorName);
         }
 
         public async Task SendInitialisationNotification(int recordId)
@@ -99,5 +123,50 @@ Appropriate teardown is being run. The data refresh will need to be re-started o
 
             await SendNotification(summary, description);
         }
+
+        public async Task SendPrecomputationStallAlert(
+            int recordId,
+            int runId,
+            TimeSpan timeWithoutProgress,
+            DonorGenotypePrecomputationBatchCounts batchCounts)
+        {
+            var summary = $"Data refresh donor genotype precomputation has stalled (#{recordId})";
+            var description =
+$@"No batch of the donor genotype precomputation run {runId} (data refresh record {recordId}) has finished for {timeWithoutProgress.TotalMinutes:F0} minutes.
+Batches: {DescribeBatchCounts(batchCounts)}.
+
+The data refresh waits until every batch is done. Check that the precomputation workers run, that the precomputation requests subscription and its dead-letter queue are empty or moving, and that the precomputation timers of the data refresh app run. See the donor genotype precomputation section of README_Support.md.";
+
+            await SendAlert(summary, description);
+        }
+
+        public async Task SendPrecomputationFailureSummary(
+            int recordId,
+            int runId,
+            DonorGenotypePrecomputationFailureSummary failureSummary,
+            double maxFailedDonorFraction)
+        {
+            var isAboveThreshold = failureSummary.IsAboveThreshold(maxFailedDonorFraction);
+            var comparison = isAboveThreshold ? "above" : "at or below";
+            var summary = $"Data refresh donor genotype precomputation failed for {failureSummary.FailedDonorCount} donor(s) (#{recordId})";
+            var samples = failureSummary.Samples.Select(sample =>
+                sample.GroupId == null
+                    ? $"- Batch {sample.BatchId}: {sample.FailureMessage}"
+                    : $"- Batch {sample.BatchId}, group {sample.GroupId}: {sample.FailureMessage}");
+            var description =
+$@"The donor genotype precomputation run {runId} (data refresh record {recordId}) has finished with failures.
+{failureSummary.FailedDonorCount} of {failureSummary.TotalDonorCount} donors ({failureSummary.FailedDonorFraction:P3}) have no stored genotype set for at least one combination of loci. This is {comparison} the threshold of {maxFailedDonorFraction:P3}.
+Permanently failed batches: {failureSummary.PermanentlyFailedBatchCount}. Failed groups in the other batches: {failureSummary.FailedGroupCount}.
+The data refresh continued.
+
+The first failure of each distinct message:
+{string.Join(Environment.NewLine, samples)}";
+
+            await SendAlert(summary, description, isAboveThreshold ? Priority.High : Priority.Medium);
+        }
+
+        private static string DescribeBatchCounts(DonorGenotypePrecomputationBatchCounts batchCounts) =>
+            string.Join(", ", Enum.GetValues<DonorGenotypePrecomputationBatchStatus>()
+                .Select(status => $"{status} {batchCounts.CountOf(status)}"));
     }
 }

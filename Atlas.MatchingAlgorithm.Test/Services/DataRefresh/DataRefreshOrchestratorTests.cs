@@ -13,6 +13,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
+using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
@@ -36,6 +37,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         private IAzureDatabaseManager azureDatabaseManager;
         private IDataRefreshSupportNotificationSender dataRefreshSupportNotificationSender;
         private IDataRefreshCompletionNotifier dataRefreshCompletionNotifier;
+        private IDonorGenotypePrecomputationRunCanceller precomputationRunCanceller;
 
         private IServiceScopeFactory serviceScopeFactory;
 
@@ -58,6 +60,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             azureDatabaseManager = Substitute.For<IAzureDatabaseManager>();
             dataRefreshSupportNotificationSender = Substitute.For<IDataRefreshSupportNotificationSender>();
             dataRefreshCompletionNotifier = Substitute.For<IDataRefreshCompletionNotifier>();
+            precomputationRunCanceller = Substitute.For<IDonorGenotypePrecomputationRunCanceller>();
             serviceScopeFactory = BuildServiceScopeFactoryResolving(dataRefreshHistoryRepository);
 
             dataRefreshOrchestrator = BuildDataRefreshOrchestrator();
@@ -109,6 +112,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 new AzureDatabaseNameProvider(settings),
                 dataRefreshSupportNotificationSender,
                 dataRefreshCompletionNotifier,
+                precomputationRunCanceller,
                 serviceScopeFactory
             );
         }
@@ -447,6 +451,56 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         {
             azureDatabaseManager.UpdateDatabaseSize(Arg.Any<string>(), Arg.Any<AzureDatabaseSize>(), Arg.Any<int?>())
                 .ThrowsAsync(new Exception(fixture.Create<string>()));
+        }
+
+        #endregion
+
+        #region The donor genotype precomputation run
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenRefreshFails_CancelsThePrecomputationRunOfTheRecord()
+        {
+            GivenTheRefreshFails();
+
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+
+            await precomputationRunCanceller.Received(1).CancelRun(Arg.Is<DataRefreshRecord>(r => r.Id == DefaultRecordId));
+        }
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenRefreshFails_CancelsThePrecomputationRunAfterTheFailureIsReported()
+        {
+            // The removal of the staging data waits for the statements of the workers, so it must not delay the record or the
+            // notifications.
+            GivenTheRefreshFails();
+
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+
+            Received.InOrder(() =>
+            {
+                dataRefreshHistoryRepository.UpdateSuccessFlag(DefaultRecordId, false);
+                dataRefreshCompletionNotifier.NotifyOfFailure(DefaultRecordId);
+                precomputationRunCanceller.CancelRun(Arg.Is<DataRefreshRecord>(r => r.Id == DefaultRecordId));
+            });
+        }
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenJobSuccessful_DoesNotCancelThePrecomputationRun()
+        {
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+
+            await precomputationRunCanceller.DidNotReceiveWithAnyArgs().CancelRun(null);
+        }
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenLeaseIsLostMidRun_DoesNotCancelThePrecomputationRun()
+        {
+            // The invocation that took the lease over continues the stage, and with it the run.
+            GivenTheLeaseIsLostDuringA(refresh: token => token.ThrowIfCancellationRequested());
+
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+
+            await precomputationRunCanceller.DidNotReceiveWithAnyArgs().CancelRun(null);
         }
 
         #endregion

@@ -3,9 +3,12 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Models.Precompute;
@@ -43,6 +46,46 @@ public interface IDonorGenotypePrecomputationRepository
 {
     /// <summary>The run of the data refresh record, or null when the precomputation stage has not created one.</summary>
     Task<DonorGenotypePrecomputationRun?> GetRun(int dataRefreshRecordId);
+
+    /// <summary>
+    /// Makes the run of the data refresh record ready for <see cref="BuildRun"/>: a new run with status
+    /// <see cref="DonorGenotypePrecomputationRunStatus.Building"/>, or the run of a build that stopped before its end. In the
+    /// same transaction it removes the batches of that run and the staging data, so the build starts from nothing.
+    /// </summary>
+    /// <remarks>
+    /// A run that starts its build again keeps its <see cref="DonorGenotypePrecomputationRun.GroupsPerBatch"/>, whatever
+    /// <paramref name="groupsPerBatch"/> is now.
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">The run of the record is not building.</exception>
+    Task<DonorGenotypePrecomputationRun> StartBuild(int dataRefreshRecordId, string hlaNomenclatureVersion, int groupsPerBatch);
+
+    /// <summary>
+    /// Builds the work of a run from <c>Donors</c>: a group for each distinct typing of each registry and ethnicity pair, at
+    /// each <see cref="AllowedLociKey"/>; the donors of each group; and the batches, all
+    /// <see cref="DonorGenotypePrecomputationBatchStatus.Pending"/>. Then it moves the run to
+    /// <see cref="DonorGenotypePrecomputationRunStatus.Running"/>, or to <see cref="DonorGenotypePrecomputationRunStatus.Completed"/>
+    /// when there are no donors: a run with no batches has nothing to wait for.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Over all donors at once.</b> Each step is one statement over the whole table, so two donors with the same typing
+    /// share a group however far apart they are.
+    /// </para>
+    ///
+    /// <para>
+    /// <b>Pair first.</b> The group ids run pair by pair, then key by key, then by typing. So the groups of a batch mostly
+    /// have one registry and ethnicity pair, and the worker needs few frequency sets for it.
+    /// </para>
+    ///
+    /// <para>
+    /// <b>The run moves only at the end.</b> A build that fails or is cancelled leaves the run building, with part of its
+    /// staging data. Call <see cref="StartBuild"/> before the next attempt.
+    /// </para>
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">
+    /// The run is not building, or it has batches or staging data; or the build lost a donor.
+    /// </exception>
+    Task<DonorGenotypePrecomputationBuildResult> BuildRun(int runId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Moves the batch to <see cref="DonorGenotypePrecomputationBatchStatus.InProgress"/> under a new lease, and returns
@@ -153,6 +196,14 @@ public interface IDonorGenotypePrecomputationRepository
     /// <returns>The new status, or null when the run is not running, or a batch is not terminal yet.</returns>
     Task<DonorGenotypePrecomputationRunStatus?> TryFinaliseRun(int runId);
 
+    /// <summary>
+    /// Moves the run of a data refresh that has failed to <see cref="DonorGenotypePrecomputationRunStatus.Cancelled"/>, from
+    /// <see cref="DonorGenotypePrecomputationRunStatus.Building"/> or <see cref="DonorGenotypePrecomputationRunStatus.Running"/>.
+    /// The workers then skip its messages.
+    /// </summary>
+    /// <returns>False when the record has no run, or its run is done or cancelled already.</returns>
+    Task<bool> TryMarkRunCancelled(int dataRefreshRecordId);
+
     /// <summary>The batches of the run per status, and the failed groups of the batches with results.</summary>
     Task<DonorGenotypePrecomputationBatchCounts> GetBatchCounts(int runId);
 
@@ -187,6 +238,9 @@ public interface IDonorGenotypePrecomputationRepository
     /// staging data of that run. The run and batch rows stay.
     /// </summary>
     Task TruncateStagingTables();
+
+    /// <summary>True when the group or the group-donor staging table has a row.</summary>
+    Task<bool> HasStagingData();
 }
 
 /// <inheritdoc />
@@ -648,6 +702,316 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
                                                      TRUNCATE TABLE {GroupsTableName};
                                                      """;
 
+    private const string StagingDataExistsCondition =
+        $"EXISTS (SELECT 1 FROM {GroupsTableName}) OR EXISTS (SELECT 1 FROM {GroupDonorsTableName})";
+
+    private const string HasStagingDataSql = $"SELECT CASE WHEN {StagingDataExistsCondition} THEN CAST(1 AS bit) ELSE CAST(0 AS bit) END";
+
+    private const string MarkRunCancelledSql = $"""
+                                                UPDATE {RunsTableName}
+                                                SET
+                                                    {nameof(Run.Status)} = '{nameof(RunStatus.Cancelled)}',
+                                                    {nameof(Run.StatusDateUtc)} = SYSUTCDATETIME()
+                                                WHERE {nameof(Run.DataRefreshRecordId)} = @DataRefreshRecordId
+                                                  AND {nameof(Run.Status)} IN ('{nameof(RunStatus.Building)}', '{nameof(RunStatus.Running)}')
+                                                """;
+
+    // The start and the build of a run.
+
+    /// <summary>
+    /// The locks last to the end of the transaction, so two calls for one record cannot both find no run and insert one.
+    /// </summary>
+    private const string SelectRunToStartBuildSql = $"""
+                                                     SELECT {nameof(Run.Id)}, {nameof(Run.Status)}
+                                                     FROM {RunsTableName} WITH (UPDLOCK, HOLDLOCK)
+                                                     WHERE {nameof(Run.DataRefreshRecordId)} = @DataRefreshRecordId
+                                                     """;
+
+    private const string InsertBuildingRunSql = $"""
+                                                 INSERT INTO {RunsTableName} (
+                                                     {nameof(Run.DataRefreshRecordId)},
+                                                     {nameof(Run.HlaNomenclatureVersion)},
+                                                     {nameof(Run.Status)},
+                                                     {nameof(Run.GroupsPerBatch)},
+                                                     {nameof(Run.ManualRetryCount)},
+                                                     {nameof(Run.CreatedUtc)},
+                                                     {nameof(Run.StatusDateUtc)})
+                                                 VALUES (
+                                                     @DataRefreshRecordId,
+                                                     @HlaNomenclatureVersion,
+                                                     '{nameof(RunStatus.Building)}',
+                                                     @GroupsPerBatch,
+                                                     0,
+                                                     SYSUTCDATETIME(),
+                                                     SYSUTCDATETIME())
+                                                 """;
+
+    private const string RestartBuildSql = $"""
+                                            DELETE FROM {BatchesTableName} WHERE {nameof(Batch.RunId)} = @RunId;
+                                            UPDATE {RunsTableName} SET {nameof(Run.StatusDateUtc)} = SYSUTCDATETIME() WHERE {nameof(Run.Id)} = @RunId;
+                                            """;
+
+    private const string SelectRunToBuildSql = $"""
+                                                SELECT
+                                                    r.{nameof(Run.Status)},
+                                                    r.{nameof(Run.GroupsPerBatch)},
+                                                    CASE WHEN EXISTS (SELECT 1 FROM {BatchesTableName} b WHERE b.{nameof(Batch.RunId)} = r.{nameof(Run.Id)})
+                                                        THEN CAST(1 AS bit) ELSE CAST(0 AS bit) END AS {nameof(RunToBuildRow.HasBatches)},
+                                                    CASE WHEN {StagingDataExistsCondition}
+                                                        THEN CAST(1 AS bit) ELSE CAST(0 AS bit) END AS {nameof(RunToBuildRow.HasStagingData)}
+                                                FROM {RunsTableName} r
+                                                WHERE r.{nameof(Run.Id)} = @RunId
+                                                """;
+
+    /// <summary>
+    /// The longest steps of the build read or write a row for each donor at each key, so on a full donor set they take a
+    /// long time. Twelve hours, as for the creation of the HLA indexes.
+    /// </summary>
+    private const int BuildCommandTimeoutInSeconds = 43200;
+
+    private const string BuildPairsTableName = "#BuildPairs";
+    private const string BuildDonorTypingsTableName = "#BuildDonorTypings";
+    private const string BuildGroupRangesTableName = "#BuildGroupRanges";
+
+    /// <summary>
+    /// The keys of the build, in the order of the group ids within a pair. The ordinal of a key (from 1) names its typing
+    /// hash column and its range of group ids.
+    /// </summary>
+    private static readonly IReadOnlyList<AllowedLociKey> BuildKeys = AllowedLociKeyExtensions.All;
+
+    private static readonly IReadOnlyList<int> BuildKeyOrdinals = [.. Enumerable.Range(1, BuildKeys.Count)];
+
+    /// <summary>
+    /// The two position columns of each locus in <c>Donors</c>, in the locus order of <c>SubjectGenotypeSetKeyGenerator</c>.
+    /// DPB1 is not here: no <see cref="AllowedLociKey"/> includes it.
+    /// </summary>
+    private static readonly (Locus Locus, string FirstPositionColumn, string SecondPositionColumn)[] TypingColumns =
+    [
+        (Locus.A, nameof(Donor.A_1), nameof(Donor.A_2)),
+        (Locus.B, nameof(Donor.B_1), nameof(Donor.B_2)),
+        (Locus.C, nameof(Donor.C_1), nameof(Donor.C_2)),
+        (Locus.Drb1, nameof(Donor.DRB1_1), nameof(Donor.DRB1_2)),
+        (Locus.Dqb1, nameof(Donor.DQB1_1), nameof(Donor.DQB1_2))
+    ];
+
+    /// <summary>
+    /// The registry and ethnicity pair of the donor <c>d</c> as one value: the hash of each code, side by side.
+    /// <list type="bullet">
+    /// <item>A hash reads the exact bytes. <c>=</c> and <c>GROUP BY</c> ignore trailing spaces, also under a binary
+    /// collation, and the default collation ignores case. The frequency set lookup in C# does neither, so two codes that
+    /// SQL Server compares as equal can get different frequency sets.</item>
+    /// <item>Each hash has a fixed length, so two different pairs cannot make the same value.</item>
+    /// <item>The prefix keeps a missing code apart from an empty one.</item>
+    /// </list>
+    /// </summary>
+    private const string DonorPairKeySql = $"""
+                                            HASHBYTES('SHA2_256', ISNULL(N'1' + d.{nameof(Donor.RegistryCode)}, N'0'))
+                                                + HASHBYTES('SHA2_256', ISNULL(N'1' + d.{nameof(Donor.EthnicityCode)}, N'0'))
+                                            """;
+
+    private static readonly string CreateBuildTablesSql = $"""
+                                                          CREATE TABLE {BuildPairsTableName} (
+                                                              PairKey binary(64) NOT NULL PRIMARY KEY,
+                                                              PairId  int        NOT NULL);
+
+                                                          CREATE TABLE {BuildDonorTypingsTableName} (
+                                                              DonorId int NOT NULL,
+                                                              PairId  int NOT NULL,
+                                                              {string.Join(", ", BuildKeyOrdinals.Select(ordinal => $"{TypingHashColumn(ordinal)} binary(32) NOT NULL"))});
+
+                                                          CREATE TABLE {BuildGroupRangesTableName} (
+                                                              PairId       int     NOT NULL,
+                                                              KeyOrdinal   tinyint NOT NULL,
+                                                              GroupCount   int     NOT NULL,
+                                                              FirstGroupId int     NULL,
+                                                              PRIMARY KEY (PairId, KeyOrdinal));
+                                                          """;
+
+    /// <summary>
+    /// The pairs, numbered in the order of the group ids: by the codes, compared by code point, each followed by its byte
+    /// length to keep apart two codes that differ only in trailing spaces. The codes of one pair key are equal byte for
+    /// byte, so <c>MAX</c> gives them.
+    /// </summary>
+    private const string InsertPairsSql = $"""
+                                           INSERT INTO {BuildPairsTableName} (PairKey, PairId)
+                                           SELECT
+                                               pairs.PairKey,
+                                               ROW_NUMBER() OVER (ORDER BY
+                                                   pairs.RegistryCode COLLATE Latin1_General_BIN2, DATALENGTH(pairs.RegistryCode),
+                                                   pairs.EthnicityCode COLLATE Latin1_General_BIN2, DATALENGTH(pairs.EthnicityCode))
+                                           FROM (
+                                               SELECT keyed.PairKey, MAX(keyed.RegistryCode) AS RegistryCode, MAX(keyed.EthnicityCode) AS EthnicityCode
+                                               FROM (
+                                                   SELECT
+                                                       {DonorPairKeySql} AS PairKey,
+                                                       d.{nameof(Donor.RegistryCode)} AS RegistryCode,
+                                                       d.{nameof(Donor.EthnicityCode)} AS EthnicityCode
+                                                   FROM {DonorsTableName} d
+                                               ) keyed
+                                               GROUP BY keyed.PairKey
+                                           ) pairs
+                                           """;
+
+    /// <summary>Each donor, with its pair and the hash of its typing at each key.</summary>
+    private static readonly string InsertDonorTypingsSql = $"""
+                                                           INSERT INTO {BuildDonorTypingsTableName} WITH (TABLOCK) (
+                                                               DonorId,
+                                                               PairId,
+                                                               {string.Join(", ", BuildKeyOrdinals.Select(TypingHashColumn))})
+                                                           SELECT
+                                                               d.{nameof(Donor.DonorId)},
+                                                               p.PairId,
+                                                               {string.Join(", ", BuildKeys.Select(TypingHashSql))}
+                                                           FROM {DonorsTableName} d
+                                                           INNER JOIN {BuildPairsTableName} p ON p.PairKey = {DonorPairKeySql}
+                                                           """;
+
+    /// <summary>
+    /// The first group id of each pair and key: a running total of the group counts, pair by pair, then key by key. So the
+    /// group ids of the run start at 1 and have no gap.
+    /// </summary>
+    private const string SetFirstGroupIdsSql = $"""
+                                                UPDATE r
+                                                SET r.FirstGroupId = numbered.FirstGroupId
+                                                FROM {BuildGroupRangesTableName} r
+                                                INNER JOIN (
+                                                    SELECT
+                                                        PairId,
+                                                        KeyOrdinal,
+                                                        SUM(GroupCount) OVER (ORDER BY PairId, KeyOrdinal ROWS UNBOUNDED PRECEDING) - GroupCount + 1 AS FirstGroupId
+                                                    FROM {BuildGroupRangesTableName}
+                                                ) numbered ON numbered.PairId = r.PairId AND numbered.KeyOrdinal = r.KeyOrdinal
+                                                """;
+
+    /// <summary>
+    /// The groups, from their donors. The lowest donor id of a group is its representative: the worker reads the typing and
+    /// the codes of that donor.
+    /// </summary>
+    private static readonly string InsertGroupsSql = $"""
+                                                     INSERT INTO {GroupsTableName} WITH (TABLOCK) (
+                                                         {nameof(Group.Id)},
+                                                         {nameof(Group.RunId)},
+                                                         {nameof(Group.AllowedLociKey)},
+                                                         {nameof(Group.RepresentativeDonorId)},
+                                                         {nameof(Group.DonorCount)})
+                                                     SELECT
+                                                         gd.{nameof(GroupDonor.GroupId)},
+                                                         @RunId,
+                                                         lociKeys.AllowedLociKey,
+                                                         MIN(gd.{nameof(GroupDonor.DonorId)}),
+                                                         COUNT(*)
+                                                     FROM {BuildGroupRangesTableName} r
+                                                     INNER JOIN (VALUES {string.Join(", ", BuildKeyOrdinals.Select(ordinal => $"({ordinal}, N'{BuildKeys[ordinal - 1]}')"))}) lociKeys (KeyOrdinal, AllowedLociKey)
+                                                         ON lociKeys.KeyOrdinal = r.KeyOrdinal
+                                                     INNER JOIN {GroupDonorsTableName} gd
+                                                         ON gd.{nameof(GroupDonor.GroupId)} BETWEEN r.FirstGroupId AND r.FirstGroupId + r.GroupCount - 1
+                                                     GROUP BY gd.{nameof(GroupDonor.GroupId)}, lociKeys.AllowedLociKey
+                                                     """;
+
+    /// <summary>The batches: up to <c>GroupsPerBatch</c> groups each, in id order, so the groups of a batch are one range.</summary>
+    private const string InsertBatchesSql = $"""
+                                             INSERT INTO {BatchesTableName} (
+                                                 {nameof(Batch.RunId)},
+                                                 {nameof(Batch.BatchNumber)},
+                                                 {nameof(Batch.FirstGroupId)},
+                                                 {nameof(Batch.LastGroupId)},
+                                                 {nameof(Batch.GroupCount)},
+                                                 {nameof(Batch.DonorAssignmentCount)},
+                                                 {nameof(Batch.Status)},
+                                                 {nameof(Batch.RetryCount)},
+                                                 {nameof(Batch.FailedGroupCount)},
+                                                 {nameof(Batch.StatusDateUtc)})
+                                             SELECT
+                                                 @RunId,
+                                                 numbered.BatchNumber,
+                                                 MIN(numbered.GroupId),
+                                                 MAX(numbered.GroupId),
+                                                 COUNT(*),
+                                                 SUM(numbered.DonorCount),
+                                                 '{nameof(BatchStatus.Pending)}',
+                                                 0,
+                                                 0,
+                                                 SYSUTCDATETIME()
+                                             FROM (
+                                                 SELECT
+                                                     (g.{nameof(Group.Id)} - 1) / @GroupsPerBatch AS BatchNumber,
+                                                     g.{nameof(Group.Id)} AS GroupId,
+                                                     g.{nameof(Group.DonorCount)} AS DonorCount
+                                                 FROM {GroupsTableName} g
+                                                 WHERE g.{nameof(Group.RunId)} = @RunId
+                                             ) numbered
+                                             GROUP BY numbered.BatchNumber
+                                             """;
+
+    /// <summary>
+    /// The end of the build: a compare-and-swap from building. A run with no batches is complete at once: no worker and no
+    /// sweep has anything to do for it.
+    /// </summary>
+    private const string FinishBuildSql = $"""
+                                           UPDATE {RunsTableName}
+                                           SET
+                                               {nameof(Run.Status)} = CASE
+                                                   WHEN @TotalBatchCount = 0 THEN '{nameof(RunStatus.Completed)}'
+                                                   ELSE '{nameof(RunStatus.Running)}'
+                                               END,
+                                               {nameof(Run.TotalGroupCount)} = @TotalGroupCount,
+                                               {nameof(Run.TotalBatchCount)} = @TotalBatchCount,
+                                               {nameof(Run.TotalDonorAssignmentCount)} = @TotalDonorAssignmentCount,
+                                               {nameof(Run.TotalDonorCount)} = @TotalDonorCount,
+                                               {nameof(Run.StatusDateUtc)} = SYSUTCDATETIME(),
+                                               {nameof(Run.CompletedUtc)} = CASE WHEN @TotalBatchCount = 0 THEN SYSUTCDATETIME() END
+                                           WHERE {nameof(Run.Id)} = @RunId
+                                             AND {nameof(Run.Status)} = '{nameof(RunStatus.Building)}'
+                                           """;
+
+    private const string CountDonorsSql = $"SELECT COUNT(*) FROM {DonorsTableName}";
+
+    private const string CountRangeGroupsSql = $"SELECT ISNULL(SUM(GroupCount), 0) FROM {BuildGroupRangesTableName}";
+
+    private const string DropBuildTablesSql = $"""
+                                               DROP TABLE IF EXISTS {BuildGroupRangesTableName};
+                                               DROP TABLE IF EXISTS {BuildDonorTypingsTableName};
+                                               DROP TABLE IF EXISTS {BuildPairsTableName};
+                                               """;
+
+    private static string TypingHashColumn(int keyOrdinal) => $"TypingHash{keyOrdinal}";
+
+    /// <summary>
+    /// The hash of the typing of the donor <c>d</c> at the loci of <paramref name="allowedLociKey"/>: each position followed by
+    /// U+001F, the canonical string of <c>SubjectGenotypeSetKeyGenerator</c>. So two donors have one hash exactly when they
+    /// have one stored typing key. <c>CONCAT</c> reads a missing position as an empty one, as that key does.
+    /// </summary>
+    private static string TypingHashSql(AllowedLociKey allowedLociKey)
+    {
+        var loci = allowedLociKey.ToLoci();
+        var positions = TypingColumns
+            .Where(columns => loci.Contains(columns.Locus))
+            .SelectMany(columns => new[] { columns.FirstPositionColumn, columns.SecondPositionColumn })
+            .Select(column => $"d.{column}, NCHAR(31)");
+
+        return $"HASHBYTES('SHA2_256', CONCAT({string.Join(", ", positions)}))";
+    }
+
+    private static string InsertGroupCountsSql(int keyOrdinal) => $"""
+                                                                    INSERT INTO {BuildGroupRangesTableName} (PairId, KeyOrdinal, GroupCount)
+                                                                    SELECT PairId, {keyOrdinal}, COUNT(DISTINCT {TypingHashColumn(keyOrdinal)})
+                                                                    FROM {BuildDonorTypingsTableName}
+                                                                    GROUP BY PairId
+                                                                    """;
+
+    /// <summary>
+    /// The donors of the groups of one key. Within a pair, the rank of a typing among the distinct typings of the pair is
+    /// the place of its group in the range of the pair and the key.
+    /// </summary>
+    private static string InsertGroupDonorsSql(int keyOrdinal) => $"""
+                                                                    INSERT INTO {GroupDonorsTableName} WITH (TABLOCK) ({nameof(GroupDonor.GroupId)}, {nameof(GroupDonor.DonorId)})
+                                                                    SELECT
+                                                                        r.FirstGroupId - 1 + DENSE_RANK() OVER (PARTITION BY t.PairId ORDER BY t.{TypingHashColumn(keyOrdinal)}),
+                                                                        t.DonorId
+                                                                    FROM {BuildDonorTypingsTableName} t
+                                                                    INNER JOIN {BuildGroupRangesTableName} r ON r.PairId = t.PairId AND r.KeyOrdinal = {keyOrdinal}
+                                                                    """;
+
     public DonorGenotypePrecomputationRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
     {
     }
@@ -663,6 +1027,135 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
         );
 
         return row?.ToEntity();
+    }
+
+    /// <inheritdoc />
+    public async Task<Run> StartBuild(int dataRefreshRecordId, string hlaNomenclatureVersion, int groupsPerBatch)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(groupsPerBatch, 1);
+
+        await using (var connection = await OpenConnection())
+        {
+            await using var transaction = await connection.BeginTransactionAsync();
+            var parameters = new
+            {
+                DataRefreshRecordId = dataRefreshRecordId,
+                HlaNomenclatureVersion = hlaNomenclatureVersion,
+                GroupsPerBatch = groupsPerBatch
+            };
+
+            var run = await connection.QuerySingleOrDefaultAsync<RunToStartBuildRow>(
+                SelectRunToStartBuildSql,
+                parameters,
+                transaction,
+                CommandTimeoutInSeconds
+            );
+
+            if (run == null)
+            {
+                await connection.ExecuteAsync(InsertBuildingRunSql, parameters, transaction, CommandTimeoutInSeconds);
+            }
+            else if (run.Status == nameof(RunStatus.Building))
+            {
+                await connection.ExecuteAsync(RestartBuildSql, new { RunId = run.Id }, transaction, CommandTimeoutInSeconds);
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    $"Run {run.Id} of data refresh record {dataRefreshRecordId} is {run.Status}. Only a run that is building can start its build.");
+            }
+
+            await connection.ExecuteAsync(TruncateStagingTablesSql, transaction: transaction, commandTimeout: CommandTimeoutInSeconds);
+            await transaction.CommitAsync();
+        }
+
+        return await GetRun(dataRefreshRecordId)
+               ?? throw new InvalidOperationException($"The run of data refresh record {dataRefreshRecordId} is gone after the start of its build.");
+    }
+
+    /// <inheritdoc />
+    public async Task<DonorGenotypePrecomputationBuildResult> BuildRun(int runId, CancellationToken cancellationToken)
+    {
+        // One connection for the whole build: a temp table is visible only to the session that made it.
+        await using var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString());
+        await connection.OpenAsync(cancellationToken);
+        var build = new BuildSession(connection, cancellationToken);
+
+        var run = await connection.QuerySingleOrDefaultAsync<RunToBuildRow>(new CommandDefinition(
+                      SelectRunToBuildSql,
+                      new { RunId = runId },
+                      commandTimeout: CommandTimeoutInSeconds,
+                      cancellationToken: cancellationToken))
+                  ?? throw new InvalidOperationException($"Run {runId} does not exist.");
+        if (run.Status != nameof(RunStatus.Building) || run.HasBatches || run.HasStagingData)
+        {
+            throw new InvalidOperationException(
+                $"Run {runId} cannot be built: its status is {run.Status}, it has batches: {run.HasBatches}, there is staging data: " +
+                $"{run.HasStagingData}. Call {nameof(StartBuild)} first.");
+        }
+
+        try
+        {
+            await build.Execute(CreateBuildTablesSql);
+            await build.Step("Pairs", InsertPairsSql);
+
+            var donorCount = await build.Step("Donor typings", InsertDonorTypingsSql);
+            var donorsInTable = await build.Scalar<int>(CountDonorsSql);
+            if (donorCount != donorsInTable)
+            {
+                throw new InvalidOperationException(
+                    $"The build of run {runId} found the registry and ethnicity pair of {donorCount} of the {donorsInTable} donors.");
+            }
+
+            foreach (var keyOrdinal in BuildKeyOrdinals)
+            {
+                await build.Step($"Group counts {BuildKeys[keyOrdinal - 1]}", InsertGroupCountsSql(keyOrdinal));
+            }
+
+            await build.Step("Group ids", SetFirstGroupIdsSql);
+
+            var donorAssignmentCount = 0;
+            foreach (var keyOrdinal in BuildKeyOrdinals)
+            {
+                var key = BuildKeys[keyOrdinal - 1];
+                var rowCount = await build.Step($"Group donors {key}", InsertGroupDonorsSql(keyOrdinal));
+                if (rowCount != donorCount)
+                {
+                    throw new InvalidOperationException($"The build of run {runId} put {rowCount} of the {donorCount} donors in a group of {key}.");
+                }
+
+                donorAssignmentCount += rowCount;
+            }
+
+            var groupCount = await build.Step("Groups", InsertGroupsSql, new { RunId = runId });
+            var countedGroupCount = await build.Scalar<int>(CountRangeGroupsSql);
+            if (groupCount != countedGroupCount)
+            {
+                throw new InvalidOperationException($"The build of run {runId} wrote {groupCount} groups, and counted {countedGroupCount}.");
+            }
+
+            var batchCount = await build.Step("Batches", InsertBatchesSql, new { RunId = runId, run.GroupsPerBatch });
+
+            var finishedRunCount = await build.Execute(FinishBuildSql, new
+            {
+                RunId = runId,
+                TotalGroupCount = groupCount,
+                TotalBatchCount = batchCount,
+                TotalDonorAssignmentCount = donorAssignmentCount,
+                TotalDonorCount = donorCount
+            });
+            if (finishedRunCount != 1)
+            {
+                throw new InvalidOperationException($"Run {runId} stopped building during its build.");
+            }
+
+            var status = batchCount == 0 ? RunStatus.Completed : RunStatus.Running;
+            return new DonorGenotypePrecomputationBuildResult(status, donorCount, groupCount, batchCount, donorAssignmentCount, build.Steps);
+        }
+        finally
+        {
+            await build.DropTables();
+        }
     }
 
     /// <inheritdoc />
@@ -859,6 +1352,19 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
     }
 
     /// <inheritdoc />
+    public async Task<bool> TryMarkRunCancelled(int dataRefreshRecordId)
+    {
+        await using var connection = await OpenConnection();
+        var rowsUpdated = await connection.ExecuteAsync(
+            MarkRunCancelledSql,
+            new { DataRefreshRecordId = dataRefreshRecordId },
+            commandTimeout: CommandTimeoutInSeconds
+        );
+
+        return rowsUpdated == 1;
+    }
+
+    /// <inheritdoc />
     public async Task<DonorGenotypePrecomputationBatchCounts> GetBatchCounts(int runId)
     {
         await using var connection = await OpenConnection();
@@ -939,6 +1445,13 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
     {
         await using var connection = await OpenConnection();
         await connection.ExecuteAsync(TruncateStagingTablesSql, commandTimeout: CommandTimeoutInSeconds);
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> HasStagingData()
+    {
+        await using var connection = await OpenConnection();
+        return await connection.ExecuteScalarAsync<bool>(HasStagingDataSql, commandTimeout: CommandTimeoutInSeconds);
     }
 
     [return: NotNullIfNotNull(nameof(message))]
@@ -1161,5 +1674,75 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
         public string? FailureMessage { get; init; }
 
         public DonorGenotypePrecomputationFailureSample ToModel() => new(BatchId, GroupId, FailureMessage);
+    }
+
+    private sealed class RunToStartBuildRow
+    {
+        public int Id { get; init; }
+
+        public required string Status { get; init; }
+    }
+
+    private sealed class RunToBuildRow
+    {
+        public required string Status { get; init; }
+
+        public int GroupsPerBatch { get; init; }
+
+        public bool HasBatches { get; init; }
+
+        public bool HasStagingData { get; init; }
+    }
+
+    /// <summary>
+    /// The connection of one build, and the record of its steps. Every command has the long timeout of the build, and the
+    /// token of the caller.
+    /// </summary>
+    private sealed class BuildSession(SqlConnection connection, CancellationToken cancellationToken)
+    {
+        private readonly List<DonorGenotypePrecomputationBuildStep> steps = [];
+
+        public IReadOnlyList<DonorGenotypePrecomputationBuildStep> Steps => steps;
+
+        /// <summary>Runs one step of the build, and records the rows that it wrote and its duration.</summary>
+        public async Task<int> Step(string name, string sql, object? parameters = null)
+        {
+            var startTimestamp = Stopwatch.GetTimestamp();
+            var rowCount = await Execute(sql, parameters);
+            steps.Add(new DonorGenotypePrecomputationBuildStep(name, rowCount, Stopwatch.GetElapsedTime(startTimestamp)));
+            return rowCount;
+        }
+
+        public Task<int> Execute(string sql, object? parameters = null) => connection.ExecuteAsync(Command(sql, parameters));
+
+        public Task<T?> Scalar<T>(string sql) => connection.ExecuteScalarAsync<T>(Command(sql));
+
+        /// <summary>
+        /// Drops the temp tables of the build: for a full donor set they take a few GB of tempdb. A closed connection goes back
+        /// to the pool with its session, and its temp tables stay until the pool resets or closes the connection.
+        /// </summary>
+        /// <remarks>
+        /// For a <c>finally</c> block, so it does not throw: an error here would hide the error that stopped the build. The
+        /// session drops the tables anyway when it ends.
+        /// </remarks>
+        public async Task DropTables()
+        {
+            if (connection.State != ConnectionState.Open)
+            {
+                return;
+            }
+
+            try
+            {
+                await connection.ExecuteAsync(DropBuildTablesSql, commandTimeout: CommandTimeoutInSeconds);
+            }
+            catch (Exception exception) when (exception is SqlException or InvalidOperationException)
+            {
+                // The error that stopped the build, if there was one, is the error to report.
+            }
+        }
+
+        private CommandDefinition Command(string sql, object? parameters = null) =>
+            new(sql, parameters, commandTimeout: BuildCommandTimeoutInSeconds, cancellationToken: cancellationToken);
     }
 }

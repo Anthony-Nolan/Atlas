@@ -11,6 +11,7 @@ using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
+using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 using Atlas.MatchingAlgorithm.Settings;
 using EnumStringValues;
 using Microsoft.Data.SqlClient;
@@ -53,6 +54,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private readonly IAzureDatabaseNameProvider azureDatabaseNameProvider;
         private readonly IDataRefreshSupportNotificationSender dataRefreshNotificationSender;
         private readonly IDataRefreshCompletionNotifier dataRefreshCompletionNotifier;
+        private readonly IDonorGenotypePrecomputationRunCanceller precomputationRunCanceller;
         private readonly IServiceScopeFactory serviceScopeFactory;
 
         public DataRefreshOrchestrator(
@@ -65,6 +67,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IAzureDatabaseNameProvider azureDatabaseNameProvider,
             IDataRefreshSupportNotificationSender dataRefreshNotificationSender,
             IDataRefreshCompletionNotifier dataRefreshCompletionNotifier,
+            IDonorGenotypePrecomputationRunCanceller precomputationRunCanceller,
             IServiceScopeFactory serviceScopeFactory)
         {
             this.logger = logger;
@@ -76,6 +79,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             this.azureDatabaseNameProvider = azureDatabaseNameProvider;
             this.dataRefreshNotificationSender = dataRefreshNotificationSender;
             this.dataRefreshCompletionNotifier = dataRefreshCompletionNotifier;
+            this.precomputationRunCanceller = precomputationRunCanceller;
             this.serviceScopeFactory = serviceScopeFactory;
         }
 
@@ -100,7 +104,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 await dataRefreshNotificationSender.SendInProgressNotification(
                     dataRefreshRecordId, 1 + incompleteJob.RefreshAttemptedCount);
 
-                await ContinueRefreshJob(dataRefreshRecordId, cancellationTokenSource.Token);
+                await ContinueRefreshJob(incompleteJob, cancellationTokenSource.Token);
             }
             finally
             {
@@ -313,8 +317,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         /// <summary>
         /// Refresh job will be "continued" from the appropriate point, including on the first attempt.
         /// </summary>
-        private async Task ContinueRefreshJob(int dataRefreshRecordId, CancellationToken cancellationToken)
+        private async Task ContinueRefreshJob(DataRefreshRecord incompleteJob, CancellationToken cancellationToken)
         {
+            var dataRefreshRecordId = incompleteJob.Id;
+
             try
             {
                 await dataRefreshHistoryRepository.UpdateRunAttemptDetails(dataRefreshRecordId);
@@ -347,6 +353,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 // next delivery of the request would claim it and run the failed refresh again.
                 await MarkDataHistoryRecordAsComplete(dataRefreshRecordId, false, null);
                 await NotifyOfCompletion(dataRefreshRecordId, false);
+
+                // Only here: after a SqlException the request is delivered again and the stage continues its run, and after a lost
+                // lease the record belongs to another invocation. Last, because the removal of the staging data waits for the
+                // statements of the workers, and must not delay the failure notifications.
+                await precomputationRunCanceller.CancelRun(incompleteJob);
             }
         }
 

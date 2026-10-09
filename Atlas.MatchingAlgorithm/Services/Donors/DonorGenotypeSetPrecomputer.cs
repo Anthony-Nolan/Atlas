@@ -43,9 +43,8 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
     }
 
     /// <summary>
-    /// Used by hosts that do not run the Match Prediction genotype set pipeline: today the data refresh (when it applies
-    /// queued donor updates) and the matching algorithm API. The donor service still deletes an updated donor's old rows,
-    /// so these donors have no rows and search imputes them live.
+    /// Used by hosts that do not run the Match Prediction genotype set pipeline: today the matching algorithm API. The donor
+    /// service still deletes an updated donor's old rows, so these donors have no rows and search imputes them live.
     /// </summary>
     public class NoOpDonorGenotypeSetPrecomputer : IDonorGenotypeSetPrecomputer
     {
