@@ -103,8 +103,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                     matchingResultsNotification.ResultsBatched ? matchingResultsNotification.BatchFolderName : null)
             );
 
-            var matchPredictionInputs = logger.RunTimed("Build Match Prediction Inputs", () =>
-                matchPredictionInputBuilder.BuildMatchPredictionInputs(matchingResults)
+            var matchPredictionInputs = await logger.RunTimedAsync("Build Match Prediction Inputs", async () =>
+                await matchPredictionInputBuilder.BuildMatchPredictionInputs(matchingResults)
             );
 
             using (logger.RunTimed("Uploading match prediction requests"))
@@ -156,8 +156,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                     matchingResultsNotification.ResultsBatched ? matchingResultsNotification.BatchFolderName : null)
             );
 
-            var matchPredictionInputs = logger.RunTimed("Build Parallel Match Prediction Inputs", () =>
-                matchPredictionInputBuilder.BuildMatchPredictionInputs(matchingResults, parallelMatchPredictionBatchSize)
+            var matchPredictionInputs = await logger.RunTimedAsync("Build Parallel Match Prediction Inputs", async () =>
+                await matchPredictionInputBuilder.BuildMatchPredictionInputs(matchingResults, parallelMatchPredictionBatchSize)
             );
 
             IList<string> blobLocations;

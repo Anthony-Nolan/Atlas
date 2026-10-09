@@ -3,6 +3,7 @@ using System.Linq;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using AwesomeAssertions;
+using Newtonsoft.Json;
 using NUnit.Framework;
 
 namespace Atlas.MatchPrediction.Test.ExternalInterface.Models;
@@ -26,6 +27,36 @@ internal class MatchProbabilityRequestTests
 
         input.MatchingAlgorithmDataRefreshRecordId.Should().Be(DataRefreshRecordId);
         input.SingleDonorMatchProbabilityInputs.Single().MatchingAlgorithmDataRefreshRecordId.Should().Be(DataRefreshRecordId);
+    }
+
+    [Test]
+    public void SingleDonorMatchProbabilityInputs_CopyPatientGenotypeSetKey()
+    {
+        var key = new PatientGenotypeSetKey("typing-key", 7, "ABCDrb1Dqb1");
+        var input = new MultipleDonorMatchProbabilityInput(new IdentifiedMatchProbabilityRequest { PatientGenotypeSetKey = key })
+        {
+            Donors = new List<DonorInput> { new() { DonorId = 1 } }
+        };
+
+        input.PatientGenotypeSetKey.Should().Be(key);
+        input.SingleDonorMatchProbabilityInputs.Single().PatientGenotypeSetKey.Should().Be(key);
+    }
+
+    /// <summary>The key travels to both match prediction paths in the batch blob, which is written and read with Json.NET.</summary>
+    [Test]
+    public void PatientGenotypeSetKey_SurvivesTheBatchBlobsJsonRoundTrip()
+    {
+        var input = new MultipleDonorMatchProbabilityInput(new IdentifiedMatchProbabilityRequest
+        {
+            PatientGenotypeSetKey = new PatientGenotypeSetKey("typing-key", 7, "ABCDrb1Dqb1")
+        })
+        {
+            Donors = new List<DonorInput> { new() { DonorId = 1 } }
+        };
+
+        var roundTripped = JsonConvert.DeserializeObject<MultipleDonorMatchProbabilityInput>(JsonConvert.SerializeObject(input));
+
+        roundTripped.PatientGenotypeSetKey.Should().Be(input.PatientGenotypeSetKey);
     }
 
     /// <summary>

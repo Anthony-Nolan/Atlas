@@ -92,6 +92,61 @@ public class SubjectGenotypeSetSearchRepositoryTests
         (await repository.GetDonorSubjectGenotypeSets([], Key)).Should().BeEmpty();
     }
 
+    /// <summary>A patient's set (ATL-426) is a value row that no donor points at.</summary>
+    [Test]
+    public async Task GetSubjectGenotypeSetValue_ReturnsTheValueWithTheExactKey_WithNoDonorAssignment()
+    {
+        var key = NewKey(frequencySetId: 7);
+        await repository.GetOrCreateValueIds([
+            new SubjectGenotypeSetValueToStore(key, false, [1, 2, 3]),
+            new SubjectGenotypeSetValueToStore(key with { HaplotypeFrequencySetId = 8 }, false, [4]),
+            new SubjectGenotypeSetValueToStore(key with { AllowedLociKey = AllowedLociKey.ABDrb1 }, false, [5]),
+        ]);
+
+        var stored = await repository.GetSubjectGenotypeSetValue(key);
+
+        stored.IsUnrepresented.Should().BeFalse();
+        stored.SubjectGenotypeSetData.Should().Equal(1, 2, 3);
+        (await StoredAssignments()).Should().BeEmpty();
+    }
+
+    [Test]
+    public async Task GetSubjectGenotypeSetValue_ForAnUnrepresentedValue_ReturnsItWithNoData()
+    {
+        var key = NewKey();
+        await repository.GetOrCreateValueIds([new SubjectGenotypeSetValueToStore(key, true, null)]);
+
+        var stored = await repository.GetSubjectGenotypeSetValue(key);
+
+        stored.IsUnrepresented.Should().BeTrue();
+        stored.SubjectGenotypeSetData.Should().BeNull();
+    }
+
+    [Test]
+    public async Task GetSubjectGenotypeSetValue_WhenNoValueHasTheKey_ReturnsNull()
+    {
+        await repository.GetOrCreateValueIds([new SubjectGenotypeSetValueToStore(NewKey(frequencySetId: 7), false, [1])]);
+
+        // A new key: a different typing at the same frequency set.
+        (await repository.GetSubjectGenotypeSetValue(NewKey(frequencySetId: 7))).Should().BeNull();
+    }
+
+    /// <summary>
+    /// The warm step may run twice for one search (a retried activity), or for two searches of the same patient at once.
+    /// Both must agree on one row, and the second must not rewrite the first.
+    /// </summary>
+    [Test]
+    public async Task GetOrCreateValueIds_ForAPatientSetStoredTwice_KeepsOneRowAndTheFirstPayload()
+    {
+        var key = NewKey();
+        var firstId = (await repository.GetOrCreateValueIds([new SubjectGenotypeSetValueToStore(key, false, [1])])).Single().Value;
+        var secondId = (await repository.GetOrCreateValueIds([new SubjectGenotypeSetValueToStore(key, false, [2])])).Single().Value;
+
+        secondId.Should().Be(firstId);
+        (await repository.GetSubjectGenotypeSetValue(key)).SubjectGenotypeSetData.Should().Equal(1);
+        (await StoredAssignments()).Should().BeEmpty();
+    }
+
     [Test]
     public async Task UpsertDonorAssignmentsWhereDonorUnchanged_ForDonorsWhoseTypingIsUnchanged_WritesTheirAssignments()
     {

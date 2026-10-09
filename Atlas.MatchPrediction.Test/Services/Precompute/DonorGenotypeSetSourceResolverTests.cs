@@ -28,7 +28,7 @@ internal class DonorGenotypeSetSourceResolverTests
     {
         settings = new PrecomputedGenotypeSetSettings();
         reader = Substitute.For<IPrecomputedDonorGenotypeSetReader>();
-        reader.GetDonorGenotypeSets(default, default, default).ReturnsForAnyArgs(
+        reader.GetDonorGenotypeSets(default, default, default, default).ReturnsForAnyArgs(
             new PrecomputedDonorGenotypeSetLookup("ABCDrb1Dqb1", null, new Dictionary<int, PrecomputedDonorGenotypeSetRow>()));
 
         resolver = new DonorGenotypeSetSourceResolver(settings, reader, Substitute.For<IAtlasLogger>());
@@ -72,7 +72,7 @@ internal class DonorGenotypeSetSourceResolverTests
 
         var context = await resolver.Resolve(Request(true), Donors);
 
-        await reader.DidNotReceiveWithAnyArgs().GetDonorGenotypeSets(default, default, default);
+        await reader.DidNotReceiveWithAnyArgs().GetDonorGenotypeSets(default, default, default, default);
         context.BatchFallbackReason.Should().Be(DonorGenotypeSetSource.PrecomputeDisabled);
         context.CanStore.Should().BeFalse();
     }
@@ -84,7 +84,7 @@ internal class DonorGenotypeSetSourceResolverTests
 
         var context = await resolver.Resolve(Request(false), Donors);
 
-        await reader.DidNotReceiveWithAnyArgs().GetDonorGenotypeSets(default, default, default);
+        await reader.DidNotReceiveWithAnyArgs().GetDonorGenotypeSets(default, default, default, default);
         context.BatchFallbackReason.Should().Be(DonorGenotypeSetSource.PrecomputeDisabled);
         context.CanStore.Should().BeFalse();
     }
@@ -101,7 +101,8 @@ internal class DonorGenotypeSetSourceResolverTests
         await reader.Received(1).GetDonorGenotypeSets(
             Donors,
             Arg.Is<IReadOnlySet<Locus>>(loci => loci.SetEquals(new[] { Locus.A, Locus.B, Locus.Dqb1, Locus.Drb1 })),
-            DataRefreshRecordId);
+            DataRefreshRecordId,
+            null);
         context.BatchFallbackReason.Should().BeNull();
         context.AllowedLociKey.Should().Be("ABCDrb1Dqb1");
         context.CanStore.Should().BeTrue();
@@ -111,7 +112,7 @@ internal class DonorGenotypeSetSourceResolverTests
     public async Task Resolve_PassesTheReadersBatchFallbackReasonOn()
     {
         settings.Mode = PrecomputedGenotypeSetMode.DefaultPrecomputed;
-        reader.GetDonorGenotypeSets(default, default, default).ReturnsForAnyArgs(
+        reader.GetDonorGenotypeSets(default, default, default, default).ReturnsForAnyArgs(
             PrecomputedDonorGenotypeSetLookup.Unavailable(DonorGenotypeSetSource.ActiveDatabaseChanged, "ABDrb1"));
 
         var context = await resolver.Resolve(Request(null), Donors);
@@ -124,7 +125,7 @@ internal class DonorGenotypeSetSourceResolverTests
     public async Task Resolve_WhenTheReadFails_ComputesTheBatchLiveRatherThanFailing()
     {
         settings.Mode = PrecomputedGenotypeSetMode.DefaultPrecomputed;
-        reader.GetDonorGenotypeSets(default, default, default).ThrowsAsyncForAnyArgs(new Exception("sql is down"));
+        reader.GetDonorGenotypeSets(default, default, default, default).ThrowsAsyncForAnyArgs(new Exception("sql is down"));
 
         var context = await resolver.Resolve(Request(null), Donors);
 
@@ -149,7 +150,35 @@ internal class DonorGenotypeSetSourceResolverTests
 
         firstBatch.UsePrecomputedGenotypeSets.Should().BeTrue();
         secondBatch.UsePrecomputedGenotypeSets.Should().BeFalse();
-        await reader.ReceivedWithAnyArgs(1).GetDonorGenotypeSets(default, default, default);
+        await reader.ReceivedWithAnyArgs(1).GetDonorGenotypeSets(default, default, default, default);
+    }
+
+    [Test]
+    public async Task Resolve_WhenTheBatchHasAPatientKey_ReadsThePatientRowWithTheDonorsAndKeepsTheKey()
+    {
+        settings.Mode = PrecomputedGenotypeSetMode.DefaultPrecomputed;
+        var key = new PatientGenotypeSetKey("typing-key", 7, "ABCDrb1Dqb1");
+        var request = Request(null);
+        request.PatientGenotypeSetKey = key;
+
+        var context = await resolver.Resolve(request, Donors);
+
+        await reader.Received(1).GetDonorGenotypeSets(Donors, Arg.Any<IReadOnlySet<Locus>>(), DataRefreshRecordId, key);
+        context.PatientGenotypeSetKey.Should().Be(key);
+    }
+
+    [Test]
+    public async Task Resolve_WhenSwitchedOff_KeepsThePatientKeyButReadsNothing()
+    {
+        settings.Mode = PrecomputedGenotypeSetMode.ForceLive;
+        var request = Request(true);
+        request.PatientGenotypeSetKey = new PatientGenotypeSetKey("typing-key", 7, "ABCDrb1Dqb1");
+
+        var context = await resolver.Resolve(request, Donors);
+
+        await reader.DidNotReceiveWithAnyArgs().GetDonorGenotypeSets(default, default, default, default);
+        context.PatientGenotypeSetKey.Should().Be(request.PatientGenotypeSetKey);
+        context.TryGetPrecomputedPatientGenotypeSet(7, out _).Should().Be(PatientGenotypeSetSource.PrecomputeDisabled);
     }
 
     private static IdentifiedMatchProbabilityRequest Request(bool? usePrecomputedGenotypeSets) => new()

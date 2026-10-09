@@ -10,6 +10,7 @@ using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.Precompute;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 using Atlas.MatchingAlgorithm.Services.Search.Precompute;
+using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.Precompute;
 using AwesomeAssertions;
 using NSubstitute;
@@ -120,6 +121,33 @@ internal class PrecomputedDonorGenotypeSetWriterTests
             PinnedRecordId);
 
         result.Should().Be(DonorGenotypeSetStoreResult.None);
+        repositoryFactory.DidNotReceiveWithAnyArgs().GetForDatabase(default);
+    }
+
+    [TestCase(false, new byte[] { 1, 2 })]
+    [TestCase(true, null)]
+    public async Task StorePatientGenotypeSet_WhenPinnedRecordIsStillActive_StoresAValueRowOnlyInItsDatabase(bool isUnrepresented, byte[] data)
+    {
+        var stored = await writer.StorePatientGenotypeSet(new PatientGenotypeSetKey("patient-key", FrequencySetId, "ABDrb1"), isUnrepresented, data, PinnedRecordId);
+
+        stored.Should().BeTrue();
+        repositoryFactory.Received().GetForDatabase(TransientDatabase.DatabaseA);
+        await repository.Received(1).GetOrCreateValueIds(Arg.Is<IReadOnlyCollection<SubjectGenotypeSetValueToStore>>(values =>
+            values.Single().Key == new SubjectGenotypeSetKey("patient-key", FrequencySetId, AllowedLociKey.ABDrb1)
+            && values.Single().IsUnrepresented == isUnrepresented
+            && values.Single().SubjectGenotypeSetData == data));
+        await repository.DidNotReceiveWithAnyArgs().UpsertDonorAssignmentsWhereDonorUnchanged(default);
+        await repository.DidNotReceiveWithAnyArgs().UpsertDonorAssignments(default);
+    }
+
+    [Test]
+    public async Task StorePatientGenotypeSet_WhenThePinnedRecordIsNoLongerActive_WritesNothing()
+    {
+        historyRepository.GetActiveRecord().Returns(new ActiveDataRefreshRecord(PinnedRecordId + 1, TransientDatabase.DatabaseB, "3330"));
+
+        var stored = await writer.StorePatientGenotypeSet(new PatientGenotypeSetKey("patient-key", FrequencySetId, "ABDrb1"), false, [1], PinnedRecordId);
+
+        stored.Should().BeFalse();
         repositoryFactory.DidNotReceiveWithAnyArgs().GetForDatabase(default);
     }
 }

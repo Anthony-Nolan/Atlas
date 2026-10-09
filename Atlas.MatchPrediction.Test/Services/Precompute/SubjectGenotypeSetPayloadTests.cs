@@ -583,7 +583,7 @@ public class SubjectGenotypeSetPayloadTests
     /// (a partial override list), a null slot, an empty-string slot, two decimals that differ only in scale, and a
     /// sum that is not the sum of the genotype likelihoods.
     /// </summary>
-    private static SubjectGenotypeSet CanonicalV1Set()
+    internal static SubjectGenotypeSet CanonicalV1Set()
     {
         var stringMatchable = new PhenotypeInfoBuilder<string>()
             .WithDataAt(Locus.A, "A*01:01P", "A*02:01P")

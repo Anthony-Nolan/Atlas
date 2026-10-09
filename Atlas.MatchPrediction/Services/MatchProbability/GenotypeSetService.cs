@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.MatchPrediction.Validators;
 using FluentValidation;
+using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 
 namespace Atlas.MatchPrediction.Services.MatchProbability;
 
@@ -20,6 +21,12 @@ public interface IGenotypeSetService
     Task<SubjectGenotypeSet> GetGenotypeSet(SubjectData subjectData, MatchPredictionParameters parameters);
 
     Task<SubjectGenotypeSet> GetPatientGenotypeSet(SingleDonorMatchProbabilityInput input);
+
+    /// <summary>
+    /// As <see cref="GetPatientGenotypeSet(SingleDonorMatchProbabilityInput)"/>, with the patient frequency set already
+    /// resolved by the caller - so that a caller that also needs the set's id (for a stored set's key) uses the same set.
+    /// </summary>
+    Task<SubjectGenotypeSet> GetPatientGenotypeSet(SingleDonorMatchProbabilityInput input, HaplotypeFrequencySet patientFrequencySet);
 }
 
 internal class GenotypeSetService(
@@ -44,10 +51,23 @@ internal class GenotypeSetService(
     {
         await new MatchProbabilityNonDonorValidator().ValidateAndThrowAsync(input);
 
-        var allowedLoci = LocusSettings.MatchPredictionLoci.Except(input.ExcludedLoci).ToHashSet();
         var patientFrequencySet = await haplotypeFrequencyService.GetSingleHaplotypeFrequencySet(
             input.PatientFrequencySetMetadata ?? new FrequencySetMetadata()
         );
+
+        return await BuildPatientGenotypeSet(input, patientFrequencySet);
+    }
+
+    public async Task<SubjectGenotypeSet> GetPatientGenotypeSet(SingleDonorMatchProbabilityInput input, HaplotypeFrequencySet patientFrequencySet)
+    {
+        await new MatchProbabilityNonDonorValidator().ValidateAndThrowAsync(input);
+
+        return await BuildPatientGenotypeSet(input, patientFrequencySet);
+    }
+
+    private async Task<SubjectGenotypeSet> BuildPatientGenotypeSet(SingleDonorMatchProbabilityInput input, HaplotypeFrequencySet patientFrequencySet)
+    {
+        var allowedLoci = LocusSettings.MatchPredictionLoci.Except(input.ExcludedLoci).ToHashSet();
 
         return await BuildGenotypeSet(
             new SubjectData(

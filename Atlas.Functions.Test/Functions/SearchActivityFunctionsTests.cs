@@ -96,7 +96,7 @@ internal class SearchActivityFunctionsTests
         await functions.PrepareAndDispatchParallelMatchPredictionBatches(parameters);
 
         // Inputs built at the configured parallel batch size
-        matchPredictionInputBuilder.Received(1).BuildMatchPredictionInputs(Arg.Any<OriginalMatchingAlgorithmResultSet>(), ParallelBatchSize);
+        await matchPredictionInputBuilder.Received(1).BuildMatchPredictionInputs(Arg.Any<OriginalMatchingAlgorithmResultSet>(), ParallelBatchSize);
 
         // Run record created (with details from the notification) before any batch requests are published
         Received.InOrder(() =>

@@ -64,6 +64,49 @@ public enum DonorGenotypeSetSource
     PrecomputeDisabled
 }
 
+/// <summary>
+/// Where a batch's patient genotype set came from: <see cref="Precomputed"/>, or the reason it was computed live.
+/// </summary>
+/// <remarks>Logged by name (see <c>DonorGenotypeSetBatchCompleter</c>), like <see cref="DonorGenotypeSetSource"/>.</remarks>
+public enum PatientGenotypeSetSource
+{
+    /// <summary>The stored set was decoded and used. The patient was not imputed for this batch.</summary>
+    Precomputed,
+
+    /// <summary>
+    /// The batch has no <see cref="IdentifiedMatchProbabilityRequest.PatientGenotypeSetKey"/>: the search started with the
+    /// precomputed path off, or the warm step could not store the set.
+    /// </summary>
+    NoKey,
+
+    /// <summary>The key is set, but no stored row has it.</summary>
+    NoRow,
+
+    /// <summary>
+    /// The stored set was computed with a different haplotype frequency set from the one the batch now uses for the
+    /// patient (a new set was activated after the warm step).
+    /// </summary>
+    StaleFrequencySet,
+
+    /// <summary>The stored row could not be decoded.</summary>
+    DecodeFailed,
+
+    /// <summary>The search's allowed loci are not one of the four precomputed combinations.</summary>
+    UncoveredAllowedLoci,
+
+    /// <summary>The transient database that matching used is no longer the active one.</summary>
+    ActiveDatabaseChanged,
+
+    /// <summary>The request does not say which transient database matching used.</summary>
+    ActiveDatabaseUnknown,
+
+    /// <summary>Reading the stored rows failed.</summary>
+    ReadFailed,
+
+    /// <summary>The precomputed path is off for this batch: by the kill-switch, or by the request's override.</summary>
+    PrecomputeDisabled
+}
+
 /// <summary>What decided whether the precomputed path was used for a batch.</summary>
 public enum UsePrecomputedGenotypeSetsSource
 {
@@ -101,13 +144,36 @@ public sealed record PrecomputedDonorGenotypeSetRow(
 /// and <paramref name="Rows"/> is empty.
 /// </param>
 /// <param name="Rows">Stored rows by Atlas donor id. Donors with no row are absent.</param>
+/// <param name="PatientRow">
+/// The stored row of the patient key that was asked for; null when no key was asked for, when it has no row, or when
+/// the key is for a different allowed-loci key from <paramref name="AllowedLociKey"/>.
+/// </param>
 public sealed record PrecomputedDonorGenotypeSetLookup(
     string AllowedLociKey,
     DonorGenotypeSetSource? BatchFallbackReason,
-    IReadOnlyDictionary<int, PrecomputedDonorGenotypeSetRow> Rows)
+    IReadOnlyDictionary<int, PrecomputedDonorGenotypeSetRow> Rows,
+    PrecomputedPatientGenotypeSetRow PatientRow = null)
 {
     public static PrecomputedDonorGenotypeSetLookup Unavailable(DonorGenotypeSetSource reason, string allowedLociKey = null) =>
         new(allowedLociKey, reason, new Dictionary<int, PrecomputedDonorGenotypeSetRow>());
+}
+
+/// <summary>
+/// A patient's stored genotype set. <see cref="SubjectGenotypeSetData"/> is null exactly when
+/// <see cref="IsUnrepresented"/> is true. The haplotype frequency set and typing are part of the key it was read by.
+/// </summary>
+public sealed record PrecomputedPatientGenotypeSetRow(bool IsUnrepresented, byte[] SubjectGenotypeSetData);
+
+/// <summary>The result of looking up a patient's stored genotype set before it is computed.</summary>
+/// <param name="Key">The key of the patient's set; null when <paramref name="UnavailableReason"/> is set.</param>
+/// <param name="Exists">True when a row with <paramref name="Key"/> is already stored.</param>
+/// <param name="UnavailableReason">
+/// Null when the lookup ran. Otherwise <see cref="DonorGenotypeSetSource.UncoveredAllowedLoci"/>,
+/// <see cref="DonorGenotypeSetSource.ActiveDatabaseChanged"/> or <see cref="DonorGenotypeSetSource.ActiveDatabaseUnknown"/>.
+/// </param>
+public sealed record PatientGenotypeSetLookup(PatientGenotypeSetKey Key, bool Exists, DonorGenotypeSetSource? UnavailableReason)
+{
+    public static PatientGenotypeSetLookup Unavailable(DonorGenotypeSetSource reason) => new(null, false, reason);
 }
 
 /// <summary>
@@ -125,8 +191,27 @@ public interface IPrecomputedDonorGenotypeSetReader
     /// The data refresh record whose transient database matching used. Rows are read only while that record is still
     /// the active one.
     /// </param>
+    /// <param name="patientGenotypeSetKey">
+    /// When set, the patient's stored row is read too, under the same check, into
+    /// <see cref="PrecomputedDonorGenotypeSetLookup.PatientRow"/>.
+    /// </param>
     Task<PrecomputedDonorGenotypeSetLookup> GetDonorGenotypeSets(
         IReadOnlyCollection<DonorInput> donors,
+        IReadOnlySet<Locus> allowedLoci,
+        int? matchingAlgorithmDataRefreshRecordId,
+        PatientGenotypeSetKey patientGenotypeSetKey);
+
+    /// <summary>
+    /// Builds the key of a patient's genotype set and checks whether a row with it is already stored. Used once per
+    /// search, before the batches are uploaded.
+    /// </summary>
+    /// <param name="patientHla">The patient's typing.</param>
+    /// <param name="haplotypeFrequencySetId">The frequency set the patient's set is (or will be) computed with.</param>
+    /// <param name="allowedLoci">The loci match prediction runs on for this search.</param>
+    /// <param name="matchingAlgorithmDataRefreshRecordId">As for <see cref="GetDonorGenotypeSets"/>.</param>
+    Task<PatientGenotypeSetLookup> FindPatientGenotypeSet(
+        PhenotypeInfo<string> patientHla,
+        int haplotypeFrequencySetId,
         IReadOnlySet<Locus> allowedLoci,
         int? matchingAlgorithmDataRefreshRecordId);
 }
@@ -178,6 +263,23 @@ public interface IPrecomputedDonorGenotypeSetWriter
         IReadOnlyCollection<DonorGenotypeSetToStore> genotypeSets,
         IReadOnlySet<Locus> allowedLoci,
         int matchingAlgorithmDataRefreshRecordId);
+
+    /// <summary>
+    /// Stores a patient's genotype set as a value row only: no donor points at it. Safe to repeat: a row that already
+    /// has <paramref name="key"/> is kept as it is.
+    /// </summary>
+    /// <param name="key">The key from <see cref="IPrecomputedDonorGenotypeSetReader.FindPatientGenotypeSet"/>.</param>
+    /// <param name="isUnrepresented">True when imputation found no genotypes.</param>
+    /// <param name="subjectGenotypeSetData">The encoded set; null exactly when <paramref name="isUnrepresented"/> is true.</param>
+    /// <param name="matchingAlgorithmDataRefreshRecordId">
+    /// The data refresh record whose transient database matching used. Nothing is written unless it is still the active one.
+    /// </param>
+    /// <returns>True when the row is stored; false when the database matching used is no longer active.</returns>
+    Task<bool> StorePatientGenotypeSet(
+        PatientGenotypeSetKey key,
+        bool isUnrepresented,
+        byte[] subjectGenotypeSetData,
+        int matchingAlgorithmDataRefreshRecordId);
 }
 
 /// <summary>
@@ -189,8 +291,16 @@ internal class NoOpPrecomputedDonorGenotypeSetReader : IPrecomputedDonorGenotype
     public Task<PrecomputedDonorGenotypeSetLookup> GetDonorGenotypeSets(
         IReadOnlyCollection<DonorInput> donors,
         IReadOnlySet<Locus> allowedLoci,
-        int? matchingAlgorithmDataRefreshRecordId) =>
+        int? matchingAlgorithmDataRefreshRecordId,
+        PatientGenotypeSetKey patientGenotypeSetKey) =>
         Task.FromResult(new PrecomputedDonorGenotypeSetLookup(null, null, new Dictionary<int, PrecomputedDonorGenotypeSetRow>()));
+
+    public Task<PatientGenotypeSetLookup> FindPatientGenotypeSet(
+        PhenotypeInfo<string> patientHla,
+        int haplotypeFrequencySetId,
+        IReadOnlySet<Locus> allowedLoci,
+        int? matchingAlgorithmDataRefreshRecordId) =>
+        Task.FromResult(PatientGenotypeSetLookup.Unavailable(DonorGenotypeSetSource.ActiveDatabaseUnknown));
 }
 
 /// <summary>The default for hosts with no access to the transient matching databases: stores nothing.</summary>
@@ -201,4 +311,11 @@ internal class NoOpPrecomputedDonorGenotypeSetWriter : IPrecomputedDonorGenotype
         IReadOnlySet<Locus> allowedLoci,
         int matchingAlgorithmDataRefreshRecordId) =>
         Task.FromResult(DonorGenotypeSetStoreResult.None);
+
+    public Task<bool> StorePatientGenotypeSet(
+        PatientGenotypeSetKey key,
+        bool isUnrepresented,
+        byte[] subjectGenotypeSetData,
+        int matchingAlgorithmDataRefreshRecordId) =>
+        Task.FromResult(false);
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Models.Precompute;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
+using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.Precompute;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Precompute;
@@ -89,6 +91,40 @@ public class PrecomputedDonorGenotypeSetWriter : IPrecomputedDonorGenotypeSetWri
             .ToList());
 
         return new DonorGenotypeSetStoreResult(upsertResult.UpsertedCount, upsertResult.SkippedDonorChangedCount, 0);
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// <para>
+    /// A value row only, through the same concurrency-safe get-or-create as every other writer. No guard is needed: the
+    /// row is content-keyed and no donor points at it, so it cannot make any donor use a wrong set. A donor or a later
+    /// search with the same key reuses it.
+    /// </para>
+    ///
+    /// <para>
+    /// The record is checked again just before the write, as for donors. If the database is swapped after that
+    /// check, the row lands in the database matching used, computed with that database's nomenclature version - so it
+    /// is still right for that database, which the next refresh then wipes. No clean-up is needed.
+    /// </para>
+    /// </remarks>
+    public async Task<bool> StorePatientGenotypeSet(
+        PatientGenotypeSetKey key,
+        bool isUnrepresented,
+        byte[] subjectGenotypeSetData,
+        int matchingAlgorithmDataRefreshRecordId)
+    {
+        var activeRecord = dataRefreshHistoryRepository.GetActiveRecord();
+        if (activeRecord == null || activeRecord.Id != matchingAlgorithmDataRefreshRecordId)
+        {
+            return false;
+        }
+
+        var valueKey = new SubjectGenotypeSetKey(key.HlaTypingKey, key.HaplotypeFrequencySetId, Enum.Parse<AllowedLociKey>(key.AllowedLociKey));
+        await repositoryFactory
+            .GetForDatabase(activeRecord.Database)
+            .GetOrCreateValueIds([new SubjectGenotypeSetValueToStore(valueKey, isUnrepresented, subjectGenotypeSetData)]);
+
+        return true;
     }
 
     /// <summary>

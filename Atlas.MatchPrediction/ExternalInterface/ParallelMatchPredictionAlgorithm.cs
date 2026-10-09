@@ -44,7 +44,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
 
     internal class ParallelMatchPredictionAlgorithm : IParallelMatchPredictionAlgorithm
     {
-        private readonly IGenotypeSetService genotypeSetService;
+        private readonly IPatientGenotypeSetProvider patientGenotypeSetProvider;
         private readonly IMatchPredictionBatchResultUploader resultUploader;
         private readonly IServiceScopeFactory serviceScopeFactory;
         private readonly IDonorGenotypeSetSourceResolver genotypeSetSourceResolver;
@@ -52,7 +52,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
         private readonly IAtlasLogger logger;
 
         public ParallelMatchPredictionAlgorithm(
-            IGenotypeSetService genotypeSetService,
+            IPatientGenotypeSetProvider patientGenotypeSetProvider,
             IMatchPredictionBatchResultUploader resultUploader,
             // ReSharper disable once SuggestBaseTypeForParameterInConstructor
             IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
@@ -60,7 +60,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
             IDonorGenotypeSetSourceResolver genotypeSetSourceResolver,
             IDonorGenotypeSetBatchCompleter genotypeSetBatchCompleter)
         {
-            this.genotypeSetService = genotypeSetService;
+            this.patientGenotypeSetProvider = patientGenotypeSetProvider;
             this.resultUploader = resultUploader;
             this.logger = logger;
             this.serviceScopeFactory = serviceScopeFactory;
@@ -83,13 +83,14 @@ namespace Atlas.MatchPrediction.ExternalInterface
                     return new ParallelMatchPredictionBatchOutput(null, null, new Dictionary<int, int>());
                 }
 
-                var patientGenotypeSet = await genotypeSetService.GetPatientGenotypeSet(matchProbabilityInputs.First());
-
                 // Once per batch, in the batch's scope, and shared by the per-donor scopes below: one read of the stored
                 // rows, and one decision about the kill-switch for every donor.
                 var batchContext = await genotypeSetSourceResolver.Resolve(
                     multipleDonorMatchProbabilityInput,
                     multipleDonorMatchProbabilityInput.Donors);
+
+                var (patientGenotypeSet, patientGenotypeSetSource) =
+                    await patientGenotypeSetProvider.Get(matchProbabilityInputs.First(), batchContext);
 
                 var perInputResults = await matchProbabilityInputs.WhenAll(
                     async input =>
@@ -124,7 +125,8 @@ namespace Atlas.MatchPrediction.ExternalInterface
                     batchContext,
                     perInputResults
                         .Select(r => new DonorGenotypeSetBatchOutcome(r.Input.Donor.DonorIds.Count, r.Result.GenotypeSetSource, r.Result.GenotypeSetToStore))
-                        .ToList());
+                        .ToList(),
+                    patientGenotypeSetSource);
 
                 return new ParallelMatchPredictionBatchOutput(resultLocation, patientGenotypeSet.Genotypes.Count, donorGenotypeCounts);
             }
