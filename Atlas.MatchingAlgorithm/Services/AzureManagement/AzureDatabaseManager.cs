@@ -15,7 +15,19 @@ namespace Atlas.MatchingAlgorithm.Services.AzureManagement
 {
     public interface IAzureDatabaseManager
     {
+        /// <summary>Scales the database, and waits until the operation ends.</summary>
+        /// <exception cref="AzureManagementException">Azure refused the change, or the operation failed.</exception>
         Task UpdateDatabaseSize(string databaseName, AzureDatabaseSize databaseSize, int? autoPauseDuration);
+
+        /// <summary>
+        /// Sends the scale change, and returns when Azure has accepted it: seconds, not the time that the operation takes.
+        /// </summary>
+        /// <exception cref="AzureManagementException">Azure refused the change.</exception>
+        Task<DatabaseScalingOperation> StartDatabaseScaling(string databaseName, AzureDatabaseSize databaseSize, int? autoPauseDuration);
+
+        /// <summary>Waits until a scale operation from <see cref="StartDatabaseScaling"/> ends.</summary>
+        /// <exception cref="AzureManagementException">The operation did not succeed.</exception>
+        Task WaitForDatabaseScaling(DatabaseScalingOperation operation);
     }
 
     public class AzureDatabaseManager : IAzureDatabaseManager
@@ -51,29 +63,54 @@ namespace Atlas.MatchingAlgorithm.Services.AzureManagement
                 return;
             }
 
-            var scaleDescription = $"{databaseName} to size: {databaseSize}";
-            using (logger.RunTimed($"Scaling of database: {scaleDescription}", LogLevel.Info, true))
+            using (logger.RunTimed($"Scaling of database: {DescribeScaling(databaseName, databaseSize)}", LogLevel.Info, true))
             {
-                var operationStartTime = await databaseManagementClient.TriggerDatabaseScaling(databaseName, databaseSize, autoPauseDuration);
-
-                threadSleeper.Sleep(10);
-                var databaseOperation = await GetDatabaseOperation(databaseName, operationStartTime);
-
-                while (databaseOperation.State == AzureDatabaseOperationState.InProgress ||
-                       databaseOperation.State == AzureDatabaseOperationState.Pending)
-                {
-                    logger.SendTrace($"Waiting for scaling to complete: {scaleDescription}");
-                    threadSleeper.Sleep(OperationPollTimeMilliseconds);
-                    databaseOperation = await GetDatabaseOperation(databaseName, operationStartTime);
-                }
-
-                if (databaseOperation.State != AzureDatabaseOperationState.Succeeded)
-                {
-                    logger.SendTrace($"Error scaling {scaleDescription}. State: {databaseOperation.State}");
-                    throw new AzureManagementException($"Database scaling operation of {scaleDescription} failed. Check Azure for details");
-                }
+                var operation = await StartDatabaseScaling(databaseName, databaseSize, autoPauseDuration);
+                await WaitForDatabaseScaling(operation);
             }
         }
+
+        public async Task<DatabaseScalingOperation> StartDatabaseScaling(string databaseName, AzureDatabaseSize databaseSize, int? autoPauseDuration)
+        {
+            if (isLocal)
+            {
+                logger.SendTrace("Running locally - will not update database", LogLevel.Verbose);
+                return new DatabaseScalingOperation(databaseName, databaseSize, null);
+            }
+
+            var operationStartTime = await databaseManagementClient.TriggerDatabaseScaling(databaseName, databaseSize, autoPauseDuration);
+            return new DatabaseScalingOperation(databaseName, databaseSize, operationStartTime);
+        }
+
+        public async Task WaitForDatabaseScaling(DatabaseScalingOperation operation)
+        {
+            if (operation.StartTime is not { } operationStartTime)
+            {
+                return;
+            }
+
+            var databaseName = operation.DatabaseName;
+            var scaleDescription = DescribeScaling(databaseName, operation.DatabaseSize);
+
+            threadSleeper.Sleep(10);
+            var databaseOperation = await GetDatabaseOperation(databaseName, operationStartTime);
+
+            while (databaseOperation.State == AzureDatabaseOperationState.InProgress ||
+                   databaseOperation.State == AzureDatabaseOperationState.Pending)
+            {
+                logger.SendTrace($"Waiting for scaling to complete: {scaleDescription}");
+                threadSleeper.Sleep(OperationPollTimeMilliseconds);
+                databaseOperation = await GetDatabaseOperation(databaseName, operationStartTime);
+            }
+
+            if (databaseOperation.State != AzureDatabaseOperationState.Succeeded)
+            {
+                logger.SendTrace($"Error scaling {scaleDescription}. State: {databaseOperation.State}");
+                throw new AzureManagementException($"Database scaling operation of {scaleDescription} failed. Check Azure for details");
+            }
+        }
+
+        private static string DescribeScaling(string databaseName, AzureDatabaseSize databaseSize) => $"{databaseName} to size: {databaseSize}";
 
         private async Task<DatabaseOperation> GetDatabaseOperation(string databaseName, DateTime operationStartTime)
         {

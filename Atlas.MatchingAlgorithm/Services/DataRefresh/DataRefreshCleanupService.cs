@@ -19,6 +19,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         /// Runs appropriate clean up after a data refresh job - i.e. scaling down the dormant database, and re-enabling donor update functions.
         /// This should only ever be run manually, and only if the server dies in the middle of data-refresh, as the normal teardown will not have run.
         /// It closes each open record as failed, and cancels the donor genotype precomputation run of the record.
+        /// It also closes a record that is paused for a manual decision, and clears its pause and its pending decision. As
+        /// for any record, it sends no failure alert and no completion message.
         /// </summary>
         Task RunDataRefreshCleanup();
     }
@@ -93,6 +95,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             {
                 await dataRefreshHistoryRepository.UpdateExecutionDetails(job.Id, job.HlaNomenclatureVersion, DateTime.UtcNow);
                 await dataRefreshHistoryRepository.UpdateSuccessFlag(job.Id, false);
+
+                // A closed record needs no decision.
+                await dataRefreshHistoryRepository.ClearManualDecisionState(job.Id);
 
                 // A closed record does not continue, so its precomputation run must stop too.
                 await precomputationRunCanceller.CancelRun(job);

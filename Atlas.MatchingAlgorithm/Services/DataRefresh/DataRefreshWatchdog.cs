@@ -6,6 +6,7 @@ using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Exceptions;
+using Atlas.MatchingAlgorithm.Models.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
 using Atlas.MatchingAlgorithm.Settings;
 
@@ -61,6 +62,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         {
             var graceCutoffUtc = DateTime.UtcNow - ValidatedGraceDuration();
 
+            await ReportPausedRefreshes();
+
             var stalledRecordIds = await dataRefreshHistoryRepository.GetStalledRefreshRecordIds(graceCutoffUtc);
             if (stalledRecordIds.Count == 0)
             {
@@ -92,6 +95,22 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 throw new AggregateException(
                     $"{failures.Count} of {stalledRecordIds.Count} stalled data refresh record(s) could not be re-requested in this sweep.",
                     failures);
+            }
+        }
+
+        /// <summary>
+        /// Logs one warning for each record that is paused for a manual decision. The watchdog does not request a paused
+        /// record, and the paused alert can be lost, so this is the trail that a paused record still waits.
+        /// </summary>
+        private async Task ReportPausedRefreshes()
+        {
+            var pausedRecords = await dataRefreshHistoryRepository.GetPausedRefreshRecords();
+            foreach (var record in pausedRecords)
+            {
+                logger.SendTrace(
+                    $"{LoggingPrefix} Data refresh record {record.Id} is paused for a manual decision since " +
+                    $"{record.AwaitingManualDecisionSinceUtc:u}. It is not requested again. Send the decision to the " +
+                    $"{ResolvePausedDataRefreshRequest.EndpointName} endpoint.", LogLevel.Warn);
             }
         }
 

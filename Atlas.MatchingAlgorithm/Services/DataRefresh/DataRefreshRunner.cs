@@ -36,13 +36,29 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         /// - Precomputes the genotype sets of all donors
         /// - Scales down target database
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// A pending manual decision on the record is applied first: <see cref="DataRefreshManualDecision.Complete"/>
+        /// marks the donor genotype precomputation stage as complete, and
+        /// <see cref="DataRefreshManualDecision.RetryFailedBatches"/> is left for that stage to apply.
+        /// </para>
+        ///
+        /// <para>
+        /// When more donors failed in the donor genotype precomputation stage than the threshold allows, the refresh pauses:
+        /// it starts the scale-down of the dormant database, sends the paused alert, and waits until the scale-down ends.
+        /// The later stages do not run, and this method does not write the record: the caller sets the pause.
+        /// </para>
+        /// </remarks>
         /// <param name="cancellationToken">
         /// Cancelled if this invocation loses its run-level lease on the refresh record, meaning another invocation has
         /// taken the record over. Observed at batch boundaries, so cancellation bounds the damage a displaced invocation
         /// can do to one batch rather than stopping it instantly.
         /// </param>
-        /// <returns>The version of the HLA Nomenclature used for the new data</returns>
-        Task<string> RefreshData(int refreshRecordId, CancellationToken cancellationToken = default);
+        /// <returns>
+        /// Completed, with the version of the HLA Nomenclature used for the new data; or paused, with the failures of the
+        /// donor genotype precomputation run.
+        /// </returns>
+        Task<DataRefreshRunResult> RefreshData(int refreshRecordId, CancellationToken cancellationToken = default);
     }
 
     public class DataRefreshRunner : IDataRefreshRunner
@@ -63,6 +79,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private readonly IDonorGenotypePrecomputationStage donorGenotypePrecomputationStage;
         private readonly IDonorUpdateProcessor differentialDonorUpdateProcessor;
         private readonly IMatchingAlgorithmImportLogger logger;
+        private readonly IDataRefreshManualDecisionEvents manualDecisionEvents;
 
         private const string LoggingPrefix = "DATA REFRESH:";
 
@@ -99,7 +116,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             // But if it *were* to occur then we definitely don't want to have to *re*-re-create them just to do the final 2 steps.
             {DataRefreshStage.IndexRecreation, true},
 
-            // When this stage is complete, its run is complete and its staging data is gone, so nothing is left to do.
+            // When this stage is complete, its run is complete, so nothing is left to do. Its staging data is gone, except after a
+            // manual Complete decision: then the orchestrator removes it after the swap.
             {DataRefreshStage.DonorGenotypePrecomputation, true},
 
             // Failing to scale down the Database has a cost impact, and it is possible for someone to manually scale the DB back up between interruption and retry.
@@ -125,8 +143,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IMatchingAlgorithmImportLogger logger,
             IDataRefreshSupportNotificationSender dataRefreshNotificationSender,
             IDataRefreshHistoryRepository dataRefreshHistoryRepository,
-            MatchingAlgorithmImportLoggingContext loggingContext)
+            MatchingAlgorithmImportLoggingContext loggingContext,
+            IDataRefreshManualDecisionEvents manualDecisionEvents)
         {
+            this.manualDecisionEvents = manualDecisionEvents;
             this.activeDatabaseProvider = activeDatabaseProvider;
             this.azureDatabaseNameProvider = azureDatabaseNameProvider;
             this.azureDatabaseManager = azureDatabaseManager;
@@ -149,11 +169,14 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             activeVersionHlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaVersionOrDefault);
         }
 
-        public async Task<string> RefreshData(int refreshRecordId, CancellationToken cancellationToken)
+        public async Task<DataRefreshRunResult> RefreshData(int refreshRecordId, CancellationToken cancellationToken)
         {
             try
             {
                 var refreshRecord = await dataRefreshHistoryRepository.GetRecord(refreshRecordId);
+
+                // Before the stage modes: a Complete decision marks a stage as complete, and so changes the modes.
+                await ApplyPendingManualDecision(refreshRecord);
                 var stageExecutionModes = DetermineStageExecutionModes(refreshRecord);
 
                 await RefreshHlaMetadataDictionary(refreshRecord);
@@ -162,10 +185,15 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     var executionMode = stageExecutionModes[dataRefreshStage];
-                    await ExecuteDataRefreshStage(dataRefreshStage, executionMode, refreshRecord, cancellationToken);
+                    var pauseReport = await ExecuteDataRefreshStage(dataRefreshStage, executionMode, refreshRecord, cancellationToken);
+                    if (pauseReport != null)
+                    {
+                        await PauseForManualDecision(refreshRecord, pauseReport, cancellationToken);
+                        return DataRefreshRunResult.Paused(pauseReport);
+                    }
                 }
 
-                return refreshRecord.HlaNomenclatureVersion;
+                return DataRefreshRunResult.Completed(refreshRecord.HlaNomenclatureVersion);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -181,6 +209,119 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 logger.SendTrace($"{LoggingPrefix} Refresh failed. Exception: {ex}");
                 await FailureTearDown(refreshRecordId);
                 throw;
+            }
+        }
+
+        /// <summary>
+        /// Applies a manual decision that was taken while the record was paused, and that no attempt has applied yet.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="DataRefreshManualDecision.Complete"/>: the donor genotype precomputation stage is marked as complete,
+        /// and the decision is cleared, in one save. So the stages up to that stage are skipped, also the scale-up.
+        /// <see cref="DataRefreshManualDecision.RetryFailedBatches"/>: nothing here. The stage applies it, after the
+        /// database is scaled up.
+        /// </remarks>
+        private async Task ApplyPendingManualDecision(DataRefreshRecord refreshRecord)
+        {
+            if (refreshRecord.PendingManualDecision is not { } decision)
+            {
+                return;
+            }
+
+            manualDecisionEvents.Resumed(refreshRecord.Id, decision);
+
+            switch (decision)
+            {
+                case DataRefreshManualDecision.Complete:
+                    await dataRefreshHistoryRepository.ApplyManualCompleteDecision(refreshRecord);
+                    logger.SendTrace(
+                        $"{LoggingPrefix} Record {refreshRecord.Id} resumes after the manual decision {decision}: stage " +
+                        $"{DataRefreshStage.DonorGenotypePrecomputation} is marked as complete, with its failures. The later stages run.",
+                        LogLevel.Warn);
+                    break;
+                case DataRefreshManualDecision.RetryFailedBatches:
+                    logger.SendTrace(
+                        $"{LoggingPrefix} Record {refreshRecord.Id} resumes after the manual decision {decision}: the database is scaled " +
+                        $"up, and stage {DataRefreshStage.DonorGenotypePrecomputation} computes the failed batches again.",
+                        LogLevel.Warn);
+                    break;
+                default:
+                    throw new InvalidOperationException(
+                        $"Record {refreshRecord.Id} has the pending manual decision {decision}, which a refresh cannot apply.");
+            }
+        }
+
+        /// <summary>
+        /// Pauses the refresh for a manual decision: starts the scale-down of the dormant database, sends the paused alert,
+        /// and waits until the scale-down ends. Does not write the record: the orchestrator sets the pause, in the update
+        /// that releases the lease.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The alert goes out before the wait, so support can look at the cause while the database scales down.
+        /// </para>
+        ///
+        /// <para>
+        /// The lease is held until the scale-down has ended, and a decision is accepted only when the record is paused. So
+        /// a decision cannot start a scale operation of the resumed refresh while this one runs: Azure refuses a second
+        /// scale operation on a database.
+        /// </para>
+        ///
+        /// <para>
+        /// A scale-down that Azure refuses, or that fails, sends the teardown failure alert, and the pause continues: the
+        /// failures still need a decision.
+        /// </para>
+        /// </remarks>
+        private async Task PauseForManualDecision(
+            DataRefreshRecord refreshRecord,
+            DonorGenotypePrecomputationFailureReport pauseReport,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            logger.SendTrace(
+                $"{LoggingPrefix} Record {refreshRecord.Id} pauses for a manual decision: {pauseReport.FailureSummary.FailedDonorCount} of " +
+                $"{pauseReport.FailureSummary.TotalDonorCount} donors failed in donor genotype precomputation run {pauseReport.RunId}. The " +
+                "dormant database is scaled down.",
+                LogLevel.Warn);
+
+            var scaleDown = await TryStartDormantScaleDown(refreshRecord.Id);
+            await dataRefreshNotificationSender.SendPrecomputationPausedAlert(refreshRecord.Id, pauseReport, scaleDown != null);
+
+            if (scaleDown != null)
+            {
+                await TryWaitForDormantScaleDown(refreshRecord.Id, scaleDown);
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+        }
+
+        /// <returns>The operation, or null when Azure refused it: the teardown failure alert is sent.</returns>
+        private async Task<DatabaseScalingOperation> TryStartDormantScaleDown(int recordId)
+        {
+            try
+            {
+                return await azureDatabaseManager.StartDatabaseScaling(
+                    DormantDatabaseName(),
+                    dataRefreshSettings.DormantDatabaseSize.ParseToEnum<AzureDatabaseSize>(),
+                    dataRefreshSettings.DormantDatabaseAutoPauseTimeout);
+            }
+            catch (Exception e)
+            {
+                await ReportTeardownFailure(recordId, e);
+                return null;
+            }
+        }
+
+        private async Task TryWaitForDormantScaleDown(int recordId, DatabaseScalingOperation scaleDown)
+        {
+            try
+            {
+                await azureDatabaseManager.WaitForDatabaseScaling(scaleDown);
+            }
+            catch (Exception e)
+            {
+                await ReportTeardownFailure(recordId, e);
             }
         }
 
@@ -285,7 +426,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             await dataRefreshHistoryRepository.MarkHlaMetadataDictionaryRefreshAsComplete(refreshRecord, snapshotUtc);
         }
 
-        private async Task ExecuteDataRefreshStage(
+        /// <returns>
+        /// Null when the stage is complete. The failures of the donor genotype precomputation run when that stage is not
+        /// complete, because the refresh must pause for a manual decision.
+        /// </returns>
+        private async Task<DonorGenotypePrecomputationFailureReport> ExecuteDataRefreshStage(
             DataRefreshStage dataRefreshStage,
             DataRefreshStageExecutionMode executionMode,
             DataRefreshRecord refreshRecord,
@@ -297,10 +442,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 case DataRefreshStageExecutionMode.NotApplicable:
                     logger.SendTrace($"{LoggingPrefix} Stage {dataRefreshStage} is not Applicable to the 'All Stages' execution loop.",
                         LogLevel.Verbose);
-                    return;
+                    return null;
                 case DataRefreshStageExecutionMode.Skip:
                     logger.SendTrace($"{LoggingPrefix} Stage {dataRefreshStage} is already complete and can be skipped. Skipping.");
-                    return;
+                    return null;
                 case DataRefreshStageExecutionMode.Continuation:
                     logger.SendTrace($"{LoggingPrefix} Attempting to Continue Stage {dataRefreshStage} from a previous execution.");
                     break;
@@ -353,7 +498,13 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     await donorImportRepository.CreateHlaTableIndexes();
                     break;
                 case DataRefreshStage.DonorGenotypePrecomputation:
-                    await donorGenotypePrecomputationStage.Run(refreshRecord, executionMode, cancellationToken);
+                    var precomputationResult = await donorGenotypePrecomputationStage.Run(refreshRecord, executionMode, cancellationToken);
+                    if (precomputationResult.IsAwaitingManualDecision)
+                    {
+                        // Not marked as complete: the decision decides how the stage ends.
+                        return precomputationResult.FailureReport;
+                    }
+
                     break;
 
                 case DataRefreshStage.DatabaseScalingTearDown:
@@ -371,13 +522,15 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             }
 
             await dataRefreshHistoryRepository.MarkStageAsComplete(refreshRecord, dataRefreshStage);
+            return null;
         }
 
         private async Task ScaleDatabase(AzureDatabaseSize targetSize, int? autoPauseDuration = null)
         {
-            var databaseName = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetDormantDatabase());
-            await azureDatabaseManager.UpdateDatabaseSize(databaseName, targetSize, autoPauseDuration);
+            await azureDatabaseManager.UpdateDatabaseSize(DormantDatabaseName(), targetSize, autoPauseDuration);
         }
+
+        private string DormantDatabaseName() => azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetDormantDatabase());
 
         private async Task FailureTearDown(int recordId)
         {
@@ -389,9 +542,15 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             }
             catch (Exception e)
             {
-                logger.SendTrace($"{LoggingPrefix} Teardown failed. Database will need scaling down manually. Exception: {e}", LogLevel.Critical);
-                await dataRefreshNotificationSender.SendTeardownFailureAlert(recordId);
+                await ReportTeardownFailure(recordId, e);
             }
+        }
+
+        /// <summary>The dormant database could not be scaled down to the dormant size. Logs, and sends the alert.</summary>
+        private async Task ReportTeardownFailure(int recordId, Exception exception)
+        {
+            logger.SendTrace($"{LoggingPrefix} Teardown failed. Database will need scaling down manually. Exception: {exception}", LogLevel.Critical);
+            await dataRefreshNotificationSender.SendTeardownFailureAlert(recordId);
         }
     }
 }

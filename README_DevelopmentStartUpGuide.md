@@ -87,7 +87,9 @@ It's highly recommended that you read the sections outside ZtH in parallel with 
 - Run `Atlas.MatchingAlgorithm.PrecomputeWorker` too. Keep it running until the refresh is complete.
   - You can start the worker before or after the trigger. It reads no database when it starts: for each message, it reads the data refresh record that the message names.
   - Stage 65 waits until the worker has processed every batch. If no worker runs, the refresh waits, and sends a stall alert after `DataRefresh:Precompute:StallAlertMinutes` (60 by default).
-  - On the first refresh, there is no haplotype frequency set yet (you import one in the next step). So every batch fails, and the requeue timer sends each batch again `DataRefresh:Precompute:MaxBatchRetries` times, every 5 minutes. Then stage 65 sends a high-priority failure alert, and the refresh continues. Set `MaxBatchRetries` to `0` in `local.settings.json` to make this faster.
+  - On the first refresh, there is no haplotype frequency set yet (you import one in the next step). So every batch fails, and the requeue timer sends each batch again `DataRefresh:Precompute:MaxBatchRetries` times, every 5 minutes. Set `MaxBatchRetries` to `0` in `local.settings.json` to make this faster.
+  - Then all donors have failed. This is above `DataRefresh:Precompute:MaxFailedDonorFraction`, so the refresh pauses for a manual decision (see [the paused data refresh](README_Support.md#the-paused-data-refresh)). Send the `Complete` decision to the `ResolvePausedDataRefresh` endpoint, with the id of the data refresh record: `{ "DataRefreshRecordId": <id>, "Decision": "Complete" }`. The refresh then completes with no stored genotype sets.
+  - To prevent the pause, set `MaxFailedDonorFraction` to `1` in `local.settings.json` before you trigger the refresh.
   - To store the donor genotype sets, run the data refresh again after you import the haplotype frequency set.
 - Monitor the `notifications` topic to ensure the refresh succeeded; a failure will be reported via `alerts` topic.
 

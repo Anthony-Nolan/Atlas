@@ -73,6 +73,8 @@ public class DonorGenotypePrecomputationStageTests
     private IGenotypeSetService genotypeSetService;
     private IDataRefreshSupportNotificationSender notificationSender;
     private ConcurrentQueue<DonorGenotypePrecomputationBatchRequest> publishedRequests;
+    private DonorGenotypePrecomputationBatchDispatcher dispatcher;
+    private DonorGenotypePrecomputationSettings settings;
     private DataRefreshRecord record;
     private int nextDonorId;
 
@@ -102,7 +104,7 @@ public class DonorGenotypePrecomputationStageTests
             .Build();
         await dataRefreshHistoryRepository.Create(record);
 
-        var settings = fixture.Build<DonorGenotypePrecomputationSettings>()
+        settings = fixture.Build<DonorGenotypePrecomputationSettings>()
             .With(s => s.GroupsPerBatch, GroupsPerBatch)
             .With(s => s.PollIntervalSeconds, PollIntervalSeconds)
             .With(s => s.MaxFailedDonorFraction, 1.0 / fixture.Create<int>())
@@ -119,20 +121,13 @@ public class DonorGenotypePrecomputationStageTests
 
             return Task.CompletedTask;
         });
-        var dispatcher = new DonorGenotypePrecomputationBatchDispatcher(
+        dispatcher = new DonorGenotypePrecomputationBatchDispatcher(
             repositoryFactory,
             publisher,
             NullLogger<DonorGenotypePrecomputationBatchDispatcher>.Instance);
 
         notificationSender = Substitute.For<IDataRefreshSupportNotificationSender>();
-        stage = new DonorGenotypePrecomputationStage(
-            services.GetRequiredService<IDormantRepositoryFactory>(),
-            services.GetRequiredService<IActiveDatabaseProvider>(),
-            dispatcher,
-            notificationSender,
-            settings,
-            TimeProvider.System,
-            NullLogger<DonorGenotypePrecomputationStage>.Instance);
+        stage = BuildStage(services);
 
         sweeper = new DonorGenotypePrecomputationSweeper(
             services.GetRequiredService<IDataRefreshHistoryRepository>(),
@@ -265,6 +260,46 @@ public class DonorGenotypePrecomputationStageTests
     }
 
     [Test]
+    public async Task Run_WhenMoreDonorsFailThanTheThresholdAllows_AwaitsAManualDecision_AndKeepsTheRunAndItsStagingData()
+    {
+        var donors = DonorsOfTwoPairs();
+        await InsertDonors(donors);
+        var pauseResult = await RunUntilABatchFailsPermanently(donors[0]);
+
+        pauseResult.IsAwaitingManualDecision.Should().BeTrue();
+        pauseResult.FailureReport.FailureSummary.PermanentlyFailedBatchCount.Should().Be(1);
+        (await repository.GetRun(record.Id)).Status.Should().Be(RunStatus.CompletedWithFailures);
+        (await repository.HasStagingData()).Should().BeTrue();
+        await notificationSender.DidNotReceiveWithAnyArgs().SendPrecomputationFailureSummary(default, default, default, default);
+    }
+
+    [Test]
+    public async Task Run_WithAPendingRetryDecision_SendsOnlyTheResetBatches_ClearsTheDecision_AndGivesTheFailedDonorsTheirRows()
+    {
+        var donors = DonorsOfTwoPairs();
+        await InsertDonors(donors);
+        var pauseResult = await RunUntilABatchFailsPermanently(donors[0]);
+        await PauseAndTakeTheDecision(DataRefreshManualDecision.RetryFailedBatches);
+
+        // The resumed refresh reads the record on a scope of its own, as a new invocation does.
+        using var resumedScope = Injection.BackingProvider.CreateScope();
+        var resumedRecord = await resumedScope.ServiceProvider.GetRequiredService<IDataRefreshHistoryRepository>().GetRecord(record.Id);
+        var resumedStage = BuildStage(resumedScope.ServiceProvider);
+        var retryStageRun = resumedStage.Run(resumedRecord, DataRefreshStageExecutionMode.Continuation, CancellationToken.None);
+        await WaitForPublishedRequests(retryStageRun);
+        var resentRequests = await ProcessThePublishedRequests();
+        await sweeper.FinaliseCompletedRuns();
+        var retryResult = await retryStageRun.WaitAsync(Timeout);
+
+        retryResult.Should().Be(DonorGenotypePrecomputationStageResult.Complete);
+        resentRequests.Should().HaveCount(pauseResult.FailureReport.FailureSummary.PermanentlyFailedBatchCount);
+        (await repository.GetRun(record.Id)).Should().BeEquivalentTo(new { Status = RunStatus.Completed, ManualRetryCount = 1 });
+        (await repository.HasStagingData()).Should().BeFalse();
+        (await StoredKeysOfEachDonor()).Should().BeEquivalentTo(EveryKeyOfEach(donors));
+        (await ReadRecord()).PendingManualDecision.Should().BeNull();
+    }
+
+    [Test]
     public async Task Run_WhenTheStageRunsAgainAfterItCompleted_ChangesNothing()
     {
         var donors = DonorsOfTwoPairs();
@@ -339,6 +374,52 @@ public class DonorGenotypePrecomputationStageTests
         copy.DRB1_1 = donor.DRB1_1;
         copy.DRB1_2 = donor.DRB1_2;
         return copy;
+    }
+
+    private DonorGenotypePrecomputationStage BuildStage(IServiceProvider services) =>
+        new(
+            services.GetRequiredService<IDormantRepositoryFactory>(),
+            services.GetRequiredService<IActiveDatabaseProvider>(),
+            dispatcher,
+            notificationSender,
+            services.GetRequiredService<IDataRefreshHistoryRepository>(),
+            settings,
+            TimeProvider.System,
+            NullLogger<DonorGenotypePrecomputationStage>.Instance);
+
+    /// <summary>
+    /// Runs the stage with no retries and a threshold of 0. The first imputation of the typing of <paramref name="donor"/>
+    /// fails with an error of unknown cause, so its batch fails permanently, and the run completes with failures.
+    /// </summary>
+    private async Task<DonorGenotypePrecomputationStageResult> RunUntilABatchFailsPermanently(Donor donor)
+    {
+        settings.MaxBatchRetries = 0;
+        settings.MaxFailedDonorFraction = 0;
+        GivenTheImputationOf(donor).Returns(
+            _ => throw new InvalidOperationException(fixture.Create<string>()),
+            _ => new SubjectGenotypeSet(true, [], 0m));
+
+        var stageRun = stage.Run(record, DataRefreshStageExecutionMode.FromScratch, CancellationToken.None);
+        await WaitForPublishedRequests(stageRun);
+        await ProcessThePublishedRequests();
+        await sweeper.RequeueFailedBatches();
+        await sweeper.FinaliseCompletedRuns();
+        return await stageRun.WaitAsync(Timeout);
+    }
+
+    /// <summary>What the orchestrator and the decision endpoint do: pause the record, then take the decision.</summary>
+    private async Task PauseAndTakeTheDecision(DataRefreshManualDecision decision)
+    {
+        var owner = Guid.NewGuid();
+        await dataRefreshHistoryRepository.TryClaimRefreshLease(record.Id, owner, DateTime.UtcNow, TimeSpan.FromMinutes(fixture.Create<int>()));
+        (await dataRefreshHistoryRepository.TryPauseAndReleaseLease(record.Id, owner, DateTime.UtcNow)).Should().BeTrue();
+        (await dataRefreshHistoryRepository.TryTakeManualDecision(record.Id, decision, DateTime.UtcNow, fixture.Create<string>())).Should().BeTrue();
+    }
+
+    private async Task<DataRefreshRecord> ReadRecord()
+    {
+        using var readScope = Injection.BackingProvider.CreateScope();
+        return await readScope.ServiceProvider.GetRequiredService<IDataRefreshHistoryRepository>().GetRecord(record.Id);
     }
 
     private Task<SubjectGenotypeSet> GivenTheImputationOf(Donor donor)

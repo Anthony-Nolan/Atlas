@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Atlas.Common.Utils;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
+using Atlas.MatchingAlgorithm.Models.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -20,6 +21,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DataRefresh.Functions
         private readonly IDataRefreshOrchestrator dataRefreshOrchestrator;
         private readonly IDataRefreshCleanupService dataRefreshCleanupService;
         private readonly IDataRefreshWatchdog dataRefreshWatchdog;
+        private readonly IPausedDataRefreshResolver pausedDataRefreshResolver;
         private readonly IMatchingAlgorithmImportLogger logger;
 
         public DataRefreshFunctions(
@@ -27,12 +29,14 @@ namespace Atlas.MatchingAlgorithm.Functions.DataRefresh.Functions
             IDataRefreshOrchestrator dataRefreshOrchestrator,
             IDataRefreshCleanupService dataRefreshCleanupService,
             IDataRefreshWatchdog dataRefreshWatchdog,
+            IPausedDataRefreshResolver pausedDataRefreshResolver,
             IMatchingAlgorithmImportLogger logger)
         {
             this.dataRefreshRequester = dataRefreshRequester;
             this.dataRefreshOrchestrator = dataRefreshOrchestrator;
             this.dataRefreshCleanupService = dataRefreshCleanupService;
             this.dataRefreshWatchdog = dataRefreshWatchdog;
+            this.pausedDataRefreshResolver = pausedDataRefreshResolver;
             this.logger = logger;
         }
 
@@ -120,6 +124,48 @@ namespace Atlas.MatchingAlgorithm.Functions.DataRefresh.Functions
         public async Task RunDataRefreshCleanup([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest httpRequest)
         {
             await dataRefreshCleanupService.RunDataRefreshCleanup();
+        }
+
+        /// <summary>
+        /// Takes a manual decision for a data refresh that is paused, because more donors failed in the donor genotype
+        /// precomputation stage than the threshold allows: Complete, RetryFailedBatches or Fail. See README_Support.md.
+        /// </summary>
+        /// <returns>
+        /// 200 when the decision is taken; 400 for a body that is not valid; 404 for an unknown record; 409 when the record is
+        /// not paused, is closed, or has a decision already; 500 when the decision is recorded but the refresh request was not
+        /// published.
+        /// </returns>
+        [Function(ResolvePausedDataRefreshRequest.EndpointName)]
+        public async Task<IActionResult> ResolvePausedDataRefresh([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest httpRequest)
+        {
+            ResolvePausedDataRefreshRequest request;
+            try
+            {
+                request = await ReadRequestBody<ResolvePausedDataRefreshRequest>(httpRequest);
+            }
+            catch (JsonException e)
+            {
+                return new BadRequestObjectResult($"The body is not valid: {e.Message}");
+            }
+
+            var resolution = await pausedDataRefreshResolver.Resolve(request);
+            var statusCode = resolution.Outcome switch
+            {
+                PausedDataRefreshResolutionOutcome.Accepted => StatusCodes.Status200OK,
+                PausedDataRefreshResolutionOutcome.InvalidRequest => StatusCodes.Status400BadRequest,
+                PausedDataRefreshResolutionOutcome.NotFound => StatusCodes.Status404NotFound,
+                PausedDataRefreshResolutionOutcome.Conflict => StatusCodes.Status409Conflict,
+                PausedDataRefreshResolutionOutcome.NotPublished => StatusCodes.Status500InternalServerError,
+                _ => throw new ArgumentOutOfRangeException(nameof(resolution.Outcome), resolution.Outcome, null)
+            };
+
+            return new JsonResult(new
+            {
+                Outcome = resolution.Outcome.ToString(),
+                resolution.Message,
+                resolution.DataRefreshRecordId,
+                Decision = resolution.Decision?.ToString()
+            }) { StatusCode = statusCode };
         }
 
         private static async Task<T> ReadRequestBody<T>(HttpRequest request)

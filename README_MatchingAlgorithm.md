@@ -255,7 +255,8 @@ dormant database: the database that the refresh fills.
    refresh record that the message names. When the record is open, the worker writes to the database of the record.
    When the record is closed, the worker skips the message.
 4. **Timers.** Functions of the Data Refresh app move the batches and the run. They act only on a running run of an
-   open refresh record that has completed stage 60.
+   open refresh record that has completed stage 60, has not completed stage 65, is not paused, and has no pending
+   manual decision. So they do not keep a scaled-down dormant database awake.
    - `RequeueFailedPrecomputationBatches` (every 5 minutes): sends a failed or abandoned batch again, up to
      `MaxBatchRetries` times. After that, it marks the batch as permanently failed.
    - `MarkAbandonedPrecomputationBatches` (every 15 minutes): marks a batch as abandoned when the lease of its worker
@@ -268,9 +269,15 @@ dormant database: the database that the refresh fills.
    after a batch finishes again. A poll that fails with a temporary database error does not stop the stage: it reads
    the run again at the next poll. When the polls fail for `StallAlertMinutes`, the stage fails.
 6. **Report.** When the run is complete, the stage counts the failed donors. A failed donor has no stored genotype set
-   for one or more `AllowedLociKey` values. If donors failed, the stage sends one alert: medium priority when the failed
-   donors are at or below `MaxFailedDonorFraction` of all donors, high priority when they are above it. The data refresh
-   continues in both cases. Then the stage removes its staging data (the groups and their donors).
+   for one or more `AllowedLociKey` values.
+   - At or below `MaxFailedDonorFraction` of all donors: if donors failed, the stage sends one medium-priority alert.
+     Then it removes its staging data (the groups and their donors), and the stage is complete.
+   - Above `MaxFailedDonorFraction`: the stage is not complete. It keeps the run and its staging data, and the data
+     refresh pauses for a manual decision. The refresh scales the dormant database down, sends one high-priority alert,
+     and waits until the scale-down has ended. Then it marks the record as paused, and releases its lease. Stages 70 and
+     80 do not run, and the record stays open. Support sends the decision (`Complete`, `RetryFailedBatches` or `Fail`) to
+     the `ResolvePausedDataRefresh` endpoint. See
+     [the paused data refresh in README_Support](README_Support.md#the-paused-data-refresh).
 
 #### Failures
 
@@ -291,10 +298,23 @@ next attempt continues from the run:
 - A run that has not completed its build: the stage builds it again from the start.
 - A running run: the stage sends the pending batches, and waits again. The workers continue while the refresh is
   stopped.
-- A complete run: the stage reports the failures, if it did not report them before.
+- A complete run: the stage reports the failures, if it did not report them before. A run above the threshold pauses
+  the refresh again.
 
 A batch can be computed more than one time. This does no harm: a value is stored only one time, and the donor rows are
 an upsert.
+
+A manual decision on a paused refresh is recorded on the refresh record (`PendingManualDecision`), and the refresh that
+resumes applies it:
+
+- `Complete`: before it chooses the stage modes, the refresh marks stage 65 as complete and clears the decision, in one
+  save. So stages 30 to 65 are skipped, and stages 70 and 80 run. After the swap, the orchestrator removes the staging
+  data that stage 65 left.
+- `RetryFailedBatches`: stage 30 scales the database up. Then stage 65 resets the permanently failed batches and the
+  batches with failed groups to `Pending` (manual retry, `ManualRetryCount` + 1), clears the decision, sends only these
+  batches, waits, and reports again. If the staging data is gone, the stage fails. Until the stage sends the batches,
+  no message is out, so an attempt that stops at any step can do the steps again.
+- `Fail`: the endpoint closes the record as failed, notifies, and cancels the run. No refresh resumes.
 
 When the refresh fails, it closes its record, then cancels the run and removes the staging data. The workers skip every
 message of a closed record, and the claim skips every batch of a cancelled run. `RunDataRefreshCleanup` does the same
@@ -319,7 +339,7 @@ Data Refresh app (`DataRefresh:Precompute:*`):
 | `GroupsPerBatch` | 1000 | The groups in one batch. A run keeps the value that it was built with. |
 | `PollIntervalSeconds` | 60 | How often the stage reads the run while it waits. |
 | `StallAlertMinutes` | 60 | How long no batch can finish before the stage sends a stall alert. Also how long the polls of the stage can fail with a temporary error before the stage fails. |
-| `MaxFailedDonorFraction` | 0.001 | The fraction of all donors, from 0 to 1, that can fail before the failure alert is high priority. 0 makes every failure high priority. |
+| `MaxFailedDonorFraction` | 0.001 | The fraction of all donors, from 0 to 1, that can fail before the data refresh pauses for a manual decision. 0 pauses at any failure. 1 never pauses. Terraform: `MATCHING_DATA_REFRESH_PRECOMPUTE_MAX_FAILED_DONOR_FRACTION`. |
 
 The stage checks `GroupsPerBatch`, `PollIntervalSeconds`, `StallAlertMinutes` and `MaxFailedDonorFraction` when it
 starts. A value that is out of range fails the refresh before the stage does any work.

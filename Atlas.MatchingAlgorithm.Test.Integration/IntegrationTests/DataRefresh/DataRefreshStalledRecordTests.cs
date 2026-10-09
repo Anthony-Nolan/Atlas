@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
@@ -178,6 +179,51 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
             var stalled = await dataRefreshHistoryRepository.GetStalledRefreshRecordIds(GraceCutoff);
 
             stalled.Should().NotContain(recordId);
+        }
+
+        [Test]
+        public async Task GetStalledRefreshRecordIds_WhenRecordIsPausedAndLongIdleWithNoLease_DoesNotReturnRecord()
+        {
+            // A paused record waits for a manual decision, which can take days. No invocation can claim it, so a request
+            // would do nothing.
+            var recordId = await dataRefreshHistoryRepository.Create(DataRefreshRecordBuilder.New
+                .With(r => r.RefreshRequestedUtc, DateTime.UtcNow.AddDays(-2))
+                .With(r => r.RefreshLastContinuedUtc, DateTime.UtcNow.AddDays(-2))
+                .PausedForManualDecision()
+                .Build());
+
+            var stalled = await dataRefreshHistoryRepository.GetStalledRefreshRecordIds(GraceCutoff);
+
+            stalled.Should().NotContain(recordId);
+        }
+
+        [TestCase(DataRefreshManualDecision.Complete)]
+        [TestCase(DataRefreshManualDecision.RetryFailedBatches)]
+        public async Task GetStalledRefreshRecordIds_WhenRecordHasAPendingDecisionAndIsIdleBeyondTheGracePeriod_ReturnsRecord(
+            DataRefreshManualDecision decision)
+        {
+            // The endpoint could not publish the request of the decision: the watchdog requests the refresh instead.
+            var recordId = await dataRefreshHistoryRepository.Create(DataRefreshRecordBuilder.New
+                .With(r => r.RefreshRequestedUtc, DateTime.UtcNow.AddDays(-2))
+                .With(r => r.RefreshLastContinuedUtc, DateTime.UtcNow.AddHours(-3))
+                .WithPendingManualDecision(decision)
+                .Build());
+
+            var stalled = await dataRefreshHistoryRepository.GetStalledRefreshRecordIds(GraceCutoff);
+
+            stalled.Should().Contain(recordId);
+        }
+
+        [Test]
+        public async Task GetPausedRefreshRecords_ReturnsOnlyTheOpenRecordsThatArePaused()
+        {
+            var pausedRecordId = await dataRefreshHistoryRepository.Create(DataRefreshRecordBuilder.New.PausedForManualDecision().Build());
+            await dataRefreshHistoryRepository.Create(DataRefreshRecordBuilder.New.Build());
+            await dataRefreshHistoryRepository.Create(DataRefreshRecordBuilder.New.PausedForManualDecision().SuccessfullyCompleted().Build());
+
+            var paused = await dataRefreshHistoryRepository.GetPausedRefreshRecords();
+
+            paused.Should().ContainSingle().Which.Id.Should().Be(pausedRecordId);
         }
 
         /// <summary>

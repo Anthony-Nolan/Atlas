@@ -8,6 +8,7 @@ using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Exceptions;
+using Atlas.MatchingAlgorithm.Models.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
@@ -68,7 +69,18 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 return new DataRefreshResponse {WasRefreshRun = false};
             }
 
-            if (dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Any())
+            var openRecords = dataRefreshHistoryRepository.GetIncompleteRefreshJobs().ToList();
+
+            // Also with ForceDataRefresh: a paused refresh needs a decision, and a second refresh cannot start next to it.
+            var pausedRecord = openRecords.FirstOrDefault(r => r.AwaitingManualDecisionSinceUtc != null);
+            if (pausedRecord != null)
+            {
+                throw new InvalidDataRefreshRequestHttpException(
+                    $"Data refresh record {pausedRecord.Id} is paused for a manual decision since {pausedRecord.AwaitingManualDecisionSinceUtc:u}. " +
+                    $"Send the decision to the {ResolvePausedDataRefreshRequest.EndpointName} endpoint first. Data Refresh not started.");
+            }
+
+            if (openRecords.Any())
             {
                 throw new InvalidDataRefreshRequestHttpException("Data refresh seems to already be in progress. Data Refresh not started.");
             }

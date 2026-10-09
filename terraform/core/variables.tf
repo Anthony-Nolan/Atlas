@@ -444,6 +444,17 @@ variable "MATCHING_DATA_REFRESH_LEASE_RENEWAL_INTERVAL_SECONDS" {
   description = "How often a running data refresh renews its lease. The lease must last at least two renewal intervals; at the defaults it lasts thirty, so a run survives 29 consecutive failed renewals."
 }
 
+variable "MATCHING_DATA_REFRESH_PRECOMPUTE_MAX_FAILED_DONOR_FRACTION" {
+  type        = number
+  default     = 0.001
+  description = "The largest fraction of donors, from 0 to 1, that can fail in the donor genotype precomputation stage before the data refresh pauses for a manual decision. 0 pauses at any failure; 1 never pauses. See README_Support.md, the paused data refresh."
+
+  validation {
+    condition     = var.MATCHING_DATA_REFRESH_PRECOMPUTE_MAX_FAILED_DONOR_FRACTION >= 0 && var.MATCHING_DATA_REFRESH_PRECOMPUTE_MAX_FAILED_DONOR_FRACTION <= 1
+    error_message = "MATCHING_DATA_REFRESH_PRECOMPUTE_MAX_FAILED_DONOR_FRACTION must be from 0 to 1."
+  }
+}
+
 variable "MATCHING_DATA_REFRESH_CRONTAB" {
   type        = string
   default     = "0 0 0 * * Monday"

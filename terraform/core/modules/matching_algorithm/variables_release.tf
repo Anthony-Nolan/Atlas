@@ -97,6 +97,10 @@ variable "DATA_REFRESH_LEASE_RENEWAL_INTERVAL_SECONDS" {
   type = number
 }
 
+variable "DATA_REFRESH_PRECOMPUTE_MAX_FAILED_DONOR_FRACTION" {
+  type = number
+}
+
 variable "DATA_REFRESH_WATCHDOG_CRON_SCHEDULE" {
   type = string
 }

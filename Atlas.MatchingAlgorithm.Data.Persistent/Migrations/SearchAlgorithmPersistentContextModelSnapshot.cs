@@ -31,6 +31,9 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("AwaitingManualDecisionSinceUtc")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("DataDeletionCompleted")
                         .HasColumnType("datetime2");
 
@@ -76,6 +79,10 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Migrations
 
                     b.Property<DateTime?>("MetadataDictionaryRefreshCompleted")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("PendingManualDecision")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
 
                     b.Property<DateTime?>("QueuedDonorUpdatesCompleted")
                         .HasColumnType("datetime2");

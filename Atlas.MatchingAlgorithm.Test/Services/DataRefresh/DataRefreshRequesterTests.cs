@@ -8,11 +8,15 @@ using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
+using Atlas.MatchingAlgorithm.Models.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
 using Atlas.MatchingAlgorithm.Settings;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using AutoFixture;
 using AwesomeAssertions;
 using NSubstitute;
 using NUnit.Framework;
@@ -29,6 +33,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         private IDataRefreshServiceBusClient serviceBusClient;
         private IDataRefreshSupportNotificationSender supportNotificationSender;
         private IMatchingAlgorithmImportLogger logger;
+        private Fixture fixture;
 
         private IDataRefreshRequester dataRefreshRequester;
 
@@ -39,6 +44,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         [SetUp]
         public void SetUp()
         {
+            fixture = new Fixture();
             wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
             activeHlaVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
             activeDatabaseProvider = Substitute.For<IActiveDatabaseProvider>();
@@ -82,6 +88,30 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             await dataRefreshRequester.Invoking(service =>
                     service.RequestDataRefresh(new DataRefreshRequest {ForceDataRefresh = shouldForce}, true))
                 .Should().ThrowAsync<AtlasHttpException>();
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public async Task RequestDataRefresh_WhenAnOpenRecordIsPaused_ThrowsWithTheRecordAndTheDecisionEndpoint(bool shouldForce)
+        {
+            var pausedRecord = DataRefreshRecordBuilder.New.With(r => r.Id, fixture.Create<int>()).PausedForManualDecision().Build();
+            dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(new List<DataRefreshRecord> {pausedRecord});
+
+            var act = () => dataRefreshRequester.RequestDataRefresh(new DataRefreshRequest {ForceDataRefresh = shouldForce}, true);
+
+            await act.Should().ThrowAsync<AtlasHttpException>()
+                .WithMessage($"*record {pausedRecord.Id}*paused*{ResolvePausedDataRefreshRequest.EndpointName}*");
+            await dataRefreshHistoryRepository.DidNotReceiveWithAnyArgs().Create(default);
+        }
+
+        [Test]
+        public async Task RequestDataRefresh_WhenAnOpenRecordIsNotPaused_ThrowsTheInProgressMessage()
+        {
+            dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(new List<DataRefreshRecord> {DataRefreshRecordBuilder.New.Build()});
+
+            var act = () => dataRefreshRequester.RequestDataRefresh(new DataRefreshRequest(), true);
+
+            await act.Should().ThrowAsync<AtlasHttpException>().WithMessage("*already be in progress*");
         }
 
         [Test]

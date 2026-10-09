@@ -79,7 +79,8 @@ The data refresh performs several operations:
 (d) Computes and stores the imputed genotype sets of all donors, with the haplotype frequency sets (see [the Matching Algorithm README](README_MatchingAlgorithm.md#donor-genotype-precomputation-data-refresh-stage-65))
 
 > On a fresh install, no haplotype frequency set exists when the first data refresh runs (step 3 of the import order). So step (d) fails for every
-> donor: the refresh sends a high-priority alert, and completes. Run the data refresh again after the haplotype frequency sets are imported (step 4),
+> donor, and the refresh pauses for a manual decision (see [the paused data refresh](README_Support.md#the-paused-data-refresh)). Send the `Complete`
+> decision: the refresh then completes with no stored genotype sets. Run the data refresh again after the haplotype frequency sets are imported (step 4),
 > to store the genotype sets.
 
 The donor replacement is performed on a secondary matching algorithm database, which is only activated for search on completion - so running this process will not 
@@ -99,6 +100,9 @@ Use this topic to start automated work that must wait for the refresh to end. It
 > Terraform creates only an `audit` subscription on this topic. To consume the messages, add your own subscription.
 >
 > A job that is closed by the data refresh cleanup (the `RunDataRefreshCleanup` function, or the automatic cleanup after a refresh request is dead-lettered) is marked as failed, but no message is published for it.
+>
+> A job that is paused for a manual decision (too many donors failed in step (d)) publishes no message while it is paused. The message comes when a
+> decision ends the job: `Complete` or `RetryFailedBatches` resume the job, and `Fail` closes it as failed. A pause can last for days.
 
 ### Haplotype Frequency Sets
 
