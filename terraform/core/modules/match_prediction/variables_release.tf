@@ -41,6 +41,10 @@ variable "MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT" {
   type = number
 }
 
+variable "MATCH_PREDICTION_PRECOMPUTE_MODE" {
+  type = string
+}
+
 variable "MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS" {
   type = number
 }
