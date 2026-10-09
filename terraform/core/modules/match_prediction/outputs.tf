@@ -16,10 +16,12 @@ output "storage" {
 
 // The connection string is exposed as a Key Vault reference rather than a value, so that consumers outside this module
 // configure their apps without the secret passing through them. A consumer must attach the shared function apps
-// identity for it to resolve.
+// identity for it to resolve. `connection_string_secret_id` is the same secret's versioned ID, for a container app's
+// `key_vault_secret_id`, which does not accept a reference string.
 output "sql_database" {
   value = {
-    connection_string_kv_ref = local.sql_kv_ref["match-prediction-sql-connection-string"]
+    connection_string_kv_ref    = local.sql_kv_ref["match-prediction-sql-connection-string"]
+    connection_string_secret_id = azurerm_key_vault_secret.match_prediction["match-prediction-sql-connection-string"].id
   }
 }
 

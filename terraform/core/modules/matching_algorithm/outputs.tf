@@ -34,3 +34,9 @@ output "sql_database" {
     transient_b_database_kv_ref = local.sql_kv_ref["matching-transient-b-sql-connection-string"]
   }
 }
+
+output "precompute_worker_container_app" {
+  value = {
+    name = azurerm_container_app.atlas_precompute_worker.name
+  }
+}

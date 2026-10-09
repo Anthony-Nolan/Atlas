@@ -44,6 +44,12 @@ locals {
     "DataRefresh:DormantDatabaseSize"                                                       = var.DATA_REFRESH_DB_SIZE_DORMANT
     "DataRefresh:LeaseDurationMinutes"                                                      = var.DATA_REFRESH_LEASE_DURATION_MINUTES
     "DataRefresh:LeaseRenewalIntervalSeconds"                                               = var.DATA_REFRESH_LEASE_RENEWAL_INTERVAL_SECONDS
+    "DataRefresh:Precompute:AbandonBatchesCronSchedule"                                     = var.DATA_REFRESH_PRECOMPUTE_ABANDON_BATCHES_CRON_SCHEDULE
+    "DataRefresh:Precompute:FinaliseRunsCronSchedule"                                       = var.DATA_REFRESH_PRECOMPUTE_FINALISE_RUNS_CRON_SCHEDULE
+    "DataRefresh:Precompute:MaxBatchRetries"                                                = var.DATA_REFRESH_PRECOMPUTE_MAX_BATCH_RETRIES
+    "DataRefresh:Precompute:RequestsSubscription"                                           = azurerm_servicebus_subscription.precomputation-worker.name
+    "DataRefresh:Precompute:RequestsTopic"                                                  = azurerm_servicebus_topic.donor-genotype-precomputation-requests.name
+    "DataRefresh:Precompute:RequeueBatchesCronSchedule"                                     = var.DATA_REFRESH_PRECOMPUTE_REQUEUE_BATCHES_CRON_SCHEDULE
     "DataRefresh:RefreshDatabaseSize"                                                       = var.DATA_REFRESH_DB_SIZE_REFRESH
     "DataRefresh:SendRetryCount"                                                            = var.SERVICE_BUS_SEND_RETRY_COUNT
     "DataRefresh:SendRetryCooldownSeconds"                                                  = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS

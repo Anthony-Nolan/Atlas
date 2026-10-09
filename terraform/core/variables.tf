@@ -436,6 +436,30 @@ variable "MATCHING_DATA_REFRESH_WATCHDOG_GRACE_DURATION_MINUTES" {
   description = "How long a refresh record must show no sign of life before the watchdog re-requests it. Must exceed MATCHING_DATA_REFRESH_LEASE_DURATION_MINUTES, so that a run between lease renewals is never mistaken for a stalled one."
 }
 
+variable "MATCHING_DATA_REFRESH_PRECOMPUTE_ABANDON_BATCHES_CRON_SCHEDULE" {
+  type        = string
+  default     = "0 */15 * * * *"
+  description = "CRON schedule (six-field NCrontab) for the sweep that marks donor genotype precomputation batches abandoned once their lease has expired. Must be set: without it the function fails to index and the precomputation stage can wait forever."
+}
+
+variable "MATCHING_DATA_REFRESH_PRECOMPUTE_FINALISE_RUNS_CRON_SCHEDULE" {
+  type        = string
+  default     = "0 */5 * * * *"
+  description = "CRON schedule (six-field NCrontab) for the sweep that finalises donor genotype precomputation runs whose batches have all finished. Must be set: without it the function fails to index and the precomputation stage can wait forever."
+}
+
+variable "MATCHING_DATA_REFRESH_PRECOMPUTE_MAX_BATCH_RETRIES" {
+  type        = number
+  default     = 3
+  description = "How many times a failed or abandoned donor genotype precomputation batch is requeued before it is marked permanently failed."
+}
+
+variable "MATCHING_DATA_REFRESH_PRECOMPUTE_REQUEUE_BATCHES_CRON_SCHEDULE" {
+  type        = string
+  default     = "0 */5 * * * *"
+  description = "CRON schedule (six-field NCrontab) for the sweep that requeues failed and abandoned donor genotype precomputation batches. Must be set: without it the function fails to index and the precomputation stage can wait forever."
+}
+
 variable "MATCHING_DATABASE_MAX_SIZE_GB" {
   type        = string
   default     = "250"
@@ -743,6 +767,72 @@ variable "MATCH_PREDICTION_CONTAINER_REQUESTS_MAX_PARALLELISM" {
   type        = number
   default     = 2
   description = "Maximum number of match prediction requests processed in parallel per Container App replica. Override via TF_VAR_MATCH_PREDICTION_CONTAINER_REQUESTS_MAX_PARALLELISM."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_CONTAINER_IMAGE_TAG" {
+  type        = string
+  default     = "latest"
+  description = "Docker image tag for the donor genotype precompute worker container app."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_CONTAINER_CPU" {
+  type        = number
+  default     = 2.0
+  description = "CPU cores allocated to the donor genotype precompute worker container app."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_CONTAINER_MEMORY" {
+  type        = string
+  default     = "4Gi"
+  description = "Memory allocated to the donor genotype precompute worker container app."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_CONTAINER_MAX_REPLICAS" {
+  type        = number
+  default     = 10
+  description = "Maximum replica count for the donor genotype precompute worker container app. The minimum is always 0. Keep MATCHING_PRECOMPUTE_WORKER_MAX_CONCURRENT_CALLS times this within the worker and session limits of the transient database being refreshed."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_CONTAINER_SCALE_RULE_MESSAGE_COUNT" {
+  type        = number
+  default     = 1
+  description = "Message threshold for the donor genotype precompute worker's Service Bus scale rule. Each message is a whole batch, so the default adds a replica per waiting batch, up to the maximum."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_CONTAINER_SCALE_RULE_POLLING_INTERVAL_SECONDS" {
+  type        = number
+  default     = 30
+  description = "The interval in seconds used by the donor genotype precompute worker container app for polling KEDA scale rules."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_MAX_CONCURRENT_CALLS" {
+  type        = number
+  default     = 1
+  description = "Maximum number of batches each donor genotype precompute worker replica processes concurrently."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_PREFETCH_COUNT" {
+  type        = number
+  default     = 0
+  description = "Number of messages the donor genotype precompute worker prefetches. Keep at 0, so that waiting batches stay available to other replicas."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_MAX_AUTO_LOCK_RENEWAL_MINUTES" {
+  type        = number
+  default     = 60
+  description = "Maximum total duration (in minutes) for which the donor genotype precompute worker auto-renews a message lock. A batch must finish within this and MATCHING_PRECOMPUTE_WORKER_BATCH_LEASE_MINUTES, or it is computed twice."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_BATCH_LEASE_MINUTES" {
+  type        = number
+  default     = 60
+  description = "How long a donor genotype precompute worker holds a batch before the abandon sweep may take it back. Keep no greater than MATCHING_PRECOMPUTE_WORKER_MAX_AUTO_LOCK_RENEWAL_MINUTES."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_MAX_GROUP_FAILURES_PER_BATCH" {
+  type        = number
+  default     = 100
+  description = "The permanent group failures (such as bad typings) that one donor genotype precomputation batch can have and still succeed. More than this fails the batch, which is then retried. Keep it well below the groups per batch of a run."
 }
 
 # --- External SQL variables (for retargeting function app connection strings) ---

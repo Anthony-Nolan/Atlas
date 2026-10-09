@@ -18,6 +18,7 @@ variable "azure_storage" {
 
 variable "application_insights" {
   type = object({
+    connection_string   = string
     instrumentation_key = string
   })
 }
@@ -56,7 +57,8 @@ variable "mac_import_table" {
 
 variable "match_prediction_sql_database" {
   type = object({
-    connection_string_kv_ref = string
+    connection_string_kv_ref    = string
+    connection_string_secret_id = string
   })
 }
 
@@ -102,5 +104,25 @@ variable "sql_server" {
     id                          = string
     name                        = string
     fully_qualified_domain_name = string
+  })
+}
+
+variable "container_app_environment" {
+  type = object({
+    id = string
+  })
+}
+
+variable "acr" {
+  type = object({
+    id           = string
+    login_server = string
+  })
+}
+
+variable "aca_identity" {
+  type = object({
+    id           = string
+    principal_id = string
   })
 }
