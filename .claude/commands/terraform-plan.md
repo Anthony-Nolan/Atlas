@@ -15,7 +15,7 @@ The first argument (`$1`) selects the environment. It must be one of:
 |-------------|--------------------|------------------------------|
 | `dev`       | `atlas-dev`         | `terraform/dev.tfvars`       |
 | `uat`       | `atlas-uat`         | `terraform/uat.tfvars`       |
-| `live`      | `atlas-live`        | `terraform/live.tfvars`      |
+| `live`      | `atlas-production`  | `terraform/live.tfvars`      |
 | `wmda-uat`  | `atlas-wmda-uat`    | `terraform/wmda-uat.tfvars`  |
 | `wmda-live` | `atlas-wmda-live`   | `terraform/wmda-live.tfvars` |
 

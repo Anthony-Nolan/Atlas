@@ -52,11 +52,13 @@ migration of Atlas's azurerm provider from **{SOURCE_VERSION}** to
   | `atlas-dev`         | `../dev.tfvars`                           |
   | `atlas-uat`         | `../uat.tfvars`                           |
   | `atlas-wmda-uat`    | `../wmda-uat.tfvars`                      |
-  | `atlas-live`        | `../live.tfvars`                          |
+  | `atlas-production`  | `../live.tfvars`                          |
   | `atlas-wmda-live`   | `../wmda-live.tfvars`                     |
 
-  Do not fall back to generic defaults like `atlas-production` /
-  `production.tfvars` — they don't exist in this repo. If the user's request
+  Note the live workspace is `atlas-production` (not `atlas-live`), while its
+  var-file is `live.tfvars` — there is no `production.tfvars`, and the
+  `atlas-production:*` / `atlas-production_*` workspaces are historical
+  snapshots, not targets. If the user's request
   implies different names, treat that as one of the ambiguities in
   "Clarification Behavior" below and confirm before proceeding.
 - Remote backend (same for every workspace, all environments):
@@ -173,7 +175,7 @@ existing versioned changelog filename found in Phase 0).
 ## Phase 3 — Workspace Migration & Iterative Validation
 
 Migration proceeds sequentially by risk tier: **atlas-dev → atlas-uat →
-atlas-live → atlas-wmda-uat → atlas-wmda-live**. Both `atlas-live` and
+atlas-production → atlas-wmda-uat → atlas-wmda-live**. Both `atlas-production` and
 `atlas-wmda-live` are production and carry the same constraints (3.3).
 
 The code changes are made once per root (they are shared across workspaces
@@ -236,7 +238,7 @@ If clean: workspace validated ✅. If not: reiterate on the same workspace.
 |-------------------------------------|-------|
 | `atlas-dev`                         | Full migration, break-fix allowed, no approval gate. Reiterate the validation loop freely until plan is clean. |
 | `atlas-uat`, `atlas-wmda-uat`       | Must produce the same plan shape as `atlas-dev` (same change set, zero unexpected destroys). Require clean plan before apply. |
-| `atlas-live`, `atlas-wmda-live`     | Require peer-review sign-off, maintenance window, and snapshot/backup of stateful resources (databases, storage accounts) before apply. Plan must show 0 destructive changes on critical resources. |
+| `atlas-production`, `atlas-wmda-live` | Require peer-review sign-off, maintenance window, and snapshot/backup of stateful resources (databases, storage accounts) before apply. Plan must show 0 destructive changes on critical resources. |
 
 ### 3.4 — Apply & rollback
 
@@ -251,7 +253,7 @@ hands off to the pipeline.
 2. Commit and push the migration branch, following this repo's conventions:
    branch name `atl-<ticket>-<short-description>`, commit messages prefixed
    `chore: ATL-<ticket>: ...` (see `README_Contribution_Versioning.md`).
-3. For `atlas-live` / `atlas-wmda-live`: confirm peer-review sign-off,
+3. For `atlas-production` / `atlas-wmda-live`: confirm peer-review sign-off,
    maintenance window, and stateful resource backups are in place before the
    pipeline is triggered.
 
@@ -288,7 +290,7 @@ before proceeding** (never batch multiple ambiguities):
 - Missing variable definitions affecting resource naming or environment
   targeting.
 - Workspace names or var-file mappings that don't match Atlas's actual set
-  (`atlas-dev` / `atlas-uat` / `atlas-live` / `atlas-wmda-uat` /
+  (`atlas-dev` / `atlas-uat` / `atlas-production` / `atlas-wmda-uat` /
   `atlas-wmda-live`).
 - Var-file contents that differ across environments in ways that affect
   which resources exist (conditional resource creation, count/for_each
