@@ -240,6 +240,8 @@ module "match_prediction" {
   sql_database            = azurerm_mssql_database.atlas-database-shared
   mac_import_table        = module.multiple_allele_code_lookup.storage_table
 
+  matching_sql_database_secret_ids = module.matching_algorithm.sql_database_secret_ids
+
   servicebus_topics = {
     alerts          = module.support.general.alerts_servicebus_topic
     notifications   = module.support.general.notifications_servicebus_topic
@@ -262,6 +264,7 @@ module "match_prediction" {
   MAC_SOURCE                                               = var.MAC_SOURCE
   MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM                = var.MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM
   MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT        = var.MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT
+  MATCH_PREDICTION_PRECOMPUTE_MODE                         = var.MATCH_PREDICTION_PRECOMPUTE_MODE
   MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS             = var.MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS
   MATCH_PREDICTION_WORKER_PREFETCH_COUNT                   = var.MATCH_PREDICTION_WORKER_PREFETCH_COUNT
   MATCH_PREDICTION_WORKER_MAX_AUTO_LOCK_RENEWAL_MINUTES    = var.MATCH_PREDICTION_WORKER_MAX_AUTO_LOCK_RENEWAL_MINUTES

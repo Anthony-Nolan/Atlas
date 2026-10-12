@@ -35,6 +35,16 @@ output "sql_database" {
   }
 }
 
+// Secret IDs for consumers that cannot use the Key Vault references above, i.e. Container Apps, whose `secret` blocks take
+// a `key_vault_secret_id`. The consumer must attach the shared function apps identity for these to resolve.
+output "sql_database_secret_ids" {
+  value = {
+    persistent  = azurerm_key_vault_secret.matching_algorithm["matching-persistent-sql-connection-string"].id
+    transient_a = azurerm_key_vault_secret.matching_algorithm["matching-transient-a-sql-connection-string"].id
+    transient_b = azurerm_key_vault_secret.matching_algorithm["matching-transient-b-sql-connection-string"].id
+  }
+}
+
 output "precompute_worker_container_app" {
   value = {
     name = azurerm_container_app.atlas_precompute_worker.name

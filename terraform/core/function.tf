@@ -108,6 +108,7 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "HaplotypeFrequencySetCache:SetCacheExpiryMinutes"       = var.MATCH_PREDICTION_SET_CACHE_EXPIRY_MINUTES
 
     "MatchPrediction:GenotypeImputation:MaximumExpandedGenotypesPerInput" = var.MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT
+    "MatchPrediction:Precompute:Mode"                                     = var.MATCH_PREDICTION_PRECOMPUTE_MODE
 
     "MatchPrediction:AzureStorage:ConnectionString"                    = local.kv_ref["azure-storage-connection-string"]
     "MatchPrediction:AzureStorage:MatchPredictionResultsBlobContainer" = module.match_prediction.storage.match_prediction_results_container_name

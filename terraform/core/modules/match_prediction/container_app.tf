@@ -193,6 +193,25 @@ resource "azurerm_container_app" "atlas_match_prediction" {
         name        = "ConnectionStrings__MatchPredictionSql"
         secret_name = "match-prediction-sql-connection-string"
       }
+      // The worker builds the matching persistent database context for every batch, even in ForceLive mode, so the
+      // persistent connection string must exist or every batch fails.
+      env {
+        name        = "ConnectionStrings__MatchingPersistentSql"
+        secret_name = "matching-persistent-sql-connection-string"
+      }
+      env {
+        name        = "ConnectionStrings__MatchingTransientASql"
+        secret_name = "matching-transient-a-sql-connection-string"
+      }
+      env {
+        name        = "ConnectionStrings__MatchingTransientBSql"
+        secret_name = "matching-transient-b-sql-connection-string"
+      }
+
+      env {
+        name  = "Precompute__Mode"
+        value = var.MATCH_PREDICTION_PRECOMPUTE_MODE
+      }
 
       liveness_probe {
         path             = "/health/live"
@@ -258,6 +277,24 @@ resource "azurerm_container_app" "atlas_match_prediction" {
   secret {
     name                = "match-prediction-sql-connection-string"
     key_vault_secret_id = azurerm_key_vault_secret.match_prediction["match-prediction-sql-connection-string"].id
+    identity            = var.key_vault.function_apps_identity_id
+  }
+
+  secret {
+    name                = "matching-persistent-sql-connection-string"
+    key_vault_secret_id = var.matching_sql_database_secret_ids.persistent
+    identity            = var.key_vault.function_apps_identity_id
+  }
+
+  secret {
+    name                = "matching-transient-a-sql-connection-string"
+    key_vault_secret_id = var.matching_sql_database_secret_ids.transient_a
+    identity            = var.key_vault.function_apps_identity_id
+  }
+
+  secret {
+    name                = "matching-transient-b-sql-connection-string"
+    key_vault_secret_id = var.matching_sql_database_secret_ids.transient_b
     identity            = var.key_vault.function_apps_identity_id
   }
 }

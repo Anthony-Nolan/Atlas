@@ -82,3 +82,12 @@ variable "aca_identity" {
     principal_id = string
   })
 }
+
+// Versioned Key Vault secret IDs of the matching algorithm's SQL connection strings, for the worker container app.
+variable "matching_sql_database_secret_ids" {
+  type = object({
+    persistent  = string
+    transient_a = string
+    transient_b = string
+  })
+}

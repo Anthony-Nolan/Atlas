@@ -309,6 +309,17 @@ variable "MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT" {
   description = "Genotype-truncation limit: the maximum number of expanded genotypes retained per patient/donor before match calculation. Must be identical across every host that runs imputation; increasing it beyond 2000 trades performance/memory for accuracy."
 }
 
+variable "MATCH_PREDICTION_PRECOMPUTE_MODE" {
+  type        = string
+  default     = "ForceLive"
+  description = "Controls whether search-time match prediction reads precomputed donor genotype sets. Shared by the Atlas Functions app and the Match Prediction Worker. ForceLive: always live. DefaultLive: live unless the search request sets UsePrecomputedGenotypeSets=true. DefaultPrecomputed: precomputed unless the request sets it to false."
+
+  validation {
+    condition     = contains(["ForceLive", "DefaultLive", "DefaultPrecomputed"], var.MATCH_PREDICTION_PRECOMPUTE_MODE)
+    error_message = "MATCH_PREDICTION_PRECOMPUTE_MODE must be one of: ForceLive, DefaultLive, DefaultPrecomputed."
+  }
+}
+
 variable "MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS" {
   type        = number
   default     = 3
