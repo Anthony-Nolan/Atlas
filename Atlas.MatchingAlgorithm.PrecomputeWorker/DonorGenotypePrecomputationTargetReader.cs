@@ -1,34 +1,36 @@
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
-using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
-using EnumStringValues;
 
 namespace Atlas.MatchingAlgorithm.PrecomputeWorker;
 
-/// <summary>Reads the target of the worker: the open data refresh record, and the database that the refresh fills.</summary>
+/// <summary>Reads the target of a batch message: the transient database of the data refresh record that the message names.</summary>
+/// <remarks>
+/// <para>
+/// <b>For each message, not when the worker starts.</b> Outside a data refresh no record is open, and the worker must still
+/// start and report healthy. A record can also close while its messages wait, for example when its refresh fails, and the
+/// next message then finds it closed.
+/// </para>
+///
+/// <para>
+/// <b>The record that the message names, not the one open record.</b> The worker does not have to guess the record, and a
+/// worker that still runs from an earlier refresh cannot write to the database of a later one. The dead-letter trigger finds
+/// the database in the same way, and the claim of the batch then checks the record and the status of its run.
+/// </para>
+///
+/// <para>
+/// The database of a record does not change, and the refresh swaps the databases only after the stage has finished every
+/// batch. So the database of the record is correct for every message of the stage.
+/// </para>
+/// </remarks>
 internal static class DonorGenotypePrecomputationTargetReader
 {
-    /// <exception cref="InvalidOperationException">
-    /// No refresh record is open, or more than one is. The worker then does not start: it cannot tell which database to
-    /// write.
-    /// </exception>
-    public static DonorGenotypePrecomputationTarget Read(IDataRefreshHistoryRepository dataRefreshHistoryRepository)
+    /// <returns>
+    /// The database of the record, when the record is open. Null when the record is closed or does not exist: its refresh
+    /// has ended, and the batch is not the worker's to take.
+    /// </returns>
+    public static async Task<TransientDatabase?> ReadDatabase(IDataRefreshHistoryRepository dataRefreshHistoryRepository, int dataRefreshRecordId)
     {
-        var openRecords = dataRefreshHistoryRepository.GetIncompleteRefreshJobs().ToList();
-        if (openRecords.Count == 0)
-        {
-            throw new InvalidOperationException("No data refresh record is open, so the worker cannot tell which database to write.");
-        }
-
-        // The requester starts no refresh while another is open, so this is a fault of the refresh history.
-        if (openRecords.Count > 1)
-        {
-            throw new InvalidOperationException(
-                $"{openRecords.Count} data refresh records are open ({string.Join(", ", openRecords.Select(record => record.Id))}), " +
-                "so the worker cannot tell which database to write.");
-        }
-
-        var openRecord = openRecords[0];
-        return new DonorGenotypePrecomputationTarget(openRecord.Id, openRecord.Database.ParseToEnum<TransientDatabase>());
+        var openRecordDatabases = await dataRefreshHistoryRepository.GetIncompleteRefreshJobDatabases();
+        return openRecordDatabases.TryGetValue(dataRefreshRecordId, out var database) ? database : null;
     }
 }

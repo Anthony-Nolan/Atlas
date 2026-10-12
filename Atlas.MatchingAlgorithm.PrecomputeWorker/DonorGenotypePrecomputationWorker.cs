@@ -1,4 +1,3 @@
-using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 using Azure.Messaging.ServiceBus;
 
 namespace Atlas.MatchingAlgorithm.PrecomputeWorker;
@@ -8,20 +7,17 @@ namespace Atlas.MatchingAlgorithm.PrecomputeWorker;
 /// message after its batch. The work is in <see cref="DonorGenotypePrecomputationMessageHandler"/>.
 /// </summary>
 /// <remarks>
-/// It takes the <see cref="DonorGenotypePrecomputationTarget"/>, so the host reads the target when it starts the worker.
-/// A worker that cannot read its target does not start.
+/// It reads no database when it starts: the handler reads the data refresh record of each message. So the host can start
+/// outside a data refresh, and before a release migrates the databases.
 /// </remarks>
 internal class DonorGenotypePrecomputationWorker(
     ServiceBusProcessor processor,
     DonorGenotypePrecomputationMessageHandler handler,
-    DonorGenotypePrecomputationTarget target,
     ILogger<DonorGenotypePrecomputationWorker> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        logger.LogInformation(
-            "DonorGenotypePrecomputationWorker starting, for data refresh record {DataRefreshRecordId}. It writes {TargetDatabase}.",
-            target.DataRefreshRecordId, target.Database);
+        logger.LogInformation("DonorGenotypePrecomputationWorker starting.");
 
         processor.ProcessMessageAsync += ProcessMessageAsync;
         processor.ProcessErrorAsync += ProcessErrorAsync;

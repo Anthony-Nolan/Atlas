@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.MatchingAlgorithm.Data.Models.Precompute;
+using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Repositories.Precompute;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Settings;
@@ -21,8 +22,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 public enum DonorGenotypePrecomputationBatchResult
 {
     /// <summary>
-    /// The batch was not the worker's to take: its run is not running or belongs to another refresh, the batch is done,
-    /// or another worker holds it.
+    /// The batch was not the worker's to take: its refresh record is not open, its run is not running or belongs to another
+    /// refresh, the batch is done, or another worker holds it.
     /// </summary>
     Skipped,
 
@@ -46,6 +47,7 @@ public interface IDonorGenotypePrecomputationBatchProcessor
     /// donor rows of the batch, and records the result on the batch row.
     /// </summary>
     /// <param name="request">The message.</param>
+    /// <param name="database">The transient database of the data refresh record that the message names.</param>
     /// <param name="isRedelivery">
     /// True when Service Bus delivers the message again: its worker stopped without completing it, so the claim can take
     /// the batch from a live lease.
@@ -55,12 +57,15 @@ public interface IDonorGenotypePrecomputationBatchProcessor
     /// Any exception: the batch could not be finished, for example because the database failed. The worker abandons the
     /// message, so that Service Bus delivers it again.
     /// </exception>
-    Task<DonorGenotypePrecomputationBatchResult> ProcessBatch(DonorGenotypePrecomputationBatchRequest request, bool isRedelivery);
+    Task<DonorGenotypePrecomputationBatchResult> ProcessBatch(
+        DonorGenotypePrecomputationBatchRequest request,
+        TransientDatabase database,
+        bool isRedelivery);
 }
 
 /// <summary>
-/// The work of one batch message of the donor genotype precomputation stage, in the database of the
-/// <see cref="DonorGenotypePrecomputationTarget"/> of the worker.
+/// The work of one batch message of the donor genotype precomputation stage, in the transient database of the data
+/// refresh record that the message names.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -87,7 +92,6 @@ public class DonorGenotypePrecomputationBatchProcessor : IDonorGenotypePrecomput
     internal const int DonorAssignmentChunkSize = 8000;
 
     private readonly IStaticallyChosenDatabaseRepositoryFactory repositoryFactory;
-    private readonly DonorGenotypePrecomputationTarget target;
     private readonly ISubjectGenotypeSetValueService valueService;
     private readonly IHaplotypeFrequencyLookupService frequencySetLookup;
     private readonly DonorGenotypePrecomputationWorkerSettings settings;
@@ -96,7 +100,6 @@ public class DonorGenotypePrecomputationBatchProcessor : IDonorGenotypePrecomput
 
     public DonorGenotypePrecomputationBatchProcessor(
         IStaticallyChosenDatabaseRepositoryFactory repositoryFactory,
-        DonorGenotypePrecomputationTarget target,
         ISubjectGenotypeSetValueService valueService,
         IHaplotypeFrequencyLookupService frequencySetLookup,
         DonorGenotypePrecomputationWorkerSettings settings,
@@ -104,7 +107,6 @@ public class DonorGenotypePrecomputationBatchProcessor : IDonorGenotypePrecomput
         ILogger<DonorGenotypePrecomputationBatchProcessor> logger)
     {
         this.repositoryFactory = repositoryFactory;
-        this.target = target;
         this.valueService = valueService;
         this.frequencySetLookup = frequencySetLookup;
         this.settings = settings;
@@ -113,10 +115,13 @@ public class DonorGenotypePrecomputationBatchProcessor : IDonorGenotypePrecomput
     }
 
     /// <inheritdoc />
-    public async Task<DonorGenotypePrecomputationBatchResult> ProcessBatch(DonorGenotypePrecomputationBatchRequest request, bool isRedelivery)
+    public async Task<DonorGenotypePrecomputationBatchResult> ProcessBatch(
+        DonorGenotypePrecomputationBatchRequest request,
+        TransientDatabase database,
+        bool isRedelivery)
     {
         var startTimestamp = Stopwatch.GetTimestamp();
-        var repository = repositoryFactory.GetDonorGenotypePrecomputationRepositoryForDatabase(target.Database);
+        var repository = repositoryFactory.GetDonorGenotypePrecomputationRepositoryForDatabase(database);
 
         var claim = NewClaim(request, isRedelivery);
         var batch = await repository.TryClaimBatch(claim);
@@ -127,21 +132,21 @@ public class DonorGenotypePrecomputationBatchProcessor : IDonorGenotypePrecomput
             logger.LogDebug(
                 LoggingPrefix + " Batch {BatchId} of run {RunId} (data refresh record {DataRefreshRecordId}, {TargetDatabase}) was skipped: " +
                 "its run is not running, or the batch is done or held.",
-                request.BatchId, request.RunId, request.DataRefreshRecordId, target.Database);
+                request.BatchId, request.RunId, request.DataRefreshRecordId, database);
             metrics.RecordBatch(DonorGenotypePrecomputationBatchResult.Skipped, Stopwatch.GetElapsedTime(startTimestamp), 0, 0);
             return DonorGenotypePrecomputationBatchResult.Skipped;
         }
 
-        var work = await ComputeGroups(repository, batch);
+        var work = await ComputeGroups(repository, batch, database);
         await repository.RecordGroupOutcomes(batch.RunId, work.Outcomes);
 
         // A batch that stopped writes no donor rows: the database or the storage fails, and the retry writes them.
         if (work.StoppedBy == null)
         {
-            await WriteDonorRows(repository, batch);
+            await WriteDonorRows(repository, batch, database);
         }
 
-        var result = await RecordResult(repository, batch, claim.LeaseOwner, work, request);
+        var result = await RecordResult(repository, batch, claim.LeaseOwner, work, request, database);
 
         metrics.RecordBatch(result, Stopwatch.GetElapsedTime(startTimestamp), work.ComputedGroupCount, work.FrequencySetCount);
         return result;
@@ -155,7 +160,10 @@ public class DonorGenotypePrecomputationBatchProcessor : IDonorGenotypePrecomput
         TimeSpan.FromMinutes(settings.BatchLeaseMinutes),
         isRedelivery);
 
-    private async Task<BatchWork> ComputeGroups(IDonorGenotypePrecomputationRepository repository, ClaimedDonorGenotypePrecomputationBatch batch)
+    private async Task<BatchWork> ComputeGroups(
+        IDonorGenotypePrecomputationRepository repository,
+        ClaimedDonorGenotypePrecomputationBatch batch,
+        TransientDatabase database)
     {
         var groups = await repository.GetGroupsToCompute(batch.RunId, batch.FirstGroupId, batch.LastGroupId);
         var work = new BatchWork { ComputedGroupCount = groups.Count };
@@ -193,7 +201,7 @@ public class DonorGenotypePrecomputationBatchProcessor : IDonorGenotypePrecomput
                     $"group {group.GroupId} (donor {group.RepresentativeDonorId})"))
                 .ToList(),
             batch.HlaNomenclatureVersion,
-            target.Database);
+            database);
 
         for (var i = 0; i < groupsToCompute.Count; i++)
         {
@@ -254,12 +262,15 @@ public class DonorGenotypePrecomputationBatchProcessor : IDonorGenotypePrecomput
         return frequencySets;
     }
 
-    private async Task WriteDonorRows(IDonorGenotypePrecomputationRepository repository, ClaimedDonorGenotypePrecomputationBatch batch)
+    private async Task WriteDonorRows(
+        IDonorGenotypePrecomputationRepository repository,
+        ClaimedDonorGenotypePrecomputationBatch batch,
+        TransientDatabase database)
     {
         // Every group of the range that has a value, also from an earlier attempt: a stopped attempt wrote no donor rows.
         var assignments = await repository.GetDonorAssignments(batch.RunId, batch.FirstGroupId, batch.LastGroupId);
 
-        var subjectGenotypeSetRepository = repositoryFactory.GetSubjectGenotypeSetRepositoryForDatabase(target.Database);
+        var subjectGenotypeSetRepository = repositoryFactory.GetSubjectGenotypeSetRepositoryForDatabase(database);
         foreach (var chunk in assignments.Chunk(DonorAssignmentChunkSize))
         {
             await subjectGenotypeSetRepository.UpsertDonorAssignments(chunk);
@@ -271,7 +282,8 @@ public class DonorGenotypePrecomputationBatchProcessor : IDonorGenotypePrecomput
         ClaimedDonorGenotypePrecomputationBatch batch,
         Guid leaseOwner,
         BatchWork work,
-        DonorGenotypePrecomputationBatchRequest request)
+        DonorGenotypePrecomputationBatchRequest request,
+        TransientDatabase database)
     {
         var failedGroups = work.Outcomes.Where(outcome => outcome.SubjectGenotypeSetValueId == null).ToList();
         var failure = BatchFailure(work, failedGroups);
@@ -285,7 +297,7 @@ public class DonorGenotypePrecomputationBatchProcessor : IDonorGenotypePrecomput
             logger.LogWarning(
                 LoggingPrefix + " Batch {BatchId} of run {RunId} (data refresh record {DataRefreshRecordId}, {TargetDatabase}) was finished, " +
                 "but its lease was lost: the claim that took it records the result.",
-                request.BatchId, request.RunId, request.DataRefreshRecordId, target.Database);
+                request.BatchId, request.RunId, request.DataRefreshRecordId, database);
             return DonorGenotypePrecomputationBatchResult.LeaseLost;
         }
 
@@ -294,14 +306,14 @@ public class DonorGenotypePrecomputationBatchProcessor : IDonorGenotypePrecomput
             logger.LogWarning(
                 LoggingPrefix + " Batch {BatchId} of run {RunId} (data refresh record {DataRefreshRecordId}, {TargetDatabase}) failed, " +
                 "attempt {Attempt}: {FailureMessage}",
-                request.BatchId, request.RunId, request.DataRefreshRecordId, target.Database, batch.RetryCount + 1, failure.FailureMessage);
+                request.BatchId, request.RunId, request.DataRefreshRecordId, database, batch.RetryCount + 1, failure.FailureMessage);
             return DonorGenotypePrecomputationBatchResult.Failed;
         }
 
         logger.LogDebug(
             LoggingPrefix + " Batch {BatchId} of run {RunId} (data refresh record {DataRefreshRecordId}, {TargetDatabase}) has its results: " +
             "{ComputedGroupCount} group(s) computed, {FailedGroupCount} failed.",
-            request.BatchId, request.RunId, request.DataRefreshRecordId, target.Database, work.ComputedGroupCount, failedGroups.Count);
+            request.BatchId, request.RunId, request.DataRefreshRecordId, database, work.ComputedGroupCount, failedGroups.Count);
         return DonorGenotypePrecomputationBatchResult.ResultsReceived;
     }
 

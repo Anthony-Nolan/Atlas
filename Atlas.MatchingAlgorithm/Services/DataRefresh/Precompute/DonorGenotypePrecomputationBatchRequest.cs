@@ -15,9 +15,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 /// </para>
 ///
 /// <para>
-/// <b>No database.</b> The database is on the refresh record. The worker reads it once, when it starts (see
-/// <see cref="DonorGenotypePrecomputationTarget"/>), and the dead-letter trigger reads it from the record that the
-/// message names.
+/// <b>No database.</b> The database is on the refresh record. The worker and the dead-letter trigger read it from the
+/// record that the message names.
 /// </para>
 ///
 /// <para>

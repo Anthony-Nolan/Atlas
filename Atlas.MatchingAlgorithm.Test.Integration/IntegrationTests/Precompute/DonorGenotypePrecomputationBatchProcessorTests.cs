@@ -72,7 +72,6 @@ public class DonorGenotypePrecomputationBatchProcessorTests
 
         processor = new DonorGenotypePrecomputationBatchProcessor(
             repositoryFactory,
-            new DonorGenotypePrecomputationTarget(fixture.Create<int>(), Database),
             new SubjectGenotypeSetValueService(repositoryFactory, genotypeSetService),
             frequencySetLookup,
             fixture.Build<DonorGenotypePrecomputationWorkerSettings>().With(settings => settings.MaxGroupFailuresPerBatch, 10).Create(),
@@ -92,7 +91,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
         var otherGroup = await InsertGroup(run.Id, otherDonor);
         var batch = await InsertBatch(run.Id, sharedGroup.Id, otherGroup.Id);
 
-        var result = await processor.ProcessBatch(RequestFor(run, batch), false);
+        var result = await processor.ProcessBatch(RequestFor(run, batch), Database, false);
 
         result.Should().Be(DonorGenotypePrecomputationBatchResult.ResultsReceived);
         var groups = await StoredGroups();
@@ -112,9 +111,9 @@ public class DonorGenotypePrecomputationBatchProcessorTests
         var group = await InsertGroup(run.Id, await InsertDonor(), await InsertDonor());
         var batch = await InsertBatch(run.Id, group.Id, group.Id);
         var request = RequestFor(run, batch);
-        await processor.ProcessBatch(request, false);
+        await processor.ProcessBatch(request, Database, false);
 
-        var result = await processor.ProcessBatch(request, false);
+        var result = await processor.ProcessBatch(request, Database, false);
 
         result.Should().Be(DonorGenotypePrecomputationBatchResult.Skipped);
         await genotypeSetService.Received(1).GetGenotypeSet(Arg.Any<SubjectData>(), Arg.Any<MatchPredictionParameters>());
@@ -131,7 +130,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
         var request = RequestFor(run, batch);
         request.DataRefreshRecordId = fixture.Create<int>();
 
-        var result = await processor.ProcessBatch(request, false);
+        var result = await processor.ProcessBatch(request, Database, false);
 
         result.Should().Be(DonorGenotypePrecomputationBatchResult.Skipped);
         (await StoredBatch(batch.Id)).Status.Should().Be(BatchStatus.Pending);
@@ -150,7 +149,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
         var failure = new HlaMetadataDictionaryException(fixture.Create<string>(), fixture.Create<string>(), fixture.Create<string>());
         GivenTheImputationOf(badDonor).ThrowsAsync(failure);
 
-        var result = await processor.ProcessBatch(RequestFor(run, batch), false);
+        var result = await processor.ProcessBatch(RequestFor(run, batch), Database, false);
 
         result.Should().Be(DonorGenotypePrecomputationBatchResult.ResultsReceived);
         var groups = await StoredGroups();
@@ -171,7 +170,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
         var batch = await InsertBatch(run.Id, firstGroup.Id, secondGroup.Id);
         GivenTheImputationOf(secondDonor).ThrowsAsync(new InvalidOperationException(fixture.Create<string>()));
 
-        var firstResult = await processor.ProcessBatch(RequestFor(run, batch), false);
+        var firstResult = await processor.ProcessBatch(RequestFor(run, batch), Database, false);
 
         firstResult.Should().Be(DonorGenotypePrecomputationBatchResult.Failed);
         var failedBatch = await StoredBatch(batch.Id);
@@ -185,7 +184,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
             .GetGenotypeSet(Arg.Is<SubjectData>(subject => subject.HlaTyping.Equals(secondTyping)), Arg.Any<MatchPredictionParameters>())
             .Returns(new SubjectGenotypeSet(true, [], 0m));
 
-        var retryResult = await processor.ProcessBatch(RequestFor(run, batch), false);
+        var retryResult = await processor.ProcessBatch(RequestFor(run, batch), Database, false);
 
         retryResult.Should().Be(DonorGenotypePrecomputationBatchResult.ResultsReceived);
         ImputationCountOf(firstDonor).Should().Be(1);

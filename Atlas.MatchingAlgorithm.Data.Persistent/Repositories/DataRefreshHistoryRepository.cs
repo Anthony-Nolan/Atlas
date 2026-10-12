@@ -24,6 +24,14 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         ActiveDataRefreshRecord GetActiveRecord();
 
         IEnumerable<DataRefreshRecord> GetIncompleteRefreshJobs();
+
+        /// <returns>The transient database of each open refresh record, by record id.</returns>
+        /// <remarks>
+        /// Reads only the id and the database of each record. So a process whose model has a column that the database does
+        /// not have yet - a new release that runs before its migration - can still call it.
+        /// </remarks>
+        Task<IReadOnlyDictionary<int, TransientDatabase>> GetIncompleteRefreshJobDatabases();
+
         Task<int> Create(DataRefreshRecord dataRefreshRecord);
 
         Task<DataRefreshRecord> GetRecord(int dataRefreshRecordId);
@@ -122,6 +130,17 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         public IEnumerable<DataRefreshRecord> GetIncompleteRefreshJobs()
         {
             return Context.DataRefreshRecords.Where(r => r.RefreshEndUtc == null);
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyDictionary<int, TransientDatabase>> GetIncompleteRefreshJobDatabases()
+        {
+            var records = await Context.DataRefreshRecords
+                .Where(r => r.RefreshEndUtc == null)
+                .Select(r => new { r.Id, r.Database })
+                .ToListAsync();
+
+            return records.ToDictionary(r => r.Id, r => r.Database.ParseToEnum<TransientDatabase>());
         }
 
         public async Task<int> Create(DataRefreshRecord dataRefreshRecord)
