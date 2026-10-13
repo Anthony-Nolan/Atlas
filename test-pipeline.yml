@@ -9,17 +9,6 @@ schedules:
 
 pr: none
 
-parameters:
-  # Their build output is published by the Build stage, in the "SystemTests" artifact, in a folder named after the project.
-  - name: testProjects
-    type: object
-    default:
-      - Atlas.MatchingAlgorithm.Test.Integration
-      - Atlas.MatchingAlgorithm.Test.Validation
-      - Atlas.DonorImport.Test.Integration
-      - Atlas.MatchPrediction.Test.Integration
-      - Atlas.MultipleAlleleCodeDictionary.Test.Integration
-
 # Every dependency of the tests runs in a container on the build agent (see test-pipeline-dependencies.yml),
 # so no Azure resources, and no secrets, are needed.
 variables:
@@ -37,20 +26,30 @@ stages:
   - job: Build
     pool:
       vmImage: 'ubuntu-latest'
+    variables:
+      testProjects: >-
+        Atlas.MatchingAlgorithm.Test.Integration
+        Atlas.MatchingAlgorithm.Test.Validation
+        Atlas.DonorImport.Test.Integration
+        Atlas.MatchPrediction.Test.Integration
+        Atlas.MultipleAlleleCodeDictionary.Test.Integration
     steps:
     - task: UseDotNet@2
       displayName: 'Use .Net sdk'
       inputs:
-        version: 8.0.x
-    - task: UseDotNet@2
-      displayName: 'Use .Net sdk'
-      inputs:
         version: 10.0.x
-    - script: dotnet build Atlas.slnx
-      displayName: 'Build Atlas'
+    # Only the test projects, and what they reference, in one build, so that MSBuild builds them in parallel.
+    - bash: |
+        dotnet new sln --name SystemTests --format slnx
+        for project in $(testProjects); do
+          dotnet sln SystemTests.slnx add "$project/$project.csproj"
+        done
+        dotnet build SystemTests.slnx
+      displayName: 'Build test projects'
+    # Published in the "SystemTests" artifact, in a folder named after each project, for the jobs of the Test stage.
     # The test projects do not all build to the same folder, so MSBuild is asked where each one did.
     - bash: |
-        for project in ${{ join(' ', parameters.testProjects) }}; do
+        for project in $(testProjects); do
           outputFolder=$(dotnet msbuild "$project/$project.csproj" -getProperty:TargetDir)
           cp -r "$outputFolder" "$(Build.ArtifactStagingDirectory)/$project"
         done
