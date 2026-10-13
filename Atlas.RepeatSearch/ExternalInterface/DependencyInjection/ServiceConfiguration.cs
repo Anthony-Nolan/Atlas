@@ -1,8 +1,6 @@
-﻿using Atlas.Client.Models.Search.Results.Matching;
-using Atlas.Common.ApplicationInsights;
+﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Notifications;
-using Atlas.Common.ServiceBus;
 using Atlas.Common.ServiceBus.DependencyInjection;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.ExternalInterface.DependencyInjection;
