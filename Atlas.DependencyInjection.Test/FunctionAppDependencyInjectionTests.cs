@@ -15,9 +15,11 @@ namespace Atlas.DependencyInjection.Test;
 [TestFixture]
 internal class FunctionAppDependencyInjectionTests
 {
-    /// <param name="Configure">What the app's <c>Program</c> registers, apart from the host and Application Insights.</param>
-    public record FunctionApp(string Name, Assembly Assembly, params Action<IServiceCollection>[] Configure)
+    /// <param name="Configure">The app's <c>Startup.Configure</c>: all that its <c>Program</c> registers, apart from the host and Application Insights.</param>
+    public record FunctionApp(string Name, Action<IServiceCollection> Configure)
     {
+        public Assembly Assembly => Configure.Method.DeclaringType!.Assembly;
+
         public override string ToString() => Name;
     }
 
@@ -25,24 +27,15 @@ internal class FunctionAppDependencyInjectionTests
     {
         return new[]
         {
-            new FunctionApp("DonorImport", typeof(global::Atlas.DonorImport.Functions.Startup).Assembly,
-                global::Atlas.DonorImport.Functions.Startup.Configure, global::Atlas.DonorImport.Functions.SwashBuckleStartup.Configure),
-            new FunctionApp("Functions", typeof(global::Atlas.Functions.Startup).Assembly,
-                global::Atlas.Functions.Startup.Configure, global::Atlas.Functions.SwashBuckleStartup.Configure),
-            new FunctionApp("PublicApi", typeof(global::Atlas.Functions.PublicApi.Startup).Assembly,
-                global::Atlas.Functions.PublicApi.Startup.Configure, global::Atlas.Functions.PublicApi.SwashBuckleStartup.Configure),
-            new FunctionApp("MatchPrediction", typeof(global::Atlas.MatchPrediction.Functions.Startup).Assembly,
-                global::Atlas.MatchPrediction.Functions.Startup.Configure, global::Atlas.MatchPrediction.Functions.SwashBuckleStartup.Configure),
-            new FunctionApp("MatchingAlgorithm", typeof(global::Atlas.MatchingAlgorithm.Functions.Startup).Assembly,
-                global::Atlas.MatchingAlgorithm.Functions.Startup.Configure, global::Atlas.MatchingAlgorithm.Functions.SwashBuckleStartup.Configure),
-            new FunctionApp("DataRefresh", typeof(global::Atlas.MatchingAlgorithm.Functions.DataRefresh.Startup).Assembly,
-                global::Atlas.MatchingAlgorithm.Functions.DataRefresh.Startup.Configure),
-            new FunctionApp("DonorManagement", typeof(global::Atlas.MatchingAlgorithm.Functions.DonorManagement.Startup).Assembly,
-                global::Atlas.MatchingAlgorithm.Functions.DonorManagement.Startup.Configure),
-            new FunctionApp("RepeatSearch", typeof(global::Atlas.RepeatSearch.Functions.Startup).Assembly,
-                global::Atlas.RepeatSearch.Functions.Startup.Configure, global::Atlas.RepeatSearch.Functions.SwashBuckleStartup.Configure),
-            new FunctionApp("SearchTracking", typeof(global::Atlas.SearchTracking.Functions.Startup).Assembly,
-                global::Atlas.SearchTracking.Functions.Startup.Configure),
+            new FunctionApp("DonorImport", global::Atlas.DonorImport.Functions.Startup.Configure),
+            new FunctionApp("Functions", global::Atlas.Functions.Startup.Configure),
+            new FunctionApp("PublicApi", global::Atlas.Functions.PublicApi.Startup.Configure),
+            new FunctionApp("MatchPrediction", global::Atlas.MatchPrediction.Functions.Startup.Configure),
+            new FunctionApp("MatchingAlgorithm", global::Atlas.MatchingAlgorithm.Functions.Startup.Configure),
+            new FunctionApp("DataRefresh", global::Atlas.MatchingAlgorithm.Functions.DataRefresh.Startup.Configure),
+            new FunctionApp("DonorManagement", global::Atlas.MatchingAlgorithm.Functions.DonorManagement.Startup.Configure),
+            new FunctionApp("RepeatSearch", global::Atlas.RepeatSearch.Functions.Startup.Configure),
+            new FunctionApp("SearchTracking", global::Atlas.SearchTracking.Functions.Startup.Configure),
         }.Select(app => new TestCaseData(app).SetName($"{{m}}({app.Name})"));
     }
 
@@ -86,10 +79,7 @@ internal class FunctionAppDependencyInjectionTests
                 services.AddApplicationInsightsTelemetryWorkerService();
                 services.ConfigureFunctionsApplicationInsights();
 
-                foreach (var configure in app.Configure)
-                {
-                    configure(services);
-                }
+                app.Configure(services);
             })
             .UseDefaultServiceProvider(options =>
             {

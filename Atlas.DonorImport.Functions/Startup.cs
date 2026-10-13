@@ -17,6 +17,7 @@ namespace Atlas.DonorImport.Functions
             RegisterSettings(services);
 
             services.AddHealthChecks();
+            SwashBuckleStartup.Configure(services);
 
             services.RegisterDonorImport(
                 OptionsReaderFor<ApplicationInsightsSettings>(),

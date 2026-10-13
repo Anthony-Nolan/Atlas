@@ -45,7 +45,6 @@ var host = new HostBuilder()
 
 
         Startup.Configure(services);
-        SwashBuckleStartup.Configure(services);
     })
     .ConfigureLogging(logging =>
     {

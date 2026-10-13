@@ -22,6 +22,7 @@ namespace Atlas.Functions.PublicApi
             RegisterSettings(services);
 
             services.AddHealthChecks();
+            SwashBuckleStartup.Configure(services);
 
             services.RegisterMatchingAlgorithmOrchestration(
                 OptionsReaderFor<MatchingAlgorithm.Settings.ServiceBus.MessagingServiceBusSettings>(),

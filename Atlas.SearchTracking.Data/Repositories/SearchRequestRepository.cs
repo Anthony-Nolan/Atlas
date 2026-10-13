@@ -19,8 +19,6 @@ namespace Atlas.SearchTracking.Data.Repositories
 
         Task<int> GetSearchRequestIdByIdentifier(Guid searchIdentifier);
 
-        Task<SearchRequest> GetSearchRequestWithLinkedEntitiesByIdentifier(Guid searchIdentifier);
-
         Task TrackMatchPredictionResultsSentEvent(MatchPredictionResultsSentEvent matchPredictionResultsSentEvent);
     }
 
@@ -138,19 +136,6 @@ namespace Atlas.SearchTracking.Data.Repositories
             }
 
             return searchRequest.Id;
-        }
-
-        public async Task<SearchRequest> GetSearchRequestWithLinkedEntitiesByIdentifier(Guid searchIdentifier)
-        {
-            var searchRequest = await searchRequests
-                .Include(x => x.MatchPrediction)
-                .Include(x => x.MatchingAlgorithmAttempts)
-                .SingleOrDefaultAsync(x => x.SearchIdentifier == searchIdentifier);
-            if (searchRequest == null)
-            {
-                throw new Exception($"Search request with identifier {searchIdentifier} not found");
-            }
-            return searchRequest;
         }
     }
 }

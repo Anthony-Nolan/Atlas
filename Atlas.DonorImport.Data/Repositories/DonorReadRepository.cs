@@ -25,17 +25,6 @@ namespace Atlas.DonorImport.Data.Repositories
         public Task<IReadOnlyDictionary<string, string>> GetDonorsHashes(IEnumerable<string> externalDonorCodes);
 
         Task<IReadOnlyCollection<string>> GetExternalDonorCodes(string registryCode, DatabaseDonorType donorType);
-
-        Task<IReadOnlyCollection<string>> GetExternalDonorCodesLastUpdatedBefore(string registryCode, DatabaseDonorType donorType,
-            DateTimeOffset lastUpdatedBefore);
-
-        /// <summary>
-        /// Primary use case for <see cref="Get1000RandomDonors"/> is in the generation of test donor data.
-        /// </summary>
-        /// <param name="donorType">Optional, if you wish to restrict donors by donor type</param>
-        /// <param name="registryCode">Optional, if you wish to restrict donors by registry code</param>
-        /// <returns>Attempts to return 1000 donors, but may return fewer depending on SQL filters and which donor ID is randomly selected as the cut-off</returns>
-        Task<IEnumerable<Donor>> Get1000RandomDonors(DatabaseDonorType? donorType, string registryCode = null);
     }
 
     public class DonorReadRepository : DonorRepositoryBase, IDonorReadRepository
@@ -179,43 +168,6 @@ namespace Atlas.DonorImport.Data.Repositories
             await using var connection = NewConnection();
             var externalDonorCodes = await connection.QueryAsync<string>(sql, new { registryCode, donorType });
             return externalDonorCodes.ToList();
-        }
-
-        public async Task<IReadOnlyCollection<string>> GetExternalDonorCodesLastUpdatedBefore(string registryCode, DatabaseDonorType donorType,
-            DateTimeOffset lastUpdatedBefore)
-        {
-            var sql = @$"
-                        SELECT {nameof(Donor.ExternalDonorCode)} FROM {Donor.QualifiedTableName}
-                        WHERE {nameof(Donor.RegistryCode)} = @{nameof(registryCode)}
-                        AND {nameof(Donor.DonorType)} = @{nameof(donorType)}
-                        AND {nameof(Donor.LastUpdated)} < @{nameof(lastUpdatedBefore)}
-                        ";
-            await using var connection = NewConnection();
-            var externalDonorCodes = await connection.QueryAsync<string>(sql, new { registryCode, donorType, lastUpdatedBefore });
-            return externalDonorCodes.ToList();
-        }
-
-        /// <inheritdoc />
-        public async Task<IEnumerable<Donor>> Get1000RandomDonors(DatabaseDonorType? donorType, string registryCode = null)
-        {
-            // SQL to select TOP x random donors
-            var sql = @$"SELECT TOP 1000 * FROM {Donor.QualifiedTableName}
-                    WHERE {nameof(Donor.AtlasId)} >= (SELECT FLOOR(
-			        RAND()*((SELECT MAX({nameof(Donor.AtlasId)}) FROM {Donor.QualifiedTableName})-(SELECT MIN({nameof(Donor.AtlasId)}) FROM {Donor.QualifiedTableName})))
-				    +(SELECT MIN({nameof(Donor.AtlasId)}) FROM {Donor.QualifiedTableName}))";
-
-            if (donorType != null)
-            {
-                sql += $" AND {nameof(Donor.DonorType)} = @{nameof(donorType)}";
-            }
-
-            if (!string.IsNullOrEmpty(registryCode))
-            {
-                sql += $" AND {nameof(Donor.RegistryCode)} = @{nameof(registryCode)}";
-            }
-
-            await using var connection = NewConnection();
-            return await connection.QueryAsync<Donor>(sql, new { registryCode, donorType });
         }
     }
 }

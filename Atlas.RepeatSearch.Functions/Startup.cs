@@ -21,6 +21,7 @@ namespace Atlas.RepeatSearch.Functions
             RegisterSettings(services);
 
             services.AddHealthChecks();
+            SwashBuckleStartup.Configure(services);
 
             services.RegisterRepeatSearch(
                 OptionsReaderFor<ApplicationInsightsSettings>(),

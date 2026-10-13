@@ -41,6 +41,7 @@ namespace Atlas.Functions
             RegisterSettings(services);
 
             services.AddHealthChecks();
+            SwashBuckleStartup.Configure(services);
 
             RegisterTopLevelFunctionServices(services);
 
