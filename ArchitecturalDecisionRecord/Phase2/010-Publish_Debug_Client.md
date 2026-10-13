@@ -28,4 +28,4 @@ As they are spread across different apps, it makes sense to collate them into a 
 
 ## Update 2
 * The debug client proved to be an unnecessary HTTP layer over SQL, Service Bus and Blob Storage. The E2E test project, [Atlas.Auto.Tests](https://github.com/Anthony-Nolan/Atlas.Auto.Tests), now accesses these resources directly (see [ATL-356](https://github.com/Anthony-Nolan/Atlas.Auto.Tests/pull/73)).
-* `Atlas.Debug.Client` and `Atlas.Debug.Client.Models` have been removed, along with all debug endpoints, and are no longer published.
+* `Atlas.Debug.Client` and `Atlas.Debug.Client.Models` have been removed, along with all debug endpoints, and are no longer published from Atlas `4.1.0` onwards. `4.0.0` is the last version that has them.

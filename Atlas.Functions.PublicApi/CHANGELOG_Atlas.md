@@ -33,6 +33,14 @@ Feature flags permit greater control over the release of new features (see this 
 * BREAKING - Breaking change at the API level
 * FBC - Functionally Breaking Change, i.e., significant change to the behaviour of an existing feature but the API remains unchanged
 
+### 4.1.0
+
+#### Debug
+* BREAKING: All debug endpoints (`/debug/` route prefix) have been removed from every Atlas functions app, along with the `Atlas.Debug.Client` and `Atlas.Debug.Client.Models` projects, which are no longer built or published. `4.0.0` is the last version that has them.
+  * [Atlas E2E tests](https://github.com/Anthony-Nolan/Atlas.Auto.Tests), the only consumer, now work with Atlas resources (SQL, Service Bus, Blob Storage) directly.
+  * The `debug` Service Bus subscriptions are kept, as the E2E tests read them directly.
+  * See [ADR 010](/ArchitecturalDecisionRecord/Phase2/010-Publish_Debug_Client.md#update-2).
+
 ### 3.0.0
 * E: Updated .NET version from 6.0 to 8.0
 
