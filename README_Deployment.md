@@ -272,3 +272,90 @@ This section details how to set up for such a case.
 - New release stages can be created within one Azure Devops release pipeline. This can be useful for ensuring the same build artifacts that were
 tested in a test environment are deployed to live
 - New service connections will need to be set up in Azure Devops for each resource group
+
+## Releasing the donor genotype precomputation (Data Refresh stage 65)
+
+Use this runbook one time in each environment: for the release that adds Data Refresh stage 65. For how the stage works,
+see [the Matching Algorithm README](README_MatchingAlgorithm.md#donor-genotype-precomputation-data-refresh-stage-65).
+For its alerts and the SQL for support, see [the Support README](README_Support.md#donor-genotype-precomputation-stage-65).
+
+### Before the release
+
+Do these steps before you release the code. The Terraform of [ATL-315](https://anthonynolan.atlassian.net/browse/ATL-315)
+does steps 2 to 4.
+
+1. **Search settings of the same release.** The release also has ATL-221: search reads and writes the stored genotype
+   sets. Apply the Terraform of [ATL-438](https://anthonynolan.atlassian.net/browse/ATL-438) first. It adds these
+   settings:
+   - The Match Prediction Worker (`Atlas.MatchPrediction.Worker`): the connection strings `MatchingPersistentSql`,
+     `MatchingTransientASql` and `MatchingTransientBSql`, and `Precompute:Mode`. Without the connection strings, the
+     worker cannot get to the matching databases.
+   - The Atlas Functions app: `MatchPrediction:Precompute:Mode`. The app already has its matching connection strings.
+   - Keep the mode `ForceLive` (the default) in both apps. For the modes, see
+     [the Match Prediction README](README_MatchPredictionAlgorithm.md#switching-it-on-and-off).
+2. **Service Bus.** Create the topic `donor-genotype-precomputation-requests` and its subscription `precomputation-worker`.
+   - Use a long message time to live. On a full donor set, a batch message can wait on the topic for many hours.
+   - The Data Refresh app reads the dead-letter queue of the subscription. If the subscription does not exist, that
+     function cannot start.
+3. **Worker.** Deploy the image of `Atlas.MatchingAlgorithm.PrecomputeWorker` to a Container App.
+   - Scale the Container App on the message count of the `precomputation-worker` subscription.
+   - Give it the settings of its `appsettings.json`: the connection strings `SqlA`, `SqlB`, `PersistentSql` and
+     `MatchPredictionSql`, `MessagingServiceBus:ConnectionString`, the storage of the HLA Metadata Dictionary and of the
+     MAC dictionary, Application Insights, `GenotypeImputation:*`, `HaplotypeFrequencySetCache:*` and
+     `PrecomputeWorker:*`.
+   - Keep `PrecomputeWorker:MaxConcurrentCalls` multiplied by the maximum replica count below the worker and session
+     limits of the transient database at the refresh size (`MATCHING_DATA_REFRESH_DB_SIZE_REFRESH`).
+4. **Data Refresh app settings.** Add `DataRefresh:Precompute:RequestsTopic`, `DataRefresh:Precompute:RequestsSubscription`,
+   `DataRefresh:Precompute:FinaliseRunsCronSchedule`, `DataRefresh:Precompute:AbandonBatchesCronSchedule` and
+   `DataRefresh:Precompute:RequeueBatchesCronSchedule`. These settings have no default. The timer and dead-letter
+   functions of stage 65 cannot start without them. The other `DataRefresh:Precompute:*` settings have defaults.
+   - Stage 80 also needs the Match Prediction settings of the Data Refresh app: `GenotypeImputation:*`,
+     `HaplotypeFrequencySetCache:*` and the connection string `MatchPredictionSql`. Terraform sets them.
+5. **Database size.** Stage 65 adds the stored genotype sets to the refreshed transient database. Make sure that
+   `MATCHING_DATABASE_MAX_SIZE_GB` (250 by default) allows for them, in addition to the matching data. If the database
+   reaches its maximum size, stage 65 fails, and so does the refresh.
+   [ATL-452](https://anthonynolan.atlassian.net/browse/ATL-452) sizes the databases and the tiers in Terraform.
+   - An estimate for about 44 million donors (a DEV copy of the live donors, October 2026), for each transient
+     database:
+     - About 377 GB at the end of the stage. `SubjectGenotypeSetValues` holds about 353 GB of this.
+     - About 367 GB stays after the stage, until the next refresh of that database. The stage truncates its two
+       group tables when the run completes.
+     - During a refresh, A and B together hold about 745 GB of sets: 367 GB in the active database and 377 GB in the
+       refreshing database.
+   - The estimate is a model of the row and page format. It is not a measurement. Measure the real size after the
+     first full refresh in a test environment.
+   - The tiers must allow the same size. The refresh tier and the active tier hold the sets. From the second refresh,
+     the dormant tier holds them too: the database that was active is scaled down, and keeps its sets until its next
+     refresh. For example, the Standard tiers S0 to S2 allow 250 GB at most, and S0 is the default dormant tier. A
+     scale-down to a tier that is too small fails.
+6. **Haplotype frequency sets.** Make sure that the haplotype frequency sets are imported, with a global set. If no set
+   applies to a donor, the donor fails stage 65.
+
+### Release steps
+
+1. **No data refresh in progress.** Make sure that no record in `[MatchingAlgorithmPersistent].[DataRefreshHistory]`
+   has `RefreshEndUtc` as `NULL`. If `DataRefresh:AutoRunDataRefresh` is on, make sure that no refresh starts during the
+   release.
+2. **Stop searches (optional).** Stage 65 does not need this step: it writes only to the dormant database, and the swap
+   at the end of the refresh is the same as for every refresh. Search does not need it either. Until the full data
+   refresh is complete, the active database has stored genotype sets for some donors only, and search computes the
+   other donors live, as it does today. In `ForceLive` mode (the default), search does not read the stored sets.
+3. **Release.** Apply Terraform, run the database migrations, and release the function apps and the worker image.
+   - Migrate the two transient databases (A and B) and the persistent database. The persistent database gets the
+     column `DonorGenotypePrecomputationCompleted`, which the new Data Refresh code needs.
+   - The new worker image can start before the migrations. It reads no database when it starts.
+4. **Full data refresh.** Trigger `SubmitDataRefreshRequestManual` with `forceDataRefresh` set to `true`.
+5. **Watch stage 65.** See [Normal progress](README_Support.md#normal-progress) in the Support README.
+   - The build trace gives the counts of donors, groups and batches, and the time of each build step.
+   - The count of done batches goes up, and the worker replicas scale out.
+   - If a stall alert comes, follow the Support README.
+   - If a failure alert comes, the refresh continues. Compare the failed-donor fraction with
+     `DataRefresh:Precompute:MaxFailedDonorFraction`, and with the failed donors that stage 50 reported. Find the
+     cause. Search computes the failed donors live.
+6. **Check the result.** The `notifications` topic reports the successful refresh, and the refresh record has a value in
+   `DonorGenotypePrecomputationCompleted`. Each donor has four rows in `DonorSubjectGenotypeSets`, except the failed
+   donors (see the last query of the [SQL for support](README_Support.md#sql-for-support)).
+7. **Turn searches back on**, if you stopped them in step 2.
+
+If the refresh fails, the active database does not change. Find the cause in the alerts, then request a new data
+refresh, or continue the refresh (see [the Support README](README_Support.md#data-refresh)).

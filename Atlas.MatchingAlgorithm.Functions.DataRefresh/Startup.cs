@@ -6,6 +6,8 @@ using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
+using GenotypeImputationSettings = Atlas.MatchPrediction.ExternalInterface.Settings.GenotypeImputationSettings;
+using HaplotypeFrequencySetCacheSettings = Atlas.MatchPrediction.ExternalInterface.Settings.HaplotypeFrequencySetCacheSettings;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
@@ -39,6 +41,15 @@ namespace Atlas.MatchingAlgorithm.Functions.DataRefresh
             // This app holds a cached copy of the dictionary, so it needs to notice when the dictionary is
             // recreated - by itself or by anything else.
             services.RegisterHlaMetadataDictionaryCacheInvalidation();
+
+            // The last stage applies the queued donor updates, and precomputes the genotypes of the donors that it writes, as the
+            // donor management app does.
+            services.RegisterDonorImportGenotypeSetPrecompute(
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<HlaMetadataDictionarySettings>(),
+                OptionsReaderFor<MacDictionarySettings>(),
+                OptionsReaderFor<GenotypeImputationSettings>(),
+                ConnectionStringReader("MatchPredictionSql"));
         }
 
         private static void RegisterSettings(IServiceCollection services)
@@ -50,6 +61,8 @@ namespace Atlas.MatchingAlgorithm.Functions.DataRefresh
             services.RegisterAsOptions<DataRefreshSettings>("DataRefresh");
             services.RegisterAsOptions<DonorGenotypePrecomputationSettings>("DataRefresh:Precompute");
             services.RegisterAsOptions<DonorManagementSettings>("DataRefresh:DonorManagement");
+            services.RegisterAsOptions<GenotypeImputationSettings>("GenotypeImputation");
+            services.RegisterAsOptions<HaplotypeFrequencySetCacheSettings>("HaplotypeFrequencySetCache");
             services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
             services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
             services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");

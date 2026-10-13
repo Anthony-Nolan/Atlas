@@ -76,6 +76,11 @@ The data refresh performs several operations:
 (a) Updates the Hla Metadata Dictionary to the latest version, if necessary. 
 (b) Replaces all donors in the matching algorithm with the contents of the `Donor Import` component's donor database
 (c) Performs pre-processing on all donors that is a pre-requisite to running searches 
+(d) Computes and stores the imputed genotype sets of all donors, with the haplotype frequency sets (see [the Matching Algorithm README](README_MatchingAlgorithm.md#donor-genotype-precomputation-data-refresh-stage-65))
+
+> On a fresh install, no haplotype frequency set exists when the first data refresh runs (step 3 of the import order). So step (d) fails for every
+> donor: the refresh sends a high-priority alert, and completes. Run the data refresh again after the haplotype frequency sets are imported (step 4),
+> to store the genotype sets.
 
 The donor replacement is performed on a secondary matching algorithm database, which is only activated for search on completion - so running this process will not 
 affect running searches. 
@@ -85,7 +90,7 @@ This process is expected to be run:
 - Every three months, when new HLA nomenclature is published.
 
 The process is expected to take several hours - and will increase with both the number of donors, and the ambiguity of their HLA. 
-For a dataset with ~2 million donors, the process takes 1-2 hours.
+For a dataset with ~2 million donors, the process takes 1-2 hours. Step (d) adds to this time: it grows with the number of different donor typings.
 
 When the job ends, the matching algorithm publishes a message to the service bus topic `completed-data-refresh-jobs`, for both success and failure.
 The message uses the [`CompletedDataRefresh`](Atlas.MatchingAlgorithm.Client.Models/DataRefresh/CompletedDataRefresh.cs) model: the `DataRefreshRecordId`, and a `WasSuccessful` flag.
