@@ -26,6 +26,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         private static IServiceProvider serviceProvider;
         private static Logger logger;
         private static LoggingConfiguration config;
+        // Scenarios run in parallel, and logging a scenario resets the global logging configuration.
+        private static readonly object ScenarioLogLock = new();
         private readonly ScenarioContext scenarioContext;
 
         public Hooks(ScenarioContext scenarioContext)
@@ -117,7 +119,10 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         public void AfterScenario()
         {
             using var scope = scenarioContext.Get<IServiceScope>();
-            LogScenario(scope.ServiceProvider.GetRequiredService<ITestDataRepository>());
+            lock (ScenarioLogLock)
+            {
+                LogScenario(scope.ServiceProvider.GetRequiredService<ITestDataRepository>());
+            }
         }
 
         private void LogScenario(ITestDataRepository testDataRepository)

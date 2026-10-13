@@ -65,13 +65,27 @@ stages:
   dependsOn: Build
   jobs:
   - job: Matching_Algorithm_Integration_Tests
+    # The tests share the state of their databases, so they cannot run in parallel within a process.
+    # Instead, they are split across agents, by namespace, each shard with its own SQL Server.
+    strategy:
+      matrix:
+        Search:
+          matchingTestFilter: 'FullyQualifiedName~.IntegrationTests.Search.'
+          matchingShard: 'Search'
+        Matching:
+          matchingTestFilter: 'FullyQualifiedName~.IntegrationTests.Matching.'
+          matchingShard: 'Matching'
+        Other:
+          matchingTestFilter: 'FullyQualifiedName!~.IntegrationTests.Search.&FullyQualifiedName!~.IntegrationTests.Matching.'
+          matchingShard: 'Other'
     pool:
       vmImage: 'ubuntu-latest'
     steps:
     - template: test-pipeline-run-tests.yml
       parameters:
         project: Atlas.MatchingAlgorithm.Test.Integration
-        testRunTitle: 'Matching Algorithm Integration Tests'
+        testRunTitle: 'Matching Algorithm Integration Tests - $(matchingShard)'
+        filter: '$(matchingTestFilter)'
         env:
           # A and B must be different databases: some tests check that the active database is left alone while the dormant one changes.
           ConnectionStrings__SqlA: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationTests;'
@@ -79,27 +93,14 @@ stages:
           ConnectionStrings__PersistentSql: '$(sqlServerConnection)Initial Catalog=AtlasSystemTests;'
 
   - job: Matching_Algorithm_Validation_Tests
-    # The scenarios run one at a time within a process, so they are split across agents instead.
-    # Each shard has its own SQL Server, and sets up its own test data.
-    strategy:
-      matrix:
-        AdultSearch:
-          validationTestFilter: 'FullyQualifiedName~.ValidationTests.Features.AdultSearch.'
-          validationShard: 'AdultSearch'
-        Scoring:
-          validationTestFilter: 'FullyQualifiedName~.ValidationTests.Features.Scoring.'
-          validationShard: 'Scoring'
-        Other:
-          validationTestFilter: 'FullyQualifiedName!~.ValidationTests.Features.AdultSearch.&FullyQualifiedName!~.ValidationTests.Features.Scoring.'
-          validationShard: 'Other'
+    # The features run in parallel within the process (see ParallelExecution.cs in the project).
     pool:
       vmImage: 'ubuntu-latest'
     steps:
     - template: test-pipeline-run-tests.yml
       parameters:
         project: Atlas.MatchingAlgorithm.Test.Validation
-        testRunTitle: 'Matching Algorithm Validation Tests - $(validationShard)'
-        filter: '$(validationTestFilter)'
+        testRunTitle: 'Matching Algorithm Validation Tests'
         env:
           ConnectionStrings__DonorSql: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
           ConnectionStrings__SqlA: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'

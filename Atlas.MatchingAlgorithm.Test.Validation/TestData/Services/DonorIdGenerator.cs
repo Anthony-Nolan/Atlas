@@ -1,5 +1,6 @@
 ﻿// ReSharper disable InconsistentNaming
 using System;
+using System.Threading;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services
 {
@@ -7,9 +8,10 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services
     {
         private static int nextId = 0;
 
+        // Scenarios run in parallel, so ids are handed out atomically.
         public static int NextId()
         {
-            return ++nextId;
+            return Interlocked.Increment(ref nextId);
         }
 
         public static string NewExternalCode => Guid.NewGuid().ToString();
