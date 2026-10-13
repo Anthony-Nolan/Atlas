@@ -32,6 +32,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
                 .AddUserSecrets(Assembly.GetExecutingAssembly())
+                .AddEnvironmentVariables()
                 .Build();
 
             services.AddSingleton<IConfiguration>(sp => configuration);

@@ -42,6 +42,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests
                 {
                     config.AddJsonFile("appsettings.json", true, true);
                     config.AddUserSecrets(Assembly.GetExecutingAssembly());
+                    config.AddEnvironmentVariables();
                 })
                 .ConfigureWebHost(webHost => webHost
                     .UseTestServer()

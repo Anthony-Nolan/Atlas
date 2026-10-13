@@ -1,0 +1,41 @@
+# Runs one test project, built by the Build stage, against the dependencies started on the build agent.
+# Templates are expanded before the job runs, so the job needs nothing from the repository but the build output.
+parameters:
+  # The test project. Its build output is published as an artifact of the same name.
+  - name: project
+    type: string
+  - name: testRunTitle
+    type: string
+  - name: filter
+    type: string
+    default: ''
+  # Environment variables for the test run: connection strings that override the local defaults in appsettings.json.
+  - name: env
+    type: object
+    default: {}
+
+steps:
+  - checkout: none
+  - template: test-pipeline-dependencies.yml
+  - download: current
+    artifact: ${{ parameters.project }}
+    displayName: 'Download ${{ parameters.project }}'
+
+  # Run from the build output, where the tests read appsettings.json from.
+  - bash: |
+      filter='${{ parameters.filter }}'
+      dotnet test ${{ parameters.project }}.dll \
+        --logger trx --results-directory "$(Agent.TempDirectory)/TestResults" \
+        ${filter:+--filter "$filter"}
+    displayName: '${{ parameters.testRunTitle }}'
+    workingDirectory: '$(Pipeline.Workspace)/${{ parameters.project }}'
+    env: ${{ parameters.env }}
+
+  - task: PublishTestResults@2
+    displayName: 'Publish test results'
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: '**/*.trx'
+      searchFolder: '$(Agent.TempDirectory)/TestResults'
+      testRunTitle: '${{ parameters.testRunTitle }}'

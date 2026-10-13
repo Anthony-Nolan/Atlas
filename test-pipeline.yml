@@ -9,8 +9,19 @@ schedules:
 
 pr: none
 
-# Every dependency of the tests runs in a container on the build agent (see test-pipeline-sql-server.yml and
-# test-pipeline-azurite.yml), so no Azure resources, and no secrets, are needed.
+parameters:
+  # Built once by the Build stage, and published as one artifact each, named after the project.
+  - name: testProjects
+    type: object
+    default:
+      - Atlas.MatchingAlgorithm.Test.Integration
+      - Atlas.MatchingAlgorithm.Test.Validation
+      - Atlas.DonorImport.Test.Integration
+      - Atlas.MatchPrediction.Test.Integration
+      - Atlas.MultipleAlleleCodeDictionary.Test.Integration
+
+# Every dependency of the tests runs in a container on the build agent (see test-pipeline-dependencies.yml),
+# so no Azure resources, and no secrets, are needed.
 variables:
   - name: RUN_CI_PERF_TESTS_OFF
     value: 'This will get defined as an Environment Variable, which will enable various Perf-Test-only tests. See IgnoreExceptOnCiPerfTestAttribute.cs'
@@ -20,181 +31,102 @@ variables:
   - name: sqlServerConnection
     value: 'Server=localhost,1433;User ID=sa;Password=$(sqlSaPassword);MultipleActiveResultSets=True;TrustServerCertificate=True;'
 
-jobs:
-- job: Matching_Algorithm_Integration_Tests
-  pool:
-    vmImage: 'ubuntu-latest'
-  steps:
-  - template: test-pipeline-sql-server.yml
-  - task: DotNetCoreCLI@2
-    displayName: 'Nuget Restore'
-    inputs:
-      command: 'restore'
-      feedsToUse: 'select'
-  # A and B must be different databases: some tests check that the active database is left alone while the dormant one changes.
-  - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
-    displayName: 'Update connection string ''SqlA'''
-    inputs:
-      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Integration/appsettings.json'
-      keyname: SqlA
-      connectionstringvalue: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationTests;'
-
-  - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
-    displayName: 'Update connection string ''SqlB'''
-    inputs:
-      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Integration/appsettings.json'
-      keyname: SqlB
-      connectionstringvalue: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationTestsB;'
-
-  - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
-    displayName: 'Update connection string ''PersistentSql'' '
-    inputs:
-      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Integration/appsettings.json'
-      keyname: PersistentSql
-      connectionstringvalue: '$(sqlServerConnection)Initial Catalog=AtlasSystemTests;'
-  - task: DotNetCoreCLI@2
-    displayName: 'Matching Integration Tests'
-    inputs:
-      command: test
-      projects: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Integration/Atlas.MatchingAlgorithm.Test.Integration.csproj'
-      arguments: '--no-restore -v d'
-      testRunTitle: 'Matching Algorithm Integration Tests'
-
-- job: Matching_Algorithm_Validation_Tests
-  # The scenarios run one at a time within a process, so they are split across agents instead.
-  # Each shard has its own SQL Server, and sets up its own test data.
-  strategy:
-    matrix:
-      AdultSearch:
-        validationTestFilter: 'FullyQualifiedName~.ValidationTests.Features.AdultSearch.'
-        validationShard: 'AdultSearch'
-      Scoring:
-        validationTestFilter: 'FullyQualifiedName~.ValidationTests.Features.Scoring.'
-        validationShard: 'Scoring'
-      Other:
-        validationTestFilter: 'FullyQualifiedName!~.ValidationTests.Features.AdultSearch.&FullyQualifiedName!~.ValidationTests.Features.Scoring.'
-        validationShard: 'Other'
-  variables:
-    matching_algorithm_validation_db_connection_string: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
-  pool:
-    vmImage: 'ubuntu-latest'
-  steps:
-  - task: UseDotNet@2
-    displayName: 'Use .Net sdk'
-    inputs:
-      version: 8.0.x
-
-  - task: UseDotNet@2
-    displayName: 'Use .Net sdk'
-    inputs:
-      version: 10.0.x
-
-  - template: test-pipeline-sql-server.yml
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Nuget Restore'
-    inputs:
-      command: 'restore'
-      feedsToUse: 'select'
-
-  - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
-    displayName: 'Update connection string ''DonorSql'''
-    inputs:
-      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
-      keyname: DonorSql
-      connectionstringvalue: '$(matching_algorithm_validation_db_connection_string)'
-
-  - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
-    displayName: 'Update connection string ''SqlA'''
-    inputs:
-      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
-      keyname: SqlA
-      connectionstringvalue: '$(matching_algorithm_validation_db_connection_string)'
-
-  - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
-    displayName: 'Update connection string ''SqlB'''
-    inputs:
-      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
-      keyname: SqlB
-      connectionstringvalue: '$(matching_algorithm_validation_db_connection_string)'
-
-  - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
-    displayName: 'Update connection string ''PersistentSql'' '
-    inputs:
-      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
-      keyname: PersistentSql
-      connectionstringvalue: '$(matching_algorithm_validation_db_connection_string)'
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Matching Validation Tests'
-    inputs:
-      command: test
-      projects: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/Atlas.MatchingAlgorithm.Test.Validation.csproj'
-      arguments: '--no-restore -v d --filter "$(validationTestFilter)"'
-      testRunTitle: 'Matching Algorithm Validation Tests - $(validationShard)'
-
-- job: Donor_Import_Integration_Tests
-  pool:
-    vmImage: 'ubuntu-latest'
-  steps:
-    - template: test-pipeline-sql-server.yml
-    - task: DotNetCoreCLI@2
-      displayName: 'Nuget Restore'
+stages:
+- stage: Build
+  jobs:
+  - job: Build
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: UseDotNet@2
+      displayName: 'Use .Net sdk'
       inputs:
-        command: 'restore'
-        feedsToUse: 'select'
-    - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
-      displayName: 'Update Sql connection string'
+        version: 8.0.x
+    - task: UseDotNet@2
+      displayName: 'Use .Net sdk'
       inputs:
-        filename: '$(System.DefaultWorkingDirectory)/Atlas.DonorImport.Test.Integration/appsettings.json'
-        keyname: DonorStoreSql
-        connectionstringvalue: '$(sqlServerConnection)Initial Catalog=AtlasSystemTests;'
+        version: 10.0.x
+    - ${{ each project in parameters.testProjects }}:
+      - script: dotnet build ${{ project }}/${{ project }}.csproj --output "$(Build.ArtifactStagingDirectory)/${{ project }}"
+        displayName: 'Build ${{ project }}'
+      - publish: '$(Build.ArtifactStagingDirectory)/${{ project }}'
+        artifact: ${{ project }}
+        displayName: 'Publish ${{ project }}'
 
-    - task: DotNetCoreCLI@2
-      displayName: 'Donor Import Integration Tests'
-      inputs:
-        command: test
-        projects: '$(System.DefaultWorkingDirectory)/Atlas.DonorImport.Test.Integration/Atlas.DonorImport.Test.Integration.csproj'
-        arguments: '--no-restore -v d'
+# Each job runs its tests against its own SQL Server and Azurite (see test-pipeline-dependencies.yml).
+# Connection strings are passed as environment variables, which override the local defaults in each project's appsettings.json.
+- stage: Test
+  dependsOn: Build
+  jobs:
+  - job: Matching_Algorithm_Integration_Tests
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - template: test-pipeline-run-tests.yml
+      parameters:
+        project: Atlas.MatchingAlgorithm.Test.Integration
+        testRunTitle: 'Matching Algorithm Integration Tests'
+        env:
+          # A and B must be different databases: some tests check that the active database is left alone while the dormant one changes.
+          ConnectionStrings__SqlA: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationTests;'
+          ConnectionStrings__SqlB: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationTestsB;'
+          ConnectionStrings__PersistentSql: '$(sqlServerConnection)Initial Catalog=AtlasSystemTests;'
+
+  - job: Matching_Algorithm_Validation_Tests
+    # The scenarios run one at a time within a process, so they are split across agents instead.
+    # Each shard has its own SQL Server, and sets up its own test data.
+    strategy:
+      matrix:
+        AdultSearch:
+          validationTestFilter: 'FullyQualifiedName~.ValidationTests.Features.AdultSearch.'
+          validationShard: 'AdultSearch'
+        Scoring:
+          validationTestFilter: 'FullyQualifiedName~.ValidationTests.Features.Scoring.'
+          validationShard: 'Scoring'
+        Other:
+          validationTestFilter: 'FullyQualifiedName!~.ValidationTests.Features.AdultSearch.&FullyQualifiedName!~.ValidationTests.Features.Scoring.'
+          validationShard: 'Other'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - template: test-pipeline-run-tests.yml
+      parameters:
+        project: Atlas.MatchingAlgorithm.Test.Validation
+        testRunTitle: 'Matching Algorithm Validation Tests - $(validationShard)'
+        filter: '$(validationTestFilter)'
+        env:
+          ConnectionStrings__DonorSql: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
+          ConnectionStrings__SqlA: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
+          ConnectionStrings__SqlB: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
+          ConnectionStrings__PersistentSql: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
+
+  - job: Donor_Import_Integration_Tests
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - template: test-pipeline-run-tests.yml
+      parameters:
+        project: Atlas.DonorImport.Test.Integration
         testRunTitle: 'Donor Import Integration Tests'
-- job: Match_Prediction_Integration_Tests
-  pool:
-    vmImage: 'ubuntu-latest'
-  steps:
-    - template: test-pipeline-sql-server.yml
-    - task: DotNetCoreCLI@2
-      displayName: 'Nuget Restore'
-      inputs:
-        command: 'restore'
-        feedsToUse: 'select'
-    - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
-      displayName: 'Update Sql connection string'
-      inputs:
-        filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchPrediction.Test.Integration/appsettings.json'
-        keyname: MatchPredictionSql
-        connectionstringvalue: '$(sqlServerConnection)Initial Catalog=AtlasSystemTests;'
-    - task: DotNetCoreCLI@2
-      displayName: 'MPA Integration Tests'
-      inputs:
-        command: test
-        projects: '$(System.DefaultWorkingDirectory)/Atlas.MatchPrediction.Test.Integration/Atlas.MatchPrediction.Test.Integration.csproj'
-        arguments: '--no-restore -v d'
+        env:
+          ConnectionStrings__DonorStoreSql: '$(sqlServerConnection)Initial Catalog=AtlasSystemTests;'
+
+  - job: Match_Prediction_Integration_Tests
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - template: test-pipeline-run-tests.yml
+      parameters:
+        project: Atlas.MatchPrediction.Test.Integration
         testRunTitle: 'Match Prediction Integration Tests'
-- job: Multiple_Allele_Code_Dictionary_Integration_Tests
-  pool:
-    vmImage: 'ubuntu-latest'
-  steps:
-    # The tests' default storage connection string, "UseDevelopmentStorage=true", points at Azurite.
-    - template: test-pipeline-azurite.yml
-    - task: DotNetCoreCLI@2
-      displayName: 'Nuget Restore'
-      inputs:
-        command: 'restore'
-        feedsToUse: 'select'
-    - task: DotNetCoreCLI@2
-      displayName: 'MacDictionary Integration Tests'
-      inputs:
-        command: test
-        projects: '$(System.DefaultWorkingDirectory)/Atlas.MultipleAlleleCodeDictionary.Test.Integration/Atlas.MultipleAlleleCodeDictionary.Test.Integration.csproj'
-        arguments: '--no-restore -v d'
+        env:
+          ConnectionStrings__MatchPredictionSql: '$(sqlServerConnection)Initial Catalog=AtlasSystemTests;'
+
+  - job: Multiple_Allele_Code_Dictionary_Integration_Tests
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - template: test-pipeline-run-tests.yml
+      parameters:
+        project: Atlas.MultipleAlleleCodeDictionary.Test.Integration
         testRunTitle: 'MAC Dictionary Integration Tests'
