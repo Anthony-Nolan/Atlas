@@ -30,13 +30,18 @@ namespace Atlas.Common.Caching
                 const int oneDay = 60 * 60 * 24;
                 var lifeTime = persistentCacheLifetimeOverride ?? oneDay;
 
-                return new PersistentCacheProvider(MakeCache(lifeTime));
+                // The underlying cache is kept alongside the IAppCache built over it, so that entries can be evicted
+                // by predicate - see IPersistentCacheProvider.RemoveWhere, used to drop HLA Metadata Dictionary data
+                // when the dictionary is recreated.
+                var underlyingCache = new MemoryCache(new MemoryCacheOptions());
+
+                return new PersistentCacheProvider(MakeCache(lifeTime, underlyingCache), underlyingCache);
             });
         }
 
-        private static CachingService MakeCache(int lifeTimeSeconds)
+        private static CachingService MakeCache(int lifeTimeSeconds, MemoryCache underlyingCache = null)
         {
-            return new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())))
+            return new CachingService(new MemoryCacheProvider(underlyingCache ?? new MemoryCache(new MemoryCacheOptions())))
             {
                 DefaultCachePolicy = new CacheDefaults
                 {

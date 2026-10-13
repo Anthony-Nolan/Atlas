@@ -2,6 +2,7 @@ using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Caching;
+using Atlas.Common.Debugging;
 using Atlas.Common.FeatureManagement;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Matching.Services;
@@ -30,10 +31,13 @@ using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
+using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
+using Atlas.MatchingAlgorithm.Services.Debug;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
+using Atlas.MatchingAlgorithm.Services.Search.Precompute;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.AntigenMatching;
@@ -44,9 +48,15 @@ using Atlas.MatchingAlgorithm.Services.Utility;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
+using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
+using Atlas.MatchPrediction.Services.Precompute;
+using GenotypeImputationSettings = Atlas.MatchPrediction.ExternalInterface.Settings.GenotypeImputationSettings;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
+using Azure.Identity;
+using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.FeatureManagement;
 using System;
@@ -103,6 +113,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, AzureAuthenticationSettings> fetchAzureAuthenticationSettings,
             Func<IServiceProvider, AzureDatabaseManagementSettings> fetchAzureDatabaseManagementSettings,
             Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings,
+            Func<IServiceProvider, DonorGenotypePrecomputationSettings> fetchDonorGenotypePrecomputationSettings,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
@@ -135,10 +146,61 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchAzureAuthenticationSettings,
                 fetchAzureDatabaseManagementSettings,
                 fetchDataRefreshSettings,
+                fetchDonorGenotypePrecomputationSettings,
                 fetchDonorManagementSettings,
                 fetchMessagingServiceBusSettings,
                 fetchDonorImportSqlConnectionString
             );
+        }
+
+        public static void RegisterDebugServices(
+            this IServiceCollection services,
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
+            Func<IServiceProvider, AzureAuthenticationSettings> fetchAzureAuthenticationSettings)
+        {
+            var serviceKey = typeof(MessagingServiceBusSettings);
+            services.RegisterServiceBusAsKeyedServices(
+                key: serviceKey,
+                sp => fetchMessagingServiceBusSettings(sp).ConnectionString
+                );
+
+            services.AddScoped<IServiceBusPeeker<MatchingResultsNotification>, MatchingResultNotificationsPeeker>(sp =>
+            {
+                var settings = fetchMessagingServiceBusSettings(sp);
+                return new MatchingResultNotificationsPeeker(
+                    sp.GetRequiredKeyedService<IMessageReceiverFactory>(serviceKey),
+                    settings.SearchResultsTopic,
+                    settings.SearchResultsDebugSubscription);
+            });
+
+            services.RegisterDebugLogger(fetchApplicationInsightsSettings);
+            services.AddScoped<IBlobDownloader, BlobDownloader>(sp =>
+            {
+                var settings = fetchAzureStorageSettings(sp);
+                return new BlobDownloader(settings.ConnectionString, sp.GetService<IDebugLogger>());
+            });
+            services.AddScoped<IDebugResultsDownloader, DebugResultsDownloader>();
+
+            // Register azure App.Insights API client and configure EntraId's Client Secret authentication
+            // Another azure clients can be added here and they will share authentication configuration
+            services.AddAzureClients(clientBuilder =>
+            {
+                clientBuilder.UseCredential(sp =>
+                {
+                    var authSetting = fetchAzureAuthenticationSettings(sp);
+
+                    return new ClientSecretCredential(
+                        tenantId: authSetting.TenantId,
+                        clientId: authSetting.ClientId,
+                        clientSecret: authSetting.ClientSecret);
+                });
+
+                clientBuilder.AddLogsQueryClient();
+            });
+
+            services.AddTransient<IHlaExpansionFailuresService, HlaExpansionFailuresService>();
         }
 
         /// <summary>
@@ -212,10 +274,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             );
 
             services.RegisterMatchingAlgorithmSpecificServices(fetchAzureStorageSettings);
-
-            services.RegisterServiceBusAsKeyedServices(
-                typeof(MessagingServiceBusSettings),
-                sp => fetchMessagingServiceBusSettings(sp).ConnectionString);
         }
 
 
@@ -227,6 +285,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, AzureAuthenticationSettings> fetchAzureAuthenticationSettings,
             Func<IServiceProvider, AzureDatabaseManagementSettings> fetchAzureDatabaseManagementSettings,
             Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings,
+            Func<IServiceProvider, DonorGenotypePrecomputationSettings> fetchDonorGenotypePrecomputationSettings,
             Func<IServiceProvider, DonorManagementSettings> fetchDonorManagementSettings,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, string> fetchDonorImportSqlConnectionString)
@@ -238,12 +297,9 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchAzureAuthenticationSettings,
                 fetchAzureDatabaseManagementSettings,
                 fetchDataRefreshSettings,
+                fetchDonorGenotypePrecomputationSettings,
                 fetchMessagingServiceBusSettings
             );
-
-            // ActiveRepositoryFactory depends on the search logger, which is otherwise only registered by the search path.
-            services.AddScoped<MatchingAlgorithmSearchLoggingContext>();
-            services.AddScoped<IMatchingAlgorithmSearchLogger, MatchingAlgorithmSearchLogger>();
 
             // Azure interaction services
             services.AddScoped<IThreadSleeper, ThreadSleeper>();
@@ -259,10 +315,113 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IDataRefreshSupportNotificationSender, DataRefreshSupportNotificationSender>();
             services.AddScoped<IDataRefreshCompletionNotifier, DataRefreshCompletionNotifier>();
             services.AddScoped<IDataRefreshCleanupService, DataRefreshCleanupService>();
+            services.AddScoped<IDataRefreshWatchdog, DataRefreshWatchdog>();
             services.AddScoped<IDataRefreshServiceBusClient, DataRefreshServiceBusClient>();
 
             services.AddScoped<IHlaProcessor, HlaProcessor>();
             services.AddScoped<IDonorImporter, DonorImporter>();
+
+            services.RegisterDonorGenotypePrecomputationServices(fetchDataRefreshSettings, fetchDonorGenotypePrecomputationSettings);
+        }
+
+        /// <summary>
+        /// The Data Refresh side of the donor genotype precomputation stage: the stage, the publisher of the batch messages,
+        /// the sweeps that the timers of the data refresh app run, and the cancel of the run of a failed refresh. The workers
+        /// are registered on their own.
+        /// </summary>
+        private static void RegisterDonorGenotypePrecomputationServices(
+            this IServiceCollection services,
+            Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings,
+            Func<IServiceProvider, DonorGenotypePrecomputationSettings> fetchDonorGenotypePrecomputationSettings)
+        {
+            services.AddScoped<IMessageBatchPublisher<DonorGenotypePrecomputationBatchRequest>>(sp =>
+            {
+                var precomputationSettings = fetchDonorGenotypePrecomputationSettings(sp);
+                var dataRefreshSettings = fetchDataRefreshSettings(sp);
+                var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
+                return new MessageBatchPublisher<DonorGenotypePrecomputationBatchRequest>(
+                    topicClientFactory,
+                    precomputationSettings.RequestsTopic,
+                    dataRefreshSettings.SendRetryCount,
+                    dataRefreshSettings.SendRetryCooldownSeconds,
+                    sp.GetService<IAtlasLogger>());
+            });
+
+            services.AddScoped<IDonorGenotypePrecomputationBatchDispatcher, DonorGenotypePrecomputationBatchDispatcher>();
+            services.AddScoped<IDonorGenotypePrecomputationSweeper, DonorGenotypePrecomputationSweeper>();
+            services.AddScoped<IDonorGenotypePrecomputationRunCanceller, DonorGenotypePrecomputationRunCanceller>();
+
+            services.TryAddSingleton(TimeProvider.System);
+            services.AddScoped<IDonorGenotypePrecomputationStage, DonorGenotypePrecomputationStage>();
+        }
+
+        /// <summary>
+        /// Register the genotype set precompute service, and the value service that it uses.
+        /// </summary>
+        public static void RegisterSubjectGenotypeSetPrecompute(this IServiceCollection services)
+        {
+            services.AddScoped<ISubjectGenotypeSetValueService, SubjectGenotypeSetValueService>();
+            services.AddScoped<ISubjectGenotypeSetPrecomputeService, SubjectGenotypeSetPrecomputeService>();
+        }
+
+        /// <summary>
+        /// Makes the differential donor import precompute the genotype sets of the donors it writes (ATL-232). Call it
+        /// after <see cref="RegisterDonorManagement"/>: it replaces the no-op precomputer that method registers.
+        /// </summary>
+        /// <remarks>
+        /// Registers the Match Prediction genotype set pipeline, so the host needs its settings: the Match Prediction
+        /// SQL connection string (haplotype frequency sets), <see cref="GenotypeImputationSettings"/>, and
+        /// <c>IOptions&lt;HaplotypeFrequencySetCacheSettings&gt;</c>, which the host registers itself.
+        /// </remarks>
+        public static void RegisterDonorImportGenotypeSetPrecompute(
+            this IServiceCollection services,
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
+            Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
+            Func<IServiceProvider, GenotypeImputationSettings> fetchGenotypeImputationSettings,
+            Func<IServiceProvider, string> fetchMatchPredictionSqlConnectionString)
+        {
+            services.RegisterGenotypeSetPipeline(
+                fetchApplicationInsightsSettings,
+                fetchHlaMetadataDictionarySettings,
+                fetchMacDictionarySettings,
+                fetchGenotypeImputationSettings,
+                fetchMatchPredictionSqlConnectionString);
+
+            services.RegisterSubjectGenotypeSetPrecompute();
+            services.Replace(ServiceDescriptor.Scoped<IDonorGenotypeSetPrecomputer, DonorGenotypeSetPrecomputer>());
+        }
+
+        /// <summary>
+        /// Gives match prediction read and write access to the precomputed genotype sets in the transient databases, for
+        /// search (ATL-221). Call it after <c>RegisterMatchPredictionAlgorithm</c>: it replaces the no-op reader and writer
+        /// that method registers.
+        /// </summary>
+        /// <remarks>
+        /// Registers only what the reader and writer need - the connection strings, the data refresh history (to find
+        /// which database is active) and the genotype set repository - and none of the rest of the matching algorithm,
+        /// so a match prediction host needs no matching settings beyond the three SQL connection strings.
+        /// </remarks>
+        public static void RegisterPrecomputedDonorGenotypeSetAccess(
+            this IServiceCollection services,
+            Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
+            Func<IServiceProvider, string> fetchTransientASqlConnectionString,
+            Func<IServiceProvider, string> fetchTransientBSqlConnectionString)
+        {
+            services.TryAddScoped(sp => new ConnectionStrings
+            {
+                Persistent = fetchPersistentSqlConnectionString(sp),
+                TransientA = fetchTransientASqlConnectionString(sp),
+                TransientB = fetchTransientBSqlConnectionString(sp),
+            });
+            services.TryAddScoped<StaticallyChosenTransientSqlConnectionStringProviderFactory>();
+            services.TryAddScoped<ISubjectGenotypeSetRepositoryFactory, SubjectGenotypeSetRepositoryFactory>();
+
+            services.TryAddScoped(sp => new ContextFactory().Create(fetchPersistentSqlConnectionString(sp)));
+            services.TryAddScoped<IDataRefreshHistoryRepository, DataRefreshHistoryRepository>();
+
+            services.Replace(ServiceDescriptor.Scoped<IPrecomputedDonorGenotypeSetReader, PrecomputedDonorGenotypeSetReader>());
+            services.Replace(ServiceDescriptor.Scoped<IPrecomputedDonorGenotypeSetWriter, PrecomputedDonorGenotypeSetWriter>());
         }
 
         /// <summary>
@@ -278,6 +437,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.RegisterDonorImportServices(fetchDonorImportSqlConnectionString);
 
             services.AddScoped<IDonorManagementService, DonorManagementService>();
+            // Hosts that run the genotype set pipeline replace this with RegisterDonorImportGenotypeSetPrecompute.
+            services.TryAddScoped<IDonorGenotypeSetPrecomputer, NoOpDonorGenotypeSetPrecomputer>();
             services.AddScoped<ISearchableDonorUpdateConverter, SearchableDonorUpdateConverter>();
 
             services.RegisterServiceBusAsKeyedServices(
@@ -350,8 +511,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IMatchingFailureNotificationSender, MatchingFailureNotificationSender>();
 
             services.AddApplicationInsightsTelemetryWorkerService();
-            services.AddScoped<MatchingAlgorithmSearchLoggingContext>();
-            services.AddScoped<IMatchingAlgorithmSearchLogger, MatchingAlgorithmSearchLogger>();
             services.AddScoped<MatchingAlgorithmImportLoggingContext>();
             services.AddScoped<IMatchingAlgorithmImportLogger, MatchingAlgorithmImportLogger>();
             services.AddScoped<MatchingAlgorithmSearchTrackingContext>();
@@ -417,6 +576,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 var logger = sp.GetService<IMatchingAlgorithmSearchLogger>();
                 return new SearchResultsBlobStorageClient(settings.ConnectionString, logger);
             });
+
+            services.AddScoped<IManualHlaMetadataDictionaryRefresher, ManualHlaMetadataDictionaryRefresher>();
         }
 
         /// <summary>
@@ -474,6 +635,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<ActiveTransientSqlConnectionStringProvider>();
             services.AddScoped<DormantTransientSqlConnectionStringProvider>();
             services.AddScoped<StaticallyChosenTransientSqlConnectionStringProviderFactory>();
+            services.AddScoped<IActiveDataRefreshRecordAccessor, ActiveDataRefreshRecordAccessor>();
             services.AddScoped<IActiveDatabaseProvider, ActiveDatabaseProvider>();
 
             services.RegisterCommonGeneticServices();
@@ -486,6 +648,9 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 OptionsReaderFor<ApplicationInsightsSettings>()
             );
 
+            // Registered with ActiveRepositoryFactory, which needs the search logger, so that every host can build it.
+            services.AddScoped<MatchingAlgorithmSearchLoggingContext>();
+            services.AddScoped<IMatchingAlgorithmSearchLogger, MatchingAlgorithmSearchLogger>();
             services.AddScoped<IActiveRepositoryFactory, ActiveRepositoryFactory>();
             services.AddScoped<IDormantRepositoryFactory, DormantRepositoryFactory>();
             services.AddScoped<IStaticallyChosenDatabaseRepositoryFactory, StaticallyChosenDatabaseRepositoryFactory>();
@@ -531,11 +696,13 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, AzureAuthenticationSettings> fetchAzureAuthenticationSettings,
             Func<IServiceProvider, AzureDatabaseManagementSettings> fetchAzureDatabaseManagementSettings,
             Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings,
+            Func<IServiceProvider, DonorGenotypePrecomputationSettings> fetchDonorGenotypePrecomputationSettings,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
         {
             services.MakeSettingsAvailableForUse(fetchAzureAuthenticationSettings);
             services.MakeSettingsAvailableForUse(fetchAzureDatabaseManagementSettings);
             services.MakeSettingsAvailableForUse(fetchDataRefreshSettings);
+            services.MakeSettingsAvailableForUse(fetchDonorGenotypePrecomputationSettings);
             services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
         }
 

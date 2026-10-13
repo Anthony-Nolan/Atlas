@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
@@ -14,7 +15,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
 {
     internal interface IHlaMetadataRepository : IWarmableRepository
     {
-        Task RecreateHlaMetadataTable(IEnumerable<ISerialisableHlaMetadata> metadata, string hlaNomenclatureVersion);
+        Task RecreateHlaMetadataTable(IEnumerable<ISerialisableHlaMetadata> metadata, string hlaNomenclatureVersion, DateTime snapshotUtc);
 
         Task<HlaMetadataTableRow> GetHlaMetadataRowIfExists(
             Locus locus,
@@ -38,9 +39,9 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         {
         }
 
-        public async Task RecreateHlaMetadataTable(IEnumerable<ISerialisableHlaMetadata> metadata, string hlaNomenclatureVersion)
+        public async Task RecreateHlaMetadataTable(IEnumerable<ISerialisableHlaMetadata> metadata, string hlaNomenclatureVersion, DateTime snapshotUtc)
         {
-            await RecreateDataTable(metadata, hlaNomenclatureVersion);
+            await RecreateDataTable(metadata, hlaNomenclatureVersion, snapshotUtc);
         }
 
         public async Task<HlaMetadataTableRow> GetHlaMetadataRowIfExists(

@@ -28,6 +28,8 @@
         <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj"/>
         <ProjectReference Include="..\Atlas.Common.Public.Models\Atlas.Common.Public.Models.csproj"/>
         <ProjectReference Include="..\Atlas.MatchPrediction\Atlas.MatchPrediction.csproj"/>
+        <!-- For RegisterPrecomputedDonorGenotypeSetAccess: search reads and stores precomputed donor genotype sets in the transient matching databases (ATL-221). -->
+        <ProjectReference Include="..\Atlas.MatchingAlgorithm\Atlas.MatchingAlgorithm.csproj"/>
         <ProjectReference Include="..\Atlas.SearchTracking.Common\Atlas.SearchTracking.Common.csproj"/>
     </ItemGroup>
 </Project>

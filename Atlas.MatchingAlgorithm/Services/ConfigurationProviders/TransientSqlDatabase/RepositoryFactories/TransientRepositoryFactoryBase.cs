@@ -3,6 +3,7 @@ using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
+using Atlas.MatchingAlgorithm.Data.Repositories.Precompute;
 using Atlas.MatchingAlgorithm.Data.Services;
 
 namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories
@@ -14,6 +15,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
         IPGroupRepository GetPGroupRepository();
         IDonorInspectionRepository GetDonorInspectionRepository();
         IDonorUpdateRepository GetDonorUpdateRepository();
+        ISubjectGenotypeSetRepository GetSubjectGenotypeSetRepository();
     }
     
     public abstract class TransientRepositoryFactoryBase : ITransientRepositoryFactory
@@ -51,6 +53,15 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
         public IDonorUpdateRepository GetDonorUpdateRepository()
         {
             return new DonorUpdateRepository(GetHlaImportRepository(), ConnectionStringProvider, logger);
+        }
+
+        /// <summary>
+        /// On the base rather than on one of the two derived factories: the data refresh writes these rows to the
+        /// dormant database and a search reads them from the active one, so both sides need it.
+        /// </summary>
+        public ISubjectGenotypeSetRepository GetSubjectGenotypeSetRepository()
+        {
+            return new SubjectGenotypeSetRepository(ConnectionStringProvider);
         }
     }
 }

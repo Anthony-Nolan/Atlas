@@ -25,12 +25,24 @@ variable "ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES" {
   type = number
 }
 
+variable "MAX_CACHED_FREQUENCY_SETS" {
+  type = number
+}
+
+variable "SET_CACHE_EXPIRY_MINUTES" {
+  type = number
+}
+
 variable "MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM" {
   type = number
 }
 
 variable "MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT" {
   type = number
+}
+
+variable "MATCH_PREDICTION_PRECOMPUTE_MODE" {
+  type = string
 }
 
 variable "MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS" {
@@ -97,6 +109,11 @@ variable "CONTAINER_SCALE_RULE_MESSAGE_COUNT" {
 variable "CONTAINER_SCALE_RULE_POLLING_INTERVAL_SECONDS" {
   type    = number
   default = 30
+}
+
+variable "CONTAINER_REQUESTS_MAX_PARALLELISM" {
+  type    = number
+  default = 2
 }
 
 // External SQL variables

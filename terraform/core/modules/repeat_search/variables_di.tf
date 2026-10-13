@@ -24,13 +24,12 @@ variable "azure_app_configuration" {
 
 variable "azure_storage" {
   type = object({
-    id                        = string
-    name                      = string
-    primary_connection_string = string
+    id   = string
+    name = string
   })
 }
 
-variable "donor_database_connection_string" {
+variable "donor_database_kv_ref" {
   type = string
 }
 
@@ -40,15 +39,15 @@ variable "mac_import_table" {
   })
 }
 
-variable "matching_persistent_database_connection_string" {
+variable "matching_persistent_database_kv_ref" {
   type = string
 }
 
-variable "matching_transient_a_database_connection_string" {
+variable "matching_transient_a_database_kv_ref" {
   type = string
 }
 
-variable "matching_transient_b_database_connection_string" {
+variable "matching_transient_b_database_kv_ref" {
   type = string
 }
 
@@ -70,14 +69,6 @@ variable "shared_function_storage" {
   type = object({
     primary_access_key = string
     name               = string
-  })
-}
-
-variable "servicebus_namespace_authorization_rules" {
-  type = object({
-    read-write = object({ primary_connection_string = string })
-    read-only  = object({ primary_connection_string = string })
-    write-only = object({ primary_connection_string = string })
   })
 }
 

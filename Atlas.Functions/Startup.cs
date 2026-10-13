@@ -9,7 +9,9 @@ using Atlas.Functions.Services;
 using Atlas.Functions.Services.BlobStorageClients;
 using Atlas.Functions.Services.MatchCategories;
 using Atlas.Functions.Settings;
+using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
+using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
@@ -69,8 +71,20 @@ namespace Atlas.Functions
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 OptionsReaderFor<MatchPrediction.ExternalInterface.Settings.AzureStorageSettings>(),
                 OptionsReaderFor<MatchPrediction.ExternalInterface.Settings.GenotypeImputationSettings>(),
+                OptionsReaderFor<MatchPrediction.ExternalInterface.Settings.PrecomputedGenotypeSetSettings>(),
                 ConnectionStringReader("MatchPrediction:Sql")
             );
+
+            // Search reads and stores precomputed donor genotype sets in the transient matching databases (ATL-221).
+            // After RegisterMatchPredictionAlgorithm, whose no-op reader and writer this replaces.
+            services.RegisterPrecomputedDonorGenotypeSetAccess(
+                ConnectionStringReader("Matching:Sql:Persistent"),
+                ConnectionStringReader("Matching:Sql:A"),
+                ConnectionStringReader("Matching:Sql:B")
+            );
+
+            // This app caches HLA Metadata Dictionary data, so it has to be told when the dictionary is recreated.
+            services.RegisterHlaMetadataDictionaryCacheInvalidation();
         }
 
         private static void RegisterSettings(IServiceCollection services)
@@ -98,6 +112,7 @@ namespace Atlas.Functions
             services.RegisterAsOptions<MatchPrediction.ExternalInterface.Settings.AzureStorageSettings>("MatchPrediction:AzureStorage");
             services.RegisterAsOptions<MatchPrediction.ExternalInterface.Settings.HaplotypeFrequencySetCacheSettings>("HaplotypeFrequencySetCache");
             services.RegisterAsOptions<MatchPrediction.ExternalInterface.Settings.GenotypeImputationSettings>("MatchPrediction:GenotypeImputation");
+            services.RegisterAsOptions<MatchPrediction.ExternalInterface.Settings.PrecomputedGenotypeSetSettings>("MatchPrediction:Precompute");
         }
 
         private static void RegisterTopLevelFunctionServices(IServiceCollection services)

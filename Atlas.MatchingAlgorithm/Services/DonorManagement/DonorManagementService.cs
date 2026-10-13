@@ -50,15 +50,18 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
         private readonly IStaticallyChosenDatabaseRepositoryFactory repositoryFactory;
         private readonly IDonorService donorService;
         private readonly IMatchingAlgorithmImportLogger logger;
+        private readonly IDonorGenotypeSetPrecomputer donorGenotypeSetPrecomputer;
 
         public DonorManagementService(
             IStaticallyChosenDatabaseRepositoryFactory repositoryFactory,
             IDonorService donorService,
-            IMatchingAlgorithmImportLogger logger)
+            IMatchingAlgorithmImportLogger logger,
+            IDonorGenotypeSetPrecomputer donorGenotypeSetPrecomputer)
         {
             this.repositoryFactory = repositoryFactory;
             this.donorService = donorService;
             this.logger = logger;
+            this.donorGenotypeSetPrecomputer = donorGenotypeSetPrecomputer;
         }
 
         public async Task ApplyDonorUpdatesToDatabase(
@@ -181,13 +184,14 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             // Any attempt to use a single connection across multiple threads will also fail, as MARS allows queries to be "run"
             // in parallel, but not to *EXECUTE* in parallel - they get interleaved, so we lose all the benefit.
             // Hopefully DT support will comeback sooner rather than later, and we can re-parallelize the per-Loci matching PGroup writing.
+            List<DonorInfo> processedDonors;
             using (var transactionScope = new OptionalAsyncTransactionScope(runAllHlaInsertionsInASingleTransactionScope))
             {
-                var processedUpdates = await AddOrUpdateDonors(availableUpdates, targetDatabase, targetHlaNomenclatureVersion, runAllHlaInsertionsInASingleTransactionScope);
+                processedDonors = (await AddOrUpdateDonors(availableUpdates, targetDatabase, targetHlaNomenclatureVersion, runAllHlaInsertionsInASingleTransactionScope)).ToList();
                 await SetDonorsAsUnavailableForSearch(unavailableUpdates, targetDatabase);
 
 
-                var successfullyAppliedUpdates = processedUpdates
+                var successfullyAppliedUpdates = processedDonors
                     .Select(x => managementInfo[x.DonorId])
                     .Concat(unavailableUpdates.Select(x => managementInfo[x.DonorId]))
                     .ToList();
@@ -195,6 +199,11 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
                 await CreateOrUpdateManagementLogBatch(successfullyAppliedUpdates, targetDatabase);
                 transactionScope.Complete();
             }
+
+            // After the donor transaction has committed, and never inside it: this is best effort, so an error here must
+            // not be able to roll back donor data, and its writes would otherwise wait on that transaction's locks. It
+            // does not throw. Until it finishes, or if it fails, search imputes these donors live.
+            await donorGenotypeSetPrecomputer.PrecomputeBestEffort(processedDonors, targetDatabase, targetHlaNomenclatureVersion);
         }
 
         private async Task<IEnumerable<DonorInfo>> AddOrUpdateDonors(

@@ -8,6 +8,12 @@ namespace Atlas.MatchingAlgorithm.Data.Models.Entities
     /// (<see cref="HlaTypingKey"/>, <see cref="HaplotypeFrequencySetId"/>, <see cref="AllowedLociKey"/>) — no matter
     /// how many donors share it. Referenced by <see cref="DonorSubjectGenotypeSet"/>. Populated by the precompute
     /// service; no caller reads it yet.
+    /// <para>
+    /// The payload also depends on the matching-algorithm HLA nomenclature version it was computed under, but that
+    /// version is deliberately not stored or part of the key: both tables are truncated on every data refresh (in
+    /// <c>DonorImportRepository.RemoveAllDonorInformation</c>), so the table can never hold rows from two versions
+    /// at once - the same "one database = one nomenclature version" invariant the rest of this schema relies on.
+    /// </para>
     /// </summary>
     public class SubjectGenotypeSetValue
     {

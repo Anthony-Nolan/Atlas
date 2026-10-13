@@ -39,7 +39,7 @@ public class ParallelMatchPredictionRun
     public bool ResultsBatched { get; set; }
 
     /// <summary>Blob folder that contains batched result files; non-null only when <see cref="ResultsBatched"/> is <c>true</c>.</summary>
-    [MaxLength(36)]
+    [MaxLength(128)]
     public string BatchFolderName { get; set; }
 
     /// <summary>

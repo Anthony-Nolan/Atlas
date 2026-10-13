@@ -447,6 +447,31 @@ public class ParallelMatchPredictionRepositoryTests
         (await repository.GetRunWithResults(-1)).Should().BeNull();
     }
 
+    // ── CreateRun ────────────────────────────────────────────────────────────────
+
+    [Test]
+    public async Task CreateRun_ForBatchedRepeatSearch_PersistsFullBatchFolderName()
+    {
+        // Repeat search writes batched results to "{originalSearchId}/{repeatSearchId}" (73 chars) - ATL-441.
+        var searchIdentifier = fixture.Create<Guid>();
+        var repeatSearchIdentifier = fixture.Create<Guid>();
+        var batchFolderName = $"{searchIdentifier}/{repeatSearchIdentifier}";
+
+        var created = await repository.CreateRun(new CreateParallelMatchPredictionRunInfo(
+            SearchIdentifier: searchIdentifier,
+            IsRepeatSearch: true,
+            RepeatSearchIdentifier: repeatSearchIdentifier,
+            ResultsFileName: fixture.Create<string>(),
+            ResultsBatched: true,
+            BatchFolderName: batchFolderName,
+            MatchingAlgorithmElapsedTime: fixture.Create<TimeSpan>(),
+            SearchInitiatedTimeUtc: fixture.Create<DateTime>(),
+            TotalBatchCount: 1
+        ));
+
+        (await LoadRun(created.RunId)).BatchFolderName.Should().Be(batchFolderName);
+    }
+
     // ── GetRunIdsToAbandon ───────────────────────────────────────────────────────
 
     [Test]
@@ -775,7 +800,6 @@ public class ParallelMatchPredictionRepositoryTests
             RepeatSearchIdentifier: null,
             ResultsFileName: fixture.Create<string>(),
             ResultsBatched: false,
-            // BatchFolderName has a 36-char limit; a GUID string fits it exactly.
             BatchFolderName: fixture.Create<Guid>().ToString(),
             MatchingAlgorithmElapsedTime: fixture.Create<TimeSpan>(),
             SearchInitiatedTimeUtc: fixture.Create<DateTime>(),

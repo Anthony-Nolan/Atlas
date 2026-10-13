@@ -6,6 +6,7 @@ using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
 using Atlas.HlaMetadataDictionary.Services.HlaValidation;
+using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using LazyCache;
 
@@ -50,6 +51,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly ISerologyToAllelesMetadataService serologyToAllelesMetadataService;
         private readonly IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
+        private readonly IHlaMetadataRecreationRepository recreationRepository;
+        private readonly IHlaMetadataCacheInvalidator cacheInvalidator;
         private readonly IAtlasLogger logger;
 
         //For CacheControl
@@ -78,6 +81,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             ISerologyToAllelesMetadataService serologyToAllelesMetadataService,
             IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator,
             IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
+            IHlaMetadataRecreationRepository recreationRepository,
+            IHlaMetadataCacheInvalidator cacheInvalidator,
             IAtlasLogger logger,
 
             //For CacheControl
@@ -105,6 +110,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.serologyToAllelesMetadataService = serologyToAllelesMetadataService;
             this.hlaMetadataGenerationOrchestrator = hlaMetadataGenerationOrchestrator;
             this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
+            this.recreationRepository = recreationRepository;
+            this.cacheInvalidator = cacheInvalidator;
             this.logger = logger;
 
             //For CacheControl
@@ -173,6 +180,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
                 serologyToAllelesMetadataService,
                 hlaMetadataGenerationOrchestrator,
                 wmdaHlaNomenclatureVersionAccessor,
+                recreationRepository,
+                cacheInvalidator,
                 logger);
         }
 

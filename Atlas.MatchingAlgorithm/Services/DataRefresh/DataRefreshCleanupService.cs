@@ -7,6 +7,7 @@ using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
+using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 using Atlas.MatchingAlgorithm.Settings;
 using EnumStringValues;
 
@@ -17,6 +18,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         /// <summary>
         /// Runs appropriate clean up after a data refresh job - i.e. scaling down the dormant database, and re-enabling donor update functions.
         /// This should only ever be run manually, and only if the server dies in the middle of data-refresh, as the normal teardown will not have run.
+        /// It closes each open record as failed, and cancels the donor genotype precomputation run of the record.
         /// </summary>
         Task RunDataRefreshCleanup();
     }
@@ -30,6 +32,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private readonly DataRefreshSettings dataRefreshSettings;
         private readonly IDataRefreshHistoryRepository dataRefreshHistoryRepository;
         private readonly IDataRefreshSupportNotificationSender notificationSender;
+        private readonly IDonorGenotypePrecomputationRunCanceller precomputationRunCanceller;
 
         public DataRefreshCleanupService(
             IMatchingAlgorithmImportLogger logger,
@@ -38,7 +41,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IAzureDatabaseManager azureDatabaseManager,
             DataRefreshSettings dataRefreshSettings,
             IDataRefreshHistoryRepository dataRefreshHistoryRepository,
-            IDataRefreshSupportNotificationSender notificationSender
+            IDataRefreshSupportNotificationSender notificationSender,
+            IDonorGenotypePrecomputationRunCanceller precomputationRunCanceller
         )
         {
             this.logger = logger;
@@ -48,6 +52,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             this.dataRefreshSettings = dataRefreshSettings;
             this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
             this.notificationSender = notificationSender;
+            this.precomputationRunCanceller = precomputationRunCanceller;
         }
 
         public async Task RunDataRefreshCleanup()
@@ -88,6 +93,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             {
                 await dataRefreshHistoryRepository.UpdateExecutionDetails(job.Id, job.HlaNomenclatureVersion, DateTime.UtcNow);
                 await dataRefreshHistoryRepository.UpdateSuccessFlag(job.Id, false);
+
+                // A closed record does not continue, so its precomputation run must stop too.
+                await precomputationRunCanceller.CancelRun(job);
             }
         }
     }

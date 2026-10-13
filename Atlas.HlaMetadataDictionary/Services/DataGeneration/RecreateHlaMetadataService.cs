@@ -13,7 +13,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
     /// </summary>
     internal interface IRecreateHlaMetadataService
     {
-        Task RefreshAllHlaMetadata(string hlaNomenclatureVersion);
+        Task RefreshAllHlaMetadata(string hlaNomenclatureVersion, DateTime snapshotUtc);
     }
 
     internal class RecreateHlaMetadataService : IRecreateHlaMetadataService
@@ -56,7 +56,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             this.logger = logger;
         }
 
-        public async Task RefreshAllHlaMetadata(string hlaNomenclatureVersion)
+        public async Task RefreshAllHlaMetadata(string hlaNomenclatureVersion, DateTime snapshotUtc)
         {
             try
             {
@@ -64,7 +64,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
                 var allHlaMetadata = hlaMetadataGenerationOrchestrator.GenerateAllHlaMetadata(hlaNomenclatureVersion);
                 
                 logger.SendTrace("HlaMetadataDictionary: Persisting all Metadata");
-                await PersistHlaMetadataCollection(allHlaMetadata, hlaNomenclatureVersion);
+                await PersistHlaMetadataCollection(allHlaMetadata, hlaNomenclatureVersion, snapshotUtc);
             }
             catch (Exception ex)
             {
@@ -72,20 +72,20 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             }
         }
 
-        private async Task PersistHlaMetadataCollection(HlaMetadataCollection metadataCollection, string hlaNomenclatureVersion)
+        private async Task PersistHlaMetadataCollection(HlaMetadataCollection metadataCollection, string hlaNomenclatureVersion, DateTime snapshotUtc)
         {
             // Metadata Dictionary lookups require an up-to-date collection of allele names,
             // so all collections must be recreated together; the order of execution is not important.
             await Task.WhenAll(
-                alleleNamesMetadataRepository.RecreateHlaMetadataTable(metadataCollection.AlleleNameMetadata, hlaNomenclatureVersion),
-                hlaMatchingMetadataRepository.RecreateHlaMetadataTable(metadataCollection.HlaMatchingMetadata, hlaNomenclatureVersion),
-                hlaScoringMetadataRepository.RecreateHlaMetadataTable(metadataCollection.HlaScoringMetadata, hlaNomenclatureVersion),
-                dpb1TceGroupsMetadataRepository.RecreateHlaMetadataTable(metadataCollection.Dpb1TceGroupMetadata, hlaNomenclatureVersion),
-                alleleGroupsMetadataRepository.RecreateHlaMetadataTable(metadataCollection.AlleleGroupMetadata, hlaNomenclatureVersion),
-                gGroupToPGroupMetadataRepository.RecreateHlaMetadataTable(metadataCollection.GGroupToPGroupMetadata, hlaNomenclatureVersion),
-                hlaNameToSmallGGroupLookupRepository.RecreateHlaMetadataTable(metadataCollection.SmallGGroupMetadata, hlaNomenclatureVersion),
-                smallGGroupToPGroupMetadataRepository.RecreateHlaMetadataTable(metadataCollection.SmallGGroupToPGroupMetadata, hlaNomenclatureVersion),
-                serologyToAllelesMetadataRepository.RecreateHlaMetadataTable(metadataCollection.SerologyToAllelesMetadata, hlaNomenclatureVersion)
+                alleleNamesMetadataRepository.RecreateHlaMetadataTable(metadataCollection.AlleleNameMetadata, hlaNomenclatureVersion, snapshotUtc),
+                hlaMatchingMetadataRepository.RecreateHlaMetadataTable(metadataCollection.HlaMatchingMetadata, hlaNomenclatureVersion, snapshotUtc),
+                hlaScoringMetadataRepository.RecreateHlaMetadataTable(metadataCollection.HlaScoringMetadata, hlaNomenclatureVersion, snapshotUtc),
+                dpb1TceGroupsMetadataRepository.RecreateHlaMetadataTable(metadataCollection.Dpb1TceGroupMetadata, hlaNomenclatureVersion, snapshotUtc),
+                alleleGroupsMetadataRepository.RecreateHlaMetadataTable(metadataCollection.AlleleGroupMetadata, hlaNomenclatureVersion, snapshotUtc),
+                gGroupToPGroupMetadataRepository.RecreateHlaMetadataTable(metadataCollection.GGroupToPGroupMetadata, hlaNomenclatureVersion, snapshotUtc),
+                hlaNameToSmallGGroupLookupRepository.RecreateHlaMetadataTable(metadataCollection.SmallGGroupMetadata, hlaNomenclatureVersion, snapshotUtc),
+                smallGGroupToPGroupMetadataRepository.RecreateHlaMetadataTable(metadataCollection.SmallGGroupToPGroupMetadata, hlaNomenclatureVersion, snapshotUtc),
+                serologyToAllelesMetadataRepository.RecreateHlaMetadataTable(metadataCollection.SerologyToAllelesMetadata, hlaNomenclatureVersion, snapshotUtc)
             );
         }
     }

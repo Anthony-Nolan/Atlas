@@ -17,6 +17,7 @@ internal static class SettingsValidationExtensions
         services.AddValidatedOptions<HlaMetadataDictionarySettings, HlaMetadataDictionarySettingsValidator>(configuration, "HlaMetadataDictionary");
         services.AddOptions<HaplotypeFrequencySetCacheSettings>(configuration, "HaplotypeFrequencySetCache");
         services.AddOptions<GenotypeImputationSettings>(configuration, "GenotypeImputation");
+        services.AddOptions<PrecomputedGenotypeSetSettings>(configuration, "Precompute");
         services.AddValidatedOptions<MacDictionarySettings, MacDictionarySettingsValidator>(configuration, "MacDictionary");
         services.AddOptions<MatchPredictionRequestsSettings>(configuration, "MatchPredictionRequests");
         services.AddValidatedOptions<MessagingServiceBusSettings, MessagingServiceBusSettingsValidator>(configuration, "MessagingServiceBus");

@@ -13,12 +13,21 @@ resource "azurerm_windows_function_app" "atlas_donor_import_function" {
   storage_account_access_key  = var.shared_function_storage.primary_access_key
   storage_account_name        = var.shared_function_storage.name
 
+  // Used to resolve the @Microsoft.KeyVault app settings and connection strings below. The role assignment that lets
+  // this identity read the vault lives in the root module, so it is ordered by the depends_on on the module block.
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [var.key_vault.function_apps_identity_id]
+  }
+
+  key_vault_reference_identity_id = var.key_vault.function_apps_identity_id
+
   tags = var.general.common_tags
 
   app_settings = {
     "ApplicationInsights:LogLevel" = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
-    "AzureStorage:ConnectionString"                     = var.azure_storage.primary_connection_string,
+    "AzureStorage:ConnectionString"                     = var.key_vault.secret_refs["azure-storage-connection-string"],
     "AzureStorage:DonorFileBlobContainer"               = azurerm_storage_container.donor_blob_storage.name
     "AzureStorage:DonorIdCheckerResultsBlobContainer"   = local.donor_id_checker_results_container_name
     "AzureStorage:DonorInfoCheckerResultsBlobContainer" = local.donor_info_checker_results_container_name
@@ -27,24 +36,25 @@ resource "azurerm_windows_function_app" "atlas_donor_import_function" {
     "DonorImport:HoursToCheckStalledFiles" = var.STALLED_FILE_DURATION
     "DonorImport:AllowFullModeImport"      = var.ALLOW_FULL_MODE_IMPORT
 
-    "MessagingServiceBus:ConnectionString"             = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
-    "MessagingServiceBus:ImportFileSubscription"       = azurerm_servicebus_subscription.donor-import-file-processor.name
-    "MessagingServiceBus:ImportFileTopic"              = azurerm_servicebus_topic.donor-import-file-uploads.name
-    "MessagingServiceBus:UpdatedSearchableDonorsTopic" = azurerm_servicebus_topic.updated-searchable-donors.name
-    "MessagingServiceBus:DonorIdCheckerTopic"          = azurerm_servicebus_topic.donor-id-checker-requests.name
-    "MessagingServiceBus:DonorIdCheckerSubscription"   = azurerm_servicebus_subscription.donor-id-checker.name
-    "MessagingServiceBus:DonorIdCheckerResultsTopic"   = azurerm_servicebus_topic.donor-id-checker-results.name
-    "MessagingServiceBus:DonorInfoCheckerTopic"        = azurerm_servicebus_topic.donor-info-checker-requests.name
-    "MessagingServiceBus:DonorInfoCheckerSubscription" = azurerm_servicebus_subscription.donor-info-checker.name
-    "MessagingServiceBus:DonorInfoCheckerResultsTopic" = azurerm_servicebus_topic.donor-info-checker-results.name
-    "MessagingServiceBus:DonorImportResultsTopic"      = azurerm_servicebus_topic.donor-import-results.name
-    "MessagingServiceBus:SendRetryCount"               = var.SERVICE_BUS_SEND_RETRY_COUNT
-    "MessagingServiceBus:SendRetryCooldownSeconds"     = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
+    "MessagingServiceBus:ConnectionString"                    = var.key_vault.secret_refs["servicebus-read-write-connection-string"]
+    "MessagingServiceBus:ImportFileSubscription"              = azurerm_servicebus_subscription.donor-import-file-processor.name
+    "MessagingServiceBus:ImportFileTopic"                     = azurerm_servicebus_topic.donor-import-file-uploads.name
+    "MessagingServiceBus:UpdatedSearchableDonorsTopic"        = azurerm_servicebus_topic.updated-searchable-donors.name
+    "MessagingServiceBus:DonorIdCheckerTopic"                 = azurerm_servicebus_topic.donor-id-checker-requests.name
+    "MessagingServiceBus:DonorIdCheckerSubscription"          = azurerm_servicebus_subscription.donor-id-checker.name
+    "MessagingServiceBus:DonorIdCheckerResultsTopic"          = azurerm_servicebus_topic.donor-id-checker-results.name
+    "MessagingServiceBus:DonorInfoCheckerTopic"               = azurerm_servicebus_topic.donor-info-checker-requests.name
+    "MessagingServiceBus:DonorInfoCheckerSubscription"        = azurerm_servicebus_subscription.donor-info-checker.name
+    "MessagingServiceBus:DonorInfoCheckerResultsTopic"        = azurerm_servicebus_topic.donor-info-checker-results.name
+    "MessagingServiceBus:DonorImportResultsTopic"             = azurerm_servicebus_topic.donor-import-results.name
+    "MessagingServiceBus:DonorImportResultsDebugSubscription" = azurerm_servicebus_subscription.debug-donor-import-results.name
+    "MessagingServiceBus:SendRetryCount"                      = var.SERVICE_BUS_SEND_RETRY_COUNT
+    "MessagingServiceBus:SendRetryCooldownSeconds"            = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
     "NotificationConfiguration:NotifyOnAttemptedDeletionOfUntrackedDonor" = var.NOTIFICATIONS_ON_DELETION_OF_INVALID_DONOR
 
     "NotificationsServiceBus:AlertsTopic"              = var.servicebus_topics.alerts.name
-    "NotificationsServiceBus:ConnectionString"         = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
+    "NotificationsServiceBus:ConnectionString"         = var.key_vault.secret_refs["servicebus-write-only-connection-string"]
     "NotificationsServiceBus:NotificationsTopic"       = var.servicebus_topics.notifications.name
     "NotificationsServiceBus:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
     "NotificationsServiceBus:SendRetryCooldownSeconds" = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
@@ -64,7 +74,7 @@ resource "azurerm_windows_function_app" "atlas_donor_import_function" {
   site_config {
     application_insights_key = var.application_insights.instrumentation_key
     application_stack {
-      dotnet_version              = "v8.0"
+      dotnet_version              = "v10.0"
       use_dotnet_isolated_runtime = true
     }
     cors {
@@ -90,7 +100,7 @@ resource "azurerm_windows_function_app" "atlas_donor_import_function" {
   connection_string {
     name  = "DonorStoreSql"
     type  = "SQLAzure"
-    value = local.donor_import_connection_string
+    value = local.sql_kv_ref["donor-import-sql-connection-string"]
   }
 
   lifecycle {

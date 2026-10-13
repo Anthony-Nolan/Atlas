@@ -8,6 +8,32 @@ namespace Atlas.MatchPrediction.ExternalInterface.Settings
         public int ActiveSetCacheExpiryMinutes { get; set; }
 
         /// <summary>
+        /// The maximum number of distinct haplotype frequency sets (<c>FrequencySetCacheEntry</c>) allowed to stay
+        /// resident in <c>HaplotypeFrequencyCache</c>'s dedicated cache at once. Each set counts as one unit
+        /// regardless of its own row count. Bounds the process-wide memory this cache can consume, which is
+        /// otherwise unbounded: every distinct set (registry/ethnicity) touched within
+        /// <see cref="SetCacheExpiryMinutes"/> would otherwise stay fully resident.
+        ///
+        /// <para>
+        /// Enforced as a true least-recently-used eviction, by <c>FrequencySetResidencyTracker</c>: once this limit
+        /// is reached, admitting a new distinct set evicts the least-recently-used tracked set to make room for it,
+        /// so the fresh set is always the one kept. This is driven explicitly rather than left to
+        /// <c>Microsoft.Extensions.Caching.Memory.MemoryCache</c>'s own <c>SizeLimit</c>, because that mechanism does
+        /// not evict on overflow - verified empirically, it rejects the new insert outright instead, which would
+        /// starve the newest set of caching rather than displacing the oldest one.
+        /// </para>
+        /// </summary>
+        [Range(1, int.MaxValue)]
+        public int MaxCachedFrequencySets { get; set; }
+
+        /// <summary>
+        /// Dedicated absolute expiry for a cached haplotype frequency set (<c>FrequencySetCacheEntry</c>), replacing
+        /// what was previously an incidental ~24h default inherited from the shared persistent cache.
+        /// </summary>
+        [Range(1, int.MaxValue)]
+        public int SetCacheExpiryMinutes { get; set; }
+
+        /// <summary>
         /// Whether loading a haplotype frequency set should <b>wait</b> for its missing-loci pre-consolidation instead of
         /// racing an unawaited background task. Defaults to <c>false</c>, which is the behaviour every host had before
         /// this setting existed.

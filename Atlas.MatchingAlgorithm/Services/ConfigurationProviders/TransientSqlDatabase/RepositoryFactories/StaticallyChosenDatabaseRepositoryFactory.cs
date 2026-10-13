@@ -6,6 +6,7 @@ using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
+using Atlas.MatchingAlgorithm.Data.Repositories.Precompute;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders;
 using static EnumStringValues.EnumExtensions;
@@ -18,6 +19,13 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
         IDonorInspectionRepository GetDonorInspectionRepositoryForDatabase(TransientDatabase targetDatabase);
         IDonorUpdateRepository GetDonorUpdateRepositoryForDatabase(TransientDatabase targetDatabase);
         IPGroupRepository GetPGroupRepositoryForDatabase(TransientDatabase targetDatabase);
+        ISubjectGenotypeSetRepository GetSubjectGenotypeSetRepositoryForDatabase(TransientDatabase targetDatabase);
+
+        /// <summary>
+        /// For a caller that takes its database from a refresh record, such as the precomputation workers and sweeps,
+        /// rather than one that asks which database is dormant.
+        /// </summary>
+        IDonorGenotypePrecomputationRepository GetDonorGenotypePrecomputationRepositoryForDatabase(TransientDatabase targetDatabase);
     }
 
     public class StaticallyChosenDatabaseRepositoryFactory : IStaticallyChosenDatabaseRepositoryFactory
@@ -41,6 +49,8 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
             public IPGroupRepository PGroup { get; set; }
             public IHlaImportRepository HlaImport { get; set; }
             public IDonorUpdateRepository DonorUpdate { get; set; }
+            public ISubjectGenotypeSetRepository SubjectGenotypeSet { get; set; }
+            public IDonorGenotypePrecomputationRepository DonorGenotypePrecomputation { get; set; }
         }
 
         readonly Dictionary<TransientDatabase, AvailableRepositories> cachedRepositories =
@@ -91,6 +101,20 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
             var available = cachedRepositories[targetDatabase];
             return available.DonorUpdate ?? (available.DonorUpdate = new DonorUpdateRepository(GetHlaImportRepositoryForDatabase(targetDatabase),
                 GetConnectionStringProvider(targetDatabase), logger));
+        }
+
+        public ISubjectGenotypeSetRepository GetSubjectGenotypeSetRepositoryForDatabase(TransientDatabase targetDatabase)
+        {
+            var available = cachedRepositories[targetDatabase];
+            return available.SubjectGenotypeSet ??
+                   (available.SubjectGenotypeSet = new SubjectGenotypeSetRepository(GetConnectionStringProvider(targetDatabase)));
+        }
+
+        public IDonorGenotypePrecomputationRepository GetDonorGenotypePrecomputationRepositoryForDatabase(TransientDatabase targetDatabase)
+        {
+            var available = cachedRepositories[targetDatabase];
+            return available.DonorGenotypePrecomputation ??
+                   (available.DonorGenotypePrecomputation = new DonorGenotypePrecomputationRepository(GetConnectionStringProvider(targetDatabase)));
         }
     }
 }

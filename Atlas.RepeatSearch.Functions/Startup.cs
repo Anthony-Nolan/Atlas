@@ -1,5 +1,6 @@
 ﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
+using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
@@ -37,6 +38,12 @@ namespace Atlas.RepeatSearch.Functions
                 ConnectionStringReader("MatchingSqlB"),
                 ConnectionStringReader("DonorSql")
                 );
+            services.RegisterDebugServices(
+                OptionsReaderFor<MessagingServiceBusSettings>(),
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<RepeatSearch.Settings.Azure.AzureStorageSettings>());
+
+            services.RegisterHlaMetadataDictionaryCacheInvalidation();
         }
 
         private static void RegisterSettings(IServiceCollection services)

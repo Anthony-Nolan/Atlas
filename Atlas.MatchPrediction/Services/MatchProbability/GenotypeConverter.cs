@@ -97,7 +97,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 // again because survivors share names heavily - that sharing is what makes a reduced allowed-loci key
                 // collapse the survivor count in the first place. Pass 2 is then pure dictionary reads and allocates no
                 // task at all.
-                var pGroups = await ResolveDistinctPGroups(
+                var (pGroups, adjustedGenotypes) = await ResolveDistinctPGroups(
                     input, noNullAllelesInCompressedPhenotype, nullAlleleInfoByPosition, hfSetHmd, matchingHmd);
 
                 // Hoisted out of the loop deliberately: this closes over `pGroups` alone, so one delegate serves every
@@ -109,19 +109,11 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 // No ToHlaNames() and no likelihood lookup: the truncater built that name form in order to select this
                 // genotype, and hands it over with the likelihood it selected it by. A phenotype-keyed probe here would
                 // be a twelve-object hash - and on collision a twelve-position equality - per kept genotype, for a
-                // value that was never in doubt.
-                foreach (var imputed in input.Genotypes)
+                // value that was never in doubt. Nor is the null-allele adjustment redone: ResolveDistinctPGroups
+                // already computed it once per genotype below, and hands the adjusted genotype back index-aligned.
+                for (var i = 0; i < input.Genotypes.Count; i++)
                 {
-                    var genotypeToConvert = noNullAllelesInCompressedPhenotype
-                        ? imputed.Genotype
-                        : AccountForNullAlleleInCompressedPhenotype(imputed.Genotype, nullAlleleInfoByPosition);
-
-                    converted.Add(new GenotypeAtDesiredResolutions
-                    {
-                        HaplotypeResolution = imputed.Names,
-                        StringMatchableResolution = genotypeToConvert.MapByLocus(toPGroupsAtLocus),
-                        GenotypeLikelihood = imputed.Likelihood
-                    });
+                    converted.Add(new GenotypeAtDesiredResolutions(input.Genotypes[i], adjustedGenotypes[i].MapByLocus(toPGroupsAtLocus)));
                 }
 
                 return converted;
@@ -130,16 +122,10 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
         /// <summary>
         /// The (locus, name, typing category) triples every kept genotype holds, each converted to its P group exactly
-        /// one time.
+        /// one time - and each kept genotype's own null-allele-adjusted form, index-aligned with
+        /// <see cref="GenotypeConverterInput.Genotypes"/>, for the caller's build loop to reuse without recomputing it.
         /// </summary>
-        /// <remarks>
-        /// The genotypes are walked twice - here and in the caller's build loop - and the null-allele adjustment is
-        /// applied on both passes rather than being carried between them. The two passes are order-independent (this one
-        /// only accumulates into a set), and the adjustment is a no-op unless the subject's own submitted typing carries
-        /// a null-expressing allele, which is the rare case. Recomputing it there costs one map on those subjects only;
-        /// carrying it would cost an array of every genotype on all of them.
-        /// </remarks>
-        private async Task<Dictionary<PGroupLookupKey, string>> ResolveDistinctPGroups(
+        private async Task<PGroupResolution> ResolveDistinctPGroups(
             GenotypeConverterInput input,
             bool noNullAllelesInCompressedPhenotype,
             PhenotypeInfo<(bool, IEnumerable<HlaAtKnownTypingCategory>)> nullAlleleInfoByPosition,
@@ -147,6 +133,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             IHlaMetadataDictionary matchingHmd)
         {
             var distinct = new HashSet<PGroupLookupKey>();
+            var adjustedGenotypes = new GenotypeOfKnownTypingCategory[input.Genotypes.Count];
 
             // Hoisted for the same reason as the caller's mapping delegate.
             Action<Locus, LocusPosition, HlaAtKnownTypingCategory> collect = (locus, _, hla) =>
@@ -157,12 +144,14 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 }
             };
 
-            foreach (var imputed in input.Genotypes)
+            for (var i = 0; i < input.Genotypes.Count; i++)
             {
+                var imputed = input.Genotypes[i];
                 var genotypeToConvert = noNullAllelesInCompressedPhenotype
                     ? imputed.Genotype
                     : AccountForNullAlleleInCompressedPhenotype(imputed.Genotype, nullAlleleInfoByPosition);
 
+                adjustedGenotypes[i] = genotypeToConvert;
                 genotypeToConvert.EachPosition(collect);
             }
 
@@ -186,7 +175,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 resolved[keys[i]] = pGroups[i];
             }
 
-            return resolved;
+            return new PGroupResolution(resolved, adjustedGenotypes);
         }
 
         private async Task<string> ConvertToPGroup(HlaConverterInput converterInput, PGroupLookupKey key)
@@ -247,6 +236,11 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         /// answer between two triples that no longer convert alike.
         /// </remarks>
         private readonly record struct PGroupLookupKey(Locus Locus, HlaAtKnownTypingCategory Hla);
+
+        /// <summary><see cref="ResolveDistinctPGroups"/>'s result.</summary>
+        private readonly record struct PGroupResolution(
+            Dictionary<PGroupLookupKey, string> PGroups,
+            IReadOnlyList<GenotypeOfKnownTypingCategory> AdjustedGenotypes);
 
         private async Task<(bool isNullAllele, IEnumerable<HlaAtKnownTypingCategory> nullAlleleGGroups)> GetNullAlleleInfo(
             IHlaMetadataDictionary hfSetHmd,

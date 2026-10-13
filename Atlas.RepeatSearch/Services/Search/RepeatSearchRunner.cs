@@ -40,6 +40,7 @@ namespace Atlas.RepeatSearch.Services.Search
         private readonly IAtlasLogger repeatSearchLogger;
         private readonly MatchingAlgorithmSearchLoggingContext repeatSearchLoggingContext;
         private readonly IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
+        private readonly IActiveDataRefreshRecordAccessor activeDataRefreshRecordAccessor;
         private readonly IRepeatSearchHistoryRepository repeatSearchHistoryRepository;
         private readonly IRepeatSearchValidator repeatSearchValidator;
         private readonly IRepeatSearchDifferentialCalculator repeatSearchDifferentialCalculator;
@@ -57,6 +58,7 @@ namespace Atlas.RepeatSearch.Services.Search
             IMatchingAlgorithmSearchLogger repeatSearchLogger,
             MatchingAlgorithmSearchLoggingContext repeatSearchLoggingContext,
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
+            IActiveDataRefreshRecordAccessor activeDataRefreshRecordAccessor,
             IRepeatSearchHistoryRepository repeatSearchHistoryRepository,
             IRepeatSearchValidator repeatSearchValidator,
             IRepeatSearchDifferentialCalculator repeatSearchDifferentialCalculator,
@@ -73,6 +75,7 @@ namespace Atlas.RepeatSearch.Services.Search
             this.repeatSearchLogger = repeatSearchLogger;
             this.repeatSearchLoggingContext = repeatSearchLoggingContext;
             this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
+            this.activeDataRefreshRecordAccessor = activeDataRefreshRecordAccessor;
             this.repeatSearchHistoryRepository = repeatSearchHistoryRepository;
             this.repeatSearchValidator = repeatSearchValidator;
             this.repeatSearchDifferentialCalculator = repeatSearchDifferentialCalculator;
@@ -91,6 +94,9 @@ namespace Atlas.RepeatSearch.Services.Search
             var repeatSearchId = identifiedRepeatSearchRequest.RepeatSearchId;
             var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
             var hlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
+            // Comes from the same cached record as the version (and the database that matching reads), so match prediction can
+            // later tell which transient database these results came from.
+            var dataRefreshRecordId = activeDataRefreshRecordAccessor.GetActiveRecord()?.Id;
             SearchResultDifferential diff = null;
             var resultsSentTime = new DateTime();
             int? numberOfResults = null;
@@ -132,6 +138,7 @@ namespace Atlas.RepeatSearch.Services.Search
                     Results = results,
                     TotalResults = results.Count,
                     MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion,
+                    MatchingAlgorithmDataRefreshRecordId = dataRefreshRecordId,
                     BlobStorageContainerName = azureStorageSettings.MatchingResultsBlobContainer,
                     NoLongerMatchingDonors = diff.RemovedResults.ToList(),
                     BatchedResult = azureStorageSettings.ShouldBatchResults,

@@ -1,5 +1,6 @@
 ﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
+using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
@@ -24,12 +25,18 @@ namespace Atlas.MatchPrediction.Functions
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),
                 OptionsReaderFor<GenotypeImputationSettings>(),
+                // This app has no access to the transient matching databases, so it keeps the no-op reader and writer
+                // and every donor is computed live. The kill-switch is left at its default (off).
+                _ => new PrecomputedGenotypeSetSettings(),
                 ConnectionStringReader("MatchPredictionSql")
             );
 
             services.RegisterMatchPredictionRequester(
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<MatchPredictionRequestsSettings>());
+
+            // This app caches HLA Metadata Dictionary data, so it has to be told when the dictionary is recreated.
+            services.RegisterHlaMetadataDictionaryCacheInvalidation();
         }
 
         private static void RegisterSettings(IServiceCollection services)

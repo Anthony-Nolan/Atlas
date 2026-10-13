@@ -31,7 +31,19 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
         [Required]
         public string Database { get; set; }
 
+        /// <summary>
+        /// Recorded before the HLA Metadata Dictionary is recreated, and kept for every later attempt of this run.
+        /// </summary>
         public string HlaNomenclatureVersion { get; set; }
+
+        /// <summary>
+        /// Identifies the HLA Metadata Dictionary snapshot this run created, in UTC: every HLA Metadata Dictionary table
+        /// the run wrote ends its name with this time, formatted as <c>yyyyMMddHHmmssfff</c>.
+        /// Set once the dictionary has been recreated, and kept for every later attempt of this run.
+        /// Null for runs from before it was recorded.
+        /// </summary>
+        public DateTime? HlaMetadataDictionarySnapshotUtc { get; set; }
+
         public bool? WasSuccessful { get; set; }
 
         public DateTime? DataDeletionCompleted { get; set; }
@@ -74,6 +86,8 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
         /// </summary>
         public DateTime? LeaseExpiresUtc { get; set; }
 
+        public DateTime? DonorGenotypePrecomputationCompleted { get; set; }
+
         public bool IsStageComplete(DataRefreshStage stage) => GetStageCompletionTime(stage) != null;
 
         internal DateTime? GetStageCompletionTime(DataRefreshStage stage) =>
@@ -87,6 +101,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
                 DataRefreshStage.DonorHlaProcessing => DonorHlaProcessingCompleted,
                 DataRefreshStage.DatabaseScalingTearDown => DatabaseScalingTearDownCompleted,
                 DataRefreshStage.IndexRecreation => IndexRecreationCompleted,
+                DataRefreshStage.DonorGenotypePrecomputation => DonorGenotypePrecomputationCompleted,
                 DataRefreshStage.QueuedDonorUpdateProcessing => QueuedDonorUpdatesCompleted,
                 _ => throw new ArgumentOutOfRangeException(nameof(stage))
             };
@@ -118,6 +133,9 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
                     break;
                 case DataRefreshStage.IndexRecreation:
                     IndexRecreationCompleted = value;
+                    break;
+                case DataRefreshStage.DonorGenotypePrecomputation:
+                    DonorGenotypePrecomputationCompleted = value;
                     break;
                 case DataRefreshStage.QueuedDonorUpdateProcessing:
                     QueuedDonorUpdatesCompleted = value;

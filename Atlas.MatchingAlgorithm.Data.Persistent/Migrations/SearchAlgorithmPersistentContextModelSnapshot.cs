@@ -44,10 +44,16 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Migrations
                     b.Property<DateTime?>("DatabaseScalingTearDownCompleted")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("DonorGenotypePrecomputationCompleted")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("DonorHlaProcessingCompleted")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DonorImportCompleted")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("HlaMetadataDictionarySnapshotUtc")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("HlaNomenclatureVersion")

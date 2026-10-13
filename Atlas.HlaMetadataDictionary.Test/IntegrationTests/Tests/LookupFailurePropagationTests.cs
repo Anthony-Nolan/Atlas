@@ -176,8 +176,11 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
 
             public Task LoadDataIntoMemory(string hlaNomenclatureVersion) => inner.LoadDataIntoMemory(hlaNomenclatureVersion);
 
-            public Task RecreateHlaMetadataTable(IEnumerable<ISerialisableHlaMetadata> metadata, string hlaNomenclatureVersion) =>
-                inner.RecreateHlaMetadataTable(metadata, hlaNomenclatureVersion);
+            public Task RecreateHlaMetadataTable(
+                IEnumerable<ISerialisableHlaMetadata> metadata,
+                string hlaNomenclatureVersion,
+                DateTime snapshotUtc) =>
+                inner.RecreateHlaMetadataTable(metadata, hlaNomenclatureVersion, snapshotUtc);
 
             public Task<HlaMetadataTableRow> GetHlaMetadataRowIfExists(
                 Locus locus,

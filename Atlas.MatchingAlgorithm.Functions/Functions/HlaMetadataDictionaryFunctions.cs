@@ -2,11 +2,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using Atlas.Common.Utils;
-using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
-using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
+using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
 
@@ -14,20 +14,23 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
 {
     public class HlaMetadataDictionaryFunctions //TODO: ATLAS-262 (MDM) migrate to new project
     {
-        private readonly IHlaMetadataDictionary hlaMetadataDictionary;
+        private const string DataRefreshInProgressMessage =
+            "A data refresh appears to be in progress, and it recreates the HLA Metadata Dictionary itself as its first " +
+            "stage, so the dictionary was not recreated. Try again once the refresh has completed. A stalled refresh also " +
+            "counts as in progress, until the stalled-refresh watchdog recovers it.";
 
-        public HlaMetadataDictionaryFunctions(
-            IHlaMetadataDictionaryFactory factory,
-            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor)
+        private readonly IManualHlaMetadataDictionaryRefresher refresher;
+
+        public HlaMetadataDictionaryFunctions(IManualHlaMetadataDictionaryRefresher refresher)
         {
-            hlaMetadataDictionary = factory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
+            this.refresher = refresher;
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function(nameof(RefreshHlaMetadataDictionary))]
-        public async Task RefreshHlaMetadataDictionary([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest httpRequest)
+        public async Task<IActionResult> RefreshHlaMetadataDictionary([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest httpRequest)
         {
-            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
+            return await Recreate(CreationBehaviour.Latest);
         }
 
         /// <remarks>
@@ -43,13 +46,22 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [Function(nameof(RefreshHlaMetadataDictionaryToSpecificVersion))]
-        public async Task RefreshHlaMetadataDictionaryToSpecificVersion(
+        public async Task<IActionResult> RefreshHlaMetadataDictionaryToSpecificVersion(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(VersionRequest), nameof(VersionRequest))]
             HttpRequest httpRequest)
         {
             var version = JsonConvert.DeserializeObject<VersionRequest>(await new StreamReader(httpRequest.Body).ReadToEndAsync()).Version;
-            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Specific(version));
+            return await Recreate(CreationBehaviour.Specific(version));
         }
+
+        /// <remarks>
+        /// A 400 rather than a thrown exception, matching <c>SubmitDataRefreshRequestManual</c>: nothing in this app maps
+        /// an exception to a status code, so throwing would surface to the caller as an unexplained 500.
+        /// </remarks>
+        private async Task<IActionResult> Recreate(CreationBehaviour creationBehaviour) =>
+            await refresher.TryRecreate(creationBehaviour)
+                ? new OkResult()
+                : new BadRequestObjectResult(DataRefreshInProgressMessage);
     }
 }

@@ -18,6 +18,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
+using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Settings;
 using EnumStringValues;
@@ -28,10 +29,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
     {
         /// <summary>
         /// Performs all pre-processing required for running of the search algorithm:
-        /// - Scales up target database 
+        /// - Scales up target database
         /// - Recreates HlaMetadata Dictionary
         /// - Imports all donors
         /// - Processes HLA for imported donors
+        /// - Precomputes the genotype sets of all donors
         /// - Scales down target database
         /// </summary>
         /// <param name="cancellationToken">
@@ -58,6 +60,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
         private readonly IDonorImporter donorImporter;
         private readonly IHlaProcessor hlaProcessor;
+        private readonly IDonorGenotypePrecomputationStage donorGenotypePrecomputationStage;
         private readonly IDonorUpdateProcessor differentialDonorUpdateProcessor;
         private readonly IMatchingAlgorithmImportLogger logger;
 
@@ -96,6 +99,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             // But if it *were* to occur then we definitely don't want to have to *re*-re-create them just to do the final 2 steps.
             {DataRefreshStage.IndexRecreation, true},
 
+            // When this stage is complete, its run is complete and its staging data is gone, so nothing is left to do.
+            {DataRefreshStage.DonorGenotypePrecomputation, true},
+
             // Failing to scale down the Database has a cost impact, and it is possible for someone to manually scale the DB back up between interruption and retry.
             // Re-performing this stage if the database is already at the required level is very quick.
             {DataRefreshStage.DatabaseScalingTearDown, false},
@@ -114,6 +120,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
             IDonorImporter donorImporter,
             IHlaProcessor hlaProcessor,
+            IDonorGenotypePrecomputationStage donorGenotypePrecomputationStage,
             IDonorUpdateProcessor differentialDonorUpdateProcessor,
             IMatchingAlgorithmImportLogger logger,
             IDataRefreshSupportNotificationSender dataRefreshNotificationSender,
@@ -126,6 +133,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             donorImportRepository = repositoryFactory.GetDonorImportRepository();
             this.donorImporter = donorImporter;
             this.hlaProcessor = hlaProcessor;
+            this.donorGenotypePrecomputationStage = donorGenotypePrecomputationStage;
             this.differentialDonorUpdateProcessor = differentialDonorUpdateProcessor;
             this.logger = logger;
             this.dataRefreshNotificationSender = dataRefreshNotificationSender;
@@ -238,19 +246,43 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         }
 
         // TODO: ATLAS-355: We expect to extract this to somewhere else in the future.
+        /// <remarks>
+        /// A run has exactly one HLA Nomenclature version and one HLA Metadata Dictionary snapshot, however many attempts it takes:
+        /// - The version is read from WMDA only once, and recorded BEFORE the dictionary is recreated. An attempt that stops
+        ///   during recreation therefore leaves the version behind, and the next attempt recreates under that same version,
+        ///   even if WMDA has published a newer one since.
+        /// - The snapshot is recorded together with the stage completion. Until then, every attempt recreates the dictionary,
+        ///   and the snapshot of the last recreation is the one recorded. Once recorded, no later attempt recreates it again.
+        /// </remarks>
         private async Task RefreshHlaMetadataDictionary(DataRefreshRecord refreshRecord)
         {
             if (string.IsNullOrEmpty(refreshRecord.HlaNomenclatureVersion))
             {
-                var newHlaNomenclatureVersion = await activeVersionHlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
-                refreshRecord.HlaNomenclatureVersion = newHlaNomenclatureVersion; //Later steps will make use of this value.
-                loggingContext.HlaNomenclatureVersion = newHlaNomenclatureVersion;
-                await dataRefreshHistoryRepository.UpdateExecutionDetails(refreshRecord.Id, newHlaNomenclatureVersion);
-                await dataRefreshHistoryRepository.MarkStageAsComplete(refreshRecord, DataRefreshStage.MetadataDictionaryRefresh);
+                var latestHlaNomenclatureVersion = activeVersionHlaMetadataDictionary.GetLatestStableHlaNomenclatureVersion();
+                refreshRecord.HlaNomenclatureVersion = latestHlaNomenclatureVersion; //Later steps will make use of this value.
+                await dataRefreshHistoryRepository.UpdateExecutionDetails(refreshRecord.Id, latestHlaNomenclatureVersion);
             }
 
-            // If the Hla version is already populated, then we are continuing an existing run and we already have an HLA Nomenclature for this run.
-            // We MUST continue with that same version, (which fortunately we know must already exist, so no need to re-create it)
+            loggingContext.HlaNomenclatureVersion = refreshRecord.HlaNomenclatureVersion;
+
+            if (refreshRecord.IsStageComplete(DataRefreshStage.MetadataDictionaryRefresh))
+            {
+                // We are continuing a run that already recreated the dictionary. We MUST continue with that same dictionary.
+                return;
+            }
+
+            // Always rebuild, even when the run's version is already the active one:
+            // a forced refresh on an unchanged version must still repair the dictionary.
+            var recreation = await activeVersionHlaMetadataDictionary.RecreateHlaMetadataDictionary(
+                CreationBehaviour.Specific(refreshRecord.HlaNomenclatureVersion));
+
+            var snapshotUtc = recreation.SnapshotUtc ?? throw new InvalidOperationException(
+                $"HLA Metadata Dictionary was not recreated at HLA Nomenclature version {refreshRecord.HlaNomenclatureVersion}, " +
+                "so there is no snapshot to record.");
+
+            logger.SendTrace($"{LoggingPrefix} HLA Metadata Dictionary recreated at HLA Nomenclature version " +
+                             $"{refreshRecord.HlaNomenclatureVersion}, snapshot {snapshotUtc:O}.");
+            await dataRefreshHistoryRepository.MarkHlaMetadataDictionaryRefreshAsComplete(refreshRecord, snapshotUtc);
         }
 
         private async Task ExecuteDataRefreshStage(
@@ -319,6 +351,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     break;
                 case DataRefreshStage.IndexRecreation:
                     await donorImportRepository.CreateHlaTableIndexes();
+                    break;
+                case DataRefreshStage.DonorGenotypePrecomputation:
+                    await donorGenotypePrecomputationStage.Run(refreshRecord, executionMode, cancellationToken);
                     break;
 
                 case DataRefreshStage.DatabaseScalingTearDown:

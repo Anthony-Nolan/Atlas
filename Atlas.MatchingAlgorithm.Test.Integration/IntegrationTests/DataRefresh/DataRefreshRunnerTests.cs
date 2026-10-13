@@ -42,7 +42,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
         public async Task DataRefresh_WhenDatabaseHasNoRefreshRecords_DoesNotThrow()
         {
             await dataRefreshHistoryRepository.RemoveAllDataRefreshRecords();
-            var refreshRecordId = await dataRefreshHistoryRepository.Create(DataRefreshRecordBuilder.New.Build());
+            // With no refresh completed, A counts as active, so B is dormant. A refresh record names its dormant database.
+            var refreshRecordId = await dataRefreshHistoryRepository.Create(
+                DataRefreshRecordBuilder.New.WithDatabase(TransientDatabase.DatabaseB).Build());
 
             await dataRefreshRunner.Invoking(r => r.RefreshData(refreshRecordId)).Should().NotThrowAsync();
         }
@@ -55,7 +57,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
                 DataRefreshStage.QueuedDonorUpdateProcessing
             });
 
-            var refreshRecord = new DataRefreshRecord {Database = "DatabaseA"};
+            // The dummy successful record of the set-up makes A active, so B is dormant. A refresh record names its dormant database.
+            var refreshRecord = new DataRefreshRecord {Database = "DatabaseB"};
             var refreshRecordId = await dataRefreshHistoryRepository.Create(refreshRecord);
 
             await dataRefreshRunner.RefreshData(refreshRecordId);
@@ -64,6 +67,20 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
             var timesOfExpectedStages = expectedStages.Select(s => completionTimes[s]).ToList();
             timesOfExpectedStages.Should().NotContainNulls();
             timesOfExpectedStages.Should().BeInAscendingOrder();
+        }
+
+        [Test]
+        public async Task DataRefresh_RecordsHlaNomenclatureVersionAndHlaMetadataDictionarySnapshot()
+        {
+            var refreshRecord = new DataRefreshRecord {Database = "DatabaseA"};
+            var refreshRecordId = await dataRefreshHistoryRepository.Create(refreshRecord);
+
+            await dataRefreshRunner.RefreshData(refreshRecordId);
+
+            var record = await dataRefreshHistoryRepository.GetRecord(refreshRecordId);
+            record.HlaNomenclatureVersion.Should().NotBeNullOrEmpty();
+            record.HlaMetadataDictionarySnapshotUtc.Should().NotBeNull();
+            record.HlaMetadataDictionarySnapshotUtc.Should().BeOnOrBefore(record.MetadataDictionaryRefreshCompleted!.Value);
         }
     }
 }

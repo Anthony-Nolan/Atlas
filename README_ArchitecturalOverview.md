@@ -33,7 +33,7 @@ patient HLA according to configurable matching preferences
 
 Infrastructure: 
 - 3x SQL Databases for storing pre-processed donor state
-- 2x Functions Apps, for running searches, and maintaining data store
+- 3x Functions Apps: one for running searches, one for ongoing donor updates, and one for the data refresh
 - Azure blob storage used for search results
 - Azure service bus used for request queuing and results notifications
 

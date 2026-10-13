@@ -184,8 +184,8 @@ namespace Atlas.MatchPrediction.Data.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("BatchFolderName")
-                        .HasMaxLength(36)
-                        .HasColumnType("nvarchar(36)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<Guid?>("FinalisationLeaseOwner")
                         .HasColumnType("uniqueidentifier");

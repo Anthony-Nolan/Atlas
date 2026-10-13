@@ -1,4 +1,6 @@
+using System;
 using System.Threading.Tasks;
+using AwesomeAssertions;
 using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
@@ -6,6 +8,7 @@ using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
 using Atlas.HlaMetadataDictionary.Services.HlaValidation;
+using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using NSubstitute;
 using NUnit.Framework;
@@ -29,6 +32,8 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
         private ISerologyToAllelesMetadataService serologyToAllelesMetadataService;
         private IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
+        private IHlaMetadataRecreationRepository recreationRepository;
+        private IHlaMetadataCacheInvalidator cacheInvalidator;
         private IAtlasLogger logger;
 
         private IHlaMetadataDictionary hlaMetadataDictionary;
@@ -48,6 +53,8 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
             serologyToAllelesMetadataService = Substitute.For<ISerologyToAllelesMetadataService>();
             hlaMetadataGenerationOrchestrator = Substitute.For<IHlaMetadataGenerationOrchestrator>();
             wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
+            recreationRepository = Substitute.For<IHlaMetadataRecreationRepository>();
+            cacheInvalidator = Substitute.For<IHlaMetadataCacheInvalidator>();
             logger = Substitute.For<IAtlasLogger>();
 
             hlaMetadataDictionary = new HlaMetadataDictionary.ExternalInterface.HlaMetadataDictionary(
@@ -64,6 +71,8 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
                 serologyToAllelesMetadataService,
                 hlaMetadataGenerationOrchestrator,
                 wmdaHlaNomenclatureVersionAccessor,
+                recreationRepository,
+                cacheInvalidator,
                 logger);
         }
 
@@ -74,7 +83,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
 
             await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
 
-            await recreateMetadataService.DidNotReceiveWithAnyArgs().RefreshAllHlaMetadata(null);
+            await recreateMetadataService.DidNotReceiveWithAnyArgs().RefreshAllHlaMetadata(null, default);
         }
 
         [Test]
@@ -84,7 +93,17 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
 
             await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
 
-            await recreateMetadataService.ReceivedWithAnyArgs().RefreshAllHlaMetadata(null);
+            await recreateMetadataService.ReceivedWithAnyArgs().RefreshAllHlaMetadata(null, default);
+        }
+
+        [Test]
+        public async Task RecreateHlaMetadataDictionaryIfNecessary_ForLatestForcedVersion_WhenAlreadyUpToDate_RecreatesDictionary()
+        {
+            wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().Returns(DefaultVersion);
+
+            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.LatestForced);
+
+            await recreateMetadataService.Received().RefreshAllHlaMetadata(DefaultVersion, Arg.Any<DateTime>());
         }
 
         [Test]
@@ -94,7 +113,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
 
             await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Active);
 
-            await recreateMetadataService.ReceivedWithAnyArgs().RefreshAllHlaMetadata(null);
+            await recreateMetadataService.ReceivedWithAnyArgs().RefreshAllHlaMetadata(null, default);
         }
 
         [Test]
@@ -104,7 +123,143 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
 
             await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Specific("different-version"));
 
-            await recreateMetadataService.ReceivedWithAnyArgs().RefreshAllHlaMetadata(null);
+            await recreateMetadataService.ReceivedWithAnyArgs().RefreshAllHlaMetadata(null, default);
+        }
+
+        [Test]
+        public async Task RecreateHlaMetadataDictionary_WhenDictionaryIsRecreated_NotifiesOfUpdate()
+        {
+            wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().Returns("newer-version");
+
+            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
+
+            await recreationRepository.Received().RecordRecreation("newer-version");
+        }
+
+        [Test]
+        public async Task RecreateHlaMetadataDictionary_WhenDictionaryIsNotRecreated_DoesNotNotifyOfUpdate()
+        {
+            wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().Returns(DefaultVersion);
+
+            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
+
+            await recreationRepository.DidNotReceiveWithAnyArgs().RecordRecreation(null);
+            cacheInvalidator.DidNotReceiveWithAnyArgs().InvalidateCaches(null);
+        }
+
+        /// <summary>
+        /// The case this was built for: a forced recreation at the version that is already active changes the
+        /// stored data without changing anything a consumer keys its cache on, so the notification is the only signal
+        /// there is.
+        /// </summary>
+        [Test]
+        public async Task RecreateHlaMetadataDictionary_ForSpecificVersionMatchingActiveVersion_NotifiesOfUpdate()
+        {
+            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Specific(DefaultVersion));
+
+            await recreationRepository.Received().RecordRecreation(DefaultVersion);
+        }
+
+        [Test]
+        public async Task RecreateHlaMetadataDictionary_RecordsTheRecreationOnlyAfterDataHasBeenRewritten()
+        {
+            var recordedBeforeDataWasRewritten = false;
+            var dataWasRewritten = false;
+
+            recreateMetadataService
+                .When(s => s.RefreshAllHlaMetadata(Arg.Any<string>(), Arg.Any<DateTime>()))
+                .Do(_ => dataWasRewritten = true);
+            recreationRepository
+                .When(r => r.RecordRecreation(Arg.Any<string>()))
+                .Do(_ => recordedBeforeDataWasRewritten = !dataWasRewritten);
+
+            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Specific(DefaultVersion));
+
+            // A consumer that drops its cache before the new data is in place would just re-cache the old data.
+            recordedBeforeDataWasRewritten.Should().BeFalse();
+        }
+
+        /// <summary>
+        /// The recreating process does not wait to notice its own stamp - it would be serving data it knows to be
+        /// stale for a whole poll interval, for no reason.
+        /// </summary>
+        [Test]
+        public async Task RecreateHlaMetadataDictionary_DropsThisProcesssOwnCachedCopy()
+        {
+            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Specific(DefaultVersion));
+
+            cacheInvalidator.Received().InvalidateCaches(DefaultVersion);
+        }
+
+        /// <summary>
+        /// Storage has already been rewritten by the time the stamp is written, so failing here would fail a data
+        /// refresh whose first stage had in fact succeeded. The recreation stands; only the telling of others is lost.
+        /// </summary>
+        [Test]
+        public async Task RecreateHlaMetadataDictionary_WhenTheRecreationCannotBeRecorded_StillSucceeds()
+        {
+            recreationRepository
+                .When(r => r.RecordRecreation(Arg.Any<string>()))
+                .Do(_ => throw new Exception("storage is unavailable"));
+
+            var result = await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Specific(DefaultVersion));
+
+            result.HlaNomenclatureVersion.Should().Be(DefaultVersion);
+            cacheInvalidator.Received().InvalidateCaches(DefaultVersion);
+        }
+
+        [Test]
+        public async Task RecreateHlaMetadataDictionary_WhenDictionaryIsRecreated_ReturnsUtcSnapshotUsedToRecreateTables()
+        {
+            DateTime? snapshotUsedToRecreateTables = null;
+            recreateMetadataService
+                .When(s => s.RefreshAllHlaMetadata(Arg.Any<string>(), Arg.Any<DateTime>()))
+                .Do(call => snapshotUsedToRecreateTables = call.ArgAt<DateTime>(1));
+            var timeBeforeRecreation = DateTime.UtcNow.AddMilliseconds(-1);
+
+            var result = await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Specific(DefaultVersion));
+
+            result.SnapshotUtc.Should().NotBeNull();
+            result.SnapshotUtc.Should().Be(snapshotUsedToRecreateTables);
+            result.SnapshotUtc!.Value.Kind.Should().Be(DateTimeKind.Utc);
+            result.SnapshotUtc.Value.Should().BeOnOrAfter(timeBeforeRecreation).And.BeOnOrBefore(DateTime.UtcNow);
+        }
+
+        [Test]
+        public async Task RecreateHlaMetadataDictionary_WhenDictionaryIsRecreated_ReturnsSnapshotToWholeMilliseconds()
+        {
+            var result = await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Specific(DefaultVersion));
+
+            (result.SnapshotUtc!.Value.Ticks % TimeSpan.TicksPerMillisecond).Should().Be(0);
+        }
+
+        [Test]
+        public async Task RecreateHlaMetadataDictionary_WhenDictionaryIsRecreated_ReturnsRecreatedVersion()
+        {
+            var result = await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Specific("different-version"));
+
+            result.HlaNomenclatureVersion.Should().Be("different-version");
+        }
+
+        [Test]
+        public async Task RecreateHlaMetadataDictionary_WhenDictionaryIsNotRecreated_ReturnsNoSnapshot()
+        {
+            wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().Returns(DefaultVersion);
+
+            var result = await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
+
+            result.HlaNomenclatureVersion.Should().Be(DefaultVersion);
+            result.SnapshotUtc.Should().BeNull();
+        }
+
+        [Test]
+        public void GetLatestStableHlaNomenclatureVersion_ReturnsLatestVersionFromWmda()
+        {
+            wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().Returns("newer-version");
+
+            var version = hlaMetadataDictionary.GetLatestStableHlaNomenclatureVersion();
+
+            version.Should().Be("newer-version");
         }
     }
 }

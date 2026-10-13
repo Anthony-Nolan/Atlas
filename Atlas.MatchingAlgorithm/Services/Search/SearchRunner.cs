@@ -38,6 +38,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         private readonly IAtlasLogger searchLogger;
         private readonly MatchingAlgorithmSearchLoggingContext searchLoggingContext;
         private readonly IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
+        private readonly IActiveDataRefreshRecordAccessor activeDataRefreshRecordAccessor;
         private readonly IMatchingFailureNotificationSender matchingFailureNotificationSender;
         private readonly int searchRequestMaxRetryCount;
         private readonly AzureStorageSettings azureStorageSettings;
@@ -51,6 +52,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             IMatchingAlgorithmSearchLogger searchLogger,
             MatchingAlgorithmSearchLoggingContext searchLoggingContext,
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
+            IActiveDataRefreshRecordAccessor activeDataRefreshRecordAccessor,
             MessagingServiceBusSettings messagingServiceBusSettings,
             IMatchingFailureNotificationSender matchingFailureNotificationSender,
             AzureStorageSettings azureStorageSettings,
@@ -63,6 +65,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             this.searchLogger = searchLogger;
             this.searchLoggingContext = searchLoggingContext;
             this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
+            this.activeDataRefreshRecordAccessor = activeDataRefreshRecordAccessor;
             this.matchingFailureNotificationSender = matchingFailureNotificationSender;
             searchRequestMaxRetryCount = messagingServiceBusSettings.SearchRequestsMaxDeliveryCount;
             this.azureStorageSettings = azureStorageSettings;
@@ -76,6 +79,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var searchRequestId = identifiedSearchRequest.Id;
             searchLoggingContext.SearchRequestId = searchRequestId;
             var hlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
+            // Comes from the same cached record as the version (and the database that matching reads), so match prediction can
+            // later tell which transient database these results came from.
+            var dataRefreshRecordId = activeDataRefreshRecordAccessor.GetActiveRecord()?.Id;
             searchLoggingContext.HlaNomenclatureVersion = hlaNomenclatureVersion;
             var requestCompletedSuccessfully = false;
             var searchStopWatch = new Stopwatch();
@@ -102,6 +108,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     Results = results,
                     TotalResults = results.Count,
                     MatchingAlgorithmHlaNomenclatureVersion = hlaNomenclatureVersion,
+                    MatchingAlgorithmDataRefreshRecordId = dataRefreshRecordId,
                     BlobStorageContainerName = azureStorageSettings.SearchResultsBlobContainer,
                     SearchRequest = identifiedSearchRequest.SearchRequest,
                     BatchedResult = azureStorageSettings.ShouldBatchResults,

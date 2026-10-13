@@ -2,6 +2,7 @@ using Atlas.Client.Models.SupportMessages;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
+using Atlas.MatchingAlgorithm.Data.Repositories.Precompute;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.Donors;
@@ -21,6 +22,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
         private IDonorInspectionRepository inspectionRepository;
         private IDonorHlaExpander donorHlaExpander;
         private IFailedDonorsNotificationSender failedDonorsNotificationSender;
+        private ISubjectGenotypeSetRepository subjectGenotypeSetRepository;
 
         [SetUp]
         public void SetUp()
@@ -36,6 +38,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
 
             repositoryFactory.GetDonorInspectionRepositoryForDatabase(default).ReturnsForAnyArgs(inspectionRepository);
             repositoryFactory.GetDonorUpdateRepositoryForDatabase(default).ReturnsForAnyArgs(updateRepository);
+            subjectGenotypeSetRepository = Substitute.For<ISubjectGenotypeSetRepository>();
+            repositoryFactory.GetSubjectGenotypeSetRepositoryForDatabase(default).ReturnsForAnyArgs(subjectGenotypeSetRepository);
 
             inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new Dictionary<int, DonorInfo>(),
                 new Dictionary<int, DonorInfo> { { 0, new DonorInfo() } });
@@ -202,6 +206,41 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
             await donorService.CreateOrUpdateDonorBatch(new[] { new DonorInfo() }, default, default, default);
 
             await failedDonorsNotificationSender.DidNotReceiveWithAnyArgs().SendFailedDonorsAlert(default, default, default);
+        }
+
+        [Test]
+        public async Task CreateOrUpdateDonorBatch_DeletesPrecomputedGenotypeSetsOfUpdatedDonorsOnly()
+        {
+            const int existingDonorId = 11;
+            const int newDonorId = 12;
+
+            donorHlaExpander
+                .ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<DonorInfo>>(), Arg.Any<string>())
+                .Returns(new DonorBatchProcessingResult<DonorInfoWithExpandedHla>(new[]
+                {
+                    new DonorInfoWithExpandedHla { DonorId = existingDonorId },
+                    new DonorInfoWithExpandedHla { DonorId = newDonorId }
+                }));
+            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>())
+                .Returns(new Dictionary<int, DonorInfo> { { existingDonorId, new DonorInfo { DonorId = existingDonorId } } });
+
+            await donorService.CreateOrUpdateDonorBatch(new[] { new DonorInfo(), new DonorInfo() }, default, default, default);
+
+            await subjectGenotypeSetRepository.Received(1).DeleteDonorAssignments(
+                Arg.Is<IReadOnlyCollection<int>>(ids => ids.Single() == existingDonorId));
+        }
+
+        [Test]
+        public async Task CreateOrUpdateDonorBatch_WhenNoDonorExists_DoesNotDeletePrecomputedGenotypeSets()
+        {
+            donorHlaExpander
+                .ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<DonorInfo>>(), Arg.Any<string>())
+                .Returns(new DonorBatchProcessingResult<DonorInfoWithExpandedHla>(new[] { new DonorInfoWithExpandedHla { DonorId = 13 } }));
+            inspectionRepository.GetDonors(Arg.Any<IEnumerable<int>>()).Returns(new Dictionary<int, DonorInfo>());
+
+            await donorService.CreateOrUpdateDonorBatch(new[] { new DonorInfo() }, default, default, default);
+
+            await subjectGenotypeSetRepository.DidNotReceiveWithAnyArgs().DeleteDonorAssignments(default);
         }
     }
 }

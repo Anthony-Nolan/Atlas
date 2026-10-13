@@ -4,14 +4,14 @@ locals {
 
     "AutoMapper:LicenseKey" = var.AUTOMAPPER_LICENSE_KEY
 
-    "AzureStorage:ConnectionString" = var.azure_storage.primary_connection_string
+    "AzureStorage:ConnectionString" = var.key_vault.secret_refs["azure-storage-connection-string"]
 
-    "HlaMetadataDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string,
+    "HlaMetadataDictionary:AzureStorageConnectionString" = var.key_vault.secret_refs["azure-storage-connection-string"],
 
-    "MacDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string
+    "MacDictionary:AzureStorageConnectionString" = var.key_vault.secret_refs["azure-storage-connection-string"]
     "MacDictionary:TableName"                    = var.mac_import_table.name,
 
-    "MessagingServiceBus:ConnectionString"                                                          = var.servicebus_namespace_authorization_rules.read-only.primary_connection_string
+    "MessagingServiceBus:ConnectionString"                                                          = var.key_vault.secret_refs["servicebus-read-only-connection-string"]
     "MessagingServiceBus:DonorManagement:Topic"                                                     = var.servicebus_topics.updated-searchable-donors.name
     "MessagingServiceBus:DonorManagement:SubscriptionForDbA"                                        = azurerm_servicebus_subscription.matching_transient_a.name
     "MessagingServiceBus:DonorManagement:SubscriptionForDbB"                                        = azurerm_servicebus_subscription.matching_transient_b.name
@@ -21,7 +21,7 @@ locals {
     "MessagingServiceBus:SendRetryCount"                                                            = var.SERVICE_BUS_SEND_RETRY_COUNT
     "MessagingServiceBus:SendRetryCooldownSeconds"                                                  = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
-    "NotificationsServiceBus:ConnectionString"         = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
+    "NotificationsServiceBus:ConnectionString"         = var.key_vault.secret_refs["servicebus-write-only-connection-string"]
     "NotificationsServiceBus:AlertsTopic"              = var.servicebus_topics.alerts.name
     "NotificationsServiceBus:NotificationsTopic"       = var.servicebus_topics.notifications.name
     "NotificationsServiceBus:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
@@ -43,10 +43,19 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_donor_manageme
   storage_account_access_key  = var.shared_function_storage.primary_access_key
   storage_account_name        = var.shared_function_storage.name
 
+  // Used to resolve the @Microsoft.KeyVault app settings and connection strings below. The role assignment that lets
+  // this identity read the vault lives in the root module, so it is ordered by the depends_on on the module block.
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [var.key_vault.function_apps_identity_id]
+  }
+
+  key_vault_reference_identity_id = var.key_vault.function_apps_identity_id
+
   site_config {
     application_insights_key = var.application_insights.instrumentation_key
     application_stack {
-      dotnet_version              = "v8.0"
+      dotnet_version              = "v10.0"
       use_dotnet_isolated_runtime = true
     }
     cors {
@@ -71,27 +80,32 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_donor_manageme
 
   tags = var.general.common_tags
 
-  app_settings = local.donor_func_app_settings
+  app_settings = merge(local.donor_func_app_settings, local.match_prediction_func_app_settings)
 
   connection_string {
     name  = "SqlA"
     type  = "SQLAzure"
-    value = local.matching_transient_database_a_connection_string
+    value = local.sql_kv_ref["matching-transient-a-sql-connection-string"]
   }
   connection_string {
     name  = "SqlB"
     type  = "SQLAzure"
-    value = local.matching_transient_database_b_connection_string
+    value = local.sql_kv_ref["matching-transient-b-sql-connection-string"]
   }
   connection_string {
     name  = "PersistentSql"
     type  = "SQLAzure"
-    value = local.matching_persistent_database_connection_string
+    value = local.sql_kv_ref["matching-persistent-sql-connection-string"]
   }
   connection_string {
     name  = "DonorSql"
     type  = "SQLAzure"
-    value = local.matching_donor_database_connection_string
+    value = local.sql_kv_ref["matching-donor-sql-connection-string"]
+  }
+  connection_string {
+    name  = "MatchPredictionSql"
+    type  = "SQLAzure"
+    value = var.match_prediction_sql_database.connection_string_kv_ref
   }
 
   lifecycle {

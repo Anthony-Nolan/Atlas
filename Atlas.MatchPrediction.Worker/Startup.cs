@@ -1,7 +1,9 @@
 ﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Notifications;
+using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
+using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Worker.Services;
@@ -12,6 +14,7 @@ using Atlas.SearchTracking.Common.DependencyInjection;
 using Atlas.SearchTracking.Common.Dispatchers;
 using Atlas.SearchTracking.Common.Settings.ServiceBus;
 using Azure.Messaging.ServiceBus;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
@@ -31,8 +34,25 @@ public static class Startup
             OptionsReaderFor<NotificationsServiceBusSettings>(),
             OptionsReaderFor<AzureStorageSettings>(),
             OptionsReaderFor<GenotypeImputationSettings>(),
+            OptionsReaderFor<PrecomputedGenotypeSetSettings>(),
             ConnectionStringReader("MatchPredictionSql")
         );
+
+        // Container Apps do not set a cloud role name, so without this the worker's telemetry has no role name in Application Insights.
+        services.AddSingleton<ITelemetryInitializer>(sp =>
+            new CloudRoleNameTelemetryInitializer(sp.GetRequiredService<IOptions<ApplicationInsightsSettings>>().Value.CloudRoleName)
+        );
+
+        // Search reads and stores precomputed donor genotype sets in the transient matching databases (ATL-221).
+        // After RegisterMatchPredictionAlgorithm, whose no-op reader and writer this replaces.
+        services.RegisterPrecomputedDonorGenotypeSetAccess(
+            ConnectionStringReader("MatchingPersistentSql"),
+            ConnectionStringReader("MatchingTransientASql"),
+            ConnectionStringReader("MatchingTransientBSql")
+        );
+
+        // This app caches HLA Metadata Dictionary data, so it has to be told when the dictionary is recreated.
+        services.RegisterHlaMetadataDictionaryCacheInvalidation();
 
         services.RegisterMatchPredictionRequester(
             OptionsReaderFor<MessagingServiceBusSettings>(),

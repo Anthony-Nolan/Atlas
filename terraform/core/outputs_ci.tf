@@ -105,6 +105,10 @@ output "match-prediction-container-app-name" {
   value = module.match_prediction.container_app.name
 }
 
+output "matching-precompute-worker-container-app-name" {
+  value = module.matching_algorithm.precompute_worker_container_app.name
+}
+
 output "container-app-environment-name" {
   value = azurerm_container_app_environment.atlas.name
 }

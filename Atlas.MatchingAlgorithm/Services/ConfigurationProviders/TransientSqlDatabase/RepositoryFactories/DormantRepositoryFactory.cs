@@ -2,6 +2,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
+using Atlas.MatchingAlgorithm.Data.Repositories.Precompute;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders;
 
 namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories
@@ -11,6 +12,12 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
         IDonorImportRepository GetDonorImportRepository();
         IDataRefreshRepository GetDataRefreshRepository();
         IDonorManagementLogRepository GetDonorManagementLogRepository();
+
+        /// <summary>
+        /// For the donor genotype precomputation stage of the data refresh. The workers and the sweeps take the database
+        /// from the refresh record, so they use <see cref="IStaticallyChosenDatabaseRepositoryFactory"/> instead.
+        /// </summary>
+        IDonorGenotypePrecomputationRepository GetDonorGenotypePrecomputationRepository();
     }
 
     public class DormantRepositoryFactory : TransientRepositoryFactoryBase, IDormantRepositoryFactory
@@ -38,6 +45,12 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
         public IDonorManagementLogRepository GetDonorManagementLogRepository()
         {
             return new DonorManagementLogRepository(ConnectionStringProvider);
+        }
+
+        /// <inheritdoc />
+        public IDonorGenotypePrecomputationRepository GetDonorGenotypePrecomputationRepository()
+        {
+            return new DonorGenotypePrecomputationRepository(ConnectionStringProvider);
         }
     }
 }

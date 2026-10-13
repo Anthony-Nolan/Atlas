@@ -60,7 +60,7 @@ Atlas can be configured to automatically re-run the data refresh process as soon
 (b) If this installation of Atlas has opted to disable the auto-run refresh - in this case manual will be the only way to trigger this job
     - An example reason to maintain manual control would be to ensure that haplotype frequency nomenclature and matching nomenclature are updated simultaneously
     
-To manually trigger the Job, call the `SubmitDataRefreshRequestManual` HTTP Azure function, on the Matching Algorithm Functions App.
+To manually trigger the Job, call the `SubmitDataRefreshRequestManual` HTTP Azure function, on the Data Refresh Functions App (`DATA-REFRESH-FUNCTION`).
 Configuration options are available as per the model `DataRefreshRequest`
 
 ### In the case of the refresh job server dying
@@ -84,14 +84,61 @@ If request replay fails and Application Insights shows the exception: "Exception
 then find the record for your data refresh attempt with the shared db table, `[MatchingAlgorithmPersistent].[DataRefreshHistory]` and set value of `[RefreshLastContinuedUtc]` to `NULL`.
 This will allow the job to continue from where it left off.
 
-##### Clearing a stale lease
+##### HLA nomenclature version and HLA Metadata Dictionary snapshot
+
+Each run records two values in `[MatchingAlgorithmPersistent].[DataRefreshHistory]`:
+
+- `HlaNomenclatureVersion`: the HLA nomenclature version of the run. It is read from WMDA once, and recorded before
+  the HLA Metadata Dictionary is recreated.
+- `HlaMetadataDictionarySnapshotUtc`: the time, in UTC, that identifies the HLA Metadata Dictionary tables the run
+  created. Every table of the run ends its name with this time, in the format `yyyyMMddHHmmssfff`. It is recorded when
+  the `MetadataDictionaryRefresh` stage completes. It is empty for runs from before this value was recorded.
+
+A continued run keeps both values. It does not read the version from WMDA again, even if WMDA has a newer version.
+If the run stopped while the dictionary was being recreated, the next attempt recreates it again under the recorded
+version, and records the snapshot of that last recreation.
+
+##### Stale leases, and how they clear themselves
 
 Only one invocation may process a refresh record at a time, enforced by a lease held on the record. A replayed
 message is refused while that lease is held, and completes without running any stage. If the server died, the
 lease was never released, so it remains valid for up to `DataRefresh:LeaseDurationMinutes` (30 by default)
 after the last renewal.
 
-Either wait for it to expire, or - **only if you are certain the original process is gone** - clear it:
+**This recovers on its own, and normally needs no intervention.** The `RecoverStalledDataRefreshes` timer
+function sweeps for records that are still open, hold no live lease, and have shown no sign of life for
+`DataRefresh:WatchdogGraceDurationMinutes` (60 by default), and publishes a fresh request for each. Whichever
+invocation then claims the record resumes it from its last completed stage. At the default settings a record
+abandoned by a dead worker is picked back up within roughly 90 to 105 minutes of its last lease renewal: the
+30 minute lease expiry, plus the 60 minute grace, plus up to one sweep interval
+(`DataRefresh:WatchdogCronSchedule`, every 15 minutes by default).
+
+It also covers the two cases a redelivery cannot. A replay refused by the lease is *consumed* - completed, not
+dead-lettered - so there may be nothing left to replay; and a request message can be lost before it is ever
+delivered. Neither leaves a live lease behind, so both look the same to the sweep as any other stall.
+
+Each recovery logs an Application Insights **event** named `Data refresh stall auto-recovered`, carrying the
+record id. Nothing else emits it, so it is worth alerting on: a record recovered repeatedly is failing for some
+reason the retry cannot fix, and wants investigating rather than leaving to the sweep.
+
+##### Intervening before the watchdog does
+
+Only needed if you cannot wait out the grace period, or if the watchdog itself is not running. To check the
+latter, look at the `RecoverStalledDataRefreshes` function's own invocation and exception telemetry in
+Application Insights. Do not go by the recovery event above: it fires only when a stall is actually found, so
+its absence is the ordinary healthy state and says nothing about whether the sweep is running.
+
+Publish a request to the `data-refresh-requests` topic yourself:
+
+```json
+{ "DataRefreshRecordId": <record id> }
+```
+
+The job then continues from its last completed stage, unlike (b), which marks the record failed so that the
+next refresh starts from scratch.
+
+If the record still holds a live lease, that request will be refused, and - **only if you are certain the
+original process is gone** - the lease has to be cleared first:
 
 ```sql
 UPDATE [MatchingAlgorithmPersistent].[DataRefreshHistory]
@@ -102,20 +149,14 @@ WHERE Id = <record id>
 Clearing a live lease lets two refreshes run against one record and the same transient database, each
 independently deciding which stages to skip.
 
-Note that a refused replay is *consumed* - the message is completed, not dead-lettered - so there may be
-nothing left to replay. If so, publish one to the `data-refresh-requests` topic:
-
-```json
-{ "DataRefreshRecordId": <record id> }
-```
-
-The job then continues from its last completed stage, unlike (b), which marks the record failed so that the
-next refresh starts from scratch.
+Note that clearing the lease alone does not hand the record to the watchdog any sooner: the sweep also requires
+the record to have been idle for the whole grace period, measured from `RefreshLastContinuedUtc`. Publishing the
+request is what recovers it immediately.
 
 #### (b) Manual cleanup
  
 If you prefer not to continue a refresh, any live request messages must be purged from the `matching-algorithm` subscription, and teardown performed.
-Teardown can either be done entirely manually, or the `RunDataRefreshCleanup` function can be run, which performs the described steps.
+Teardown can either be done entirely manually, or the `RunDataRefreshCleanup` function (on the Data Refresh Functions App) can be run, which performs the described steps.
  
 If a refresh stalls locally, you can likely ignore the infrastructure part of this checklist.
 
@@ -128,6 +169,228 @@ If a refresh stalls locally, you can likely ignore the infrastructure part of th
   - Indexes may need manually adding to the hla tables, if the job crashed between dropping indexes and recreating, it may fail on future runs until they are re-added
   - The latest entry in the `DataRefreshHistory` table will not be marked as complete, and no future refresh jobs will run. It should be manually marked as failed, and an end date added.
     - If the `RunDataRefreshCleanup` function was used for infrastructure cleanup, this will have been covered by that function
+  - The donor genotype precomputation run of the record must be cancelled, so that the workers stop.
+    - `RunDataRefreshCleanup` does this. If you clean up by hand, use the SQL in [When the refresh fails](#when-the-refresh-fails).
+
+### Donor genotype precomputation (stage 65)
+
+Stage 65 stores the imputed genotype sets of all donors. It sends the work to the precomputation workers, and waits
+until they have done it. On a full donor set, the stage can run for many hours. For how the stage works and its
+settings, see [the Matching Algorithm README](README_MatchingAlgorithm.md#donor-genotype-precomputation-data-refresh-stage-65).
+
+#### Normal progress
+
+- The stage, the timers and the workers log to Application Insights with the prefix `DONOR GENOTYPE PRECOMPUTATION:`.
+- After the build, one trace gives the count of donors, groups and batches, and the time of each build step.
+- While the stage waits, it logs the count of batches in each status every `PollIntervalSeconds`, for example
+  `1200 of 4000 batches done`. This count must go up.
+- The workers send metrics for each batch: `DonorGenotypePrecomputation.BatchDurationMs`,
+  `DonorGenotypePrecomputation.BatchComputedGroupCount` and `DonorGenotypePrecomputation.BatchFrequencySetCount`
+  (`customMetrics | where name startswith "DonorGenotypePrecomputation."`).
+- The number of worker replicas follows the count of messages on the `precomputation-worker` subscription.
+- When the stage is complete, the column `DonorGenotypePrecomputationCompleted` of the refresh record gets a value.
+
+#### Alert: "Data refresh donor genotype precomputation has stalled"
+
+High priority. No batch has finished for `StallAlertMinutes`, and the data refresh still waits. The stage sends one
+alert for each stall. When a batch finishes again, it logs `Batches of run ... finish again`.
+
+Do these checks:
+
+1. Make sure that the workers run. Look at the replicas of the worker Container App and at their logs. A worker starts
+   also when no refresh record is open. For each message, it reads the record that the message names. If it cannot
+   read the persistent database, it abandons the message and logs `could not be finished`.
+2. Look at the `precomputation-worker` subscription:
+   - Messages wait, but no worker takes them: the problem is in the workers.
+   - No message waits, and batches stay `Requested`: the messages are lost. See [A lost message](#a-lost-message).
+3. Look at the dead-letter queue of the subscription. See [The dead-letter queue](#the-dead-letter-queue).
+4. Make sure that the timer functions of the Data Refresh app run: `FinaliseCompletedPrecomputationRuns`,
+   `MarkAbandonedPrecomputationBatches` and `RequeueFailedPrecomputationBatches`. Look at their invocations in
+   Application Insights. If every batch is `ResultsReceived` or `PermanentlyFailed`, but the run is still `Running`,
+   the finalise timer does not run.
+5. Batches that stay `InProgress`: a worker that stopped keeps its batch until the lease expires
+   (`PrecomputeWorker:BatchLeaseMinutes`, 60 by default). Then the timers send the batch again.
+
+Use the [SQL for support](#sql-for-support) to see the batches.
+
+#### Alert: "Data refresh donor genotype precomputation failed for N donor(s)"
+
+The run is complete, and some donors have no stored genotype set for one or more combinations of loci. **The data
+refresh continued.** The alert gives the counts, the threshold (`DataRefresh:Precompute:MaxFailedDonorFraction`), and
+up to 10 sample errors: the first failure of each different message.
+
+- Medium priority: the failed donors are at or below the threshold.
+- High priority: the failed donors are above the threshold. Find the cause before the next refresh.
+
+Read the sample errors. Usual causes:
+
+- An HLA typing that the HLA Metadata Dictionary does not accept. Stage 50 usually reports the same donors in its own
+  failed-donors alert.
+- No haplotype frequency set for the registry and ethnicity, and no global set.
+- An outage that lasted for all the retries of a batch. These batches are `PermanentlyFailed`.
+
+The stage removes the groups and their donors (the staging data) after it sends this alert. So the failed groups and
+the failed donors of the [SQL for support](#sql-for-support) are available only while the stage runs. After that, find
+the donors that have no stored set with the last query of that section.
+
+The refresh does not compute these donors again. An update of a donor computes its sets again, and so does the next
+full data refresh.
+
+#### SQL for support
+
+Run the persistent database query first. Run the other queries on the transient database of the refresh record: the
+`Database` column gives `DatabaseA` or `DatabaseB`.
+
+```sql
+-- Persistent database: the open refresh record, and the stages that it has completed.
+SELECT Id, [Database], HlaNomenclatureVersion, RefreshRequestedUtc, RefreshLastContinuedUtc,
+       IndexRecreationCompleted, DonorGenotypePrecomputationCompleted, DatabaseScalingTearDownCompleted
+FROM [MatchingAlgorithmPersistent].[DataRefreshHistory]
+WHERE RefreshEndUtc IS NULL
+```
+
+```sql
+-- The run of the record. The stage still waits while the record is open, DonorGenotypePrecomputationCompleted is
+-- NULL, and the run is Building or Running. Building: the build runs. Running: the workers compute the batches.
+SELECT Id, Status, TotalDonorCount, TotalGroupCount, TotalBatchCount, GroupsPerBatch, CreatedUtc, StatusDateUtc, CompletedUtc
+FROM DonorGenotypePrecomputationRuns
+WHERE DataRefreshRecordId = <record id>
+```
+
+```sql
+-- The batches in each status.
+SELECT Status, COUNT(*) AS Batches, SUM(FailedGroupCount) AS FailedGroups, MIN(StatusDateUtc) AS OldestStatusDateUtc
+FROM DonorGenotypePrecomputationBatches
+WHERE RunId = <run id>
+GROUP BY Status
+```
+
+```sql
+-- The batches that failed, or that have failed groups. FailureException has the full error.
+SELECT Id, BatchNumber, Status, RetryCount, FailedGroupCount, FailureMessage, LeaseExpiresUtc, DispatchedUtc, StatusDateUtc
+FROM DonorGenotypePrecomputationBatches
+WHERE RunId = <run id>
+  AND (Status IN ('Failed', 'Abandoned', 'PermanentlyFailed') OR FailedGroupCount > 0)
+ORDER BY Id
+```
+
+```sql
+-- The failed groups of the batches with results. RepresentativeDonorId is the DonorId of the donor that the worker used.
+SELECT b.Id AS BatchId, g.Id AS GroupId, g.AllowedLociKey, g.RepresentativeDonorId, g.DonorCount, g.FailureMessage
+FROM DonorGenotypePrecomputationBatches b
+INNER JOIN DonorGenotypePrecomputationGroups g ON g.Id BETWEEN b.FirstGroupId AND b.LastGroupId
+WHERE b.RunId = <run id>
+  AND b.Status = 'ResultsReceived'
+  AND b.FailedGroupCount > 0
+  AND g.RunId = <run id>
+  AND g.SubjectGenotypeSetValueId IS NULL
+```
+
+```sql
+-- The failed donors, against the threshold. This is the count of the failure alert: all the donors of a permanently
+-- failed batch, and the donors of the failed groups of a batch with results. Each donor counts one time.
+WITH FailedGroups AS (
+    SELECT g.Id AS GroupId
+    FROM DonorGenotypePrecomputationBatches b
+    INNER JOIN DonorGenotypePrecomputationGroups g ON g.Id BETWEEN b.FirstGroupId AND b.LastGroupId
+    WHERE b.RunId = <run id>
+      AND g.RunId = <run id>
+      AND (b.Status = 'PermanentlyFailed'
+           OR (b.Status = 'ResultsReceived' AND b.FailedGroupCount > 0 AND g.SubjectGenotypeSetValueId IS NULL))
+),
+FailedDonors AS (
+    SELECT COUNT(DISTINCT gd.DonorId) AS FailedDonorCount
+    FROM FailedGroups fg
+    INNER JOIN DonorGenotypePrecomputationGroupDonors gd ON gd.GroupId = fg.GroupId
+)
+SELECT fd.FailedDonorCount, r.TotalDonorCount,
+       CAST(fd.FailedDonorCount AS float) / NULLIF(r.TotalDonorCount, 0) AS FailedDonorFraction
+FROM DonorGenotypePrecomputationRuns r
+CROSS JOIN FailedDonors fd
+WHERE r.Id = <run id>
+```
+
+```sql
+-- After the stage: the donors that have no stored set for one or more of the four combinations of loci. This reads
+-- every donor, so it can take some minutes on a full donor set.
+SELECT d.DonorId
+FROM Donors d
+WHERE (SELECT COUNT(*) FROM DonorSubjectGenotypeSets s WHERE s.DonorId = d.DonorId) < 4
+```
+
+#### A lost message
+
+A batch is `Requested` when its message is on the topic. No timer moves a `Requested` batch, so a batch whose message
+is gone stops the stage. The stall alert then tells you.
+
+A message is lost when all of these are true:
+
+- Batches of the run stay `Requested`.
+- The active message count of the `precomputation-worker` subscription is 0. (The count includes the messages that a
+  worker holds.)
+- The dead-letter queue of the subscription is empty.
+
+Then mark these batches as abandoned. The requeue timer sends each batch again, or marks it as permanently failed when
+it has no retries left.
+
+```sql
+-- Transient database of the refresh record.
+UPDATE DonorGenotypePrecomputationBatches
+SET Status = 'Abandoned', FailureMessage = 'The message was lost. Abandoned by support.', StatusDateUtc = SYSUTCDATETIME()
+WHERE RunId = <run id> AND Status = 'Requested'
+```
+
+#### The dead-letter queue
+
+The `AbandonDeadLetteredPrecomputationBatches` function of the Data Refresh app reads the dead-letter queue of the
+`precomputation-worker` subscription. For each message, it marks the batch as abandoned, and the requeue timer sends
+the batch again. So the dead-letter queue is normally empty.
+
+- A message that names no batch is removed, and the function logs the error
+  `A dead-lettered batch message names no batch`. That batch stays `Requested`: see [A lost message](#a-lost-message).
+- Messages that stay in the dead-letter queue show that the function does not run. Look at its invocations and errors
+  in Application Insights.
+
+#### When the refresh fails
+
+When the refresh fails, it closes its record, then cancels the precomputation run (status `Cancelled`) and removes the
+staging data. The workers skip the messages that are left on the subscription, because their record is closed.
+`RunDataRefreshCleanup` does the same for each record that it closes.
+
+- A temporary database error while the stage waits does not stop the stage. The stage logs the warning
+  `could not read run`, and reads the run again at the next poll. When the polls fail for
+  `DataRefresh:Precompute:StallAlertMinutes`, the stage fails.
+- After a SQL error, the refresh is not closed. The refresh scales the database down to the dormant size, and Service
+  Bus delivers the refresh request again. Stage 30 then scales the database up, and stage 65 continues its run. While
+  the database scales, batches can fail. The requeue timer sends them again.
+- If the cancel fails, the Data Refresh app logs the error `could not be cancelled`. The workers still skip the
+  messages of the closed record: only the batches that they took before it closed can finish. Cancel the run by hand,
+  so that its status is correct, and remove the staging data. Do this on the transient database of the record:
+
+```sql
+UPDATE DonorGenotypePrecomputationRuns
+SET Status = 'Cancelled', StatusDateUtc = SYSUTCDATETIME()
+WHERE DataRefreshRecordId = <record id> AND Status IN ('Building', 'Running');
+
+TRUNCATE TABLE DonorGenotypePrecomputationGroupDonors;
+TRUNCATE TABLE DonorGenotypePrecomputationGroups;
+```
+
+A cancelled run cannot continue. Request a new data refresh. Its data deletion stage removes all the precomputation
+tables of the database.
+
+#### When the refresh invocation ends during stage 65
+
+The `functionTimeout` of the Data Refresh app (`host.json`) is 2 days, for the whole refresh. A release, a restart or a
+platform event can also end the invocation. Stage 65 can continue after this:
+
+1. The lease of the record expires, and the watchdog requests the refresh again. See
+   [Stale leases, and how they clear themselves](#stale-leases-and-how-they-clear-themselves). This takes about 90 to
+   105 minutes.
+2. Stage 30 runs again. The database is still at the refresh size, so it does not change.
+3. Stage 65 continues from its run. It does not build again. It sends the pending batches, and waits again.
+
+The workers and the timers continue while no invocation runs, so little work is lost.
 
 
 ## Search

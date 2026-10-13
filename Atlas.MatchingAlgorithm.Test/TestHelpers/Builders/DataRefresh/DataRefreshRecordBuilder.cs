@@ -36,6 +36,7 @@ public static class DataRefreshRecordBuilder
             DataRefreshStage.DonorImport => builder.With(r => r.DonorImportCompleted, DateTime.UtcNow),
             DataRefreshStage.DonorHlaProcessing => builder.With(r => r.DonorHlaProcessingCompleted, DateTime.UtcNow),
             DataRefreshStage.IndexRecreation => builder.With(r => r.IndexRecreationCompleted, DateTime.UtcNow),
+            DataRefreshStage.DonorGenotypePrecomputation => builder.With(r => r.DonorGenotypePrecomputationCompleted, DateTime.UtcNow),
             DataRefreshStage.DatabaseScalingTearDown => builder.With(r => r.DatabaseScalingTearDownCompleted, DateTime.UtcNow),
             DataRefreshStage.QueuedDonorUpdateProcessing => builder.With(r => r.QueuedDonorUpdatesCompleted, DateTime.UtcNow),
             _ => throw new ArgumentOutOfRangeException(nameof(stage))

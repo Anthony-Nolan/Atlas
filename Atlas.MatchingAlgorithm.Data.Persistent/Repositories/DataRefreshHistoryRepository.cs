@@ -17,7 +17,21 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         /// <returns>The HLA nomenclature version used in the most recently completed refresh job</returns>
         string GetActiveHlaNomenclatureVersion();
 
+        /// <returns>
+        /// The id, database and HLA nomenclature version of the most recently completed refresh job, all read from the
+        /// same record; or null if no refresh job has completed yet.
+        /// </returns>
+        ActiveDataRefreshRecord GetActiveRecord();
+
         IEnumerable<DataRefreshRecord> GetIncompleteRefreshJobs();
+
+        /// <returns>The transient database of each open refresh record, by record id.</returns>
+        /// <remarks>
+        /// Reads only the id and the database of each record. So a process whose model has a column that the database does
+        /// not have yet - a new release that runs before its migration - can still call it.
+        /// </remarks>
+        Task<IReadOnlyDictionary<int, TransientDatabase>> GetIncompleteRefreshJobDatabases();
+
         Task<int> Create(DataRefreshRecord dataRefreshRecord);
 
         Task<DataRefreshRecord> GetRecord(int dataRefreshRecordId);
@@ -26,6 +40,13 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         Task UpdateSuccessFlag(int recordId, bool wasSuccess);
         Task UpdateLastSafelyProcessedDonor(int recordId, int donorId);
         Task MarkStageAsComplete(DataRefreshRecord record, DataRefreshStage stage);
+
+        /// <summary>
+        /// Records the HLA Metadata Dictionary snapshot the run created, and marks the
+        /// <see cref="DataRefreshStage.MetadataDictionaryRefresh"/> stage as complete, in one write: a record never shows
+        /// the stage as complete without the snapshot it produced.
+        /// </summary>
+        Task MarkHlaMetadataDictionaryRefreshAsComplete(DataRefreshRecord record, DateTime snapshotUtc);
 
         /// <summary>
         /// Attempts to take the run-level lease on a record, so that only one invocation processes it at a time.
@@ -51,6 +72,25 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         /// </summary>
         /// <returns>False if this owner had already been fenced, and so released nothing.</returns>
         Task<bool> ReleaseRefreshLease(int recordId, Guid owner);
+
+        /// <summary>
+        /// Finds refresh records that are still open but that nothing is working on, i.e. that have stalled and will
+        /// never complete unless they are re-requested.
+        /// </summary>
+        /// <remarks>
+        /// The lease clause is deliberately phrased the way <see cref="TryClaimRefreshLease"/> decides claimability,
+        /// rather than in terms of the expiry alone. That call reads a set owner with no expiry as still held, since
+        /// SQL makes the expiry comparison UNKNOWN; keying off the expiry here instead would re-request such a record
+        /// on every sweep, forever, while no invocation could ever claim it.
+        ///
+        /// The idle check is the other non-obvious clause. An absent <see cref="DataRefreshRecord.LeaseOwner"/> is not by
+        /// itself evidence of a stall: a record created moments ago, whose request message is still in flight, has yet
+        /// to be leased, and so has one whose run has just failed and released its lease while Service Bus redelivers
+        /// the request. Both recover unaided. Requiring the record to have been idle for the whole grace period as well
+        /// excludes them, and catches the one stall no lease can reveal - a request message that was never delivered.
+        /// </remarks>
+        /// <param name="graceCutoffUtc">The record must have been idle since before this time to count as stalled.</param>
+        Task<IReadOnlyCollection<int>> GetStalledRefreshRecordIds(DateTime graceCutoffUtc);
     }
 
     public class DataRefreshHistoryRepository : IDataRefreshHistoryRepository
@@ -75,9 +115,32 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
             return lastCompletedRecord?.HlaNomenclatureVersion;
         }
 
+        public ActiveDataRefreshRecord GetActiveRecord()
+        {
+            var lastCompletedRecord = GetLastSuccessfulRecord();
+
+            return lastCompletedRecord == null
+                ? null
+                : new ActiveDataRefreshRecord(
+                    lastCompletedRecord.Id,
+                    lastCompletedRecord.Database.ParseToEnum<TransientDatabase>(),
+                    lastCompletedRecord.HlaNomenclatureVersion);
+        }
+
         public IEnumerable<DataRefreshRecord> GetIncompleteRefreshJobs()
         {
             return Context.DataRefreshRecords.Where(r => r.RefreshEndUtc == null);
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyDictionary<int, TransientDatabase>> GetIncompleteRefreshJobDatabases()
+        {
+            var records = await Context.DataRefreshRecords
+                .Where(r => r.RefreshEndUtc == null)
+                .Select(r => new { r.Id, r.Database })
+                .ToListAsync();
+
+            return records.ToDictionary(r => r.Id, r => r.Database.ParseToEnum<TransientDatabase>());
         }
 
         public async Task<int> Create(DataRefreshRecord dataRefreshRecord)
@@ -126,6 +189,14 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         }
 
         /// <inheritdoc />
+        public async Task MarkHlaMetadataDictionaryRefreshAsComplete(DataRefreshRecord record, DateTime snapshotUtc)
+        {
+            record.HlaMetadataDictionarySnapshotUtc = snapshotUtc;
+            record.SetStageCompletionTime(DataRefreshStage.MetadataDictionaryRefresh, DateTime.UtcNow);
+            await Context.SaveChangesAsync();
+        }
+
+        /// <inheritdoc />
         public async Task<bool> TryClaimRefreshLease(int recordId, Guid owner, DateTime nowUtc, TimeSpan ttl)
         {
             var expiry = nowUtc + ttl;
@@ -162,6 +233,17 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
                     .SetProperty(r => r.LeaseExpiresUtc, (DateTime?) null));
 
             return rowsUpdated == 1;
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyCollection<int>> GetStalledRefreshRecordIds(DateTime graceCutoffUtc)
+        {
+            return await Context.DataRefreshRecords
+                .Where(r => r.RefreshEndUtc == null
+                            && (r.LeaseOwner == null || r.LeaseExpiresUtc < graceCutoffUtc)
+                            && (r.RefreshLastContinuedUtc ?? r.RefreshRequestedUtc) < graceCutoffUtc)
+                .Select(r => r.Id)
+                .ToListAsync();
         }
 
         public async Task<DataRefreshRecord> GetRecord(int recordId)

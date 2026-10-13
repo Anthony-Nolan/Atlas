@@ -25,6 +25,11 @@ configuration options, and when you may want to use them.
 **FORMATTING NOTE**: All Terraform settings use `_` as a delimiter. Functions app setting names use `:`, and `__`. In this document both have been replaced with `-`, to allow Github's markdown renderer to display these tables in a 
 readable manner.
 
+**SECRETS NOTE**: Settings that carry a shared secret - the storage account connection string and the Service Bus
+connection strings - are not set to a literal value. Their value is an `@Microsoft.KeyVault(...)` reference, resolved at
+runtime from the environment's Key Vault. To change one of these, change the secret in the vault rather than the app
+setting; see [Key Vault bootstrap](./README_Deployment.md#key-vault-bootstrap).
+
 ## Feature functionality
 
 | Terraform Setting          | Functions App Name | Functions App Setting Name | Description |
@@ -32,7 +37,7 @@ readable manner.
 | IP-RESTRICTION-SETTINGS | all | N/A | Allows restriction of functions app access to specified IPs only. |
 | LOG-ANALYTICS-DAILY-QUOTA-GB | N/A | N/A | The Log Analytics workspace daily quota for ingestion in GB. Default is -1 (unlimited). |
 | LOG-ANALYTICS-SKU | N/A | N/A | Log Analytics Workspace SKU. Default is `Pay As You Go`. |
-| MATCHING-DATA-REFRESH-AUTO-RUN | ATLAS-MATCHING-ALGORITHM-FUNCTIONS | DataRefresh-AutoRunDataRefresh | When set, the data refresh will automatically run once new HLA nomenclature is detected. This can be disabled to allow manual control on when new nomenclature is imported. |
+| MATCHING-DATA-REFRESH-AUTO-RUN | DATA-REFRESH-FUNCTION | DataRefresh-AutoRunDataRefresh | When set, the data refresh will automatically run once new HLA nomenclature is detected. This can be disabled to allow manual control on when new nomenclature is imported. |
 
 ## Donor Import
 Settings for the donor import app (`ATLAS-DONOR-IMPORT-FUNCTIONS`).
@@ -63,8 +68,11 @@ infrequently runs easy searches)
 
 | Terraform Setting          | Functions App Name                 | Functions App Setting Name | Description                |
 | -------------------------- | ------------------                 | -------------------------- | -----------                | 
-| MATCHING-DATA-REFRESH-DB-SIZE-DORMANT | ATLAS-MATCHING-ALGORITHM-FUNCTIONS | DataRefresh-DormantDatabaseSize | The size of database used for the dormant (inactive) matching database. Recommended to be the lowest possible tier, likely S0, to save on hosting costs. |
-| MATCHING-DATA-REFRESH-DB-SIZE-REFRESH | ATLAS-MATCHING-ALGORITHM-FUNCTIONS | DataRefresh-DormantDatabaseSize | The size of database used for the matching database during the data refresh. Recommended to be fairly powerful to facilitate a fast data refresh. Premium tier recommended over Standard, for improved IO performance. |
+| MATCHING-DATA-REFRESH-DB-SIZE-DORMANT | DATA-REFRESH-FUNCTION | DataRefresh-DormantDatabaseSize | The size of database used for the dormant (inactive) matching database. Recommended to be the lowest possible tier, likely S0, to save on hosting costs. |
+| MATCHING-DATA-REFRESH-DB-SIZE-REFRESH | DATA-REFRESH-FUNCTION | DataRefresh-RefreshDatabaseSize | The size of database used for the matching database during the data refresh. Recommended to be fairly powerful to facilitate a fast data refresh. Premium tier recommended over Standard, for improved IO performance. |
+| MATCHING-PRECOMPUTE-WORKER-CONTAINER-MAX-REPLICAS | atlas-precompute-ca (Container App) | N/A | How many replicas of the donor genotype precompute worker can run at once during the precomputation stage of the data refresh. The minimum is always 0, so the worker costs nothing outside a refresh. More replicas finish the stage sooner, but each one adds load on the database being refreshed - keep `MATCHING-PRECOMPUTE-WORKER-MAX-CONCURRENT-CALLS` times this within that database's worker and session limits. |
+| MATCHING-PRECOMPUTE-WORKER-MAX-CONCURRENT-CALLS | atlas-precompute-ca (Container App) | PrecomputeWorker__MaxConcurrentCalls | How many precomputation batches each worker replica processes at once. Recommended to stay at 1, as imputation is memory intensive; scale out with replicas instead. |
+| MATCHING-PRECOMPUTE-WORKER-BATCH-LEASE-MINUTES, MATCHING-PRECOMPUTE-WORKER-MAX-AUTO-LOCK-RENEWAL-MINUTES | atlas-precompute-ca (Container App) | PrecomputeWorker__BatchLeaseMinutes, PrecomputeWorker__MaxAutoLockRenewalMinutes | A precomputation batch must finish within both, or it is given to another worker and computed twice. Keep the lease no greater than the lock renewal, and raise both together if batches take longer. |
 
 ### Shared 
 
@@ -89,7 +97,7 @@ Most Atlas functions apps run on a shared service plan, which will also impact t
 | MATCHING-MAX-CONCURRENT-PROCESSES-PER-INSTANCE | ATLAS-MATCHING-ALGORITHM-FUNCTIONS |AzureFunctionsJobHost--extensions--serviceBus--messageHandlerOptions--maxConcurrentCalls|Determines how many searches can run on a single instance of the matching algorithm. Higher values will improve throughput without increasing cost, but will decrease performance when multiple searches are running on the same instance, and increase [load on the matching database](#database-connection-limit). In environments with a very large number of donors, memory will be a significant concern, and this concurrency should be  kept fairly low (e.g. 1-2) |
 | MATCHING-MAX-SCALE-OUT | ATLAS-MATCHING-ALGORITHM-FUNCTIONS | WEBSITE-MAX-DYNAMIC-APPLICATION-SCALE-OUT | How many instances of the matching algorithm can be run at once? These will automatically scale up with load, up to this limit. A higher value here means higher throughput with less impact on individual search times, though comes with increased running cost, and increased [load on the matching database](#database-connection-limit) |
 | MATCHING-DATABASE-TRANSIENT-TIMEOUT | ATLAS-MATCHING-ALGORITHM-FUNCTIONS | SqlA/SqlB | Timeout for any individual query of the matching database. Default of 30 minutes should be enough in all but the largest Atlas installations, which may require slightly longer timeouts. **WARNING** If the matching database is overload, e.g. via [exceeding the connection limit](#database-connection-limit) | 
-| MATCHING-DATA-REFRESH-DB-SIZE-ACTIVE | ATLAS-MATCHING-ALGORITHM-FUNCTIONS | DataRefresh-ActiveDatabaseSize | Determines the size (in scale, not bytes) of the active matching database. | 
+| MATCHING-DATA-REFRESH-DB-SIZE-ACTIVE | DATA-REFRESH-FUNCTION | DataRefresh-ActiveDatabaseSize | Determines the size (in scale, not bytes) of the active matching database. | 
 | REPEAT-SEARCH-MATCHING-MAX-CONCURRENT-PROCESSES-PER-INSTANCE | ATLAS-REPEAT-SEARCH-FUNCTION |AzureFunctionsJobHost--extensions--serviceBus--messageHandlerOptions--maxConcurrentCalls| Same as the similar setting above, but for the repeat search module. Note that when repeat searches are run concurrently with first time searches, the database should be able to handle the max concurrent load of *both* apps.  |
 | REPEAT-SEARCH-MATCHING-MAX-SCALE-OUT | ATLAS-REPEAT-SEARCH-FUNCTION | WEBSITE-MAX-DYNAMIC-APPLICATION-SCALE-OUT | Same as the similar setting above, but for the repeat search module. Note that when repeat searches are run concurrently with first time searches, the database should be able to handle the max concurrent load of *both* apps. |
 

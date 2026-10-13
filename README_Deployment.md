@@ -101,6 +101,52 @@ would require a manual weekly update of the `IP_RESTRICTION_SETTINGS` variable, 
 - All Atlas infrastructure is controlled via terraform scripts. If any specific naming or configuration changes are required for your installation, such changes should be made to the terraform scripts in 
 a fork of the repository - changing them manually in Azure will lead to the changes being reverted on the next deployment to that environment.
 
+### Key Vault bootstrap
+
+Secrets shared by more than one Atlas component are held in an Azure Key Vault, one per environment, named
+`an-<environment>-atlas-kv` (e.g. `an-dev-atlas-kv`) — the "an-" prefix is needed because Key Vault names are unique
+across all of Azure, not just this tenant, and `<environment>-atlas-kv` alone collided with an unrelated tenant's
+vault. The function apps read them through
+`@Microsoft.KeyVault(...)` app settings, authenticating with a shared user-assigned identity
+(`<environment>-atlas-id-functions`) that is granted **Key Vault Secrets User** on the vault.
+
+The vault uses Azure RBAC rather than access policies, which means nobody - including the principal that created the
+vault - has data-plane access unless it has been granted. Terraform grants itself **Key Vault Secrets Officer** so that
+it can manage the secrets it owns.
+
+Split of responsibility:
+
+| Secret | Managed by |
+| --- | --- |
+| `azure-storage-connection-string` | Terraform (derived from the storage account it owns) |
+| `servicebus-read-write-connection-string` | Terraform (derived from the Service Bus authorization rule it owns) |
+| `servicebus-read-only-connection-string` | Terraform |
+| `servicebus-write-only-connection-string` | Terraform |
+| `servicebus-manage-connection-string` | Terraform |
+| `azure-client-secret` | **Seeded by hand** - see below |
+
+`azure-client-secret` is the client secret of the app registration used by Atlas at runtime. Terraform never reads it,
+so that its value stays out of Terraform state; app settings reference it by vault and secret name instead. It must be
+seeded once per environment, after the first apply that creates the vault:
+
+```bash
+az keyvault secret set \
+  --vault-name an-<environment>-atlas-kv \
+  --name azure-client-secret \
+  --value "<the AZURE_CLIENT_SECRET release variable for that environment>"
+```
+
+To be able to run this, your object ID - or that of an AD group you belong to - must be listed in the
+`KEY_VAULT_SECRETS_OFFICER_OBJECTIDS` terraform variable; everything listed there is granted Key Vault Secrets Officer
+on the vault. The same applies if you want to run a `terraform plan` locally: the plan refreshes the secrets Terraform
+manages, and fails with a 403 if you cannot read them. If the list is left empty, only the deploy service principal
+that runs Terraform can write secrets.
+
+Rotating a hand-seeded secret is a matter of running the command above again. The platform caches resolved Key Vault
+references for up to 24 hours, so restart the function apps if the new value is needed immediately. Secrets that
+Terraform manages are rotated by the next apply, which updates the app setting to the new secret version and restarts
+the app automatically.
+
 ### Manual Azure Configuration (Post-terraform)
 
 Once terraform has created ATLAS resources for the first time, certain actions must be performed manually on these resources, as they are either not available or not recommended as part of the terraform scripting.
@@ -112,16 +158,40 @@ Once terraform has created ATLAS resources for the first time, certain actions m
 - Azure SQL Permissions
   - Service Accounts
     - Each service (e.g. matching) within ATLAS should have a service account created on the appropriate databases. The username and password for such accounts should then be set as a variable in the release pipeline.
-    - Passwords should be created by a Password Generator, such as <https://passwordsgenerator.net/>.Sensible generation settings might be:
-      - 16+ characters
-      - Upper, Lower, Numbers.
-      - Special characters should not be used.
-      - Exclude ambiguous letters.
-      - Exclude ambiguous Symbols (if using).
+    - Passwords should be generated locally with a cryptographically secure random number generator, not by a third-party password-generator
+      website — these are production database credentials, and a website has the value before you do. Either of the following produces a
+      compliant password:
+
+      ```bash
+      # bash / Git Bash
+      openssl rand -base64 64 | tr -dc 'A-Za-z0-9' | head -c 64; echo
+      ```
+
+      ```powershell
+      # PowerShell (works in both Windows PowerShell 5.1 and PowerShell 7+)
+      $bytes = [byte[]]::new(64)
+      [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
+      ([Convert]::ToBase64String($bytes) -replace '[^A-Za-z0-9]', '').Substring(0, 64)
+      ```
+
+      Both reduce the base64 alphabet to `A-Za-z0-9`, so every surviving character stays uniformly distributed (no modulo bias), and take the
+      first 64. The constraints they satisfy, and why those constraints exist:
+
+      - **64 characters.** 64 characters drawn from a 62-character alphabet is ~381 bits of entropy.
+      - **Upper, lower and numbers only — no special characters.** The password is interpolated through three layers before it reaches SQL
+        Server, and each is broken by a different character:
+        - the ADO.NET connection string assembled by terraform (`;`, `=`, `"`);
+        - the single-quoted SQL literal in `terraform/core/sql/createUsers/*.sql`, e.g. `WITH PASSWORD = '$(donorImportPassword)'` (`'`);
+        - PowerShell `$env:` expansion and `sqlcmd` `$(...)` variable substitution in `terraform/core/scripts/migrate_users.ps1` (`$`).
+      - **Check the generated value contains at least one digit, and re-run if it does not.** Azure SQL enforces password complexity: characters
+        from at least three of upper / lower / digits / symbols, and the password must not contain the account name
+        (see [Password policy](https://learn.microsoft.com/sql/relational-databases/security/password-policy#password-complexity)). With symbols
+        ruled out, all three of upper, lower and digits are required, and a random 64-character alphanumeric string contains no digit only about
+        one time in 77,000 — rare, but still worth checking.
     - By default, `db_datareader` and `db_datawriter` will be necessary for a given component to access its corresponding database(s)  
     - Note that the user for the matching component to access the *transient matching databases* (a and b) will need to be granted `db_owner` permission, as a `truncate table` command is used in the full data refresh, which requires elevated permissions
 
-    - To ensure this happens add a Powershell task to your azure release pipeline. This should run `/terraform-atlas-core/scripts/migrate_users.ps1`, passing in the relevant variables as environment variables.
+    - To ensure this happens add a Powershell task to your azure release pipeline. This should run `/terraform-atlas-core/scripts/migrate_users.ps1`, passing in the relevant variables as environment variables. Note that `terraform-atlas-core` is the name of the build artifact that `build-pipeline.yml` publishes `terraform/core` as, so that is the path on the release agent; in this repository the script itself lives at `terraform/core/scripts/migrate_users.ps1`.
     - This script will add appropriate roles to all accounts as listed in the table below. Note that it will not remove roles if they later should be revoked, so this should be done manually.
 
     Access Requirements:
@@ -202,3 +272,90 @@ This section details how to set up for such a case.
 - New release stages can be created within one Azure Devops release pipeline. This can be useful for ensuring the same build artifacts that were
 tested in a test environment are deployed to live
 - New service connections will need to be set up in Azure Devops for each resource group
+
+## Releasing the donor genotype precomputation (Data Refresh stage 65)
+
+Use this runbook one time in each environment: for the release that adds Data Refresh stage 65. For how the stage works,
+see [the Matching Algorithm README](README_MatchingAlgorithm.md#donor-genotype-precomputation-data-refresh-stage-65).
+For its alerts and the SQL for support, see [the Support README](README_Support.md#donor-genotype-precomputation-stage-65).
+
+### Before the release
+
+Do these steps before you release the code. The Terraform of [ATL-315](https://anthonynolan.atlassian.net/browse/ATL-315)
+does steps 2 to 4.
+
+1. **Search settings of the same release.** The release also has ATL-221: search reads and writes the stored genotype
+   sets. Apply the Terraform of [ATL-438](https://anthonynolan.atlassian.net/browse/ATL-438) first. It adds these
+   settings:
+   - The Match Prediction Worker (`Atlas.MatchPrediction.Worker`): the connection strings `MatchingPersistentSql`,
+     `MatchingTransientASql` and `MatchingTransientBSql`, and `Precompute:Mode`. Without the connection strings, the
+     worker cannot get to the matching databases.
+   - The Atlas Functions app: `MatchPrediction:Precompute:Mode`. The app already has its matching connection strings.
+   - Keep the mode `ForceLive` (the default) in both apps. For the modes, see
+     [the Match Prediction README](README_MatchPredictionAlgorithm.md#switching-it-on-and-off).
+2. **Service Bus.** Create the topic `donor-genotype-precomputation-requests` and its subscription `precomputation-worker`.
+   - Use a long message time to live. On a full donor set, a batch message can wait on the topic for many hours.
+   - The Data Refresh app reads the dead-letter queue of the subscription. If the subscription does not exist, that
+     function cannot start.
+3. **Worker.** Deploy the image of `Atlas.MatchingAlgorithm.PrecomputeWorker` to a Container App.
+   - Scale the Container App on the message count of the `precomputation-worker` subscription.
+   - Give it the settings of its `appsettings.json`: the connection strings `SqlA`, `SqlB`, `PersistentSql` and
+     `MatchPredictionSql`, `MessagingServiceBus:ConnectionString`, the storage of the HLA Metadata Dictionary and of the
+     MAC dictionary, Application Insights, `GenotypeImputation:*`, `HaplotypeFrequencySetCache:*` and
+     `PrecomputeWorker:*`.
+   - Keep `PrecomputeWorker:MaxConcurrentCalls` multiplied by the maximum replica count below the worker and session
+     limits of the transient database at the refresh size (`MATCHING_DATA_REFRESH_DB_SIZE_REFRESH`).
+4. **Data Refresh app settings.** Add `DataRefresh:Precompute:RequestsTopic`, `DataRefresh:Precompute:RequestsSubscription`,
+   `DataRefresh:Precompute:FinaliseRunsCronSchedule`, `DataRefresh:Precompute:AbandonBatchesCronSchedule` and
+   `DataRefresh:Precompute:RequeueBatchesCronSchedule`. These settings have no default. The timer and dead-letter
+   functions of stage 65 cannot start without them. The other `DataRefresh:Precompute:*` settings have defaults.
+   - Stage 80 also needs the Match Prediction settings of the Data Refresh app: `GenotypeImputation:*`,
+     `HaplotypeFrequencySetCache:*` and the connection string `MatchPredictionSql`. Terraform sets them.
+5. **Database size.** Stage 65 adds the stored genotype sets to the refreshed transient database. Make sure that
+   `MATCHING_DATABASE_MAX_SIZE_GB` (250 by default) allows for them, in addition to the matching data. If the database
+   reaches its maximum size, stage 65 fails, and so does the refresh.
+   [ATL-452](https://anthonynolan.atlassian.net/browse/ATL-452) sizes the databases and the tiers in Terraform.
+   - An estimate for about 44 million donors (a DEV copy of the live donors, October 2026), for each transient
+     database:
+     - About 377 GB at the end of the stage. `SubjectGenotypeSetValues` holds about 353 GB of this.
+     - About 367 GB stays after the stage, until the next refresh of that database. The stage truncates its two
+       group tables when the run completes.
+     - During a refresh, A and B together hold about 745 GB of sets: 367 GB in the active database and 377 GB in the
+       refreshing database.
+   - The estimate is a model of the row and page format. It is not a measurement. Measure the real size after the
+     first full refresh in a test environment.
+   - The tiers must allow the same size. The refresh tier and the active tier hold the sets. From the second refresh,
+     the dormant tier holds them too: the database that was active is scaled down, and keeps its sets until its next
+     refresh. For example, the Standard tiers S0 to S2 allow 250 GB at most, and S0 is the default dormant tier. A
+     scale-down to a tier that is too small fails.
+6. **Haplotype frequency sets.** Make sure that the haplotype frequency sets are imported, with a global set. If no set
+   applies to a donor, the donor fails stage 65.
+
+### Release steps
+
+1. **No data refresh in progress.** Make sure that no record in `[MatchingAlgorithmPersistent].[DataRefreshHistory]`
+   has `RefreshEndUtc` as `NULL`. If `DataRefresh:AutoRunDataRefresh` is on, make sure that no refresh starts during the
+   release.
+2. **Stop searches (optional).** Stage 65 does not need this step: it writes only to the dormant database, and the swap
+   at the end of the refresh is the same as for every refresh. Search does not need it either. Until the full data
+   refresh is complete, the active database has stored genotype sets for some donors only, and search computes the
+   other donors live, as it does today. In `ForceLive` mode (the default), search does not read the stored sets.
+3. **Release.** Apply Terraform, run the database migrations, and release the function apps and the worker image.
+   - Migrate the two transient databases (A and B) and the persistent database. The persistent database gets the
+     column `DonorGenotypePrecomputationCompleted`, which the new Data Refresh code needs.
+   - The new worker image can start before the migrations. It reads no database when it starts.
+4. **Full data refresh.** Trigger `SubmitDataRefreshRequestManual` with `forceDataRefresh` set to `true`.
+5. **Watch stage 65.** See [Normal progress](README_Support.md#normal-progress) in the Support README.
+   - The build trace gives the counts of donors, groups and batches, and the time of each build step.
+   - The count of done batches goes up, and the worker replicas scale out.
+   - If a stall alert comes, follow the Support README.
+   - If a failure alert comes, the refresh continues. Compare the failed-donor fraction with
+     `DataRefresh:Precompute:MaxFailedDonorFraction`, and with the failed donors that stage 50 reported. Find the
+     cause. Search computes the failed donors live.
+6. **Check the result.** The `notifications` topic reports the successful refresh, and the refresh record has a value in
+   `DonorGenotypePrecomputationCompleted`. Each donor has four rows in `DonorSubjectGenotypeSets`, except the failed
+   donors (see the last query of the [SQL for support](README_Support.md#sql-for-support)).
+7. **Turn searches back on**, if you stopped them in step 2.
+
+If the refresh fails, the active database does not change. Find the cause in the alerts, then request a new data
+refresh, or continue the refresh (see [the Support README](README_Support.md#data-refresh)).

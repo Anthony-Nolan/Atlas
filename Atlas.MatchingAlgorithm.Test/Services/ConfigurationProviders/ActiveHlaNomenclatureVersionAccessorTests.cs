@@ -1,7 +1,5 @@
 using System;
-using Atlas.Common.Caching;
-using Atlas.Common.Test.SharedTestHelpers.Builders;
-using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
+using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using AwesomeAssertions;
 using NSubstitute;
@@ -12,20 +10,16 @@ namespace Atlas.MatchingAlgorithm.Test.Services.ConfigurationProviders
     [TestFixture]
     public class ActiveHlaNomenclatureVersionAccessorTests
     {
-        private IDataRefreshHistoryRepository dataRefreshHistoryRepository;
-        private ITransientCacheProvider transientCacheProvider;
-        
+        private IActiveDataRefreshRecordAccessor activeDataRefreshRecordAccessor;
+
         private IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
-        
+
         [SetUp]
         public void SetUp()
         {
-            dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
-            transientCacheProvider = Substitute.For<ITransientCacheProvider>();
+            activeDataRefreshRecordAccessor = Substitute.For<IActiveDataRefreshRecordAccessor>();
 
-            transientCacheProvider.Cache.Returns(AppCacheBuilder.NewDefaultCache());
-            
-            hlaNomenclatureVersionAccessor = new ActiveHlaNomenclatureVersionAccessor(dataRefreshHistoryRepository, transientCacheProvider);
+            hlaNomenclatureVersionAccessor = new ActiveHlaNomenclatureVersionAccessor(activeDataRefreshRecordAccessor);
         }
 
         [Test,
@@ -35,7 +29,15 @@ namespace Atlas.MatchingAlgorithm.Test.Services.ConfigurationProviders
         TestCase("\t\r\n ")]
         public void GetActiveHlaNomenclatureVersion_WhenActiveVersionIsNull_ThrowsException(string badVersionValues)
         {
-            dataRefreshHistoryRepository.GetActiveHlaNomenclatureVersion().Returns(badVersionValues);
+            GivenActiveVersion(badVersionValues);
+
+            hlaNomenclatureVersionAccessor.Invoking(provider => provider.GetActiveHlaNomenclatureVersion()).Should().Throw<ArgumentNullException>();
+        }
+
+        [Test]
+        public void GetActiveHlaNomenclatureVersion_WhenNoActiveRecord_ThrowsException()
+        {
+            activeDataRefreshRecordAccessor.GetActiveRecord().Returns((ActiveDataRefreshRecord)null);
 
             hlaNomenclatureVersionAccessor.Invoking(provider => provider.GetActiveHlaNomenclatureVersion()).Should().Throw<ArgumentNullException>();
         }
@@ -45,9 +47,19 @@ namespace Atlas.MatchingAlgorithm.Test.Services.ConfigurationProviders
          TestCase(""),
          TestCase("   "),
          TestCase("\t\r\n ")]
-        public void DoesActiveHlaNomenclatureVersionExist_WhenActiveVersionIsNull_ReturnsTrue(string badVersionValues)
+        public void DoesActiveHlaNomenclatureVersionExist_WhenActiveVersionIsNull_ReturnsFalse(string badVersionValues)
         {
-            dataRefreshHistoryRepository.GetActiveHlaNomenclatureVersion().Returns(badVersionValues);
+            GivenActiveVersion(badVersionValues);
+
+            var doesActiveVersionExist = hlaNomenclatureVersionAccessor.DoesActiveHlaNomenclatureVersionExist();
+
+            doesActiveVersionExist.Should().BeFalse();
+        }
+
+        [Test]
+        public void DoesActiveHlaNomenclatureVersionExist_WhenNoActiveRecord_ReturnsFalse()
+        {
+            activeDataRefreshRecordAccessor.GetActiveRecord().Returns((ActiveDataRefreshRecord)null);
 
             var doesActiveVersionExist = hlaNomenclatureVersionAccessor.DoesActiveHlaNomenclatureVersionExist();
 
@@ -58,7 +70,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.ConfigurationProviders
         public void GetActiveHlaNomenclatureVersion_WhenActiveVersionIsNotNull_ReturnsValue()
         {
             const string activeVersion = "version";
-            dataRefreshHistoryRepository.GetActiveHlaNomenclatureVersion().Returns(activeVersion);
+            GivenActiveVersion(activeVersion);
 
             var activeVersionReturned = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
 
@@ -66,14 +78,19 @@ namespace Atlas.MatchingAlgorithm.Test.Services.ConfigurationProviders
         }
 
         [Test]
-        public void DoesActiveHlaNomenclatureVersionExist_WhenActiveVersionIsNotNull_ReturnsFalse()
+        public void DoesActiveHlaNomenclatureVersionExist_WhenActiveVersionIsNotNull_ReturnsTrue()
         {
             const string activeVersion = "version";
-            dataRefreshHistoryRepository.GetActiveHlaNomenclatureVersion().Returns(activeVersion);
+            GivenActiveVersion(activeVersion);
 
             var doesActiveVersionExist = hlaNomenclatureVersionAccessor.DoesActiveHlaNomenclatureVersionExist();
 
             doesActiveVersionExist.Should().BeTrue();
+        }
+
+        private void GivenActiveVersion(string version)
+        {
+            activeDataRefreshRecordAccessor.GetActiveRecord().Returns(new ActiveDataRefreshRecord(1, TransientDatabase.DatabaseA, version));
         }
     }
 }

@@ -21,8 +21,12 @@ variable "AZURE_CLIENT_ID" {
   description = "Client ID used for authenticating to manage Azure resources from code."
 }
 
+// No longer consumed by any resource: the apps read this value from the hand-seeded "azure-client-secret" Key Vault
+// secret instead. Kept declared because every environment's tfvars still sets it, and it is the source the secret is
+// seeded from - see "Key Vault bootstrap" in README_Deployment.md.
 variable "AZURE_CLIENT_SECRET" {
   type        = string
+  sensitive   = true
   description = "Client secret used for authenticating to manage Azure resources from code."
 }
 
@@ -212,6 +216,24 @@ variable "IP_RESTRICTION_SETTINGS" {
   description = "List of IP addresses that are whitelisted for functions app access. If none are provided the resources will publicly available. Note that if using this feature, Azure Devops build agents will need to be whitelisted for setting up webhooks - follow the Azure documentation on how to find said IP ranges. Warning that they change weekly - as such a lot of maintenance would be necessary to use whitelisted function apps, and as such using this feature is not recommended."
 }
 
+variable "KEY_VAULT_SECRETS_OFFICER_OBJECTIDS" {
+  type        = list(string)
+  default     = []
+  description = "Object IDs granted 'Key Vault Secrets Officer' on the Atlas Key Vault, so that secrets which are deliberately not managed by Terraform can be seeded and rotated by hand - typically an ops AD group, plus anyone who needs to run a plan that reads existing secrets. The principal running Terraform is granted the role separately and does not need listing here. Leave empty to grant nobody."
+}
+
+variable "KEY_VAULT_PURGE_PROTECTION_ENABLED" {
+  type        = bool
+  default     = false
+  description = "Whether purge protection is enabled on the Atlas Key Vault. Note that this cannot be turned off again once enabled, so it is left off until the vault has been proven in live."
+}
+
+variable "KEY_VAULT_SOFT_DELETE_RETENTION_DAYS" {
+  type        = number
+  default     = 7
+  description = "Number of days a deleted Key Vault secret remains recoverable. The minimum of 7 keeps vault and secret names re-usable in lower environments."
+}
+
 variable "LOCATION" {
   type        = string
   default     = "uksouth"
@@ -257,6 +279,18 @@ variable "MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES" {
   description = "Absolute cache TTL, in minutes, for the active HaplotypeFrequencySets lookup used by the match prediction service."
 }
 
+variable "MATCH_PREDICTION_MAX_CACHED_FREQUENCY_SETS" {
+  type        = number
+  default     = 10
+  description = "Maximum number of distinct haplotype frequency sets allowed to stay resident at once in the match prediction service's per-set cache, evicting least-recently-used sets beyond this limit."
+}
+
+variable "MATCH_PREDICTION_SET_CACHE_EXPIRY_MINUTES" {
+  type        = number
+  default     = 60
+  description = "Absolute cache TTL, in minutes, for a cached haplotype frequency set's full per-haplotype frequency collection used by the match prediction service."
+}
+
 variable "MATCH_PREDICTION_DOWNLOAD_BATCH_SIZE" {
   type        = number
   default     = 10
@@ -273,6 +307,17 @@ variable "MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT" {
   type        = number
   default     = 2000
   description = "Genotype-truncation limit: the maximum number of expanded genotypes retained per patient/donor before match calculation. Must be identical across every host that runs imputation; increasing it beyond 2000 trades performance/memory for accuracy."
+}
+
+variable "MATCH_PREDICTION_PRECOMPUTE_MODE" {
+  type        = string
+  default     = "ForceLive"
+  description = "Controls whether search-time match prediction reads precomputed donor genotype sets. Shared by the Atlas Functions app and the Match Prediction Worker. ForceLive: always live. DefaultLive: live unless the search request sets UsePrecomputedGenotypeSets=true. DefaultPrecomputed: precomputed unless the request sets it to false."
+
+  validation {
+    condition     = contains(["ForceLive", "DefaultLive", "DefaultPrecomputed"], var.MATCH_PREDICTION_PRECOMPUTE_MODE)
+    error_message = "MATCH_PREDICTION_PRECOMPUTE_MODE must be one of: ForceLive, DefaultLive, DefaultPrecomputed."
+  }
 }
 
 variable "MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS" {
@@ -388,6 +433,42 @@ variable "MATCHING_DATA_REFRESH_CRONTAB" {
   type        = string
   default     = "0 0 0 * * Monday"
   description = "A crontab determining when the matching data refresh will be auto-attempted. It will only run to completion if new HLA nomenclature is detected."
+}
+
+variable "MATCHING_DATA_REFRESH_WATCHDOG_CRON_SCHEDULE" {
+  type        = string
+  default     = "0 */15 * * * *"
+  description = "CRON schedule (six-field NCrontab) for the sweep that re-requests stalled data refreshes. Must be set: without it the watchdog function fails to index and never fires, while the rest of the Data Refresh app starts normally - so the gap is silent."
+}
+
+variable "MATCHING_DATA_REFRESH_WATCHDOG_GRACE_DURATION_MINUTES" {
+  type        = number
+  default     = 60
+  description = "How long a refresh record must show no sign of life before the watchdog re-requests it. Must exceed MATCHING_DATA_REFRESH_LEASE_DURATION_MINUTES, so that a run between lease renewals is never mistaken for a stalled one."
+}
+
+variable "MATCHING_DATA_REFRESH_PRECOMPUTE_ABANDON_BATCHES_CRON_SCHEDULE" {
+  type        = string
+  default     = "0 */15 * * * *"
+  description = "CRON schedule (six-field NCrontab) for the sweep that marks donor genotype precomputation batches abandoned once their lease has expired. Must be set: without it the function fails to index and the precomputation stage can wait forever."
+}
+
+variable "MATCHING_DATA_REFRESH_PRECOMPUTE_FINALISE_RUNS_CRON_SCHEDULE" {
+  type        = string
+  default     = "0 */5 * * * *"
+  description = "CRON schedule (six-field NCrontab) for the sweep that finalises donor genotype precomputation runs whose batches have all finished. Must be set: without it the function fails to index and the precomputation stage can wait forever."
+}
+
+variable "MATCHING_DATA_REFRESH_PRECOMPUTE_MAX_BATCH_RETRIES" {
+  type        = number
+  default     = 3
+  description = "How many times a failed or abandoned donor genotype precomputation batch is requeued before it is marked permanently failed."
+}
+
+variable "MATCHING_DATA_REFRESH_PRECOMPUTE_REQUEUE_BATCHES_CRON_SCHEDULE" {
+  type        = string
+  default     = "0 */5 * * * *"
+  description = "CRON schedule (six-field NCrontab) for the sweep that requeues failed and abandoned donor genotype precomputation batches. Must be set: without it the function fails to index and the precomputation stage can wait forever."
 }
 
 variable "MATCHING_DATABASE_MAX_SIZE_GB" {
@@ -691,6 +772,78 @@ variable "MATCH_PREDICTION_CONTAINER_SCALE_RULE_POLLING_INTERVAL_SECONDS" {
   type        = number
   default     = 10
   description = "The interval in seconds used by the match prediction container app for polling KEDA scale rules."
+}
+
+variable "MATCH_PREDICTION_CONTAINER_REQUESTS_MAX_PARALLELISM" {
+  type        = number
+  default     = 2
+  description = "Maximum number of match prediction requests processed in parallel per Container App replica. Override via TF_VAR_MATCH_PREDICTION_CONTAINER_REQUESTS_MAX_PARALLELISM."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_CONTAINER_IMAGE_TAG" {
+  type        = string
+  default     = "latest"
+  description = "Docker image tag for the donor genotype precompute worker container app."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_CONTAINER_CPU" {
+  type        = number
+  default     = 2.0
+  description = "CPU cores allocated to the donor genotype precompute worker container app."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_CONTAINER_MEMORY" {
+  type        = string
+  default     = "4Gi"
+  description = "Memory allocated to the donor genotype precompute worker container app."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_CONTAINER_MAX_REPLICAS" {
+  type        = number
+  default     = 10
+  description = "Maximum replica count for the donor genotype precompute worker container app. The minimum is always 0. Keep MATCHING_PRECOMPUTE_WORKER_MAX_CONCURRENT_CALLS times this within the worker and session limits of the transient database being refreshed."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_CONTAINER_SCALE_RULE_MESSAGE_COUNT" {
+  type        = number
+  default     = 1
+  description = "Message threshold for the donor genotype precompute worker's Service Bus scale rule. Each message is a whole batch, so the default adds a replica per waiting batch, up to the maximum."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_CONTAINER_SCALE_RULE_POLLING_INTERVAL_SECONDS" {
+  type        = number
+  default     = 30
+  description = "The interval in seconds used by the donor genotype precompute worker container app for polling KEDA scale rules."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_MAX_CONCURRENT_CALLS" {
+  type        = number
+  default     = 1
+  description = "Maximum number of batches each donor genotype precompute worker replica processes concurrently."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_PREFETCH_COUNT" {
+  type        = number
+  default     = 0
+  description = "Number of messages the donor genotype precompute worker prefetches. Keep at 0, so that waiting batches stay available to other replicas."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_MAX_AUTO_LOCK_RENEWAL_MINUTES" {
+  type        = number
+  default     = 60
+  description = "Maximum total duration (in minutes) for which the donor genotype precompute worker auto-renews a message lock. A batch must finish within this and MATCHING_PRECOMPUTE_WORKER_BATCH_LEASE_MINUTES, or it is computed twice."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_BATCH_LEASE_MINUTES" {
+  type        = number
+  default     = 60
+  description = "How long a donor genotype precompute worker holds a batch before the abandon sweep may take it back. Keep no greater than MATCHING_PRECOMPUTE_WORKER_MAX_AUTO_LOCK_RENEWAL_MINUTES."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_MAX_GROUP_FAILURES_PER_BATCH" {
+  type        = number
+  default     = 100
+  description = "The permanent group failures (such as bad typings) that one donor genotype precomputation batch can have and still succeed. More than this fails the batch, which is then retried. Keep it well below the groups per batch of a run."
 }
 
 # --- External SQL variables (for retargeting function app connection strings) ---

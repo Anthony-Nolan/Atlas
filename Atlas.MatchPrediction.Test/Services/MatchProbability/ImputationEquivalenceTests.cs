@@ -40,7 +40,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability;
 /// (<c>CompressedPhenotypeExpander</c>, the <c>allowedLoci.Contains(l) ? hla : null</c> map) and therefore stands for
 /// a <i>group</i> of stored haplotypes whose frequencies are summed. That test fails for any implementation that
 /// carries an individual frequency instead of asking
-/// <see cref="IHaplotypeFrequencyService.GetFrequencyForHla"/>.
+/// <see cref="IHaplotypeFrequencyLookupService.GetFrequencyForHla"/>.
 /// </para>
 /// </summary>
 [TestFixture]
@@ -323,6 +323,7 @@ internal class ImputationEquivalenceTests
         ArrangeFiveLocusSet();
         var entry = await haplotypeFrequencyService.GetAllHaplotypeFrequencies(FrequencySetId);
         var poolBeforeAnyDonor = entry.ProjectedPool;
+        var indexBeforeAnyDonor = entry.AlleleIndex;
         var service = BuildService();
 
         await service.Impute(AmbiguousAtAAndB(AllFiveLoci));
@@ -332,6 +333,11 @@ internal class ImputationEquivalenceTests
         // happily against a pool rebuilt per donor, which is the thing this rules out.
         entry.ProjectedPool.Should().BeSameAs(poolBeforeAnyDonor);
         entry.ProjectedPool.SmallGGroup.Should().BeSameAs(poolBeforeAnyDonor.SmallGGroup);
+
+        // Same guarantee for the allele index derived from the pool - it is what makes it safe to seed the survivor
+        // scan from it per donor rather than rebuilding it.
+        entry.AlleleIndex.Should().BeSameAs(indexBeforeAnyDonor);
+        entry.AlleleIndex.SmallGGroup.Should().BeSameAs(indexBeforeAnyDonor.SmallGGroup);
     }
 
     // ---- Arrangement --------------------------------------------------------------------------------------------

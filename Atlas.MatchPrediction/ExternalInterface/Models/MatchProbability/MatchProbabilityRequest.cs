@@ -87,6 +87,8 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         {
             MatchProbabilityRequestId = initial.MatchProbabilityRequestId;
             SearchRequestId = initial.SearchRequestId;
+            MatchingAlgorithmDataRefreshRecordId = initial.MatchingAlgorithmDataRefreshRecordId;
+            PatientGenotypeSetKey = initial.PatientGenotypeSetKey;
         }
 
         protected IdentifiedMatchProbabilityRequest(MatchProbabilityRequestBase initialWithoutIds) : base(initialWithoutIds)
@@ -102,7 +104,29 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         /// Search ID is used to identify uploaded results of the Match Prediction Algorithm
         /// </summary>
         public string SearchRequestId { get; set; }
+
+        /// <summary>
+        /// The ID of the matching algorithm data refresh record whose transient donor database the donors were matched against.
+        /// Comes from the same record as <see cref="MatchProbabilityRequestBase.MatchingAlgorithmHlaNomenclatureVersion"/>.
+        /// Only set for search; `null` when the search was matched before this value was recorded.
+        /// </summary>
+        public int? MatchingAlgorithmDataRefreshRecordId { get; set; }
+
+        /// <summary>
+        /// The key of the patient's stored genotype set, found or created once per search before the batches are
+        /// uploaded. Only set for search; `null` when the search does not use stored sets or the set could not be
+        /// stored, in which case each batch computes the patient live.
+        /// </summary>
+        public PatientGenotypeSetKey PatientGenotypeSetKey { get; set; }
     }
+
+    /// <summary>
+    /// Identifies one stored genotype set (a <c>SubjectGenotypeSetValues</c> row in the matching database).
+    /// </summary>
+    /// <param name="HlaTypingKey">Hash of the typing at the loci of <paramref name="AllowedLociKey"/>.</param>
+    /// <param name="HaplotypeFrequencySetId">The haplotype frequency set the genotype set was computed with.</param>
+    /// <param name="AllowedLociKey">The name of the allowed-loci combination, for example <c>ABCDrb1Dqb1</c>.</param>
+    public record PatientGenotypeSetKey(string HlaTypingKey, int HaplotypeFrequencySetId, string AllowedLociKey);
 
     /// <summary>
     /// Contains information needed to run a match probability request, excluding donor data
@@ -120,6 +144,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
             ExcludedLoci = initial.ExcludedLoci;
             PatientHla = initial.PatientHla;
             PatientFrequencySetMetadata = initial.PatientFrequencySetMetadata;
+            UsePrecomputedGenotypeSets = initial.UsePrecomputedGenotypeSets;
         }
 
         /// <summary>
@@ -135,5 +160,13 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
 
         public PhenotypeInfoTransfer<string> PatientHla { get; set; }
         public FrequencySetMetadata PatientFrequencySetMetadata { get; set; }
+
+        /// <summary>
+        /// Overrides the precompute kill-switch (<see cref="Settings.PrecomputedGenotypeSetSettings.Mode"/>) for this
+        /// request, in either direction - except in <see cref="Settings.PrecomputedGenotypeSetMode.ForceLive"/>, the hard
+        /// off, which ignores it. `null` means the mode's default decides.
+        /// Resolved once per donor batch, so changing the kill-switch also affects a running search.
+        /// </summary>
+        public bool? UsePrecomputedGenotypeSets { get; set; }
     }
 }

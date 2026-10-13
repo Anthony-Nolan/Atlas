@@ -84,6 +84,7 @@ namespace Atlas.MatchingAlgorithm.Api
                 OptionsReaderFor<AzureAuthenticationSettings>(),
                 OptionsReaderFor<AzureDatabaseManagementSettings>(),
                 OptionsReaderFor<DataRefreshSettings>(),
+                OptionsReaderFor<DonorGenotypePrecomputationSettings>(),
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
@@ -144,6 +145,7 @@ namespace Atlas.MatchingAlgorithm.Api
             services.RegisterAsOptions<AzureDatabaseManagementSettings>("AzureManagement:Database");
             services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
             services.RegisterAsOptions<DataRefreshSettings>("DataRefresh");
+            services.RegisterAsOptions<DonorGenotypePrecomputationSettings>("DataRefresh:Precompute");
             services.RegisterAsOptions<DonorManagementSettings>("DataRefresh:DonorManagement");
             services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
             services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");

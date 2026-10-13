@@ -62,8 +62,11 @@
     "Matching:MessagingServiceBus:SearchResultsTopic": "matching-results-ready",
 
     "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes": 5,
+    "HaplotypeFrequencySetCache:MaxCachedFrequencySets": 10,
+    "HaplotypeFrequencySetCache:SetCacheExpiryMinutes": 60,
 
     "MatchPrediction:GenotypeImputation:MaximumExpandedGenotypesPerInput": 2000,
+    "MatchPrediction:Precompute:Mode": "ForceLive",
     "MatchPrediction:AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "MatchPrediction:AzureStorage:MatchPredictionResultsBlobContainer": "match-prediction-results",
 

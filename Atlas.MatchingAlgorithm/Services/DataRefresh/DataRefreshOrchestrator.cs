@@ -11,6 +11,7 @@ using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
+using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 using Atlas.MatchingAlgorithm.Settings;
 using EnumStringValues;
 using Microsoft.Data.SqlClient;
@@ -53,6 +54,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private readonly IAzureDatabaseNameProvider azureDatabaseNameProvider;
         private readonly IDataRefreshSupportNotificationSender dataRefreshNotificationSender;
         private readonly IDataRefreshCompletionNotifier dataRefreshCompletionNotifier;
+        private readonly IDonorGenotypePrecomputationRunCanceller precomputationRunCanceller;
         private readonly IServiceScopeFactory serviceScopeFactory;
 
         public DataRefreshOrchestrator(
@@ -65,6 +67,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IAzureDatabaseNameProvider azureDatabaseNameProvider,
             IDataRefreshSupportNotificationSender dataRefreshNotificationSender,
             IDataRefreshCompletionNotifier dataRefreshCompletionNotifier,
+            IDonorGenotypePrecomputationRunCanceller precomputationRunCanceller,
             IServiceScopeFactory serviceScopeFactory)
         {
             this.logger = logger;
@@ -76,6 +79,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             this.azureDatabaseNameProvider = azureDatabaseNameProvider;
             this.dataRefreshNotificationSender = dataRefreshNotificationSender;
             this.dataRefreshCompletionNotifier = dataRefreshCompletionNotifier;
+            this.precomputationRunCanceller = precomputationRunCanceller;
             this.serviceScopeFactory = serviceScopeFactory;
         }
 
@@ -100,7 +104,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 await dataRefreshNotificationSender.SendInProgressNotification(
                     dataRefreshRecordId, 1 + incompleteJob.RefreshAttemptedCount);
 
-                await ContinueRefreshJob(dataRefreshRecordId, cancellationTokenSource.Token);
+                await ContinueRefreshJob(incompleteJob, cancellationTokenSource.Token);
             }
             finally
             {
@@ -313,16 +317,18 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         /// <summary>
         /// Refresh job will be "continued" from the appropriate point, including on the first attempt.
         /// </summary>
-        private async Task ContinueRefreshJob(int dataRefreshRecordId, CancellationToken cancellationToken)
+        private async Task ContinueRefreshJob(DataRefreshRecord incompleteJob, CancellationToken cancellationToken)
         {
+            var dataRefreshRecordId = incompleteJob.Id;
+
             try
             {
                 await dataRefreshHistoryRepository.UpdateRunAttemptDetails(dataRefreshRecordId);
                 var newWmdaHlaNomenclatureVersion = await dataRefreshRunner.RefreshData(dataRefreshRecordId, cancellationToken);
                 var previouslyActiveDatabase = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetActiveDatabase());
                 await MarkDataHistoryRecordAsComplete(dataRefreshRecordId, true, newWmdaHlaNomenclatureVersion);
-                await ScaleDownDatabaseToDormantLevel(previouslyActiveDatabase);
-                await dataRefreshCompletionNotifier.NotifyOfSuccess(dataRefreshRecordId);
+                await ScaleDownDatabaseToDormantLevel(dataRefreshRecordId, previouslyActiveDatabase);
+                await NotifyOfCompletion(dataRefreshRecordId, true);
                 logger.SendTrace("Data Refresh Succeeded.");
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -342,17 +348,74 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             catch (Exception e)
             {
                 logger.SendTrace($"Data Refresh Failed: ${e}", LogLevel.Critical);
-                await dataRefreshCompletionNotifier.NotifyOfFailure(dataRefreshRecordId);
+
+                // Close the record before the notifications. If a notification failed first, the record would stay open, and the
+                // next delivery of the request would claim it and run the failed refresh again.
                 await MarkDataHistoryRecordAsComplete(dataRefreshRecordId, false, null);
+                await NotifyOfCompletion(dataRefreshRecordId, false);
+
+                // Only here: after a SqlException the request is delivered again and the stage continues its run, and after a lost
+                // lease the record belongs to another invocation. Last, because the removal of the staging data waits for the
+                // statements of the workers, and must not delay the failure notifications.
+                await precomputationRunCanceller.CancelRun(incompleteJob);
             }
         }
 
-        private async Task ScaleDownDatabaseToDormantLevel(string databaseName)
+        /// <summary>
+        /// Scales the database that was active before this refresh down to the dormant size. Does not throw.
+        /// </summary>
+        /// <remarks>
+        /// This runs after the record is closed as successful, when the refreshed database is already the active one. An exception
+        /// that got to the generic catch in <see cref="ContinueRefreshJob"/> would mark the record as failed, and searches would go
+        /// back to this database. So a failure is logged and alerted instead, as the failure teardown in <see cref="DataRefreshRunner"/>
+        /// does.
+        /// </remarks>
+        private async Task ScaleDownDatabaseToDormantLevel(int dataRefreshRecordId, string databaseName)
         {
-            var dormantSize = dataRefreshSettings.DormantDatabaseSize.ParseToEnum<AzureDatabaseSize>();
-            var dormantAutoPause = dataRefreshSettings.DormantDatabaseAutoPauseTimeout;
-            logger.SendTrace($"DATA REFRESH TEAR DOWN: Scaling down database: {databaseName} to dormant size: {dormantSize}");
-            await azureDatabaseManager.UpdateDatabaseSize(databaseName, dormantSize, dormantAutoPause);
+            try
+            {
+                var dormantSize = dataRefreshSettings.DormantDatabaseSize.ParseToEnum<AzureDatabaseSize>();
+                var dormantAutoPause = dataRefreshSettings.DormantDatabaseAutoPauseTimeout;
+                logger.SendTrace($"DATA REFRESH TEAR DOWN: Scaling down database: {databaseName} to dormant size: {dormantSize}");
+                await azureDatabaseManager.UpdateDatabaseSize(databaseName, dormantSize, dormantAutoPause);
+            }
+            catch (Exception e)
+            {
+                logger.SendTrace(
+                    $"DATA REFRESH TEAR DOWN: Failed to scale down database {databaseName}. The refresh succeeded, but this database must " +
+                    $"be scaled down manually. Exception: {e}", LogLevel.Critical);
+                await dataRefreshNotificationSender.SendTeardownFailureAlert(dataRefreshRecordId);
+            }
+        }
+
+        /// <summary>
+        /// Sends the support notification and the completion message for a record that is already closed. Does not throw.
+        /// </summary>
+        /// <remarks>
+        /// The record already holds the result, and a failure to notify must not change it. An exception that got to the generic
+        /// catch in <see cref="ContinueRefreshJob"/> would report a successful refresh as failed. An exception that left the
+        /// invocation would fail the function run, and Service Bus would deliver the request again for no reason.
+        /// </remarks>
+        private async Task NotifyOfCompletion(int dataRefreshRecordId, bool wasSuccessful)
+        {
+            try
+            {
+                if (wasSuccessful)
+                {
+                    await dataRefreshCompletionNotifier.NotifyOfSuccess(dataRefreshRecordId);
+                }
+                else
+                {
+                    await dataRefreshCompletionNotifier.NotifyOfFailure(dataRefreshRecordId);
+                }
+            }
+            catch (Exception e)
+            {
+                var result = wasSuccessful ? "successful" : "failed";
+                logger.SendTrace(
+                    $"{LoggingPrefix} Record {dataRefreshRecordId} is closed as {result}, but its completion message could not be published. " +
+                    $"Consumers of the completion topic will get no message for this job. Exception: {e}", LogLevel.Error);
+            }
         }
 
         private async Task MarkDataHistoryRecordAsComplete(int recordId, bool wasSuccess, string wmdaHlaNomenclatureVersion)

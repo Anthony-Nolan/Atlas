@@ -1,5 +1,5 @@
 locals {
-  atlas_match_prediction_container_app_name = lower("${var.general.environment}-atlas-match-prediction-ca")
+  atlas_match_prediction_container_app_name = lower("${var.general.environment}-atlas-match-pred-ca")
 }
 
 resource "azurerm_container_app" "atlas_match_prediction" {
@@ -9,9 +9,13 @@ resource "azurerm_container_app" "atlas_match_prediction" {
   revision_mode                = "Single"
   tags                         = var.general.common_tags
 
+  // aca_identity pulls from ACR and drives the Service Bus scale rule. The shared function apps identity is attached only
+  // to read the Key Vault-backed secrets below - aca_identity is deliberately kept without secret-read rights (see
+  // terraform/core/key_vault.tf). The role assignment for the shared identity lives in the root module, so it is ordered
+  // by the depends_on on the module block.
   identity {
     type         = "UserAssigned"
-    identity_ids = [var.aca_identity.id]
+    identity_ids = [var.aca_identity.id, var.key_vault.function_apps_identity_id]
   }
 
   template {
@@ -41,6 +45,11 @@ resource "azurerm_container_app" "atlas_match_prediction" {
       env {
         name  = "ApplicationInsights__LogLevel"
         value = var.APPLICATION_INSIGHTS_LOG_LEVEL
+      }
+      // Container Apps do not set a cloud role name for Application Insights, unlike function apps.
+      env {
+        name  = "ApplicationInsights__CloudRoleName"
+        value = local.atlas_match_prediction_container_app_name
       }
       env {
         name        = "APPLICATIONINSIGHTS_CONNECTION_STRING"
@@ -115,11 +124,19 @@ resource "azurerm_container_app" "atlas_match_prediction" {
       }
       env {
         name  = "MatchPredictionRequests__MaxParallelism"
-        value = tostring(var.MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM)
+        value = tostring(var.CONTAINER_REQUESTS_MAX_PARALLELISM)
       }
       env {
         name  = "GenotypeImputation__MaximumExpandedGenotypesPerInput"
         value = tostring(var.MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT)
+      }
+      env {
+        name  = "HaplotypeFrequencySetCache__MaxCachedFrequencySets"
+        value = tostring(var.MAX_CACHED_FREQUENCY_SETS)
+      }
+      env {
+        name  = "HaplotypeFrequencySetCache__SetCacheExpiryMinutes"
+        value = tostring(var.SET_CACHE_EXPIRY_MINUTES)
       }
       env {
         name  = "MatchPredictionWorker__MaxConcurrentCalls"
@@ -176,6 +193,25 @@ resource "azurerm_container_app" "atlas_match_prediction" {
         name        = "ConnectionStrings__MatchPredictionSql"
         secret_name = "match-prediction-sql-connection-string"
       }
+      // The worker builds the matching persistent database context for every batch, even in ForceLive mode, so the
+      // persistent connection string must exist or every batch fails.
+      env {
+        name        = "ConnectionStrings__MatchingPersistentSql"
+        secret_name = "matching-persistent-sql-connection-string"
+      }
+      env {
+        name        = "ConnectionStrings__MatchingTransientASql"
+        secret_name = "matching-transient-a-sql-connection-string"
+      }
+      env {
+        name        = "ConnectionStrings__MatchingTransientBSql"
+        secret_name = "matching-transient-b-sql-connection-string"
+      }
+
+      env {
+        name  = "Precompute__Mode"
+        value = var.MATCH_PREDICTION_PRECOMPUTE_MODE
+      }
 
       liveness_probe {
         path             = "/health/live"
@@ -218,23 +254,47 @@ resource "azurerm_container_app" "atlas_match_prediction" {
     value = var.application_insights.connection_string
   }
 
+  // Versioned secret IDs, matching the function apps' choice of a versioned SecretUri. Running replicas only pick up a
+  // rotated value on a new revision or a restart, as was already the case for plain secrets.
   secret {
-    name  = "azure-storage-connection-string"
-    value = var.azure_storage.primary_connection_string
+    name                = "azure-storage-connection-string"
+    key_vault_secret_id = var.key_vault.secret_ids["azure-storage-connection-string"]
+    identity            = var.key_vault.function_apps_identity_id
   }
 
   secret {
-    name  = "servicebus-manage-connection-string"
-    value = var.servicebus_namespace_authorization_rules.manage.primary_connection_string
+    name                = "servicebus-manage-connection-string"
+    key_vault_secret_id = var.key_vault.secret_ids["servicebus-manage-connection-string"]
+    identity            = var.key_vault.function_apps_identity_id
   }
 
   secret {
-    name  = "servicebus-write-only-connection-string"
-    value = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
+    name                = "servicebus-write-only-connection-string"
+    key_vault_secret_id = var.key_vault.secret_ids["servicebus-write-only-connection-string"]
+    identity            = var.key_vault.function_apps_identity_id
   }
 
   secret {
-    name  = "match-prediction-sql-connection-string"
-    value = local.match_prediction_database_connection_string
+    name                = "match-prediction-sql-connection-string"
+    key_vault_secret_id = azurerm_key_vault_secret.match_prediction["match-prediction-sql-connection-string"].id
+    identity            = var.key_vault.function_apps_identity_id
+  }
+
+  secret {
+    name                = "matching-persistent-sql-connection-string"
+    key_vault_secret_id = var.matching_sql_database_secret_ids.persistent
+    identity            = var.key_vault.function_apps_identity_id
+  }
+
+  secret {
+    name                = "matching-transient-a-sql-connection-string"
+    key_vault_secret_id = var.matching_sql_database_secret_ids.transient_a
+    identity            = var.key_vault.function_apps_identity_id
+  }
+
+  secret {
+    name                = "matching-transient-b-sql-connection-string"
+    key_vault_secret_id = var.matching_sql_database_secret_ids.transient_b
+    identity            = var.key_vault.function_apps_identity_id
   }
 }

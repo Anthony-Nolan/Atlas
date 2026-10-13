@@ -1,6 +1,6 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
-using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
@@ -34,6 +34,7 @@ public partial class DataRefreshRunnerTests
     [TestCase(DataRefreshStage.DonorImport)]
     [TestCase(DataRefreshStage.DonorHlaProcessing)]
     [TestCase(DataRefreshStage.IndexRecreation)]
+    [TestCase(DataRefreshStage.DonorGenotypePrecomputation)]
     public async Task ContinuedRefreshData_WhenSkippableStageIsAlreadyComplete_SkipsStage(DataRefreshStage refreshStage)
     {
         dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(refreshStage).Build());
@@ -67,7 +68,7 @@ public partial class DataRefreshRunnerTests
                 .With(r => r.HlaNomenclatureVersion, oldVersion)
                 .Build()
         );
-        hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest).Returns(newVersion);
+        hlaMetadataDictionary.GetLatestStableHlaNomenclatureVersion().Returns(newVersion);
 
         await dataRefreshRunner.RefreshData(default);
 
@@ -167,16 +168,15 @@ public partial class DataRefreshRunnerTests
     }
 
     [Test]
-    public async Task ContinuedRefreshData_WhenRunWasPartiallyCompleteUpToIndexRecreation_ContinuesFromScalingTearDown()
+    public async Task ContinuedRefreshData_WhenRunWasPartiallyCompleteUpToIndexRecreation_ContinuesFromDonorGenotypePrecomputation()
     {
         var settings = DataRefreshSettingsBuilder.New
             .With(s => s.ActiveDatabaseSize, AzureDatabaseSize.S4.ToString())
             .Build();
         dataRefreshRunner = BuildDataRefreshRunner(settings);
 
-        dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
-            DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.IndexRecreation).Build()
-        );
+        var record = DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.IndexRecreation).Build();
+        dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(record);
 
         await dataRefreshRunner.RefreshData(default);
 
@@ -184,6 +184,27 @@ public partial class DataRefreshRunnerTests
         await donorImportRepository.DidNotReceive().RemoveAllProcessedDonorHla();
         await hlaProcessor.DidNotReceiveWithAnyArgs().UpdateDonorHla(default, default);
         await donorImportRepository.DidNotReceive().CreateHlaTableIndexes();
+        await donorGenotypePrecomputationStage.Received(1)
+            .Run(record, DataRefreshStageExecutionMode.Continuation, Arg.Any<CancellationToken>());
+        await azureDatabaseManager.Received(1).UpdateDatabaseSize(default, AzureDatabaseSize.S4, Arg.Any<int?>());
+    }
+
+    [Test]
+    public async Task ContinuedRefreshData_WhenRunWasPartiallyCompleteUpToDonorGenotypePrecomputation_ContinuesFromScalingTearDown()
+    {
+        var settings = DataRefreshSettingsBuilder.New
+            .With(s => s.ActiveDatabaseSize, AzureDatabaseSize.S4.ToString())
+            .Build();
+        dataRefreshRunner = BuildDataRefreshRunner(settings);
+
+        dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
+            DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.DonorGenotypePrecomputation).Build()
+        );
+
+        await dataRefreshRunner.RefreshData(default);
+
+        await donorImportRepository.DidNotReceive().CreateHlaTableIndexes();
+        await donorGenotypePrecomputationStage.DidNotReceiveWithAnyArgs().Run(default, default, default);
         await azureDatabaseManager.Received(1).UpdateDatabaseSize(default, AzureDatabaseSize.S4, Arg.Any<int?>());
     }
 
@@ -224,7 +245,7 @@ public partial class DataRefreshRunnerTests
     }
 
     [Test]
-    public async Task ContinuedRefreshData_WhenRunWasPartiallyCompleteUpToHlaIndexRecreation_DoesNotPerformInitialUpScalingOfDatabase()
+    public async Task ContinuedRefreshData_WhenRunWasPartiallyCompleteUpToHlaIndexRecreation_ScalesTheDatabaseUpForTheDonorGenotypePrecomputation()
     {
         var settings = DataRefreshSettingsBuilder.New
             .With(s => s.RefreshDatabaseSize, AzureDatabaseSize.P15.ToString())
@@ -233,6 +254,27 @@ public partial class DataRefreshRunnerTests
 
         dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
             DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.IndexRecreation).Build()
+        );
+
+        await dataRefreshRunner.RefreshData(default);
+
+        Received.InOrder(() =>
+        {
+            azureDatabaseManager.UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.P15, Arg.Any<int?>());
+            donorGenotypePrecomputationStage.Run(Arg.Any<DataRefreshRecord>(), Arg.Any<DataRefreshStageExecutionMode>(), Arg.Any<CancellationToken>());
+        });
+    }
+
+    [Test]
+    public async Task ContinuedRefreshData_WhenRunWasPartiallyCompleteUpToDonorGenotypePrecomputation_DoesNotPerformInitialUpScalingOfDatabase()
+    {
+        var settings = DataRefreshSettingsBuilder.New
+            .With(s => s.RefreshDatabaseSize, AzureDatabaseSize.P15.ToString())
+            .Build();
+        dataRefreshRunner = BuildDataRefreshRunner(settings);
+
+        dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
+            DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.DonorGenotypePrecomputation).Build()
         );
 
         await dataRefreshRunner.RefreshData(default);

@@ -1,6 +1,8 @@
 ﻿using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
 
@@ -101,5 +103,65 @@ public sealed class FrequencySetCacheEntry
             PGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.PGroup, []),
             SmallGGroup = groupedFrequencies.GetValueOrDefault(HaplotypeTypingCategory.SmallGGroup, []),
         };
+    }
+
+    // Same eventual-consistency reasoning as projectedPool above: built eagerly in production by
+    // HaplotypeFrequencyCache.BuildEntryFromDatabase, so the volatile/??= pair only matters for a caller that
+    // constructs an entry directly, such as a test.
+    private volatile DataByResolution<LociInfo<int[][]>> alleleIndex;
+
+    /// <summary>
+    /// Per (category, locus, allele id): the ascending <see cref="ProjectedPool"/> positions of haplotypes carrying
+    /// that id at that locus.
+    ///
+    /// <para>
+    /// This lets <c>CompressedPhenotypeExpander.GetHaplotypesForAllowedLoci</c> visit only the haplotypes a subject's
+    /// own typing can possibly explain, instead of testing every pooled haplotype. It is built once per set, as a
+    /// pure function of <see cref="ProjectedPool"/> - so it inherits the same "first donor pays, every donor after is
+    /// ~0" cost shape and, because it is derived from the pool rather than from <see cref="SetFrequencies"/> directly,
+    /// the same pool order.
+    /// </para>
+    ///
+    /// <para>
+    /// <b>Ids stop here</b>, exactly as for <see cref="ProjectedPool"/>: they are meaningful only against
+    /// <see cref="Interner"/>, and never leave this object.
+    /// </para>
+    /// </summary>
+    internal DataByResolution<LociInfo<int[][]>> AlleleIndex => alleleIndex ??= ProjectedPool.Map(BuildIndexForCategory);
+
+    private LociInfo<int[][]> BuildIndexForCategory(HaplotypeKey[] haplotypes)
+    {
+        // Named args, as HaplotypeInterner.ReverseLookup does: LociInfo's positional constructor is
+        // (A, B, C, Dpb1, Dqb1, Drb1), and a haplotype carries no Dpb1 - the Dpb1 slot here is simply never read,
+        // since callers only ever index by LocusSettings.MatchPredictionLoci.
+        return new LociInfo<int[][]>(
+            valueA: BuildIndexForLocus(haplotypes, Locus.A, Interner.A),
+            valueB: BuildIndexForLocus(haplotypes, Locus.B, Interner.B),
+            valueC: BuildIndexForLocus(haplotypes, Locus.C, Interner.C),
+            valueDqb1: BuildIndexForLocus(haplotypes, Locus.Dqb1, Interner.Dqb1),
+            valueDrb1: BuildIndexForLocus(haplotypes, Locus.Drb1, Interner.Drb1));
+    }
+
+    // Dense, exactly as BuildAllowedAlleleMasks's masks are: AlleleInterner mints ids from 0, so an array indexed by
+    // id needs no hashing to build or to read. Each haplotypes[i] is visited once, in order, so every bucket comes
+    // out ascending for free - which is what lets the caller merge a handful of buckets and stay in pool order.
+    private static int[][] BuildIndexForLocus(HaplotypeKey[] haplotypes, Locus locus, AlleleInterner alleles)
+    {
+        var buckets = new List<int>[alleles.IdCount];
+
+        for (var i = 0; i < haplotypes.Length; i++)
+        {
+            var id = haplotypes[i].GetLocus(locus);
+            (buckets[id] ??= []).Add(i);
+        }
+
+        var index = new int[buckets.Length][];
+
+        for (var id = 0; id < buckets.Length; id++)
+        {
+            index[id] = buckets[id]?.ToArray() ?? [];
+        }
+
+        return index;
     }
 }

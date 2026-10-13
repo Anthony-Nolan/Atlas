@@ -1,5 +1,5 @@
 # This workflow will:
-# * When a released tag is pushed:
+# * When a version is tagged as released to WMDA LIVE (the last environment in the release cadence):
 # * Parse the major/minor version of the tag
 # * Delete any corresponding rc/* branch from origin
 
@@ -8,7 +8,7 @@ name: Delete Deployed Release Candidate Branch
 on:
   push:
     tags:
-      - 'released/**'
+      - 'released/wmda/**'
 
 jobs:
   delete-rc-branch:

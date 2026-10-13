@@ -13,9 +13,11 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
+using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
+using AutoFixture;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -35,8 +37,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         private IAzureDatabaseManager azureDatabaseManager;
         private IDataRefreshSupportNotificationSender dataRefreshSupportNotificationSender;
         private IDataRefreshCompletionNotifier dataRefreshCompletionNotifier;
+        private IDonorGenotypePrecomputationRunCanceller precomputationRunCanceller;
 
         private IServiceScopeFactory serviceScopeFactory;
+
+        private Fixture fixture;
 
         private IDataRefreshOrchestrator dataRefreshOrchestrator;
         private const string ExistingHlaVersion = "old";
@@ -46,6 +51,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         [SetUp]
         public void SetUp()
         {
+            fixture = new Fixture();
+
             logger = Substitute.For<IMatchingAlgorithmImportLogger>();
             activeDatabaseProvider = Substitute.For<IActiveDatabaseProvider>();
             dataRefreshRunner = Substitute.For<IDataRefreshRunner>();
@@ -53,6 +60,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             azureDatabaseManager = Substitute.For<IAzureDatabaseManager>();
             dataRefreshSupportNotificationSender = Substitute.For<IDataRefreshSupportNotificationSender>();
             dataRefreshCompletionNotifier = Substitute.For<IDataRefreshCompletionNotifier>();
+            precomputationRunCanceller = Substitute.For<IDonorGenotypePrecomputationRunCanceller>();
             serviceScopeFactory = BuildServiceScopeFactoryResolving(dataRefreshHistoryRepository);
 
             dataRefreshOrchestrator = BuildDataRefreshOrchestrator();
@@ -104,6 +112,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 new AzureDatabaseNameProvider(settings),
                 dataRefreshSupportNotificationSender,
                 dataRefreshCompletionNotifier,
+                precomputationRunCanceller,
                 serviceScopeFactory
             );
         }
@@ -286,6 +295,215 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshCompletionNotifier.ReceivedWithAnyArgs().NotifyOfFailure(default);
         }
+
+        #region Failures after the record is closed
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenRefreshFailsAndCompletionMessageCannotBePublished_StillClosesRecordAsFailed()
+        {
+            GivenTheRefreshFails();
+            GivenNoCompletionMessageCanBePublished();
+
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+
+            await dataRefreshHistoryRepository.Received()
+                .UpdateExecutionDetails(DefaultRecordId, Arg.Any<string>(), Arg.Is<DateTime?>(finishTime => finishTime.HasValue));
+            await dataRefreshHistoryRepository.Received().UpdateSuccessFlag(DefaultRecordId, false);
+        }
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenRefreshFailsAndCompletionMessageCannotBePublished_DoesNotThrow()
+        {
+            // A throw makes Service Bus deliver the request again. While the record stayed open, each delivery ran the failed
+            // refresh again, until the request was dead-lettered.
+            GivenTheRefreshFails();
+            GivenNoCompletionMessageCanBePublished();
+
+            var act = () => dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+
+            await act.Should().NotThrowAsync();
+        }
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenRefreshFailsAndCompletionMessageCannotBePublished_LogsThePublishFailure()
+        {
+            GivenTheRefreshFails();
+            var publishFailure = GivenNoCompletionMessageCanBePublished();
+
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+
+            logger.Received().SendTrace(Arg.Is<string>(message => message.Contains(publishFailure)), LogLevel.Error);
+        }
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenRefreshFails_ClosesRecordBeforeNotifyingOfFailure()
+        {
+            // The notifications must only go out for a closed record. If they went out first, a failure to send them could
+            // stop the record from being closed.
+            GivenTheRefreshFails();
+
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+
+            Received.InOrder(() =>
+            {
+                dataRefreshHistoryRepository.UpdateSuccessFlag(DefaultRecordId, false);
+                dataRefreshCompletionNotifier.NotifyOfFailure(DefaultRecordId);
+            });
+        }
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenSuccessMessageCannotBePublished_DoesNotStoreRecordAsFailed()
+        {
+            // Only the success publish fails, as in a short Service Bus outage. Then a later failure publish can work, and the
+            // record can be marked as failed after it was marked successful. That would send searches back to the old database.
+            dataRefreshCompletionNotifier.NotifyOfSuccess(Arg.Any<int>()).ThrowsAsync(new Exception(fixture.Create<string>()));
+
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+
+            await dataRefreshHistoryRepository.Received().UpdateSuccessFlag(DefaultRecordId, true);
+            await dataRefreshHistoryRepository.DidNotReceive().UpdateSuccessFlag(DefaultRecordId, false);
+        }
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenSuccessMessageCannotBePublished_DoesNotReportRefreshAsFailed()
+        {
+            GivenNoCompletionMessageCanBePublished();
+
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+
+            await dataRefreshCompletionNotifier.DidNotReceiveWithAnyArgs().NotifyOfFailure(default);
+            logger.DidNotReceive().SendTrace(Arg.Any<string>(), LogLevel.Critical);
+        }
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenSuccessMessageCannotBePublished_LogsThePublishFailure()
+        {
+            var publishFailure = GivenNoCompletionMessageCanBePublished();
+
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+
+            logger.Received().SendTrace(Arg.Is<string>(message => message.Contains(publishFailure)), LogLevel.Error);
+        }
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenSuccessMessageCannotBePublished_DoesNotThrow()
+        {
+            GivenNoCompletionMessageCanBePublished();
+
+            var act = () => dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+
+            await act.Should().NotThrowAsync();
+        }
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenOldDatabaseCannotBeScaledDown_DoesNotStoreRecordAsFailed()
+        {
+            // The record is already closed as successful, and the refreshed database is already the active one. Marking the
+            // record as failed would send searches back to the old database.
+            GivenTheOldDatabaseCannotBeScaledDown();
+
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+
+            await dataRefreshHistoryRepository.Received().UpdateSuccessFlag(DefaultRecordId, true);
+            await dataRefreshHistoryRepository.DidNotReceive().UpdateSuccessFlag(DefaultRecordId, false);
+        }
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenOldDatabaseCannotBeScaledDown_SendsTeardownFailureAlert()
+        {
+            GivenTheOldDatabaseCannotBeScaledDown();
+
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+
+            await dataRefreshSupportNotificationSender.Received().SendTeardownFailureAlert(DefaultRecordId);
+        }
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenOldDatabaseCannotBeScaledDown_StillNotifiesOfSuccess()
+        {
+            GivenTheOldDatabaseCannotBeScaledDown();
+
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+
+            await dataRefreshCompletionNotifier.Received().NotifyOfSuccess(DefaultRecordId);
+            await dataRefreshCompletionNotifier.DidNotReceiveWithAnyArgs().NotifyOfFailure(default);
+        }
+
+        private void GivenTheRefreshFails()
+        {
+            dataRefreshRunner.RefreshData(Arg.Any<int>(), Arg.Any<CancellationToken>()).Throws(new Exception(fixture.Create<string>()));
+        }
+
+        /// <summary>
+        /// Every publish to the completion topic fails, as it does when the topic does not exist, or when Service Bus is still
+        /// unavailable after all send retries.
+        /// </summary>
+        /// <returns>The message of the exception that each publish throws.</returns>
+        private string GivenNoCompletionMessageCanBePublished()
+        {
+            var publishFailure = fixture.Create<string>();
+            dataRefreshCompletionNotifier.NotifyOfSuccess(Arg.Any<int>()).ThrowsAsync(new Exception(publishFailure));
+            dataRefreshCompletionNotifier.NotifyOfFailure(Arg.Any<int>()).ThrowsAsync(new Exception(publishFailure));
+            return publishFailure;
+        }
+
+        private void GivenTheOldDatabaseCannotBeScaledDown()
+        {
+            azureDatabaseManager.UpdateDatabaseSize(Arg.Any<string>(), Arg.Any<AzureDatabaseSize>(), Arg.Any<int?>())
+                .ThrowsAsync(new Exception(fixture.Create<string>()));
+        }
+
+        #endregion
+
+        #region The donor genotype precomputation run
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenRefreshFails_CancelsThePrecomputationRunOfTheRecord()
+        {
+            GivenTheRefreshFails();
+
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+
+            await precomputationRunCanceller.Received(1).CancelRun(Arg.Is<DataRefreshRecord>(r => r.Id == DefaultRecordId));
+        }
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenRefreshFails_CancelsThePrecomputationRunAfterTheFailureIsReported()
+        {
+            // The removal of the staging data waits for the statements of the workers, so it must not delay the record or the
+            // notifications.
+            GivenTheRefreshFails();
+
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+
+            Received.InOrder(() =>
+            {
+                dataRefreshHistoryRepository.UpdateSuccessFlag(DefaultRecordId, false);
+                dataRefreshCompletionNotifier.NotifyOfFailure(DefaultRecordId);
+                precomputationRunCanceller.CancelRun(Arg.Is<DataRefreshRecord>(r => r.Id == DefaultRecordId));
+            });
+        }
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenJobSuccessful_DoesNotCancelThePrecomputationRun()
+        {
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+
+            await precomputationRunCanceller.DidNotReceiveWithAnyArgs().CancelRun(null);
+        }
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenLeaseIsLostMidRun_DoesNotCancelThePrecomputationRun()
+        {
+            // The invocation that took the lease over continues the stage, and with it the run.
+            GivenTheLeaseIsLostDuringA(refresh: token => token.ThrowIfCancellationRequested());
+
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+
+            await precomputationRunCanceller.DidNotReceiveWithAnyArgs().CancelRun(null);
+        }
+
+        #endregion
 
         #region Run-level lease
 

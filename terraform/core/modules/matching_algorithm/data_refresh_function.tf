@@ -13,7 +13,7 @@ locals {
     "AutoMapper:LicenseKey" = var.AUTOMAPPER_LICENSE_KEY
 
     "AzureManagement:Authentication:ClientId"     = var.AZURE_CLIENT_ID
-    "AzureManagement:Authentication:ClientSecret" = var.AZURE_CLIENT_SECRET
+    "AzureManagement:Authentication:ClientSecret" = var.key_vault.secret_refs["azure-client-secret"]
     "AzureManagement:Authentication:OAuthBaseUrl" = var.AZURE_OAUTH_BASEURL
     "AzureManagement:Authentication:TenantId"     = var.AZURE_TENANT_ID
 
@@ -22,7 +22,7 @@ locals {
     "AzureManagement:Database:ResourceGroupName"                = local.data_refresh_sql_rg_name
     "AzureManagement:Database:SubscriptionId"                   = local.data_refresh_sql_subscription
 
-    "AzureStorage:ConnectionString" = var.azure_storage.primary_connection_string
+    "AzureStorage:ConnectionString" = var.key_vault.secret_refs["azure-storage-connection-string"]
 
     "DataRefresh:ActiveDatabaseAutoPauseTimeout"                                            = var.DATA_REFRESH_DB_AUTO_PAUSE_ACTIVE
     "DataRefresh:ActiveDatabaseSize"                                                        = var.DATA_REFRESH_DB_SIZE_ACTIVE
@@ -44,22 +44,30 @@ locals {
     "DataRefresh:DormantDatabaseSize"                                                       = var.DATA_REFRESH_DB_SIZE_DORMANT
     "DataRefresh:LeaseDurationMinutes"                                                      = var.DATA_REFRESH_LEASE_DURATION_MINUTES
     "DataRefresh:LeaseRenewalIntervalSeconds"                                               = var.DATA_REFRESH_LEASE_RENEWAL_INTERVAL_SECONDS
+    "DataRefresh:Precompute:AbandonBatchesCronSchedule"                                     = var.DATA_REFRESH_PRECOMPUTE_ABANDON_BATCHES_CRON_SCHEDULE
+    "DataRefresh:Precompute:FinaliseRunsCronSchedule"                                       = var.DATA_REFRESH_PRECOMPUTE_FINALISE_RUNS_CRON_SCHEDULE
+    "DataRefresh:Precompute:MaxBatchRetries"                                                = var.DATA_REFRESH_PRECOMPUTE_MAX_BATCH_RETRIES
+    "DataRefresh:Precompute:RequestsSubscription"                                           = azurerm_servicebus_subscription.precomputation-worker.name
+    "DataRefresh:Precompute:RequestsTopic"                                                  = azurerm_servicebus_topic.donor-genotype-precomputation-requests.name
+    "DataRefresh:Precompute:RequeueBatchesCronSchedule"                                     = var.DATA_REFRESH_PRECOMPUTE_REQUEUE_BATCHES_CRON_SCHEDULE
     "DataRefresh:RefreshDatabaseSize"                                                       = var.DATA_REFRESH_DB_SIZE_REFRESH
     "DataRefresh:SendRetryCount"                                                            = var.SERVICE_BUS_SEND_RETRY_COUNT
     "DataRefresh:SendRetryCooldownSeconds"                                                  = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
+    "DataRefresh:WatchdogCronSchedule"                                                      = var.DATA_REFRESH_WATCHDOG_CRON_SCHEDULE
+    "DataRefresh:WatchdogGraceDurationMinutes"                                              = var.DATA_REFRESH_WATCHDOG_GRACE_DURATION_MINUTES
 
-    "HlaMetadataDictionary:AzureStorageConnectionString"                          = var.azure_storage.primary_connection_string
+    "HlaMetadataDictionary:AzureStorageConnectionString"                          = var.key_vault.secret_refs["azure-storage-connection-string"]
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl"                              = var.WMDA_FILE_URL
     "HlaMetadataDictionary:SearchRelatedMetadata:CacheSlidingExpirationInSeconds" = var.SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC
 
-    "MacDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string
+    "MacDictionary:AzureStorageConnectionString" = var.key_vault.secret_refs["azure-storage-connection-string"]
     "MacDictionary:TableName"                    = var.mac_import_table.name
 
-    "MessagingServiceBus:ConnectionString"         = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
+    "MessagingServiceBus:ConnectionString"         = var.key_vault.secret_refs["servicebus-read-write-connection-string"]
     "MessagingServiceBus:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
     "MessagingServiceBus:SendRetryCooldownSeconds" = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
-    "NotificationsServiceBus:ConnectionString"         = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
+    "NotificationsServiceBus:ConnectionString"         = var.key_vault.secret_refs["servicebus-write-only-connection-string"]
     "NotificationsServiceBus:AlertsTopic"              = var.servicebus_topics.alerts.name
     "NotificationsServiceBus:NotificationsTopic"       = var.servicebus_topics.notifications.name
     "NotificationsServiceBus:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
@@ -82,10 +90,19 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_data_refresh_f
   storage_account_access_key  = var.shared_function_storage.primary_access_key
   storage_account_name        = var.shared_function_storage.name
 
+  // Used to resolve the @Microsoft.KeyVault app settings and connection strings below. The role assignment that lets
+  // this identity read the vault lives in the root module, so it is ordered by the depends_on on the module block.
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [var.key_vault.function_apps_identity_id]
+  }
+
+  key_vault_reference_identity_id = var.key_vault.function_apps_identity_id
+
   site_config {
     application_insights_key = var.application_insights.instrumentation_key
     application_stack {
-      dotnet_version              = "v8.0"
+      dotnet_version              = "v10.0"
       use_dotnet_isolated_runtime = true
     }
     cors {
@@ -111,27 +128,32 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_data_refresh_f
 
   tags = var.general.common_tags
 
-  app_settings = local.data_refresh_func_app_settings
+  app_settings = merge(local.data_refresh_func_app_settings, local.match_prediction_func_app_settings)
 
   connection_string {
     name  = "SqlA"
     type  = "SQLAzure"
-    value = local.matching_transient_database_a_connection_string
+    value = local.sql_kv_ref["matching-transient-a-sql-connection-string"]
   }
   connection_string {
     name  = "SqlB"
     type  = "SQLAzure"
-    value = local.matching_transient_database_b_connection_string
+    value = local.sql_kv_ref["matching-transient-b-sql-connection-string"]
   }
   connection_string {
     name  = "PersistentSql"
     type  = "SQLAzure"
-    value = local.matching_persistent_database_connection_string
+    value = local.sql_kv_ref["matching-persistent-sql-connection-string"]
   }
   connection_string {
     name  = "DonorSql"
     type  = "SQLAzure"
-    value = local.matching_donor_database_connection_string
+    value = local.sql_kv_ref["matching-donor-sql-connection-string"]
+  }
+  connection_string {
+    name  = "MatchPredictionSql"
+    type  = "SQLAzure"
+    value = var.match_prediction_sql_database.connection_string_kv_ref
   }
 
   lifecycle {

@@ -7,6 +7,51 @@ This includes both schema and data workflow changes.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 4.1.0
+
+Four new tables for the donor genotype precomputation stage of the data refresh. Run the migration on both transient
+databases. Nothing writes to them until that stage is released, and each data refresh wipes them.
+
+### DonorGenotypePrecomputationRuns
+
+One row per run of the stage. The stage resumes from it.
+
+* `Id`
+* `DataRefreshRecordId` - unique; the `DataRefreshHistory` record of the refresh
+* `HlaNomenclatureVersion` - the version that every value of the run is imputed under
+* `Status` - `Building`, `Running`, `Completed`, `CompletedWithFailures` or `Cancelled`
+* `GroupsPerBatch`, `TotalGroupCount`, `TotalBatchCount`, `TotalDonorAssignmentCount`
+* `TotalDonorCount` - the donors of the build: the base of the failed-donor fraction
+* `ManualRetryCount` - how many times a manual retry sent the failed batches again
+* `CreatedUtc`, `StatusDateUtc`, `CompletedUtc`
+
+### DonorGenotypePrecomputationBatches
+
+One row per worker message: a contiguous range of group ids.
+
+* `Id`, `RunId`, `BatchNumber` - (`RunId`, `BatchNumber`) is unique
+* `FirstGroupId`, `LastGroupId`, `GroupCount`, `DonorAssignmentCount`
+* `Status` - `Pending`, `Requested`, `InProgress`, `ResultsReceived`, `Failed`, `Abandoned` or `PermanentlyFailed`
+* `RetryCount`, `FailureMessage`, `FailureException`, `FailedGroupCount`
+* `LeaseOwner`, `LeaseExpiresUtc` - the worker that holds the batch
+* `DispatchedUtc`, `StatusDateUtc`, `CompletedUtc`
+
+### DonorGenotypePrecomputationGroups
+
+Staging, truncated when the run completes. One row per imputation: the donors that share a typing (restricted to the
+loci of `AllowedLociKey`), a registry and an ethnicity.
+
+* `Id` - given by the build, contiguous per batch; not an identity
+* `RunId`, `AllowedLociKey`, `RepresentativeDonorId`, `DonorCount`
+* `SubjectGenotypeSetValueId` - the stored value, once a worker has computed it
+* `FailureMessage` - set when the value could not be computed
+
+### DonorGenotypePrecomputationGroupDonors
+
+Staging, truncated when the run completes. The donors of each group: four rows per donor.
+
+* `GroupId`, `DonorId` - the clustered primary key
+
 ## 3.0.0
 * Updated .NET version from 6.0 to 8.0
 

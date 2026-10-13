@@ -1,7 +1,4 @@
-using Atlas.Common.Caching;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
-using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
-using LazyCache;
 
 namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase
 {
@@ -13,21 +10,19 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
 
     public class ActiveDatabaseProvider : IActiveDatabaseProvider
     {
-        private readonly IDataRefreshHistoryRepository dataRefreshHistoryRepository;
-        private readonly IAppCache cache;
+        private readonly IActiveDataRefreshRecordAccessor activeDataRefreshRecordAccessor;
 
-        public ActiveDatabaseProvider(IDataRefreshHistoryRepository dataRefreshHistoryRepository, ITransientCacheProvider cacheProvider)
+        public ActiveDatabaseProvider(IActiveDataRefreshRecordAccessor activeDataRefreshRecordAccessor)
         {
-            this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
-            cache = cacheProvider.Cache;
+            this.activeDataRefreshRecordAccessor = activeDataRefreshRecordAccessor;
         }
 
         public TransientDatabase GetActiveDatabase()
         {
-            // Caching this rather than fetching every time means that all queries within the lifetime of this class will access the same database,
-            // even if the refresh job finishes mid-request.
+            // The accessor caches the active record rather than fetching it every time, which means that all queries within
+            // the lifetime of this class will access the same database, even if the refresh job finishes mid-request.
             // As such it is especially important that this class be injected once per lifetime scope (i.e. singleton per http request)
-            return cache.GetOrAdd("database", () => dataRefreshHistoryRepository.GetActiveDatabase() ?? TransientDatabase.DatabaseA);
+            return activeDataRefreshRecordAccessor.GetActiveRecord()?.Database ?? TransientDatabase.DatabaseA;
         }
 
         public TransientDatabase GetDormantDatabase()
