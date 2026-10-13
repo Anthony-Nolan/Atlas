@@ -9,7 +9,7 @@ schedules:
 
 pr: none
 
-# Every dependency of the tests runs in a container on the build agent (see test-pipeline-dependencies.yml),
+# Every dependency of the tests runs in a container on the build agent (see test-pipeline-run-tests.yml),
 # so no Azure resources, and no secrets, are needed.
 variables:
   - name: RUN_CI_PERF_TESTS_OFF
@@ -44,7 +44,8 @@ stages:
         for project in $(testProjects); do
           dotnet sln SystemTests.slnx add "$project/$project.csproj"
         done
-        dotnet build SystemTests.slnx
+        dotnet restore SystemTests.slnx -p:RestoreUseStaticGraphEvaluation=true
+        dotnet build SystemTests.slnx --no-restore -p:RunAnalyzersDuringBuild=false
       displayName: 'Build test projects'
     # Published in the "SystemTests" artifact, in a folder named after each project, for the jobs of the Test stage.
     # The test projects do not all build to the same folder, so MSBuild is asked where each one did.
@@ -58,7 +59,7 @@ stages:
       artifact: SystemTests
       displayName: 'Publish test projects'
 
-# Each job runs its tests against its own SQL Server and Azurite (see test-pipeline-dependencies.yml).
+# Each job runs its tests against its own SQL Server, or Azurite, as it needs (see test-pipeline-run-tests.yml).
 # Connection strings are passed as environment variables, which override the local defaults in each project's appsettings.json.
 - stage: Test
   dependsOn: Build
@@ -135,3 +136,5 @@ stages:
       parameters:
         project: Atlas.MultipleAlleleCodeDictionary.Test.Integration
         testRunTitle: 'MAC Dictionary Integration Tests'
+        sqlServer: false
+        azurite: true
