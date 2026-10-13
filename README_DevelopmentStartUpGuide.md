@@ -169,7 +169,7 @@ The matching validation tests contact external dependencies and require connecti
 - Install terraform.
   - Via chocolatey: `choco install terraform --version <version number required by Atlas>`
   - Alternative installation instructions: <https://learn.hashicorp.com/terraform/getting-started/install.html>.
-  - Warning: you may experience issues if you try to use a newer version of terraform with Atlas; the terraform version required is listed within the `versions.tf` file of the terraform project subfolder.
+  - Atlas requires Terraform 1.9 or later (see `required_version` in the `versions.tf` file of the terraform project subfolder); CI and the release pipeline use 1.16.5.
   - There are guides and tools available online if you wish to have multiple versions of terraform installed on your machine.
 
 - Install the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-windows?view=azure-cli-latest)
