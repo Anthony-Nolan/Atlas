@@ -36,10 +36,13 @@ Feature flags permit greater control over the release of new features (see this 
 ### 4.1.0
 
 #### Debug
-* BREAKING: All debug endpoints (`/debug/` route prefix) have been removed from every Atlas functions app, along with the `Atlas.Debug.Client` and `Atlas.Debug.Client.Models` projects, which are no longer built or published. `4.0.0` is the last version that has them.
-  * [Atlas E2E tests](https://github.com/Anthony-Nolan/Atlas.Auto.Tests), the only consumer, now work with Atlas resources (SQL, Service Bus, Blob Storage) directly.
+* BREAKING: The `Atlas.Debug.Client` and `Atlas.Debug.Client.Models` projects have been removed, and are no longer built or published. `4.0.0` is the last version that has them.
+* BREAKING: The debug endpoints that only wrapped a resource (SQL, Service Bus, Blob Storage or Application Insights) have been removed from the Donor Import, Matching Algorithm, Repeat Search, Search Tracking and top-level functions apps.
+  * [Atlas E2E tests](https://github.com/Anthony-Nolan/Atlas.Auto.Tests), the only consumer, now work with these resources directly.
   * The `debug` Service Bus subscriptions are kept, as the E2E tests read them directly.
-  * See [ADR 010](/ArchitecturalDecisionRecord/Phase2/010-Publish_Debug_Client.md#update-2).
+* The debug endpoints that need Atlas code are kept: `ConvertHla`, `ScoringMetadata`, `Dpb1TceGroups` and `SerologyToAlleleMapping` on the Matching Algorithm functions app, and `Impute` and `MatchPatientDonorGenotypes` on the Match Prediction functions app.
+  * BREAKING: The `CalculateGenotypeLikelihood` debug endpoint has been removed. It used a likelihood calculation that search does not use. Use `Impute`, which returns the likelihood of each imputed genotype from the calculation that search uses.
+* See [ADR 010](/ArchitecturalDecisionRecord/Phase2/010-Publish_Debug_Client.md#update-2).
 
 ### 3.0.0
 * E: Updated .NET version from 6.0 to 8.0

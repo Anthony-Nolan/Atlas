@@ -28,4 +28,8 @@ As they are spread across different apps, it makes sense to collate them into a 
 
 ## Update 2
 * The debug client proved to be an unnecessary HTTP layer over SQL, Service Bus and Blob Storage. The E2E test project, [Atlas.Auto.Tests](https://github.com/Anthony-Nolan/Atlas.Auto.Tests), now accesses these resources directly (see [ATL-356](https://github.com/Anthony-Nolan/Atlas.Auto.Tests/pull/73)).
-* `Atlas.Debug.Client` and `Atlas.Debug.Client.Models` have been removed, along with all debug endpoints, and are no longer published from Atlas `4.1.0` onwards. `4.0.0` is the last version that has them.
+* `Atlas.Debug.Client` and `Atlas.Debug.Client.Models` have been removed, and are no longer published from Atlas `4.1.0` onwards. `4.0.0` is the last version that has them.
+* The debug endpoints that only wrapped a resource have been removed with them. The rule from now on:
+  * No debug endpoint may only wrap a resource that can be accessed directly: SQL, Service Bus, Blob Storage or Application Insights.
+  * A debug endpoint that needs Atlas code is allowed, e.g., the HLA Metadata Dictionary, the matching or match prediction algorithms, or key generation. It keeps the `/debug/` route prefix, lives in the functions app that owns that code, and keeps its request and response models in that app: they are not published.
+* The HLA Metadata Dictionary endpoints (`ConvertHla`, `ScoringMetadata`, `Dpb1TceGroups`, `SerologyToAlleleMapping`) and the match prediction endpoints (`Impute`, `MatchPatientDonorGenotypes`) are kept under this rule.

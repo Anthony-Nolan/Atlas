@@ -1,8 +1,10 @@
 using System.Reflection;
 using AwesomeAssertions;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 
 namespace Atlas.DependencyInjection.Test;
@@ -71,26 +73,28 @@ internal class FunctionAppDependencyInjectionTests
     }
 
     /// <summary>
-    /// The provider does not look inside registration factories when it is built, so a singleton whose factory resolves a
-    /// scoped service (a captive dependency) only fails when the singleton is resolved. Failures for any other reason, such
-    /// as the connection strings this host does not have, are not what this test checks.
+    /// The provider does not look inside registration factories when it is built. So a factory that resolves a missing
+    /// registration (such as a keyed Service Bus client), or a singleton factory that resolves a scoped service (a captive
+    /// dependency), only fails when the service is resolved. This resolves every Atlas factory registration in effect, and
+    /// reports only those failures: others, such as the connection strings this host does not have, are not what it checks.
     /// </summary>
     [TestCaseSource(nameof(FunctionApps))]
-    public void SingletonFactories_DoNotResolveScopedServices(FunctionApp app)
+    public async Task FactoryRegistrations_CanBeResolved(FunctionApp app)
     {
         using var host = BuildHost(app, out var services);
+        await using var scope = host.Services.CreateAsyncScope();
 
-        var captiveDependencies = services
-            .Where(descriptor => !descriptor.IsKeyedService && !descriptor.ServiceType.ContainsGenericParameters)
-            .GroupBy(descriptor => descriptor.ServiceType)
+        var failures = services
+            .Where(descriptor => !descriptor.ServiceType.ContainsGenericParameters)
+            .GroupBy(descriptor => (descriptor.ServiceType, descriptor.ServiceKey))
             .Select(registrations => registrations.Last())
-            .Where(descriptor => descriptor is { Lifetime: ServiceLifetime.Singleton, ImplementationFactory: not null })
-            .Where(descriptor => descriptor.ImplementationFactory!.Method.DeclaringType?.Namespace?.StartsWith("Atlas") == true)
-            .Select(descriptor => (descriptor.ServiceType, Error: ScopedServiceResolvedFromRoot(host.Services, descriptor.ServiceType)))
+            .Where(IsAtlasFactory)
+            .Select(descriptor => (Service: Describe(descriptor), Error: DependencyInjectionError(() => Resolve(scope.ServiceProvider, descriptor))))
             .Where(result => result.Error != null)
-            .Select(result => $"{result.ServiceType.Name}: {result.Error}");
+            .Select(result => $"{result.Service}: {result.Error}")
+            .ToList();
 
-        captiveDependencies.Should().BeEmpty();
+        failures.Should().BeEmpty();
     }
 
     private static IHost BuildHost(FunctionApp app) => BuildHost(app, out _);
@@ -100,6 +104,7 @@ internal class FunctionAppDependencyInjectionTests
         IServiceCollection? registered = null;
 
         var host = new HostBuilder()
+            .ConfigureAppConfiguration(builder => builder.AddInMemoryCollection(TemplateSettings(app)))
             .ConfigureFunctionsWebApplication(_ => { })
             .ConfigureServices(collection =>
             {
@@ -120,18 +125,88 @@ internal class FunctionAppDependencyInjectionTests
         return host;
     }
 
-    private static string? ScopedServiceResolvedFromRoot(IServiceProvider root, Type serviceType)
+    /// <summary>
+    /// The app's <c>local.settings.template.json</c>, so that factories get past reading their settings to the services
+    /// they resolve. Placeholder values are replaced with fakes that parse but are never connected to.
+    /// </summary>
+    private static Dictionary<string, string?> TemplateSettings(FunctionApp app)
     {
+        var templatePath = Path.Combine(RepositoryRoot(), app.Assembly.GetName().Name!, "local.settings.template.json");
+        var template = JObject.Parse(File.ReadAllText(templatePath));
+
+        var values = ((JObject?)template["Values"])?.Properties() ?? [];
+        var connectionStrings = ((JObject?)template["ConnectionStrings"])?.Properties()
+            .Select(property => new JProperty($"ConnectionStrings:{property.Name}", property.Value)) ?? [];
+
+        return values.Concat(connectionStrings).ToDictionary(
+            property => property.Name,
+            property => (string?)FakeIfPlaceholder(property.Name, property.Value.ToString()));
+    }
+
+    private static string FakeIfPlaceholder(string key, string value)
+    {
+        if (value != "override-this")
+        {
+            return value;
+        }
+
+        return key switch
+        {
+            _ when key.Contains("ServiceBus") && key.EndsWith("ConnectionString") =>
+                "Endpoint=sb://test.servicebus.windows.net/;SharedAccessKeyName=test;SharedAccessKey=dGVzdA==",
+            _ when key.Contains("AppConfiguration") => "Endpoint=https://test.azconfig.io;Id=test;Secret=dGVzdA==",
+            _ when key.EndsWith("Url") => "https://localhost/",
+            _ => "test",
+        };
+    }
+
+    private static string RepositoryRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory != null && !File.Exists(Path.Combine(directory.FullName, "Atlas.slnx")))
+        {
+            directory = directory.Parent;
+        }
+
+        return directory?.FullName ?? throw new DirectoryNotFoundException("Could not find the repository root (Atlas.slnx).");
+    }
+
+    private static bool IsAtlasFactory(ServiceDescriptor descriptor)
+    {
+        var factory = descriptor.IsKeyedService ? descriptor.KeyedImplementationFactory?.Method : descriptor.ImplementationFactory?.Method;
+        return factory?.DeclaringType?.Namespace?.StartsWith("Atlas") == true;
+    }
+
+    private static string Describe(ServiceDescriptor descriptor) =>
+        descriptor.IsKeyedService ? $"{descriptor.ServiceType.Name} (key {descriptor.ServiceKey})" : descriptor.ServiceType.Name;
+
+    private static object? Resolve(IServiceProvider provider, ServiceDescriptor descriptor) =>
+        descriptor.IsKeyedService
+            ? provider.GetRequiredKeyedService(descriptor.ServiceType, descriptor.ServiceKey)
+            : provider.GetService(descriptor.ServiceType);
+
+    /// <summary>The message of a registration problem behind the failure to resolve, or null if there is none.</summary>
+    private static string? DependencyInjectionError(Action resolve)
+    {
+        string[] registrationProblems =
+        [
+            "No service for type",
+            "No keyed service for type",
+            "Unable to resolve service for type",
+            "from root provider",
+            "Cannot consume scoped service",
+        ];
+
         try
         {
-            root.GetService(serviceType);
+            resolve();
             return null;
         }
         catch (Exception exception)
         {
             for (var current = exception; current != null; current = current.InnerException)
             {
-                if (current is InvalidOperationException && current.Message.Contains("from root provider"))
+                if (current is InvalidOperationException && registrationProblems.Any(current.Message.Contains))
                 {
                     return current.Message;
                 }
