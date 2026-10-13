@@ -1,7 +1,7 @@
 # Runs one test project, built by the Build stage, against the dependencies started on the build agent.
 # Templates are expanded before the job runs, so the job needs nothing from the repository but the build output.
 parameters:
-  # The test project. Its build output is published as an artifact of the same name.
+  # The test project. Its build output is in the "SystemTests" artifact, in a folder of the same name.
   - name: project
     type: string
   - name: testRunTitle
@@ -18,7 +18,8 @@ steps:
   - checkout: none
   - template: test-pipeline-dependencies.yml
   - download: current
-    artifact: ${{ parameters.project }}
+    artifact: SystemTests
+    patterns: '${{ parameters.project }}/**'
     displayName: 'Download ${{ parameters.project }}'
 
   # Run from the build output, where the tests read appsettings.json from.
@@ -28,7 +29,7 @@ steps:
         --logger trx --results-directory "$(Agent.TempDirectory)/TestResults" \
         ${filter:+--filter "$filter"}
     displayName: '${{ parameters.testRunTitle }}'
-    workingDirectory: '$(Pipeline.Workspace)/${{ parameters.project }}'
+    workingDirectory: '$(Pipeline.Workspace)/SystemTests/${{ parameters.project }}'
     env: ${{ parameters.env }}
 
   - task: PublishTestResults@2

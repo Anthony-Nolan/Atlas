@@ -10,7 +10,7 @@ schedules:
 pr: none
 
 parameters:
-  # Built once by the Build stage, and published as one artifact each, named after the project.
+  # Their build output is published by the Build stage, in the "SystemTests" artifact, in a folder named after the project.
   - name: testProjects
     type: object
     default:
@@ -46,12 +46,18 @@ stages:
       displayName: 'Use .Net sdk'
       inputs:
         version: 10.0.x
-    - ${{ each project in parameters.testProjects }}:
-      - script: dotnet build ${{ project }}/${{ project }}.csproj --output "$(Build.ArtifactStagingDirectory)/${{ project }}"
-        displayName: 'Build ${{ project }}'
-      - publish: '$(Build.ArtifactStagingDirectory)/${{ project }}'
-        artifact: ${{ project }}
-        displayName: 'Publish ${{ project }}'
+    - script: dotnet build Atlas.slnx
+      displayName: 'Build Atlas'
+    # The test projects do not all build to the same folder, so MSBuild is asked where each one did.
+    - bash: |
+        for project in ${{ join(' ', parameters.testProjects) }}; do
+          outputFolder=$(dotnet msbuild "$project/$project.csproj" -getProperty:TargetDir)
+          cp -r "$outputFolder" "$(Build.ArtifactStagingDirectory)/$project"
+        done
+      displayName: 'Collect test projects'
+    - publish: '$(Build.ArtifactStagingDirectory)'
+      artifact: SystemTests
+      displayName: 'Publish test projects'
 
 # Each job runs its tests against its own SQL Server and Azurite (see test-pipeline-dependencies.yml).
 # Connection strings are passed as environment variables, which override the local defaults in each project's appsettings.json.
