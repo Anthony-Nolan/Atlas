@@ -1,12 +1,17 @@
 ﻿using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
+using Atlas.Common.Notifications;
 using Atlas.MatchingAlgorithm.Api;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
+using Atlas.SearchTracking.Common.Clients;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
+using NSubstitute;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -21,12 +26,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests
         private const string ApiKeyHeader = "X-Samples-ApiKey";
         private const string ApiKey = "test-key";
 
+        private static IHost host;
         private static TestServer server;
 
         public static void StartServer()
         {
-
-            var builder = new WebHostBuilder()
+            host = new HostBuilder()
                 .UseContentRoot(Environment.CurrentDirectory)
                 .ConfigureAppConfiguration((context, config) =>
                 {
@@ -35,8 +40,22 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests
 
                     AddFeatureManagement(config);
                 })
-                .UseStartup<Startup>();
-            server = new TestServer(builder);
+                .ConfigureWebHost(webHost => webHost
+                    .UseTestServer()
+                    .UseStartup<Startup>()
+                    .ConfigureTestServices(RegisterMockServiceBusClients))
+                .Start();
+            server = host.GetTestServer();
+        }
+
+        /// <summary>
+        /// Every search publishes search tracking events, and failures raise notifications. These tests check matching and
+        /// scoring only, so nothing reads those messages: sending them to a real Service Bus would only slow each search down.
+        /// </summary>
+        private static void RegisterMockServiceBusClients(IServiceCollection services)
+        {
+            services.AddScoped(_ => Substitute.For<ISearchTrackingServiceBusClient>());
+            services.AddScoped(_ => Substitute.For<INotificationsClient>());
         }
 
         /// <summary>
@@ -57,7 +76,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests
 
         public static void StopServer()
         {
-            server.Dispose();
+            host.Dispose();
         }
 
         public static async Task<SearchAlgorithmApiResult> Search(SearchRequest matchingRequest)

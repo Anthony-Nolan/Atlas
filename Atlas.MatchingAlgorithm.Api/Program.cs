@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace Atlas.MatchingAlgorithm.Api
 {
@@ -7,12 +7,12 @@ namespace Atlas.MatchingAlgorithm.Api
     {
         public static void Main(string[] args)
         {
-            CreateWebHostBuilder(args).Build().Run();
+            CreateHostBuilder(args).Build().Run();
         }
 
-        private static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost
+        private static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host
                 .CreateDefaultBuilder(args)
-                .UseStartup<Startup>();
+                .ConfigureWebHostDefaults(webHost => webHost.UseStartup<Startup>());
     }
 }

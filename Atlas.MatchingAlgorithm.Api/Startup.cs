@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Reflection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
@@ -21,8 +22,8 @@ namespace Atlas.MatchingAlgorithm.Api
     {
         private readonly IConfiguration configuration;
 
-        // Configuration has been set up by the framework via WebHost.CreateDefaultBuilder
-        public Startup(IConfiguration configuration, IHostingEnvironment env)
+        // Configuration has been set up by the framework via Host.CreateDefaultBuilder
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             // Note that this code is also initiated by the MatchAlg Validation tests when running a virtual Server.
             // When it does so, the appSettings file that is being looked at is the one *in the Validation folder*,
@@ -121,7 +122,7 @@ namespace Atlas.MatchingAlgorithm.Api
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.ConfigureSwagger();
 
