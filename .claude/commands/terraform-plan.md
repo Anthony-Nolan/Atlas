@@ -11,13 +11,13 @@ Initialise the Terraform backend, select the matching workspace, and run a plan 
 
 The first argument (`$1`) selects the environment. It must be one of:
 
-| Environment | Workspace         | Var file                    |
-|-------------|--------------------|------------------------------|
-| `dev`       | `atlas-dev`         | `terraform/dev.tfvars`       |
-| `uat`       | `atlas-uat`         | `terraform/uat.tfvars`       |
-| `live`      | `atlas-production`  | `terraform/live.tfvars`      |
-| `wmda-uat`  | `atlas-wmda-uat`    | `terraform/wmda-uat.tfvars`  |
-| `wmda-live` | `atlas-wmda-live`   | `terraform/wmda-live.tfvars` |
+| Environment | Workspace            | Local var file               |
+|-------------|----------------------|------------------------------|
+| `dev`       | `atlas-dev`          | `terraform/dev.tfvars`       |
+| `uat`       | `atlas-uat`          | `terraform/uat.tfvars`       |
+| `live`      | `atlas-production`   | `terraform/live.tfvars`      |
+| `wmda-uat`  | `atlas-wmda-uat-new` | `terraform/wmda-uat.tfvars`  |
+| `wmda-live` | `atlas-wmda-live`    | `terraform/wmda-live.tfvars` |
 
 If `$1` is missing or not one of the values above, stop and ask the user which environment to plan for — do not guess or default to one.
 
