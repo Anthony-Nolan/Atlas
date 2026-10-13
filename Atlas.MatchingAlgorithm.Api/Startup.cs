@@ -20,6 +20,11 @@ namespace Atlas.MatchingAlgorithm.Api
 {
     public class Startup
     {
+        /// <summary>
+        /// The hosting environment of the in-memory server that the MatchAlg Validation tests run. The tests configure that server themselves.
+        /// </summary>
+        public const string ValidationTestsEnvironment = "ValidationTests";
+
         private readonly IConfiguration configuration;
 
         // Configuration has been set up by the framework via Host.CreateDefaultBuilder
@@ -30,7 +35,7 @@ namespace Atlas.MatchingAlgorithm.Api
             // so anything that this project looks for needs to be defined over there, as well as in this project's
             // appSettings file.
             // (Comment duplicated in Validation.ServiceConfiguration, Validation.appSettings, Api.Startup (twice), Api.appSettings)
-            if (!env.ContentRootPath.Contains("Test"))
+            if (!env.IsEnvironment(ValidationTestsEnvironment))
             {
                 var builder = new ConfigurationBuilder();
                 builder.AddConfiguration(configuration);

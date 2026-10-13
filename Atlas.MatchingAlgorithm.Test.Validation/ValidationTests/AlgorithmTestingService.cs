@@ -37,6 +37,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests
         public static void StartServer()
         {
             host = new HostBuilder()
+                .UseEnvironment(Startup.ValidationTestsEnvironment)
                 .UseContentRoot(Environment.CurrentDirectory)
                 .ConfigureAppConfiguration((context, config) =>
                 {

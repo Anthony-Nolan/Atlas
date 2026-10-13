@@ -11,9 +11,8 @@ pr: none
 
 # Every dependency of the tests runs in a container on the build agent (see test-pipeline-run-tests.yml),
 # so no Azure resources, and no secrets, are needed.
+# To also run the performance tests, define a RUN_CI_PERF_TESTS variable here (see IgnoreExceptOnCiPerfTestAttribute.cs).
 variables:
-  - name: RUN_CI_PERF_TESTS_OFF
-    value: 'This will get defined as an Environment Variable, which will enable various Perf-Test-only tests. See IgnoreExceptOnCiPerfTestAttribute.cs'
   # SQL Server runs in a container on each agent, so this password never leaves the agent.
   - name: sqlSaPassword
     value: 'Atlas-System-Tests-1'

@@ -78,7 +78,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
 
             await dataRefreshRunner.RefreshData(refreshRecordId);
 
-            var record =await dataRefreshHistoryRepository.GetRecord(refreshRecordId);
+            var record = await dataRefreshHistoryRepository.GetRecord(refreshRecordId);
             record.HlaNomenclatureVersion.Should().NotBeNullOrEmpty();
             record.HlaMetadataDictionarySnapshotUtc.Should().NotBeNull();
             record.HlaMetadataDictionarySnapshotUtc.Should().BeOnOrBefore(record.MetadataDictionaryRefreshCompleted!.Value);

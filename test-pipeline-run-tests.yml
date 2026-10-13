@@ -27,17 +27,24 @@ parameters:
 steps:
   - checkout: none
 
-  # The dependencies are started first and waited for last, so that they start up while the build output downloads.
+  # The dependencies are pinned to versions, so that a new image cannot break the tests unannounced.
+  # They are started first and waited for last, so that they start up while the .NET SDK installs and the build output downloads.
   - ${{ if parameters.sqlServer }}:
-    - bash: docker run -d --name atlas-sql -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD="$SQL_SA_PASSWORD" -p 1433:1433 mcr.microsoft.com/mssql/server:2022-latest
+    - bash: docker run -d --name atlas-sql -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD="$SQL_SA_PASSWORD" -p 1433:1433 mcr.microsoft.com/mssql/server:2022-CU27-ubuntu-22.04
       displayName: 'Start SQL Server'
       env:
         SQL_SA_PASSWORD: $(sqlSaPassword)
   - ${{ if parameters.azurite }}:
     - bash: >
-        docker run -d --name atlas-azurite -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/azure-storage/azurite
+        docker run -d --name atlas-azurite -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/azure-storage/azurite:3.37.0
         azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --skipApiVersionCheck
       displayName: 'Start Azurite'
+
+  # The same SDK as the Build stage, rather than whichever the agent image has.
+  - task: UseDotNet@2
+    displayName: 'Use .Net sdk'
+    inputs:
+      version: 10.0.x
 
   - download: current
     artifact: SystemTests

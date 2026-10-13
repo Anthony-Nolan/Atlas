@@ -152,17 +152,17 @@ It can be useful to run the Matching Algorithm API when locally debugging and te
         - It is recommended to point at an existing MAC dictionary on a remote dev/test system, in order to avoid having to populate your local emulator's MAC Dictionary (which takes several hours).
 
 ## Integration Tests
-- Some integration test suites, e.g., `Atlas.MultipleAlleleCodeDictionary.Test.Integration`, require a connection to an Azure Storage instance.
-- By default, the tests will look for a local storage instance, which would require Azure Storage Emulator to be running.
+- The integration test suites that use a database create and migrate it themselves; they only need a SQL Server to connect to.
+  - The matching and donor import migrations use `ONLINE` index operations, which need the Developer or Enterprise edition of SQL Server.
+    LocalDB and the Express edition cannot run them.
+- `Atlas.MultipleAlleleCodeDictionary.Test.Integration` requires a connection to an Azure Storage instance.
+  By default, it will look for a local storage instance, which would require Azurite to be running.
+- The connection strings default to a local SQL Server, in each test project's `appsettings.json`.
+  They can be overridden with environment variables, e.g. `ConnectionStrings__SqlA`, as the system tests pipeline does.
 
 ## Validation Tests
-The matching validation tests contact external dependencies and require connections to be configured.
-
-- Set up user-secrets for the `Atlas.MatchingAlgorithm.Test.Validation` project.
-  - Copying all secrets from the API project will work fine.
-- Ensure that the Azure Storage Emulator is running.
-- Ensure that you have recreated the HLA Metadata Dictionary to version `3330` locally (or have overridden the storage connection string to use a deployed environment with this
- version generated.) This can be done by hitting `{{matchingFunctionBaseUrl}}/RefreshHlaMetadataDictionaryToSpecificVersion`
+The matching validation tests need the same SQL Server as the integration tests, and nothing else:
+the HLA Metadata Dictionary and the MAC Dictionary are read from files, and the Service Bus clients are substituted.
 
 ## Terraform
 
