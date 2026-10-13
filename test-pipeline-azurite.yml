@@ -1,0 +1,19 @@
+# Starts Azurite (the Azure Storage emulator) on the build agent for a System Tests job, and waits until its table endpoint listens.
+# The tests' default "UseDevelopmentStorage=true" connection string points at it, and they create their own tables.
+steps:
+  - bash: |
+      docker run -d --name atlas-azurite -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/azure-storage/azurite \
+        azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --skipApiVersionCheck
+
+      for attempt in $(seq 1 30); do
+        if (echo > /dev/tcp/127.0.0.1/10002) 2> /dev/null; then
+          echo "Azurite is ready"
+          exit 0
+        fi
+        sleep 2
+      done
+
+      docker logs atlas-azurite
+      echo "##vso[task.logissue type=error]Azurite did not start within a minute"
+      exit 1
+    displayName: 'Start Azurite'

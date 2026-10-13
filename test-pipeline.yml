@@ -9,78 +9,18 @@ schedules:
 
 pr: none
 
+# Every dependency of the tests runs in a container on the build agent (see test-pipeline-sql-server.yml and
+# test-pipeline-azurite.yml), so no Azure resources, and no secrets, are needed.
 variables:
-  - group: Terraform
-  - group: TestTerraform
   - name: RUN_CI_PERF_TESTS_OFF
     value: 'This will get defined as an Environment Variable, which will enable various Perf-Test-only tests. See IgnoreExceptOnCiPerfTestAttribute.cs'
-  # SQL Server runs in a container on each agent (see test-pipeline-sql-server.yml), so this password never leaves the agent.
+  # SQL Server runs in a container on each agent, so this password never leaves the agent.
   - name: sqlSaPassword
     value: 'Atlas-System-Tests-1'
   - name: sqlServerConnection
     value: 'Server=localhost,1433;User ID=sa;Password=$(sqlSaPassword);MultipleActiveResultSets=True;TrustServerCertificate=True;'
 
 jobs:
-- job: Terraform
-  pool:
-    vmImage: 'ubuntu-latest'
-  steps:
-    - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
-      displayName: 'Use Terraform 1.16.5'
-      inputs:
-        terraformVersion: '1.16.5'
-    - script: 'terraform init -reconfigure -backend-config="storage_account_name=$(BACKEND_STORAGE_ACCOUNT_NAME)" -backend-config="container_name=$(BACKEND_STORAGE_CONTAINER_NAME)" -backend-config="resource_group_name=$(BACKEND_RESOURCE_GROUP_NAME)"'
-      workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/system-tests'
-      displayName: 'terraform init'
-      env:
-        ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
-    - script: |
-        echo Validating the syntax
-
-        terraform validate
-      workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/system-tests'
-      displayName: 'terraform validate'
-      env:
-        ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
-        ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-    - bash: |
-        echo Select terraform workspace and create if not exists
-        terraform workspace select $(TerraformWorkspace) || terraform workspace new $(TerraformWorkspace)
-      workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/system-tests'
-      displayName: 'terraform workspace'
-      env:
-        ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
-        ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-    - script: 'terraform apply -auto-approve -input=false'
-      workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/system-tests'
-      displayName: 'terraform apply'
-      env:
-        ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
-        ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-        ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-        TF_VAR_DATABASE_SERVER_ADMIN_LOGIN_PASSWORD: $(TF_VAR_DATABASE_SERVER_ADMIN_LOGIN_PASSWORD)
-
-    - task: Powershell@2
-      name: OutputTFVars
-      env:
-        ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
-        ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-      inputs:
-        targetType: 'inline'
-        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/system-tests'
-        script: |
-          $output = terraform output -json
-
-          $json = $output | ConvertFrom-Json
-
-          Write-Host $json
-
-          foreach($prop in $json.psobject.properties) {
-
-          Write-Host("##vso[task.setvariable variable=$($prop.Name);isOutput=true;]$($prop.Value.value)")
-          Write-Host(“Setting {0} to {1}” –f $prop.name, $prop.Value.value)
-          }
-
 - job: Matching_Algorithm_Integration_Tests
   pool:
     vmImage: 'ubuntu-latest'
@@ -121,8 +61,7 @@ jobs:
       testRunTitle: 'Matching Algorithm Integration Tests'
 
 - job: Matching_Algorithm_Validation_Tests
-  dependsOn: Terraform
-  # The scenarios run one at a time within a process (they share one DbContext), so they are split across agents instead.
+  # The scenarios run one at a time within a process, so they are split across agents instead.
   # Each shard has its own SQL Server, and sets up its own test data.
   strategy:
     matrix:
@@ -137,16 +76,14 @@ jobs:
         validationShard: 'Other'
   variables:
     matching_algorithm_validation_db_connection_string: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
-    azure_app_configuration_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.azure_app_configuration_connection_string'] ]
   pool:
     vmImage: 'ubuntu-latest'
-  #Your build pipeline references an undefined variable named ‘Parameters.packagesDirectory’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
   steps:
   - task: UseDotNet@2
     displayName: 'Use .Net sdk'
     inputs:
       version: 8.0.x
-      
+
   - task: UseDotNet@2
     displayName: 'Use .Net sdk'
     inputs:
@@ -187,15 +124,6 @@ jobs:
       filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
       keyname: PersistentSql
       connectionstringvalue: '$(matching_algorithm_validation_db_connection_string)'
-
-  - task: bendayconsulting.build-task.setjsonvalue.setjsonvalue@1
-    displayName: 'Set Azure App Configuration ConnectionString'
-    inputs:
-      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
-      numberOfLevels: 2
-      keyname1: AzureAppConfiguration
-      keyname2: ConnectionString
-      valueToSet: '$(azure_app_configuration_connection_string)'
 
   - task: DotNetCoreCLI@2
     displayName: 'Matching Validation Tests'
@@ -253,25 +181,16 @@ jobs:
         arguments: '--no-restore -v d'
         testRunTitle: 'Match Prediction Integration Tests'
 - job: Multiple_Allele_Code_Dictionary_Integration_Tests
-  dependsOn: Terraform
-  variables:
-    azure_storage_account_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.azure_storage_account_connection_string'] ]
   pool:
     vmImage: 'ubuntu-latest'
   steps:
+    # The tests' default storage connection string, "UseDevelopmentStorage=true", points at Azurite.
+    - template: test-pipeline-azurite.yml
     - task: DotNetCoreCLI@2
       displayName: 'Nuget Restore'
       inputs:
         command: 'restore'
         feedsToUse: 'select'
-    - task: bendayconsulting.build-task.setjsonvalue.setjsonvalue@1
-      displayName: 'Set Azure Storage ConnectionString'
-      inputs:
-        filename: '$(System.DefaultWorkingDirectory)/Atlas.MultipleAlleleCodeDictionary.Test.Integration/appsettings.json'
-        numberOfLevels: 2
-        keyname1: MacDictionary
-        keyname2: AzureStorageConnectionString
-        valueToSet: '$(azure_storage_account_connection_string)'
     - task: DotNetCoreCLI@2
       displayName: 'MacDictionary Integration Tests'
       inputs:
@@ -279,4 +198,3 @@ jobs:
         projects: '$(System.DefaultWorkingDirectory)/Atlas.MultipleAlleleCodeDictionary.Test.Integration/Atlas.MultipleAlleleCodeDictionary.Test.Integration.csproj'
         arguments: '--no-restore -v d'
         testRunTitle: 'MAC Dictionary Integration Tests'
-

@@ -1,6 +1,7 @@
 ﻿using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.FeatureManagement;
 using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
 using Atlas.MatchingAlgorithm.Api;
@@ -41,8 +42,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests
                 {
                     config.AddJsonFile("appsettings.json", true, true);
                     config.AddUserSecrets(Assembly.GetExecutingAssembly());
-
-                    AddFeatureManagement(config);
                 })
                 .ConfigureWebHost(webHost => webHost
                     .UseTestServer()
@@ -64,22 +63,9 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests
             // scoring only, so nothing reads those messages: sending them to a real Service Bus would only slow each search down.
             services.AddScoped(_ => Substitute.For<ISearchTrackingServiceBusClient>());
             services.AddScoped(_ => Substitute.For<INotificationsClient>());
-        }
 
-        /// <summary>
-        /// Feature management, leave it configured even if there is no active feature flags in use
-        /// </summary>
-        /// <param name="configBuilder">Configuration builder</param>
-        private static void AddFeatureManagement(IConfigurationBuilder configBuilder)
-        {
-            var configuration = configBuilder.Build();
-            var azureConfigurationConnectionString = configuration.GetValue<string>("AzureAppConfiguration:ConnectionString");
-            configBuilder.AddAzureAppConfiguration(options =>
-            {
-                options.Connect(azureConfigurationConnectionString)
-                    .Select("_")
-                    .UseFeatureFlags();
-            });
+            // Feature flags live in Azure App Configuration, which these tests do not connect to: every flag reads as off.
+            services.AddScoped(_ => Substitute.For<IAtlasFeatureManager>());
         }
 
         public static void StopServer()
