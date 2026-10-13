@@ -20,6 +20,7 @@ namespace Atlas.MatchingAlgorithm.Functions
             RegisterSettings(services);
 
             services.AddHealthChecks();
+            SwashBuckleStartup.Configure(services);
 
             services.RegisterSearchForMatchingAlgorithm(OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),
@@ -37,19 +38,11 @@ namespace Atlas.MatchingAlgorithm.Functions
             // This app holds a cached copy of the dictionary, so it needs to notice when the dictionary is
             // recreated - by itself or by anything else.
             services.RegisterHlaMetadataDictionaryCacheInvalidation();
-
-            services.RegisterDebugServices(
-                OptionsReaderFor<MessagingServiceBusSettings>(),
-                OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<AzureStorageSettings>(),
-                OptionsReaderFor<AzureAuthenticationSettings>());
         }
 
         private static void RegisterSettings(IServiceCollection services)
         {
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
-            services.RegisterAsOptions<AzureAuthenticationSettings>("AzureManagement:Authentication");
-            services.RegisterAsOptions<AzureMonitoringSettings>("AzureManagement:Monitoring");
             services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
             services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
             services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");

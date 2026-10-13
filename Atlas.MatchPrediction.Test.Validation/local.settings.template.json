@@ -17,9 +17,6 @@
     "HaplotypeFrequencySetCache:MaxCachedFrequencySets": 10,
     "HaplotypeFrequencySetCache:SetCacheExpiryMinutes": 60,
 
-    "Homework:ImputationRequestUrl": "override-this",
-    "Homework:MatchingGenotypesRequestUrl": "override-this",
-
     "OutgoingMatchPredictionRequests:RequestBatchSize": 1000,
     "OutgoingMatchPredictionRequests:RequestUrl": "http://localhost:7085/api/BatchMatchPredictionRequests",
 

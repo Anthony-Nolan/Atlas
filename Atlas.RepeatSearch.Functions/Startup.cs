@@ -21,6 +21,7 @@ namespace Atlas.RepeatSearch.Functions
             RegisterSettings(services);
 
             services.AddHealthChecks();
+            SwashBuckleStartup.Configure(services);
 
             services.RegisterRepeatSearch(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
@@ -38,11 +39,6 @@ namespace Atlas.RepeatSearch.Functions
                 ConnectionStringReader("MatchingSqlB"),
                 ConnectionStringReader("DonorSql")
                 );
-            services.RegisterDebugServices(
-                OptionsReaderFor<MessagingServiceBusSettings>(),
-                OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<RepeatSearch.Settings.Azure.AzureStorageSettings>());
-
             services.RegisterHlaMetadataDictionaryCacheInvalidation();
         }
 

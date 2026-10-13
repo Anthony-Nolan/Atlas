@@ -45,7 +45,8 @@ public class GenotypeMatcherResult
         public bool IsUnrepresented { get; set; }
 
         /// <summary>
-        /// Note: This was added for debugging purposes, it is isn't (currently) needed for calculating match probabilities.
+        /// Not needed for calculating match probabilities; it is reported per donor in the parallel match prediction
+        /// batch result.
         /// </summary>
         public int GenotypeCount { get; set; }
 

@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Utils.Http;
-using Atlas.Debug.Client.Models.MatchPrediction;
+using Atlas.MatchPrediction.Functions.Models.Debug;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Functions.Services.Debug;
 using Atlas.MatchPrediction.Models;

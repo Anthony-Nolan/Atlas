@@ -56,4 +56,9 @@
       <ProjectReference Include="..\Atlas.MatchPrediction\Atlas.MatchPrediction.csproj" />
       <ProjectReference Include="..\Atlas.RepeatSearch\Atlas.RepeatSearch.csproj" />
     </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Atlas.DependencyInjection.Test" />
+  </ItemGroup>
+
 </Project>

@@ -22,7 +22,6 @@
     "MessagingServiceBus:DonorInfoCheckerSubscription": "donor-info-checker",
     "MessagingServiceBus:DonorInfoCheckerResultsTopic": "donor-info-checker-results",
     "MessagingServiceBus:DonorImportResultsTopic": "donor-import-results",
-    "MessagingServiceBus:DonorImportResultsDebugSubscription": "debug",
     "MessagingServiceBus:SendRetryCount": 5,
     "MessagingServiceBus:SendRetryCooldownSeconds": 20,
     "NotificationConfiguration:NotifyOnAttemptedDeletionOfUntrackedDonor": true,

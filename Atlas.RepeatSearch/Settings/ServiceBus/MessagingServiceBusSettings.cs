@@ -9,10 +9,5 @@
         public int RepeatSearchRequestsMaxDeliveryCount { get; set; }
         public int SendRetryCount { get; set; }
         public int SendRetryCooldownSeconds { get; set; }
-
-        /// <summary>
-        /// Subscription for matching notifications used by debug endpoint.
-        /// </summary>
-        public string RepeatSearchResultsDebugSubscription { get; set; }
     }
 }

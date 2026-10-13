@@ -2,16 +2,12 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Caching;
-using Atlas.Common.Debugging;
 using Atlas.Common.ServiceBus;
 using Atlas.Common.ServiceBus.DependencyInjection;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.Common.Utils.Extensions;
-using Atlas.Debug.Client;
-using Atlas.Debug.Client.Models.Settings;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.ExternalInterface.Models;
-using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.ManualTesting.Common.Services;
 using Atlas.ManualTesting.Services;
 using Atlas.ManualTesting.Services.HaplotypeFrequencySet;
@@ -22,7 +18,6 @@ using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using Atlas.ManualTesting.Services.WmdaConsensusResults;
 using Atlas.ManualTesting.Services.WmdaConsensusResults.Scorers;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
@@ -42,28 +37,16 @@ namespace Atlas.ManualTesting.DependencyInjection
             );
             services.RegisterDatabaseServices(ConnectionStringReader("ActiveMatchingSql"), ConnectionStringReader("DonorImportSql"));
             services.RegisterLifeTimeScopedCacheTypes();
-            services.RegisterDebugClients(
-                OptionsReaderFor<DonorImportHttpFunctionSettings>(),
-                OptionsReaderFor<MatchingAlgorithmHttpFunctionSettings>(),
-                OptionsReaderFor<TopLevelHttpFunctionSettings>(),
-                OptionsReaderFor<PublicApiHttpFunctionSettings>(),
-                OptionsReaderFor<RepeatSearchHttpFunctionSettings>());
         }
 
         private static void RegisterSettings(this IServiceCollection services)
         {
-            services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
             services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
             services.RegisterAsOptions<MatchingSettings>("Matching");
             services.RegisterAsOptions<DonorManagementSettings>("Matching:DonorManagement");
             services.RegisterAsOptions<ScoringSettings>("Scoring");
             services.RegisterAsOptions<SearchSettings>("Search");
             services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
-            services.RegisterAsOptions<DonorImportHttpFunctionSettings>("Debug:DonorImport");
-            services.RegisterAsOptions<MatchingAlgorithmHttpFunctionSettings>("Debug:Matching");
-            services.RegisterAsOptions<RepeatSearchHttpFunctionSettings>("Debug:RepeatSearch");
-            services.RegisterAsOptions<TopLevelHttpFunctionSettings>("Debug:TopLevel");
-            services.RegisterAsOptions<PublicApiHttpFunctionSettings>("Debug:PublicApi");
         }
 
         private static void RegisterServices(
@@ -117,26 +100,6 @@ namespace Atlas.ManualTesting.DependencyInjection
             services.AddScoped<IWmdaExerciseOneScorer, WmdaExerciseOneScorer>();
             services.AddScoped<IWmdaExerciseTwoScorer, WmdaExerciseTwoScorer>();
             services.AddScoped<IScoreBatchRequester, ScoreBatchRequester>();
-            services.AddScoped<IWmdaResultsTotalMismatchComparer, WmdaResultsTotalMismatchComparer>();
-            services.AddScoped<IWmdaResultsAntigenMismatchComparer, WmdaResultsAntigenMismatchComparer>();
-            services.AddScoped<IConvertHlaRequester, ConvertHlaRequester>();
-            services.AddScoped<IWmdaDiscrepantResultsWriter, WmdaDiscrepantResultsWriter>();
-
-            services.AddScoped<IWmdaDiscrepantAlleleResultsReporter, WmdaDiscrepantResultsReporter>(sp =>
-            {
-                var resultsComparer = sp.GetService<IWmdaResultsTotalMismatchComparer>();
-                var cacheProvider = sp.GetService<ITransientCacheProvider>();
-                var hlaConverter = sp.GetService<IConvertHlaRequester>();
-                return new WmdaDiscrepantResultsReporter(resultsComparer, cacheProvider, hlaConverter, TargetHlaCategory.PGroup);
-            });
-
-            services.AddScoped<IWmdaDiscrepantAntigenResultsReporter, WmdaDiscrepantResultsReporter>(sp =>
-            {
-                var resultsComparer = sp.GetService<IWmdaResultsAntigenMismatchComparer>();
-                var cacheProvider = sp.GetService<ITransientCacheProvider>();
-                var hlaConverter = sp.GetService<IConvertHlaRequester>();
-                return new WmdaDiscrepantResultsReporter(resultsComparer, cacheProvider, hlaConverter, TargetHlaCategory.Serology);
-            });
 
             services.AddSingleton<IAtlasLogger, FileBasedLogger>();
 

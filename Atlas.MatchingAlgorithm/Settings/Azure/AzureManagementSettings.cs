@@ -19,9 +19,4 @@ namespace Atlas.MatchingAlgorithm.Settings.Azure
         public string ServerName { get; set; }
         public string PollingRetryIntervalMilliseconds { get; set; }
     }
-
-    public class AzureMonitoringSettings
-    {
-        public string WorkspaceId { set; get; }
-    }
 }

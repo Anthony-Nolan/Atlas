@@ -4,14 +4,6 @@
     <BuildType Name="Development" />
     <BuildType Name="Release" />
   </Configurations>
-  <Folder Name="/DebugClient/">
-    <Project Path="Atlas.Debug.Client.Models/Atlas.Debug.Client.Models.csproj">
-      <BuildType Solution="Development|*" Project="Debug" />
-    </Project>
-    <Project Path="Atlas.Debug.Client/Atlas.Debug.Client.csproj">
-      <BuildType Solution="Development|*" Project="Debug" />
-    </Project>
-  </Folder>
   <Folder Name="/DonorImport/">
     <File Path="README_DonorImport.md" />
     <Project Path="Atlas.DonorImport.Data/Atlas.DonorImport.Data.csproj">
@@ -237,6 +229,9 @@
     <BuildType Solution="Development|*" Project="Debug" />
   </Project>
   <Project Path="Atlas.Common/Atlas.Common.csproj">
+    <BuildType Solution="Development|*" Project="Debug" />
+  </Project>
+  <Project Path="Atlas.DependencyInjection.Test/Atlas.DependencyInjection.Test.csproj">
     <BuildType Solution="Development|*" Project="Debug" />
   </Project>
   <Project Path="Atlas.Functions.PublicApi/Atlas.Functions.PublicApi.csproj">

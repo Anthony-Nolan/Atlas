@@ -51,4 +51,9 @@
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Atlas.DependencyInjection.Test" />
+  </ItemGroup>
+
 </Project>

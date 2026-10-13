@@ -17,6 +17,7 @@ namespace Atlas.MatchPrediction.Functions
             RegisterSettings(services);
 
             services.AddHealthChecks();
+            SwashBuckleStartup.Configure(services);
 
             services.RegisterMatchPredictionAlgorithm(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
