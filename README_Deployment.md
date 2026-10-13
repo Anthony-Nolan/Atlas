@@ -312,12 +312,22 @@ does steps 2 to 4.
    - Stage 80 also needs the Match Prediction settings of the Data Refresh app: `GenotypeImputation:*`,
      `HaplotypeFrequencySetCache:*` and the connection string `MatchPredictionSql`. Terraform sets them.
 5. **Database size.** Stage 65 adds the stored genotype sets to the refreshed transient database. Make sure that
-   `MATCHING_DATABASE_MAX_SIZE_GB` (250 by default) allows for them. An estimate for about 44 million donors is
-   480 GB: about 470 GB of values and 12 GB of donor rows. Measure the real size after the first full refresh in a
-   test environment. If the database reaches its maximum size, stage 65 fails, and so does the refresh.
+   `MATCHING_DATABASE_MAX_SIZE_GB` (250 by default) allows for them, in addition to the matching data. If the database
+   reaches its maximum size, stage 65 fails, and so does the refresh.
+   [ATL-452](https://anthonynolan.atlassian.net/browse/ATL-452) sizes the databases and the tiers in Terraform.
+   - An estimate for about 44 million donors (a DEV copy of the live donors, October 2026), for each transient
+     database:
+     - About 377 GB at the end of the stage. `SubjectGenotypeSetValues` holds about 353 GB of this.
+     - About 367 GB stays after the stage, until the next refresh of that database. The stage truncates its two
+       group tables when the run completes.
+     - During a refresh, A and B together hold about 745 GB of sets: 367 GB in the active database and 377 GB in the
+       refreshing database.
+   - The estimate is a model of the row and page format. It is not a measurement. Measure the real size after the
+     first full refresh in a test environment.
    - The tiers must allow the same size. The refresh tier and the active tier hold the sets. From the second refresh,
      the dormant tier holds them too: the database that was active is scaled down, and keeps its sets until its next
-     refresh. For example, the Standard tiers S0 to S2 allow 250 GB at most.
+     refresh. For example, the Standard tiers S0 to S2 allow 250 GB at most, and S0 is the default dormant tier. A
+     scale-down to a tier that is too small fails.
 6. **Haplotype frequency sets.** Make sure that the haplotype frequency sets are imported, with a global set. If no set
    applies to a donor, the donor fails stage 65.
 
