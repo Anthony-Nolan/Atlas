@@ -70,16 +70,44 @@ internal class FunctionAppDependencyInjectionTests
         unresolvable.Should().BeEmpty();
     }
 
-    private static IHost BuildHost(FunctionApp app)
+    /// <summary>
+    /// The provider does not look inside registration factories when it is built, so a singleton whose factory resolves a
+    /// scoped service (a captive dependency) only fails when the singleton is resolved. Failures for any other reason, such
+    /// as the connection strings this host does not have, are not what this test checks.
+    /// </summary>
+    [TestCaseSource(nameof(FunctionApps))]
+    public void SingletonFactories_DoNotResolveScopedServices(FunctionApp app)
     {
-        return new HostBuilder()
-            .ConfigureFunctionsWebApplication(_ => { })
-            .ConfigureServices(services =>
-            {
-                services.AddApplicationInsightsTelemetryWorkerService();
-                services.ConfigureFunctionsApplicationInsights();
+        using var host = BuildHost(app, out var services);
 
-                app.Configure(services);
+        var captiveDependencies = services
+            .Where(descriptor => !descriptor.IsKeyedService && !descriptor.ServiceType.ContainsGenericParameters)
+            .GroupBy(descriptor => descriptor.ServiceType)
+            .Select(registrations => registrations.Last())
+            .Where(descriptor => descriptor is { Lifetime: ServiceLifetime.Singleton, ImplementationFactory: not null })
+            .Where(descriptor => descriptor.ImplementationFactory!.Method.DeclaringType?.Namespace?.StartsWith("Atlas") == true)
+            .Select(descriptor => (descriptor.ServiceType, Error: ScopedServiceResolvedFromRoot(host.Services, descriptor.ServiceType)))
+            .Where(result => result.Error != null)
+            .Select(result => $"{result.ServiceType.Name}: {result.Error}");
+
+        captiveDependencies.Should().BeEmpty();
+    }
+
+    private static IHost BuildHost(FunctionApp app) => BuildHost(app, out _);
+
+    private static IHost BuildHost(FunctionApp app, out IServiceCollection services)
+    {
+        IServiceCollection? registered = null;
+
+        var host = new HostBuilder()
+            .ConfigureFunctionsWebApplication(_ => { })
+            .ConfigureServices(collection =>
+            {
+                collection.AddApplicationInsightsTelemetryWorkerService();
+                collection.ConfigureFunctionsApplicationInsights();
+
+                app.Configure(collection);
+                registered = collection;
             })
             .UseDefaultServiceProvider(options =>
             {
@@ -87,6 +115,30 @@ internal class FunctionAppDependencyInjectionTests
                 options.ValidateScopes = true;
             })
             .Build();
+
+        services = registered!;
+        return host;
+    }
+
+    private static string? ScopedServiceResolvedFromRoot(IServiceProvider root, Type serviceType)
+    {
+        try
+        {
+            root.GetService(serviceType);
+            return null;
+        }
+        catch (Exception exception)
+        {
+            for (var current = exception; current != null; current = current.InnerException)
+            {
+                if (current is InvalidOperationException && current.Message.Contains("from root provider"))
+                {
+                    return current.Message;
+                }
+            }
+
+            return null;
+        }
     }
 
     private static bool CanResolve(ParameterInfo parameter, IServiceProviderIsKeyedService isService)
