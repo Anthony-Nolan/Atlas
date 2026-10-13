@@ -46,7 +46,7 @@ There is no local Azure Service Bus emulator in use for this project — local d
 See `README_ArchitecturalOverview.md` for the component breakdown. Two rules the code does not show:
 
 - Matching Algorithm grading/confidence/ranking logic (see `README_MatchingAlgorithm.md`) is clinically sensitive — changes need sign-off from an HLA matching expert (see `README_Contribution_Versioning.md`).
-- Only `Atlas.Functions.PublicApi`, `Atlas.*.Client.Models`, `Atlas.DonorImport.FileSchema.Models`, `Atlas.Common.Public.Models` and `Atlas.Debug.Client(.Models)` are versioned/released as public interface — see `README_Contribution_Versioning.md`.
+- Only `Atlas.Functions.PublicApi`, `Atlas.*.Client.Models`, `Atlas.DonorImport.FileSchema.Models` and `Atlas.Common.Public.Models` are versioned/released as public interface — see `README_Contribution_Versioning.md`.
 
 ### Dependency injection
 

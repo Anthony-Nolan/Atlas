@@ -111,20 +111,19 @@ module "matching_algorithm" {
   default_servicebus_settings = local.service-bus
 
   // DI variables
-  application_insights           = azurerm_application_insights.atlas
-  application_insights_workspace = azurerm_log_analytics_workspace.ai_workspace
-  azure_app_configuration        = azurerm_app_configuration.atlas_app_configuration
-  azure_storage                  = azurerm_storage_account.azure_storage
-  donor_import_sql_database      = azurerm_mssql_database.atlas-database-shared
-  elastic_app_service_plan       = azurerm_service_plan.atlas-elastic-plan
-  key_vault                      = local.key_vault_module_handoff
-  mac_import_table               = module.multiple_allele_code_lookup.storage_table
-  match_prediction_sql_database  = module.match_prediction.sql_database
-  resource_group                 = azurerm_resource_group.atlas_resource_group
-  servicebus_namespace           = azurerm_servicebus_namespace.general
-  shared_function_storage        = azurerm_storage_account.function_storage
-  sql_database_shared            = azurerm_mssql_database.atlas-database-shared
-  sql_server                     = azurerm_mssql_server.atlas_sql_server
+  application_insights          = azurerm_application_insights.atlas
+  azure_app_configuration       = azurerm_app_configuration.atlas_app_configuration
+  azure_storage                 = azurerm_storage_account.azure_storage
+  donor_import_sql_database     = azurerm_mssql_database.atlas-database-shared
+  elastic_app_service_plan      = azurerm_service_plan.atlas-elastic-plan
+  key_vault                     = local.key_vault_module_handoff
+  mac_import_table              = module.multiple_allele_code_lookup.storage_table
+  match_prediction_sql_database = module.match_prediction.sql_database
+  resource_group                = azurerm_resource_group.atlas_resource_group
+  servicebus_namespace          = azurerm_servicebus_namespace.general
+  shared_function_storage       = azurerm_storage_account.function_storage
+  sql_database_shared           = azurerm_mssql_database.atlas-database-shared
+  sql_server                    = azurerm_mssql_server.atlas_sql_server
 
   // Container Apps DI Variables
   container_app_environment = azurerm_container_app_environment.atlas
