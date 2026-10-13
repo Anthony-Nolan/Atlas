@@ -6,6 +6,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.HlaMetadataDictionary.Repositories;
+using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
@@ -57,6 +58,10 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
             // Substituted for the same reason as the repositories above: these tests run against file-backed data,
             // with no storage account to reach, and the real one would need a connection string to construct.
             services.AddSingleton(_ => Substitute.For<IHlaMetadataRecreationRepository>());
+
+            // The file-backed repositories ignore recreated tables, so generating the metadata would be wasted work, and it
+            // needs the WMDA nomenclature files, which tests do not have. A data refresh recreates the dictionary every run.
+            services.AddSingleton(_ => Substitute.For<IRecreateHlaMetadataService>());
             services.AddSingleton(sp =>
             {
                 var wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();

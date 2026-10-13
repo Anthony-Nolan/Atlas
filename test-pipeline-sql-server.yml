@@ -1,0 +1,21 @@
+# Starts a throwaway SQL Server on the build agent for a System Tests job, and waits until it accepts queries.
+# The image runs the Developer edition, which supports the ONLINE index operations used by the matching migrations.
+# The tests create and migrate their own databases, so an empty server is enough.
+steps:
+  - bash: |
+      docker run -d --name atlas-sql -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD="$SQL_SA_PASSWORD" -p 1433:1433 mcr.microsoft.com/mssql/server:2022-latest
+
+      for attempt in $(seq 1 60); do
+        if docker exec atlas-sql /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$SQL_SA_PASSWORD" -Q "SELECT 1" -b > /dev/null 2>&1; then
+          echo "SQL Server is ready"
+          exit 0
+        fi
+        sleep 2
+      done
+
+      docker logs atlas-sql
+      echo "##vso[task.logissue type=error]SQL Server did not accept queries within 2 minutes"
+      exit 1
+    displayName: 'Start SQL Server'
+    env:
+      SQL_SA_PASSWORD: $(sqlSaPassword)

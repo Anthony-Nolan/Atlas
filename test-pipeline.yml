@@ -14,6 +14,11 @@ variables:
   - group: TestTerraform
   - name: RUN_CI_PERF_TESTS_OFF
     value: 'This will get defined as an Environment Variable, which will enable various Perf-Test-only tests. See IgnoreExceptOnCiPerfTestAttribute.cs'
+  # SQL Server runs in a container on each agent (see test-pipeline-sql-server.yml), so this password never leaves the agent.
+  - name: sqlSaPassword
+    value: 'Atlas-System-Tests-1'
+  - name: sqlServerConnection
+    value: 'Server=localhost,1433;User ID=sa;Password=$(sqlSaPassword);MultipleActiveResultSets=True;TrustServerCertificate=True;'
 
 jobs:
 - job: Terraform
@@ -77,37 +82,36 @@ jobs:
           }
 
 - job: Matching_Algorithm_Integration_Tests
-  dependsOn: Terraform
-  variables:
-    matching_algorithm_db_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.matching_algorithm_db_connection_string'] ]
   pool:
     vmImage: 'ubuntu-latest'
   steps:
+  - template: test-pipeline-sql-server.yml
   - task: DotNetCoreCLI@2
     displayName: 'Nuget Restore'
     inputs:
       command: 'restore'
       feedsToUse: 'select'
+  # A and B must be different databases: some tests check that the active database is left alone while the dormant one changes.
   - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
     displayName: 'Update connection string ''SqlA'''
     inputs:
       filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Integration/appsettings.json'
       keyname: SqlA
-      connectionstringvalue: '$(matching_algorithm_db_connection_string)'
+      connectionstringvalue: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationTests;'
 
   - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
     displayName: 'Update connection string ''SqlB'''
     inputs:
       filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Integration/appsettings.json'
       keyname: SqlB
-      connectionstringvalue: '$(matching_algorithm_db_connection_string)'
+      connectionstringvalue: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationTestsB;'
 
   - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
     displayName: 'Update connection string ''PersistentSql'' '
     inputs:
       filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Integration/appsettings.json'
       keyname: PersistentSql
-      connectionstringvalue: '$(matching_algorithm_db_connection_string)'
+      connectionstringvalue: '$(sqlServerConnection)Initial Catalog=AtlasSystemTests;'
   - task: DotNetCoreCLI@2
     displayName: 'Matching Integration Tests'
     inputs:
@@ -117,8 +121,18 @@ jobs:
 
 - job: Matching_Algorithm_Validation_Tests
   dependsOn: Terraform
+  # The scenarios run one at a time within a process (they share one DbContext), so they are split across agents instead.
+  # Each shard has its own SQL Server, and sets up its own test data.
+  strategy:
+    matrix:
+      AdultSearch:
+        validationTestFilter: 'FullyQualifiedName~.ValidationTests.Features.AdultSearch.'
+      Scoring:
+        validationTestFilter: 'FullyQualifiedName~.ValidationTests.Features.Scoring.'
+      Other:
+        validationTestFilter: 'FullyQualifiedName!~.ValidationTests.Features.AdultSearch.&FullyQualifiedName!~.ValidationTests.Features.Scoring.'
   variables:
-    matching_algorithm_validation_db_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.matching_algorithm_validation_db_connection_string'] ]
+    matching_algorithm_validation_db_connection_string: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
     azure_storage_account_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.azure_storage_account_connection_string'] ]
     azure_app_configuration_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.azure_app_configuration_connection_string'] ]
   pool:
@@ -134,6 +148,8 @@ jobs:
     displayName: 'Use .Net sdk'
     inputs:
       version: 10.0.x
+
+  - template: test-pipeline-sql-server.yml
 
   - task: DotNetCoreCLI@2
     displayName: 'Nuget Restore'
@@ -229,15 +245,13 @@ jobs:
     inputs:
       command: test
       projects: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/Atlas.MatchingAlgorithm.Test.Validation.csproj'
-      arguments: '--no-restore -v d'
+      arguments: '--no-restore -v d --filter "$(validationTestFilter)"'
 
 - job: Donor_Import_Integration_Tests
-  dependsOn: Terraform
-  variables:
-    donor_import_db_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.donor_import_db_connection_string'] ]
   pool:
     vmImage: 'ubuntu-latest'
   steps:
+    - template: test-pipeline-sql-server.yml
     - task: DotNetCoreCLI@2
       displayName: 'Nuget Restore'
       inputs:
@@ -248,7 +262,7 @@ jobs:
       inputs:
         filename: '$(System.DefaultWorkingDirectory)/Atlas.DonorImport.Test.Integration/appsettings.json'
         keyname: DonorStoreSql
-        connectionstringvalue: '$(donor_import_db_connection_string)'
+        connectionstringvalue: '$(sqlServerConnection)Initial Catalog=AtlasSystemTests;'
 
     - task: DotNetCoreCLI@2
       displayName: 'Donor Import Integration Tests'
@@ -257,12 +271,10 @@ jobs:
         projects: '$(System.DefaultWorkingDirectory)/Atlas.DonorImport.Test.Integration/Atlas.DonorImport.Test.Integration.csproj'
         arguments: '--no-restore -v d'
 - job: Match_Prediction_Integration_Tests
-  dependsOn: Terraform
-  variables:
-    match_prediction_db_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.match_prediction_db_connection_string'] ]
   pool:
     vmImage: 'ubuntu-latest'
   steps:
+    - template: test-pipeline-sql-server.yml
     - task: DotNetCoreCLI@2
       displayName: 'Nuget Restore'
       inputs:
@@ -273,7 +285,7 @@ jobs:
       inputs:
         filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchPrediction.Test.Integration/appsettings.json'
         keyname: MatchPredictionSql
-        connectionstringvalue: '$(match_prediction_db_connection_string)'
+        connectionstringvalue: '$(sqlServerConnection)Initial Catalog=AtlasSystemTests;'
     - task: DotNetCoreCLI@2
       displayName: 'MPA Integration Tests'
       inputs:

@@ -24,7 +24,6 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
         where TSerialisableHlaMetadata : ISerialisableHlaMetadata
     {
         // Dictionary of dictionaries. First layer keyed by HlaVersion. Second layer by (locus, lookupName).
-        // Make no effort to protect against innappropriate versions being passed in.
         protected Dictionary<string, Dictionary<(Locus, string), TSerialisableHlaMetadata>> HlaMetadata = new Dictionary<string, Dictionary<(Locus, string), TSerialisableHlaMetadata>>();
 
         protected FileBackedHlaMetadataRepositoryBase()
@@ -57,7 +56,13 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
 
         protected Task<TSerialisableHlaMetadata> LookupMetadata(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
-            var metadata = HlaMetadata[hlaNomenclatureVersion].GetValueOrDefault((locus, lookupName));
+            // A version with no file here is answered as "no data", like a name missing from a loaded version.
+            // Some test HF sets are encoded at a version that is not stubbed (e.g. reg-2-3.json at 3410), and their expected
+            // results rely on every lookup at that version being not-found. A KeyNotFoundException would instead read as an
+            // infrastructure fault, which the dictionary propagates.
+            var metadata = HlaMetadata.TryGetValue(hlaNomenclatureVersion, out var versionMetadata)
+                ? versionMetadata.GetValueOrDefault((locus, lookupName))
+                : default;
             return Task.FromResult(metadata);
         }
 
