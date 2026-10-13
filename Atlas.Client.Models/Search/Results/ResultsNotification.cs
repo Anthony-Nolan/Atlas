@@ -35,7 +35,7 @@ namespace Atlas.Client.Models.Search.Results
         /// Indicates if results were batched (i.e. saved in multiple files separately from the search summary) or not
         /// </summary>
         [Obsolete("All results are now batched.")]
-        public bool ResultsBatched { get; set; } = true;
+        public bool ResultsBatched { get; set; }
 
         /// <summary>
         /// Name of the folder in blob storage where files with results are stored. It's populated only when <see cref="ResultsBatched" /> is true and <see cref="NumberOfResults" /> is greater than 0, otherwise it will be null
