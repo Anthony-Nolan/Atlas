@@ -852,6 +852,17 @@ variable "USE_EXTERNAL_SQL" {
   description = "When true, function app connection strings target an external SQL server instead of the Terraform-managed one."
   type        = bool
   default     = false
+
+  validation {
+    condition = !var.USE_EXTERNAL_SQL || (
+      var.EXTERNAL_SQL_SERVER_NAME != "" &&
+      var.EXTERNAL_SQL_DB_SHARED != "" &&
+      var.EXTERNAL_SQL_DB_MATCHING_A != "" &&
+      var.EXTERNAL_SQL_DB_MATCHING_B != "" &&
+      var.EXTERNAL_SQL_RESOURCE_GROUP != ""
+    )
+    error_message = "USE_EXTERNAL_SQL is true but one of EXTERNAL_SQL_SERVER_NAME, EXTERNAL_SQL_DB_SHARED, EXTERNAL_SQL_DB_MATCHING_A, EXTERNAL_SQL_DB_MATCHING_B or EXTERNAL_SQL_RESOURCE_GROUP is empty. All must be set when targeting an external SQL server."
+  }
 }
 
 variable "EXTERNAL_SQL_SERVER_NAME" {

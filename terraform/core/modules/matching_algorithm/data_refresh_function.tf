@@ -161,20 +161,5 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_data_refresh_f
       site_config[0].cors,
       tags["hidden-link: /app-insights-resource-id"],
     ]
-
-    # Terraform is pinned to 1.4.0 in build-pipeline.yml, which predates
-    # cross-variable variable{validation{}} blocks (needs 1.9+), so the
-    # USE_EXTERNAL_SQL config guard lives here as a resource precondition
-    # instead (supported since 1.2).
-    precondition {
-      condition = !var.USE_EXTERNAL_SQL || (
-        var.EXTERNAL_SQL_SERVER_NAME != "" &&
-        var.EXTERNAL_SQL_DB_SHARED != "" &&
-        var.EXTERNAL_SQL_DB_MATCHING_A != "" &&
-        var.EXTERNAL_SQL_DB_MATCHING_B != "" &&
-        var.EXTERNAL_SQL_RESOURCE_GROUP != ""
-      )
-      error_message = "USE_EXTERNAL_SQL is true but one of EXTERNAL_SQL_SERVER_NAME, EXTERNAL_SQL_DB_SHARED, EXTERNAL_SQL_DB_MATCHING_A, EXTERNAL_SQL_DB_MATCHING_B or EXTERNAL_SQL_RESOURCE_GROUP is empty. All must be set when targeting an external SQL server."
-    }
   }
 }
