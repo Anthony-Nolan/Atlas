@@ -41,4 +41,9 @@
   <ItemGroup>
     <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext" />
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Atlas.DependencyInjection.Test" />
+  </ItemGroup>
+
 </Project>

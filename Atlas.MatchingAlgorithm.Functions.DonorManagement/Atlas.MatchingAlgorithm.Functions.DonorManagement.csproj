@@ -54,4 +54,9 @@
         <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
         <ProjectReference Include="..\Atlas.MatchingAlgorithm\Atlas.MatchingAlgorithm.csproj" />
     </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Atlas.DependencyInjection.Test" />
+  </ItemGroup>
+
 </Project>

@@ -60,6 +60,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Atlas.Functions.Test" />
+    <InternalsVisibleTo Include="Atlas.DependencyInjection.Test" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 

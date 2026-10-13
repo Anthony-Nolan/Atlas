@@ -539,18 +539,9 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     /// 1 when the genotype is homozygous at every allowed locus, else 2.
     ///
     /// <para>
-    /// This is the same heterozygosity test as <c>UnambiguousGenotypeExpander.GetHeterozygousLoci</c>, which serves the
-    /// debug likelihood endpoint: a genotype is heterozygous at a locus exactly when its two haplotypes differ there,
-    /// so the two ask one question in two shapes. They are not shared because they need different answers - that one
-    /// returns the <c>List&lt;Locus&gt;</c> it uses to enumerate phase permutations, while this one needs only whether
-    /// the list would be empty, and runs once per kept pair, so it must allocate nothing.
-    /// </para>
-    ///
-    /// <para>
-    /// Neither is pinned to the other; both are pinned to hand-computed likelihoods, which is what stops them drifting
-    /// apart unnoticed. This side is covered by <c>ImputationEquivalenceTests</c> (one test asserts a x1, a x2 and a x1
-    /// case as exact decimals), the other by <c>UnambiguousGenotypeExpanderTests</c> and
-    /// <c>LikelihoodCalculatorTests</c>. A change to either that alters the rule fails its own suite.
+    /// A genotype is heterozygous at a locus exactly when its two haplotypes differ there. It runs once per kept pair,
+    /// so it must allocate nothing. It is pinned to hand-computed likelihoods by <c>ImputationEquivalenceTests</c>
+    /// (one test asserts a x1, a x2 and a x1 case as exact decimals).
     /// </para>
     ///
     /// <para>

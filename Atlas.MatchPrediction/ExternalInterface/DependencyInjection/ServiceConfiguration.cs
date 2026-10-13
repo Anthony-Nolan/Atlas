@@ -13,7 +13,6 @@ using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
-using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 using Atlas.MatchPrediction.Services.HlaConversion;
@@ -281,11 +280,6 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             services.AddScoped<IFrequencyFileParser, FrequencyFileParser>();
             services.AddScoped<IFrequencySetValidator, FrequencySetValidator>();
             services.AddScoped<IHaplotypeFrequencyService, HaplotypeFrequencyService>();
-
-            services.AddScoped<IGenotypeLikelihoodService, GenotypeLikelihoodService>();
-            services.AddScoped<IUnambiguousGenotypeExpander, UnambiguousGenotypeExpander>();
-            services.AddScoped<IGenotypeLikelihoodCalculator, GenotypeLikelihoodCalculator>();
-            services.AddScoped<IGenotypeAlleleTruncater, GenotypeAlleleTruncater>();
 
             services.AddScoped<IMatchCalculationService, MatchCalculationService>();
 

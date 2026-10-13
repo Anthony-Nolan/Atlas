@@ -41,6 +41,7 @@ jobs:
           projects: |
             Atlas.Client.Models
             Atlas.Common.Public.Models
+            Atlas.DependencyInjection.Test
             Atlas.Functions
             Atlas.Functions.PublicApi
             Atlas.Functions.Test

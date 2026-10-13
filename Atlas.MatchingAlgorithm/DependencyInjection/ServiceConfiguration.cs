@@ -183,6 +183,11 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
             services.RegisterSearchServices(fetchMatchingConfigurationSettings);
 
+            // For the SearchServiceBusClient that RegisterSearchServices registers.
+            services.RegisterServiceBusAsKeyedServices(
+                typeof(MessagingServiceBusSettings),
+                sp => fetchMessagingServiceBusSettings(sp).ConnectionString);
+
             services.MakeSettingsAvailableForUse(fetchSearchTrackingServiceBusSettings);
         }
 
@@ -220,10 +225,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             );
 
             services.RegisterMatchingAlgorithmSpecificServices(fetchAzureStorageSettings);
-
-            services.RegisterServiceBusAsKeyedServices(
-                typeof(MessagingServiceBusSettings),
-                sp => fetchMessagingServiceBusSettings(sp).ConnectionString);
         }
 
 

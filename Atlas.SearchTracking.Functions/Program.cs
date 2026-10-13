@@ -1,18 +1,10 @@
-using Atlas.Common.Utils.Extensions;
 using Azure.Core.Serialization;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
-using Atlas.SearchTracking.Data.Context;
-using Atlas.SearchTracking.Data.Repositories;
-using Atlas.SearchTracking.Services;
-using Microsoft.EntityFrameworkCore;
-using Atlas.SearchTracking.Common.Settings.ServiceBus;
-using Atlas.SearchTracking.Functions.Config;
+using Atlas.SearchTracking.Functions;
 
 var host = new HostBuilder()
     .ConfigureFunctionsWebApplication(builder =>
@@ -31,20 +23,8 @@ var host = new HostBuilder()
     {
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
-        services.AddHealthChecks();
-        services.AddDbContext<ISearchTrackingContext, SearchTrackingContext>(options =>
-        {
-            options.UseSqlServer(Environment.GetEnvironmentVariable("ConnectionStrings:PersistentSql"));
-        });
 
-        services.AddScoped<ISearchTrackingEventProcessor, SearchTrackingEventProcessor>();
-        services.AddScoped<ISearchRequestRepository, SearchRequestRepository>();
-        services.AddScoped<IMatchPredictionRepository, MatchPredictionRepository>();
-        services.AddScoped<ISearchRequestMatchingAlgorithmAttemptsRepository, SearchRequestMatchingAlgorithmAttemptsRepository>();
-        services.RegisterAsOptions<SearchTrackingServiceBusSettings>("MessagingServiceBus");
-        services.AddSingleton(sp => AutoMapperConfig.CreateMapper(
-            sp.GetRequiredService<IConfiguration>()["AutoMapper:LicenseKey"] ?? throw new InvalidOperationException("AutoMapper license key is required"),
-            sp.GetRequiredService<ILoggerFactory>()));
+        Startup.Configure(services);
     })
     .Build();
 
