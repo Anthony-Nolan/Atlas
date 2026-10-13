@@ -22,8 +22,9 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
         public static IServiceProvider CreateProvider()
         {
             var services = new ServiceCollection();
+            services.RegisterConfiguration();
             services.RegisterFileBasedHlaMetadataDictionaryForTesting(
-                _ => new ApplicationInsightsSettings(){LogLevel = "Info"}, 
+                _ => new ApplicationInsightsSettings(){LogLevel = "Info"},
                 DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>());
             return services.BuildServiceProvider();
         }
@@ -40,8 +41,6 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
             );
             
             services.SetUpMacDictionaryWithFileBackedRepository(fetchApplicationInsightsSettings, fetchMacDictionarySettings);
-
-            services.RegisterConfiguration();
 
             // Replace Repositories with File-Backed equivalents.
             // Register them as singletons so that we don't have to re-populate for every new scope.

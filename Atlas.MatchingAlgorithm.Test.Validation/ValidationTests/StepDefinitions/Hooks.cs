@@ -42,12 +42,13 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
                 
                 SetupLogging();
 
-                var testDataService = serviceProvider.GetService<ITestDataService>();
-
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
 
-                testDataService.SetupTestData();
+                using (var scope = serviceProvider.CreateScope())
+                {
+                    scope.ServiceProvider.GetRequiredService<ITestDataService>().SetupTestData();
+                }
 
                 logger.Log(LogLevel.Info, $"Set up test data: {stopwatch.Elapsed}");
                 stopwatch.Restart();
@@ -95,12 +96,16 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         [BeforeScenario]
         public void BeforeScenario()
         {
-            var patientDataFactory = serviceProvider.GetService<IPatientDataFactory>();
+            // One scope per scenario, so that each scenario has its own database contexts.
+            var scope = serviceProvider.CreateScope();
+            scenarioContext.Set(scope);
+
+            var patientDataFactory = scope.ServiceProvider.GetRequiredService<IPatientDataFactory>();
 
             scenarioContext.Set(new SearchRequestBuilder());
             scenarioContext.Set(patientDataFactory);
-            scenarioContext.Set(serviceProvider.GetService<IStaticDataProvider>());
-            scenarioContext.Set(serviceProvider.GetService<IMultiplePatientDataFactory>());
+            scenarioContext.Set(scope.ServiceProvider.GetRequiredService<IStaticDataProvider>());
+            scenarioContext.Set(scope.ServiceProvider.GetRequiredService<IMultiplePatientDataFactory>());
 
             // By default, inject the patient data factory as the patient & donor data provider.
             // If using specific test case hla data, this should be overridden in a step definition
@@ -111,10 +116,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         [AfterScenario]
         public void AfterScenario()
         {
-            LogScenario();
+            using var scope = scenarioContext.Get<IServiceScope>();
+            LogScenario(scope.ServiceProvider.GetRequiredService<ITestDataRepository>());
         }
 
-        private void LogScenario()
+        private void LogScenario(ITestDataRepository testDataRepository)
         {
             LogManager.Configuration = config;
 
@@ -128,16 +134,19 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             logger.Log(logLevel, scenarioContext.ScenarioInfo.Title);
             if (singlePatientApiResult != null)
             {
-                LogSinglePatientSearchDetails(singlePatientApiResult, logLevel);
+                LogSinglePatientSearchDetails(singlePatientApiResult, logLevel, testDataRepository);
             }
 
             if (patientApiResults != null)
             {
-                LogMultiplePatientSearchDetails(patientApiResults, logLevel);
+                LogMultiplePatientSearchDetails(patientApiResults, logLevel, testDataRepository);
             }
         }
 
-        private void LogMultiplePatientSearchDetails(IReadOnlyCollection<PatientApiResult> patientApiResults, LogLevel logLevel)
+        private void LogMultiplePatientSearchDetails(
+            IReadOnlyCollection<PatientApiResult> patientApiResults,
+            LogLevel logLevel,
+            ITestDataRepository testDataRepository)
         {
             var factory = scenarioContext.Get<IMultiplePatientDataFactory>();
 
@@ -146,7 +155,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
                 var patientHla = ((IPatientDataProvider) patientDataFactory).GetPatientHla();
                 var expectedDonors = ((IExpectedDonorProvider) patientDataFactory).GetExpectedMatchingDonorIds();
 
-                var donors = serviceProvider.GetService<ITestDataRepository>()
+                var donors = testDataRepository
                     .GetDonors(patientApiResults.Single(r =>
                         r.ExpectedDonorProvider == patientDataFactory).ApiResult.Results.Results.Select(r => r.AtlasDonorId))
                     .ToList();
@@ -164,12 +173,15 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             }
         }
 
-        private void LogSinglePatientSearchDetails(SearchAlgorithmApiResult singlePatientApiResult, LogLevel logLevel)
+        private void LogSinglePatientSearchDetails(
+            SearchAlgorithmApiResult singlePatientApiResult,
+            LogLevel logLevel,
+            ITestDataRepository testDataRepository)
         {
             var patientHla = scenarioContext.Get<IPatientDataProvider>().GetPatientHla();
             var expectedDonors = scenarioContext.Get<IExpectedDonorProvider>().GetExpectedMatchingDonorIds();
 
-            var donors = serviceProvider.GetService<ITestDataRepository>()
+            var donors = testDataRepository
                 .GetDonors(singlePatientApiResult.Results.Results.Select(r => r.AtlasDonorId)).ToList();
 
             logger.Log(logLevel, "PATIENT HLA:");

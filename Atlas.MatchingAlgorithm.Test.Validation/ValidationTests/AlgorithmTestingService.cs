@@ -1,9 +1,12 @@
 ﻿using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
 using Atlas.MatchingAlgorithm.Api;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
+using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.SearchTracking.Common.Clients;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -18,6 +21,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests
 {
@@ -43,17 +47,21 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests
                 .ConfigureWebHost(webHost => webHost
                     .UseTestServer()
                     .UseStartup<Startup>()
-                    .ConfigureTestServices(RegisterMockServiceBusClients))
+                    .ConfigureTestServices(RegisterTestServices))
                 .Start();
             server = host.GetTestServer();
         }
 
-        /// <summary>
-        /// Every search publishes search tracking events, and failures raise notifications. These tests check matching and
-        /// scoring only, so nothing reads those messages: sending them to a real Service Bus would only slow each search down.
-        /// </summary>
-        private static void RegisterMockServiceBusClients(IServiceCollection services)
+        private static void RegisterTestServices(IServiceCollection services)
         {
+            // The test data is at the file-backed HLA nomenclature version, so the dictionaries are read from the files
+            // that the integration tests use, rather than from a storage account prepared in advance.
+            services.RegisterFileBasedHlaMetadataDictionaryForTesting(
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<MacDictionarySettings>());
+
+            // Every search publishes search tracking events, and failures raise notifications. These tests check matching and
+            // scoring only, so nothing reads those messages: sending them to a real Service Bus would only slow each search down.
             services.AddScoped(_ => Substitute.For<ISearchTrackingServiceBusClient>());
             services.AddScoped(_ => Substitute.For<INotificationsClient>());
         }
