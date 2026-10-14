@@ -444,14 +444,16 @@ stages:
     # so they run on their own agent, beside the other unit tests.
     strategy:
       matrix:
+        # A variable cannot hold the several lines of an exclusion pattern, so the Other shard downloads every unit test project,
+        # and leaves out the HLA Metadata Dictionary tests when it runs them.
         HlaMetadataDictionary:
           unitTestShard: 'HLA Metadata Dictionary'
-          unitTestPatterns: 'Unit/Atlas.HlaMetadataDictionary.Test/**'
+          unitTestPattern: 'Unit/Atlas.HlaMetadataDictionary.Test/**'
+          unitTestExcludedProject: ''
         Other:
           unitTestShard: 'Other'
-          unitTestPatterns: |
-            Unit/**
-            !Unit/Atlas.HlaMetadataDictionary.Test/**
+          unitTestPattern: 'Unit/**'
+          unitTestExcludedProject: 'Atlas.HlaMetadataDictionary.Test'
     pool:
       vmImage: 'ubuntu-latest'
     steps:
@@ -468,14 +470,19 @@ stages:
       displayName: 'Download unit test projects'
       inputs:
         artifact: Tests
-        patterns: '$(unitTestPatterns)'
+        patterns: '$(unitTestPattern)'
         targetPath: '$(Build.SourcesDirectory)/TestBuild'
     # Every unit test project of the shard in one run, each in its own test host, from its own build output.
     - bash: |
-        testAssemblies=$(for folder in */; do project=${folder%/}; echo "$project/$project.dll"; done)
+        testAssemblies=$(for folder in */; do
+          project=${folder%/}
+          if [ "$project" != "$EXCLUDED_PROJECT" ]; then echo "$project/$project.dll"; fi
+        done)
         dotnet test $testAssemblies --logger trx --results-directory "$(Agent.TempDirectory)/TestResults" -- RunConfiguration.MaxCpuCount=0
       displayName: 'Unit Tests - $(unitTestShard)'
       workingDirectory: '$(Build.SourcesDirectory)/TestBuild/Unit'
+      env:
+        EXCLUDED_PROJECT: $(unitTestExcludedProject)
     - task: PublishTestResults@2
       displayName: 'Publish test results'
       condition: succeededOrFailed()
