@@ -18,3 +18,11 @@ variable "service_bus_topics_with_alerts" {
     name = string
   }))
 }
+
+// The transient matching databases whose storage is alerted on. Empty when the apps use external databases instead.
+variable "matching_transient_databases" {
+  type = map(object({
+    id   = string
+    name = string
+  }))
+}

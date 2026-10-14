@@ -282,8 +282,8 @@ does steps 2 to 4.
 5. **Database size.** Stage 65 adds the stored genotype sets to the refreshed transient database. Make sure that
    `MATCHING_DATABASE_MAX_SIZE_GB` (250 by default) allows for them, in addition to the matching data. If the database
    reaches its maximum size, stage 65 fails, and so does the refresh.
-   [ATL-452](https://anthonynolan.atlassian.net/browse/ATL-452) sizes the databases and the tiers in Terraform.
-   - An estimate for about 44 million donors (a DEV copy of the live donors, October 2026), for each transient
+   [ATL-452](https://anthonynolan.atlassian.net/browse/ATL-452) has the measurements.
+   - An estimate for about 44 million donors (a DEV copy of the WMDA live donors, October 2026), for each transient
      database:
      - About 377 GB at the end of the stage. `SubjectGenotypeSetValues` holds about 353 GB of this.
      - About 367 GB stays after the stage, until the next refresh of that database. The stage truncates its two
@@ -292,10 +292,48 @@ does steps 2 to 4.
        refreshing database.
    - The estimate is a model of the row and page format. It is not a measurement. Measure the real size after the
      first full refresh in a test environment.
-   - The tiers must allow the same size. The refresh tier and the active tier hold the sets. From the second refresh,
-     the dormant tier holds them too: the database that was active is scaled down, and keeps its sets until its next
-     refresh. For example, the Standard tiers S0 to S2 allow 250 GB at most, and S0 is the default dormant tier. A
-     scale-down to a tier that is too small fails.
+   - The matching data, measured in October 2026 (the data space used, the most in 30 days):
+     - About 64 to 105 GB in each WMDA-sized database (WMDA LIVE, WMDA UAT and the DEV copy of WMDA LIVE). With the
+       sets, that is about 450 to 480 GB at the end of stage 65.
+     - Less than 8 GB in each Anthony Nolan database (LIVE, UAT and DEV). The sets grow with the number of donors, so
+       expect less than 50 GB of sets there.
+   - The max size for each environment:
+
+     | Environment | `MATCHING_DATABASE_MAX_SIZE_GB` | How |
+     |---|---|---|
+     | WMDA LIVE, WMDA UAT | 500 | Release variable `TF_VAR_MATCHING_DATABASE_MAX_SIZE_GB`, scoped to the stage |
+     | DEV (the DEV copy of WMDA LIVE) | 500 | By hand, see below |
+     | LIVE, UAT | 250 (the default) | No change |
+
+     If the real size of stage 65 is near 450 GB or more, raise the three WMDA-sized environments to 750.
+   - The tiers must allow the max size. The data refresh changes the tier, but not the max size, and Azure does not
+     scale a database to a tier whose limit is below its max size. The refresh tier and the active tier hold the sets.
+     From the second refresh, the dormant tier holds them too: the database that was active is scaled down, and keeps
+     its sets until its next refresh. Terraform checks that `MATCHING_DATABASE_MAX_SIZE_GB` is within the limit of the
+     three tiers. The limits, in GB:
+     - S0 to S2: 250. S3 to S12, and P1 to P6: 1024. P11 and P15: 4096.
+     - GP_S_Gen5_1: 512. GP_S_Gen5_2 to GP_S_Gen5_6: 1024. GP_S_Gen5_8 and GP_S_Gen5_10: 2048.
+       GP_S_Gen5_12 to GP_S_Gen5_20: 3072. GP_S_Gen5_24 to GP_S_Gen5_40: 4096.
+   - Apply the change when no data refresh is in progress, so that it does not clash with a scaling operation of the
+     refresh.
+   - Terraform alerts the Atlas team when a transient database uses more than
+     `MATCHING_DATABASE_STORAGE_ALERT_THRESHOLD_PERCENT` (85 by default) of its max size. With `USE_EXTERNAL_SQL`, it
+     does not create the alert.
+   - DEV uses `USE_EXTERNAL_SQL`, so Terraform does not set the max size of the databases that DEV uses. Set it by
+     hand on `live-wmda-atlas-matching-a` and `live-wmda-atlas-matching-b` (server `dev-atlas-performance-testing`,
+     resource group `DEV-ATLAS-RESOURCE-GROUP`):
+
+     ```bash
+     az account set --subscription "AN NOVA DEV Subscription"
+     for db in live-wmda-atlas-matching-a live-wmda-atlas-matching-b; do
+       az sql db update -g DEV-ATLAS-RESOURCE-GROUP -s dev-atlas-performance-testing -n $db --max-size 500GB
+       az sql db show -g DEV-ATLAS-RESOURCE-GROUP -s dev-atlas-performance-testing -n $db \
+         --query "{name:name, tier:currentServiceObjectiveName, maxSizeBytes:maxSizeBytes}" -o table
+     done
+     ```
+
+     `maxSizeBytes` must be `536870912000`. DEV's own `MATCHING_DATABASE_MAX_SIZE_GB` stays 250: it sizes only the
+     databases that DEV does not use.
 6. **Haplotype frequency sets.** Make sure that the haplotype frequency sets are imported, with a global set. If no set
    applies to a donor, the donor fails stage 65.
 
