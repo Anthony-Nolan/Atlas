@@ -19,7 +19,8 @@ namespace Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings
         {
             HlaTyping = hlaTyping;
             TypingUsedInMatching = typingUsedInMatching;
-            MatchingSerologies = matchingSerologies;
+            // Enumerated once here: it is read for every allele of the locus, and its query is expensive to repeat.
+            MatchingSerologies = matchingSerologies.ToList();
         }
 
         public override string ToString()

@@ -17,8 +17,9 @@ namespace Atlas.HlaMetadataDictionary.WmdaDataAccess.Models
         {
             TypingLocus = locus;
             Name = name;
-            Assignments = assignments;
-            Serologies = Assignments.Select(a => a.Name).Distinct().OrderBy(s => s);
+            // Enumerated once here: they are read for every serology and allele during HLA match pre-calculation.
+            Assignments = assignments.ToList();
+            Serologies = Assignments.Select(a => a.Name).Distinct().OrderBy(s => s).ToList();
         }
 
         public override string ToString()

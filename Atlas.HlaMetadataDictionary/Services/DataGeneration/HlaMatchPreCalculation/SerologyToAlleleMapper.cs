@@ -14,11 +14,10 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalcula
 
             return
                 from alleleInfo in hlaInfo.AlleleInfoForMatching
-                join alleleToSerology in hlaInfo.AlleleToSerologyRelationships
-                    on new { WmdaLocus = alleleInfo.TypingUsedInMatching.TypingLocus, alleleInfo.TypingUsedInMatching.Name }
-                    equals new { WmdaLocus = alleleToSerology.TypingLocus, alleleToSerology.Name }
                 where alleleInfo.TypingUsedInMatching.Locus.Equals(locus)
-                      && alleleToSerology.Serologies.Intersect(matchingSerologyNames).Any()
+                from alleleToSerology in hlaInfo.AlleleToSerologyRelationshipsByTyping[
+                    (alleleInfo.TypingUsedInMatching.TypingLocus, alleleInfo.TypingUsedInMatching.Name)]
+                where alleleToSerology.Serologies.Intersect(matchingSerologyNames).Any()
                 select new SerologyToAlleleMapping
                 {
                     MatchedAllele = alleleInfo,

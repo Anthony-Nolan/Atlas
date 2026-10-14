@@ -440,20 +440,6 @@ stages:
   dependsOn: Build_Tests
   jobs:
   - job: Unit_Tests
-    # The HLA Metadata Dictionary tests take minutes, nearly all to generate the matched HLA their fixtures share,
-    # so they run on their own agent, beside the other unit tests.
-    strategy:
-      matrix:
-        # A variable cannot hold the several lines of an exclusion pattern, so the Other shard downloads every unit test project,
-        # and leaves out the HLA Metadata Dictionary tests when it runs them.
-        HlaMetadataDictionary:
-          unitTestShard: 'HLA Metadata Dictionary'
-          unitTestPattern: 'Unit/Atlas.HlaMetadataDictionary.Test/**'
-          unitTestExcludedProject: ''
-        Other:
-          unitTestShard: 'Other'
-          unitTestPattern: 'Unit/**'
-          unitTestExcludedProject: 'Atlas.HlaMetadataDictionary.Test'
     pool:
       vmImage: 'ubuntu-latest'
     steps:
@@ -470,19 +456,14 @@ stages:
       displayName: 'Download unit test projects'
       inputs:
         artifact: Tests
-        patterns: '$(unitTestPattern)'
+        patterns: 'Unit/**'
         targetPath: '$(Build.SourcesDirectory)/TestBuild'
-    # Every unit test project of the shard in one run, each in its own test host, from its own build output.
+    # Every unit test project in one run, each in its own test host, from its own build output.
     - bash: |
-        testAssemblies=$(for folder in */; do
-          project=${folder%/}
-          if [ "$project" != "$EXCLUDED_PROJECT" ]; then echo "$project/$project.dll"; fi
-        done)
+        testAssemblies=$(for folder in */; do project=${folder%/}; echo "$project/$project.dll"; done)
         dotnet test $testAssemblies --logger trx --results-directory "$(Agent.TempDirectory)/TestResults" -- RunConfiguration.MaxCpuCount=0
-      displayName: 'Unit Tests - $(unitTestShard)'
+      displayName: 'Unit Tests'
       workingDirectory: '$(Build.SourcesDirectory)/TestBuild/Unit'
-      env:
-        EXCLUDED_PROJECT: $(unitTestExcludedProject)
     - task: PublishTestResults@2
       displayName: 'Publish test results'
       condition: succeededOrFailed()
@@ -490,13 +471,13 @@ stages:
         testResultsFormat: VSTest
         testResultsFiles: '**/*.trx'
         searchFolder: '$(Agent.TempDirectory)/TestResults'
-        testRunTitle: 'Unit Tests - $(unitTestShard)'
+        testRunTitle: 'Unit Tests'
 
 # Each job runs its tests against its own SQL Server, or Azurite, as it needs (see build-pipeline-run-tests.yml).
 # Connection strings are passed as environment variables, which override the local defaults in each project's appsettings.json.
 # To also run the performance tests, define a RUN_CI_PERF_TESTS variable (see IgnoreExceptOnCiPerfTestAttribute.cs).
-# The jobs are sized to take about as long as the longest unit test job, the HLA Metadata Dictionary one (about 4 minutes),
-# so that they use as few of the organisation's parallel jobs as they can without making the build longer.
+# The jobs are sized to take about 4 minutes each,
+# so that they use as few of the organisation's parallel jobs as they can without making the build much longer.
 - stage: Integration_Tests
   displayName: 'Integration Tests'
   dependsOn: Build_Tests

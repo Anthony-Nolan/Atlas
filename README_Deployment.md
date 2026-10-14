@@ -231,9 +231,9 @@ The integration tests need no Azure resources, and no pipeline variables or secr
 - Connection strings are passed as environment variables (e.g., `ConnectionStrings__SqlA`), which override the local defaults in each test project's `appsettings.json`.
 - The matching validation tests read the HLA Metadata Dictionary, at version 3330, and the MAC Dictionary from the same files as the integration tests,
   so nothing needs to be prepared for them in advance. A MAC used by a new validation test must be added to `LargeMacDictionary.csv`.
-- The jobs are sized to take about as long as the longest unit test job, so that the tests use few of the organisation's parallel jobs without making the build longer:
+- The jobs are sized to take about 4 minutes each, so that the tests use few of the organisation's parallel jobs without making the build much longer:
   the matching validation tests are split across two jobs, by namespace, and the smaller suites run one after the other in one job.
-  The HLA Metadata Dictionary unit tests run in their own job too. Each split has a shard named "Other", which runs every test that the other shard does not.
+  The matching validation split has a shard named "Other", which runs every test that the other shard does not.
 
 ## Releasing to multiple environments
 
