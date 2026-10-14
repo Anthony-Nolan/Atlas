@@ -17,7 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   donors failed in the donor genotype precomputation stage than the threshold allows. Null when the refresh is not paused.
   A paused record has no lease. A manual decision, or the manual cleanup, clears it.
 * `PendingManualDecision` - new nullable column, `nvarchar(32)`: a manual decision (`Complete` or `RetryFailedBatches`,
-  stored as the name) that the resumed refresh has not applied yet.
+  stored as the name) that the resumed refresh has not applied yet. The refresh clears it when it applies the decision, or
+  when it closes the record as failed.
 * Data workflow change: `SupportComments` is no longer only for manual use. The code appends one line for each manual
   decision. It never replaces the text.
  

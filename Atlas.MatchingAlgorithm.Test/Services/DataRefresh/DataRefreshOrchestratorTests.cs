@@ -800,6 +800,33 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             logger.Received().SendTrace(Arg.Is<string>(message => message.Contains(ResolvePausedDataRefreshRequest.EndpointName)));
         }
 
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenRefreshFails_ClearsTheManualDecisionStateAfterNotifyingAndBeforeCancellingTheRun()
+        {
+            // A refresh that fails after a manual retry decision, before the stage applies it, still has the decision.
+            GivenTheRefreshFails();
+
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+
+            Received.InOrder(() =>
+            {
+                dataRefreshCompletionNotifier.NotifyOfFailure(DefaultRecordId);
+                dataRefreshHistoryRepository.ClearManualDecisionState(DefaultRecordId);
+                precomputationRunCanceller.CancelRun(Arg.Is<DataRefreshRecord>(r => r.Id == DefaultRecordId));
+            });
+        }
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenLeaseIsLostMidRun_DoesNotClearTheManualDecisionState()
+        {
+            // The invocation that took the lease over applies the decision.
+            GivenTheLeaseIsLostDuringA(refresh: token => token.ThrowIfCancellationRequested());
+
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+
+            await dataRefreshHistoryRepository.DidNotReceiveWithAnyArgs().ClearManualDecisionState(default);
+        }
+
         private DonorGenotypePrecomputationFailureReport GivenTheRefreshPauses()
         {
             var report = fixture.Create<DonorGenotypePrecomputationFailureReport>();

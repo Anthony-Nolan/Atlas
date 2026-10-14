@@ -142,7 +142,8 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         Task ClearPendingManualDecision(DataRefreshRecord record);
 
         /// <summary>
-        /// Ends the pause, and clears the pending decision, of the record. For the manual cleanup, which closes the record.
+        /// Ends the pause, and clears the pending decision, of the record. For a record that is closed as failed: by the manual
+        /// cleanup, or after a refresh that failed.
         /// </summary>
         Task ClearManualDecisionState(int recordId);
     }
