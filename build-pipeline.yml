@@ -495,99 +495,75 @@ stages:
 # Each job runs its tests against its own SQL Server, or Azurite, as it needs (see build-pipeline-run-tests.yml).
 # Connection strings are passed as environment variables, which override the local defaults in each project's appsettings.json.
 # To also run the performance tests, define a RUN_CI_PERF_TESTS variable (see IgnoreExceptOnCiPerfTestAttribute.cs).
+# The jobs are sized to take about as long as the longest unit test job, the HLA Metadata Dictionary one (about 4 minutes),
+# so that they use as few of the organisation's parallel jobs as they can without making the build longer.
 - stage: Integration_Tests
   displayName: 'Integration Tests'
   dependsOn: Build_Tests
   jobs:
+  # The tests share the state of their databases, so they cannot run in parallel within a process.
   - job: Matching_Algorithm_Integration_Tests
-    # The tests share the state of their databases, so they cannot run in parallel within a process.
-    # Instead, they are split across agents, by namespace, each shard with its own SQL Server.
-    strategy:
-      matrix:
-        Search:
-          matchingTestFilter: 'FullyQualifiedName~.IntegrationTests.Search.'
-          matchingShard: 'Search'
-        Matching:
-          matchingTestFilter: 'FullyQualifiedName~.IntegrationTests.Matching.'
-          matchingShard: 'Matching'
-        Other:
-          matchingTestFilter: 'FullyQualifiedName!~.IntegrationTests.Search.&FullyQualifiedName!~.IntegrationTests.Matching.'
-          matchingShard: 'Other'
     pool:
       vmImage: 'ubuntu-latest'
     steps:
     - template: build-pipeline-run-tests.yml
       parameters:
-        project: Atlas.MatchingAlgorithm.Test.Integration
-        testRunTitle: 'Matching Algorithm Integration Tests - $(matchingShard)'
-        filter: '$(matchingTestFilter)'
-        env:
-          # A and B must be different databases: some tests check that the active database is left alone while the dormant one changes.
-          ConnectionStrings__SqlA: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationTests;'
-          ConnectionStrings__SqlB: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationTestsB;'
-          ConnectionStrings__PersistentSql: '$(sqlServerConnection)Initial Catalog=AtlasSystemTests;'
+        tests:
+        - project: Atlas.MatchingAlgorithm.Test.Integration
+          testRunTitle: 'Matching Algorithm Integration Tests'
+          env:
+            # A and B must be different databases: some tests check that the active database is left alone while the dormant one changes.
+            ConnectionStrings__SqlA: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationTests;'
+            ConnectionStrings__SqlB: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationTestsB;'
+            ConnectionStrings__PersistentSql: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationTestsPersistent;'
 
   - job: Matching_Algorithm_Validation_Tests
     # The scenarios are split across agents, each shard with its own SQL Server, and its own copy of the test data.
     # Running them in parallel within one process does not help: the searches compete for the agent's few cores.
-    # The shards take about a minute each; the 8/10 searches are moved out of AdultSearch to balance them.
+    # AdultSearch and the rest take about as long as each other.
     strategy:
       matrix:
         AdultSearch:
-          validationTestFilter: 'FullyQualifiedName~.ValidationTests.Features.AdultSearch.&FullyQualifiedName!~.AdultSearch.EightOutOfTenSearch.'
+          validationTestFilter: 'FullyQualifiedName~.ValidationTests.Features.AdultSearch.'
           validationShard: 'AdultSearch'
-        Scoring:
-          validationTestFilter: 'FullyQualifiedName~.ValidationTests.Features.Scoring.'
-          validationShard: 'Scoring'
         Other:
-          validationTestFilter: '(FullyQualifiedName!~.ValidationTests.Features.AdultSearch.&FullyQualifiedName!~.ValidationTests.Features.Scoring.)|FullyQualifiedName~.AdultSearch.EightOutOfTenSearch.'
+          validationTestFilter: 'FullyQualifiedName!~.ValidationTests.Features.AdultSearch.'
           validationShard: 'Other'
     pool:
       vmImage: 'ubuntu-latest'
     steps:
     - template: build-pipeline-run-tests.yml
       parameters:
-        project: Atlas.MatchingAlgorithm.Test.Validation
-        testRunTitle: 'Matching Algorithm Validation Tests - $(validationShard)'
-        filter: '$(validationTestFilter)'
-        env:
-          ConnectionStrings__DonorSql: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
-          ConnectionStrings__SqlA: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
-          ConnectionStrings__SqlB: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
-          ConnectionStrings__PersistentSql: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
+        tests:
+        - project: Atlas.MatchingAlgorithm.Test.Validation
+          testRunTitle: 'Matching Algorithm Validation Tests - $(validationShard)'
+          filter: '$(validationTestFilter)'
+          env:
+            ConnectionStrings__DonorSql: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
+            ConnectionStrings__SqlA: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
+            ConnectionStrings__SqlB: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
+            ConnectionStrings__PersistentSql: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
 
-  - job: Donor_Import_Integration_Tests
+  # The smaller suites, one after the other, each in its own database.
+  - job: Other_Integration_Tests
+    displayName: 'Donor Import, Match Prediction and MAC Dictionary Integration Tests'
     pool:
       vmImage: 'ubuntu-latest'
     steps:
     - template: build-pipeline-run-tests.yml
       parameters:
-        project: Atlas.DonorImport.Test.Integration
-        testRunTitle: 'Donor Import Integration Tests'
-        env:
-          ConnectionStrings__DonorStoreSql: '$(sqlServerConnection)Initial Catalog=AtlasSystemTests;'
-
-  - job: Match_Prediction_Integration_Tests
-    pool:
-      vmImage: 'ubuntu-latest'
-    steps:
-    - template: build-pipeline-run-tests.yml
-      parameters:
-        project: Atlas.MatchPrediction.Test.Integration
-        testRunTitle: 'Match Prediction Integration Tests'
-        env:
-          ConnectionStrings__MatchPredictionSql: '$(sqlServerConnection)Initial Catalog=AtlasSystemTests;'
-
-  - job: Multiple_Allele_Code_Dictionary_Integration_Tests
-    pool:
-      vmImage: 'ubuntu-latest'
-    steps:
-    - template: build-pipeline-run-tests.yml
-      parameters:
-        project: Atlas.MultipleAlleleCodeDictionary.Test.Integration
-        testRunTitle: 'MAC Dictionary Integration Tests'
-        sqlServer: false
         azurite: true
+        tests:
+        - project: Atlas.DonorImport.Test.Integration
+          testRunTitle: 'Donor Import Integration Tests'
+          env:
+            ConnectionStrings__DonorStoreSql: '$(sqlServerConnection)Initial Catalog=AtlasDonorImportIntegrationTests;'
+        - project: Atlas.MatchPrediction.Test.Integration
+          testRunTitle: 'Match Prediction Integration Tests'
+          env:
+            ConnectionStrings__MatchPredictionSql: '$(sqlServerConnection)Initial Catalog=AtlasMatchPredictionIntegrationTests;'
+        - project: Atlas.MultipleAlleleCodeDictionary.Test.Integration
+          testRunTitle: 'MAC Dictionary Integration Tests'
 
 # The images are built from the sources, in Docker, so this stage needs nothing from the Build stage.
 - stage: Publish
