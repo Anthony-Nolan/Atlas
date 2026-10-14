@@ -216,19 +216,24 @@ Once terraform has created ATLAS resources for the first time, certain actions m
 
 ## System Tests
 
-The system tests pipeline ("test-pipeline.yml") runs the integration test suites and the matching validation tests, twice a day, on `master`.
-To run it on another branch, run the pipeline manually, and choose the branch.
+The build pipeline ("build-pipeline.yml") runs the unit tests, the integration test suites and the matching validation tests on every commit to `master`.
+To run them on another branch, run the pipeline manually, and choose the branch.
 
-It needs no Azure resources, and no pipeline variables or secrets:
-- The Build stage builds the test projects once, and publishes them as the `SystemTests` artifact.
-- Each job of the Test stage starts what its tests need in a container on the build agent (see "test-pipeline-run-tests.yml"):
+Its stages:
+- Build, and Build Tests, run in parallel. Build Tests builds the unit and integration test projects once, and publishes them as the `Tests` artifact.
+- Unit Tests and Integration Tests run the test projects from the `Tests` artifact, in parallel.
+- Publish builds and pushes the Docker images, only once the build and every test have succeeded.
+
+The integration tests need no Azure resources, and no pipeline variables or secrets:
+- Each job of the Integration Tests stage starts what its tests need in a container on the build agent (see "build-pipeline-run-tests.yml"):
   SQL Server, in its Developer edition, which supports the `ONLINE` index operations of the matching migrations; or Azurite, the Azure Storage emulator.
   The tests create and migrate their own databases, and create their own tables.
 - Connection strings are passed as environment variables (e.g., `ConnectionStrings__SqlA`), which override the local defaults in each test project's `appsettings.json`.
 - The matching validation tests read the HLA Metadata Dictionary, at version 3330, and the MAC Dictionary from the same files as the integration tests,
   so nothing needs to be prepared for them in advance. A MAC used by a new validation test must be added to `LargeMacDictionary.csv`.
-- The matching integration tests and the matching validation tests are each split across several jobs, by namespace, to keep each job short.
-  Each split has a shard named "Other", which runs every test that the other shards do not.
+- The jobs are sized to take about as long as the longest unit test job, so that the tests use few of the organisation's parallel jobs without making the build longer:
+  the matching validation tests are split across two jobs, by namespace, and the smaller suites run one after the other in one job.
+  The HLA Metadata Dictionary unit tests run in their own job too. Each split has a shard named "Other", which runs every test that the other shard does not.
 
 ## Releasing to multiple environments
 

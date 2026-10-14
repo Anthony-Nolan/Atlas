@@ -1,18 +1,13 @@
-# Runs one test project, built by the Build stage, against the dependencies it needs, started in containers on the build agent.
+# Runs integration or validation test projects, built by the Build Tests stage, against the dependencies they need, started in containers on the build agent.
 # Templates are expanded before the job runs, so the job needs nothing from the repository but the build output.
 parameters:
-  # The test project. Its build output is in the "SystemTests" artifact, in a folder of the same name.
-  - name: project
-    type: string
-  - name: testRunTitle
-    type: string
-  - name: filter
-    type: string
-    default: ''
-  # Environment variables for the test run: connection strings that override the local defaults in appsettings.json.
-  - name: env
+  # The test projects, run one after the other, each with:
+  #  - project: the test project. Its build output is in the "Tests" artifact, in the "Integration" folder, in a folder of the same name.
+  #  - testRunTitle
+  #  - filter (optional)
+  #  - env (optional): environment variables for the test run, such as connection strings that override the local defaults in appsettings.json.
+  - name: tests
     type: object
-    default: {}
   # SQL Server, in its Developer edition, which supports the ONLINE index operations used by the matching migrations.
   # The tests create and migrate their own databases, so an empty server is enough.
   - name: sqlServer
@@ -40,16 +35,17 @@ steps:
         azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --skipApiVersionCheck
       displayName: 'Start Azurite'
 
-  # The same SDK as the Build stage, rather than whichever the agent image has.
+  # The same SDK as the Build Tests stage, rather than whichever the agent image has.
   - task: UseDotNet@2
     displayName: 'Use .Net sdk'
     inputs:
       version: 10.0.x
 
-  - download: current
-    artifact: SystemTests
-    patterns: '${{ parameters.project }}/**'
-    displayName: 'Download ${{ parameters.project }}'
+  - ${{ each test in parameters.tests }}:
+    - download: current
+      artifact: Tests
+      patterns: 'Integration/${{ test.project }}/**'
+      displayName: 'Download ${{ test.project }}'
 
   - ${{ if parameters.sqlServer }}:
     - bash: |
@@ -82,21 +78,25 @@ steps:
         exit 1
       displayName: 'Wait for Azurite'
 
-  # Run from the build output, where the tests read appsettings.json from.
-  - bash: |
-      filter='${{ parameters.filter }}'
-      dotnet test ${{ parameters.project }}.dll \
-        --logger trx --results-directory "$(Agent.TempDirectory)/TestResults" \
-        ${filter:+--filter "$filter"}
-    displayName: '${{ parameters.testRunTitle }}'
-    workingDirectory: '$(Pipeline.Workspace)/SystemTests/${{ parameters.project }}'
-    env: ${{ parameters.env }}
+  # Each project runs even if the one before it failed, and publishes its results as its own test run.
+  - ${{ each test in parameters.tests }}:
+    # Run from the build output, where the tests read appsettings.json from.
+    - bash: |
+        filter='${{ test.filter }}'
+        dotnet test ${{ test.project }}.dll \
+          --logger trx --results-directory "$(Agent.TempDirectory)/TestResults/${{ test.project }}" \
+          ${filter:+--filter "$filter"}
+      displayName: '${{ test.testRunTitle }}'
+      condition: succeededOrFailed()
+      workingDirectory: '$(Pipeline.Workspace)/Tests/Integration/${{ test.project }}'
+      ${{ if test.env }}:
+        env: ${{ test.env }}
 
-  - task: PublishTestResults@2
-    displayName: 'Publish test results'
-    condition: succeededOrFailed()
-    inputs:
-      testResultsFormat: VSTest
-      testResultsFiles: '**/*.trx'
-      searchFolder: '$(Agent.TempDirectory)/TestResults'
-      testRunTitle: '${{ parameters.testRunTitle }}'
+    - task: PublishTestResults@2
+      displayName: 'Publish results: ${{ test.testRunTitle }}'
+      condition: succeededOrFailed()
+      inputs:
+        testResultsFormat: VSTest
+        testResultsFiles: '**/*.trx'
+        searchFolder: '$(Agent.TempDirectory)/TestResults/${{ test.project }}'
+        testRunTitle: '${{ test.testRunTitle }}'
