@@ -11,6 +11,9 @@ namespace Atlas.MatchPrediction.Data.Repositories
     {
         Task<HaplotypeFrequencySet> GetActiveHaplotypeFrequencySet(string registryCode, string ethnicityCode);
         Task<IEnumerable<HaplotypeFrequencySet>> GetActiveHaplotypeFrequencySet(int populationId);
+
+        /// <summary>The set with the given id, active or not; null when there is none.</summary>
+        Task<HaplotypeFrequencySet> GetHaplotypeFrequencySet(int id);
     }
 
     public class HaplotypeFrequencySetReadRepository : IHaplotypeFrequencySetReadRepository
@@ -49,6 +52,20 @@ namespace Atlas.MatchPrediction.Data.Repositories
                 await using (var conn = new SqlConnection(connectionString))
                 {
                     return await conn.QueryAsync<HaplotypeFrequencySet>(sql, new { populationId });
+                }
+            });
+        }
+
+        /// <inheritdoc />
+        public async Task<HaplotypeFrequencySet> GetHaplotypeFrequencySet(int id)
+        {
+            var sql = $"SELECT * FROM {HaplotypeFrequencySet.QualifiedTableName} WHERE Id = @{nameof(id)}";
+
+            return await RetryConfig.AsyncRetryPolicy.ExecuteAsync(async () =>
+            {
+                await using (var conn = new SqlConnection(connectionString))
+                {
+                    return await conn.QuerySingleOrDefaultAsync<HaplotypeFrequencySet>(sql, new { id });
                 }
             });
         }

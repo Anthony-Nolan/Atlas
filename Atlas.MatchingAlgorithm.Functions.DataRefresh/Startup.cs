@@ -50,6 +50,16 @@ namespace Atlas.MatchingAlgorithm.Functions.DataRefresh
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<GenotypeImputationSettings>(),
                 ConnectionStringReader("MatchPredictionSql"));
+
+            // The genotype set compute debug endpoint. Here rather than in the matching algorithm app, so that its imputations
+            // do not compete with searches.
+            services.RegisterGenotypeSetDebug(
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<HlaMetadataDictionarySettings>(),
+                OptionsReaderFor<MacDictionarySettings>(),
+                OptionsReaderFor<GenotypeImputationSettings>(),
+                OptionsReaderFor<DebugSettings>(),
+                ConnectionStringReader("MatchPredictionSql"));
         }
 
         private static void RegisterSettings(IServiceCollection services)
@@ -59,6 +69,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DataRefresh
             services.RegisterAsOptions<AzureDatabaseManagementSettings>("AzureManagement:Database");
             services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
             services.RegisterAsOptions<DataRefreshSettings>("DataRefresh");
+            services.RegisterAsOptions<DebugSettings>("Debug");
             services.RegisterAsOptions<DonorGenotypePrecomputationSettings>("DataRefresh:Precompute");
             services.RegisterAsOptions<DonorManagementSettings>("DataRefresh:DonorManagement");
             services.RegisterAsOptions<GenotypeImputationSettings>("GenotypeImputation");

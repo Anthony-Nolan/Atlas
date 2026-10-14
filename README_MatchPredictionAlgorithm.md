@@ -308,6 +308,44 @@ computed live even when the batch has a key.
   - Metric: `PatientGenotypeCount`, when the set was computed.
 - Each batch's `Precomputed genotype sets used` event has the property `PatientGenotypeSetSource`.
 
+## Checking stored genotype sets (debug endpoint)
+SQL can show which stored rows exist, and their key, frequency set and "unrepresented" flag. It cannot read the stored
+data, and it cannot make the typing key of a typing. The debug endpoint `POST debug/precompute/genotypeSets/compute`
+on the Data Refresh functions app (`<ENV>-DATA-REFRESH-FUNCTION`, function key needed) does these parts.
+
+**Why the Data Refresh app.** One request can impute up to 80 sets (20 donors, 4 locus combinations), and each frequency
+set that it loads stays in the app's cache for up to an hour. In the matching algorithm app, which runs searches, that
+work would compete with searches for CPU and memory. The Data Refresh app runs no searches, it already has the imputation
+pipeline and its settings, and it is the app that writes the stored sets (stage 65 and the queued donor updates of stage
+80). So the endpoint can also be used in LIVE, where it only reads.
+
+- **Input.** One typing (`HlaTyping`, for example a patient's), or up to 20 donors (`ExternalDonorCodes`). For donors,
+  the typing and the registry and ethnicity codes are read from the active matching database.
+- **Frequency set.** By default, it is chosen with the rules of search: the donor's codes, or `FrequencySetMetadata` for
+  a typing (the global set when this is not given). `HaplotypeFrequencySetId` uses exactly that set, even when it is no
+  longer active. `IsActive` in the response says whether search would choose the set now.
+- **Computation.** Each locus combination of `AllowedLociKeys` (all four by default) is imputed live, with the engine
+  that the pre-computation and search use, at the nomenclature version of the active database. The response gives the
+  typing key (`HlaTypingKey`, for SQL), `IsUnrepresented`, the genotype count, the sum of likelihoods and the size of the
+  stored data. `IncludeGenotypes` also returns each genotype and its exact likelihood.
+- **Save.** With `Save`, it stores the sets in the active database, as the pre-computation does: it finds or creates the
+  value rows, and gives each donor its link rows when all the donor's values are stored. Each value row is reported as
+  `Created` or `AlreadyExisted`. Saving is allowed only when the app setting `Debug:AllowPrecomputeWrites` is `true`
+  (Terraform variable `MATCHING_DEBUG_ALLOW_PRECOMPUTE_WRITES`). Turn it on in test environments only, because search
+  reads these rows. When it is off, a request that saves gets `403` and changes nothing. A save never writes to the
+  dormant database.
+- **Errors.** An error of one donor or of one combination is given in its entry and does not fail the request. A request
+  that is not valid gets `400`. If no data refresh has completed, the request gets `409`.
+- **Time.** Each donor is imputed once for each combination, and the request must finish within the HTTP limit of 230
+  seconds. The first request after a restart also loads the frequency set. Use few donors for ambiguous typings and with
+  `IncludeGenotypes`, which can give a very large response. Each set that the endpoint uses stays in the app's frequency
+  set cache, as in the other match prediction hosts.
+- **During a data refresh.** The Data Refresh app has one instance, and stages 40 to 60 and stage 80 of a running refresh
+  do heavy work in it. Do not call the endpoint during those stages: a large request can slow the refresh, or make the
+  app restart, after which the refresh continues only when its lease and the watchdog allow. Calls during stage 65 are
+  safe, because the precompute workers, not this app, do the imputations of that stage. To see which stage a refresh is
+  in, see the stage completion columns of `DataRefreshHistory`.
+
 ## Match Prediction Requests
 - Match prediction requests (outside of search) can be submitted to the http-triggered function within the Match prediction project.
   - The endpoint accepts a single patient along with a set of donors (at least one donor must be submitted).

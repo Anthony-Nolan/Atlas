@@ -46,6 +46,7 @@
     "DataRefresh:DonorManagement:SubscriptionForDbA": "matching-transient-a",
     "DataRefresh:DonorManagement:SubscriptionForDbB": "matching-transient-b",
     "DataRefresh:DonorManagement:OngoingDifferentialDonorUpdatesShouldBeFullyTransactional": true,
+    "Debug:AllowPrecomputeWrites": false,
     "GenotypeImputation:MaximumExpandedGenotypesPerInput": 2000,
     "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes": 5,
     "HaplotypeFrequencySetCache:MaxCachedFrequencySets": 10,
