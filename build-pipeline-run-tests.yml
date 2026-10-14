@@ -1,7 +1,8 @@
-# Runs one test project, built by the Build stage, against the dependencies it needs, started in containers on the build agent.
-# Templates are expanded before the job runs, so the job needs nothing from the repository but the build output.
+# Builds and runs one integration or validation test project, against the dependencies it needs, started in containers on the build agent.
+# The job builds its own test project rather than downloading it from another job, so that the build publishes no test artifact:
+# the release pipeline downloads every artifact of the build.
 parameters:
-  # The test project. Its build output is in the "SystemTests" artifact, in a folder of the same name.
+  # The test project: the folder, and the name, of its .csproj.
   - name: project
     type: string
   - name: testRunTitle
@@ -25,10 +26,8 @@ parameters:
     default: false
 
 steps:
-  - checkout: none
-
   # The dependencies are pinned to versions, so that a new image cannot break the tests unannounced.
-  # They are started first and waited for last, so that they start up while the .NET SDK installs and the build output downloads.
+  # They are started first and waited for last, so that they start up while the repository is checked out and the tests build.
   - ${{ if parameters.sqlServer }}:
     - bash: docker run -d --name atlas-sql -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD="$SQL_SA_PASSWORD" -p 1433:1433 mcr.microsoft.com/mssql/server:2022-CU27-ubuntu-22.04
       displayName: 'Start SQL Server'
@@ -40,16 +39,16 @@ steps:
         azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --skipApiVersionCheck
       displayName: 'Start Azurite'
 
-  # The same SDK as the Build stage, rather than whichever the agent image has.
+  - checkout: self
+    fetchDepth: 1
+
   - task: UseDotNet@2
     displayName: 'Use .Net sdk'
     inputs:
       version: 10.0.x
 
-  - download: current
-    artifact: SystemTests
-    patterns: '${{ parameters.project }}/**'
-    displayName: 'Download ${{ parameters.project }}'
+  - bash: dotnet build ${{ parameters.project }} -p:RestoreUseStaticGraphEvaluation=true -p:RunAnalyzersDuringBuild=false
+    displayName: 'Build ${{ parameters.project }}'
 
   - ${{ if parameters.sqlServer }}:
     - bash: |
@@ -82,14 +81,12 @@ steps:
         exit 1
       displayName: 'Wait for Azurite'
 
-  # Run from the build output, where the tests read appsettings.json from.
   - bash: |
       filter='${{ parameters.filter }}'
-      dotnet test ${{ parameters.project }}.dll \
+      dotnet test ${{ parameters.project }} --no-build \
         --logger trx --results-directory "$(Agent.TempDirectory)/TestResults" \
         ${filter:+--filter "$filter"}
     displayName: '${{ parameters.testRunTitle }}'
-    workingDirectory: '$(Pipeline.Workspace)/SystemTests/${{ parameters.project }}'
     env: ${{ parameters.env }}
 
   - task: PublishTestResults@2

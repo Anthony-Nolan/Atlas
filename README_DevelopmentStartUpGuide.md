@@ -169,7 +169,7 @@ Instead of installing SQL Server and Azurite, you can run them in containers, as
 This needs a container runtime, e.g., Docker Desktop, Rancher Desktop or Podman.
 
 ### Start the containers
-These are the image versions the pipeline uses (see `test-pipeline-run-tests.yml`); keep them in step with it.
+These are the image versions the pipeline uses (see `build-pipeline-run-tests.yml`); keep them in step with it.
 SQL Server is published on port 14330, so that it does not clash with a SQL Server installed locally on 1433.
 
 ```bash

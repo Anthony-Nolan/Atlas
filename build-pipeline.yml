@@ -3,10 +3,19 @@ trigger:
 
 variables:
   - group: Terraform
+  # SQL Server runs in a container on each integration test agent, so this password never leaves the agent.
+  - name: sqlSaPassword
+    value: 'Atlas-System-Tests-1'
+  - name: sqlServerConnection
+    value: 'Server=localhost,1433;User ID=sa;Password=$(sqlSaPassword);MultipleActiveResultSets=True;TrustServerCertificate=True;'
 
 pr: none
 
-jobs:
+# Build, Unit Tests and Integration Tests run in parallel; Publish pushes the images only once all three have succeeded.
+# Only the Build stage publishes artifacts: the release pipeline downloads every artifact of the build.
+stages:
+- stage: Build
+  jobs:
   - job: Build
     pool:
       vmImage: 'ubuntu-latest'
@@ -41,10 +50,8 @@ jobs:
           projects: |
             Atlas.Client.Models
             Atlas.Common.Public.Models
-            Atlas.DependencyInjection.Test
             Atlas.Functions
             Atlas.Functions.PublicApi
-            Atlas.Functions.Test
             Atlas.DonorImport.Data
             Atlas.DonorImport.FileSchema.Models
             Atlas.DonorImport.Functions
@@ -52,51 +59,15 @@ jobs:
             Atlas.MatchingAlgorithm.Functions
             Atlas.MatchingAlgorithm.Functions.DonorManagement
             Atlas.MatchingAlgorithm.Functions.DataRefresh
-            Atlas.MatchingAlgorithm.Test
             Atlas.MatchingAlgorithm.Data
             Atlas.MatchingAlgorithm.Data.Persistent
             Atlas.MatchPrediction.Data
-            Atlas.MatchPrediction.Test
             Atlas.MatchPrediction.Functions
             Atlas.RepeatSearch.Data
-            Atlas.RepeatSearch.Test
             Atlas.RepeatSearch.Functions
             Atlas.SearchTracking.Data
-            Atlas.SearchTracking.Data.Test
-            Atlas.SearchTracking.Test
             Atlas.SearchTracking.Functions
           arguments: '--configuration Release --no-restore'
-
-      - task: DotNetCoreCLI@2
-        displayName: 'Run Unit Tests'
-        inputs:
-          command: 'test'
-          projects: '**/*Test.csproj'
-          arguments: '--no-restore'
-
-      - task: Docker@2
-        displayName: 'Build and Push MPA Worker Image'
-        inputs:
-          command: 'buildAndPush'
-          repository: 'atlas-match-prediction'
-          buildContext: '$(System.DefaultWorkingDirectory)'
-          dockerfile: 'Atlas.MatchPrediction.Worker/Dockerfile'
-          containerRegistry: 'AN Container Registry-Atlas'
-          tags: |
-            $(Build.BuildNumber)
-            latest
-
-      - task: Docker@2
-        displayName: 'Build and Push Matching Precompute Worker Image'
-        inputs:
-          command: 'buildAndPush'
-          repository: 'atlas-matching-precompute'
-          buildContext: '$(System.DefaultWorkingDirectory)'
-          dockerfile: 'Atlas.MatchingAlgorithm.PrecomputeWorker/Dockerfile'
-          containerRegistry: 'AN Container Registry-Atlas'
-          tags: |
-            $(Build.BuildNumber)
-            latest
 
       - task: DotNetCoreCLI@2
         displayName: 'Pack API Client Packages'
@@ -411,3 +382,165 @@ jobs:
         inputs:
           PathtoPublish: '$(System.DefaultWorkingDirectory)/terraform/core'
           ArtifactName: 'terraform-atlas-core'
+
+- stage: Unit_Tests
+  displayName: 'Unit Tests'
+  dependsOn: []
+  jobs:
+  - job: Unit_Tests
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - checkout: self
+      fetchDepth: 1
+    - task: UseDotNet@2
+      displayName: 'Use .Net sdk'
+      inputs:
+        version: 10.0.x
+    # Every *.Test project, and only what they reference, in one build, so that MSBuild builds them in parallel.
+    - bash: |
+        dotnet new sln --name UnitTests --format slnx
+        dotnet sln UnitTests.slnx add */*Test.csproj
+        dotnet restore UnitTests.slnx -p:RestoreUseStaticGraphEvaluation=true
+        dotnet build UnitTests.slnx --no-restore -p:RunAnalyzersDuringBuild=false
+      displayName: 'Build unit test projects'
+    - bash: dotnet test UnitTests.slnx --no-build --logger trx --results-directory "$(Agent.TempDirectory)/TestResults"
+      displayName: 'Unit Tests'
+    - task: PublishTestResults@2
+      displayName: 'Publish test results'
+      condition: succeededOrFailed()
+      inputs:
+        testResultsFormat: VSTest
+        testResultsFiles: '**/*.trx'
+        searchFolder: '$(Agent.TempDirectory)/TestResults'
+        testRunTitle: 'Unit Tests'
+
+# Each job runs its tests against its own SQL Server, or Azurite, as it needs (see build-pipeline-run-tests.yml).
+# Connection strings are passed as environment variables, which override the local defaults in each project's appsettings.json.
+# To also run the performance tests, define a RUN_CI_PERF_TESTS variable (see IgnoreExceptOnCiPerfTestAttribute.cs).
+- stage: Integration_Tests
+  displayName: 'Integration Tests'
+  dependsOn: []
+  jobs:
+  - job: Matching_Algorithm_Integration_Tests
+    # The tests share the state of their databases, so they cannot run in parallel within a process.
+    # Instead, they are split across agents, by namespace, each shard with its own SQL Server.
+    strategy:
+      matrix:
+        Search:
+          matchingTestFilter: 'FullyQualifiedName~.IntegrationTests.Search.'
+          matchingShard: 'Search'
+        Matching:
+          matchingTestFilter: 'FullyQualifiedName~.IntegrationTests.Matching.'
+          matchingShard: 'Matching'
+        Other:
+          matchingTestFilter: 'FullyQualifiedName!~.IntegrationTests.Search.&FullyQualifiedName!~.IntegrationTests.Matching.'
+          matchingShard: 'Other'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - template: build-pipeline-run-tests.yml
+      parameters:
+        project: Atlas.MatchingAlgorithm.Test.Integration
+        testRunTitle: 'Matching Algorithm Integration Tests - $(matchingShard)'
+        filter: '$(matchingTestFilter)'
+        env:
+          # A and B must be different databases: some tests check that the active database is left alone while the dormant one changes.
+          ConnectionStrings__SqlA: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationTests;'
+          ConnectionStrings__SqlB: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationTestsB;'
+          ConnectionStrings__PersistentSql: '$(sqlServerConnection)Initial Catalog=AtlasSystemTests;'
+
+  - job: Matching_Algorithm_Validation_Tests
+    # The scenarios are split across agents, each shard with its own SQL Server, and its own copy of the test data.
+    # Running them in parallel within one process does not help: the searches compete for the agent's few cores.
+    # The shards take about a minute each; the 8/10 searches are moved out of AdultSearch to balance them.
+    strategy:
+      matrix:
+        AdultSearch:
+          validationTestFilter: 'FullyQualifiedName~.ValidationTests.Features.AdultSearch.&FullyQualifiedName!~.AdultSearch.EightOutOfTenSearch.'
+          validationShard: 'AdultSearch'
+        Scoring:
+          validationTestFilter: 'FullyQualifiedName~.ValidationTests.Features.Scoring.'
+          validationShard: 'Scoring'
+        Other:
+          validationTestFilter: '(FullyQualifiedName!~.ValidationTests.Features.AdultSearch.&FullyQualifiedName!~.ValidationTests.Features.Scoring.)|FullyQualifiedName~.AdultSearch.EightOutOfTenSearch.'
+          validationShard: 'Other'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - template: build-pipeline-run-tests.yml
+      parameters:
+        project: Atlas.MatchingAlgorithm.Test.Validation
+        testRunTitle: 'Matching Algorithm Validation Tests - $(validationShard)'
+        filter: '$(validationTestFilter)'
+        env:
+          ConnectionStrings__DonorSql: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
+          ConnectionStrings__SqlA: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
+          ConnectionStrings__SqlB: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
+          ConnectionStrings__PersistentSql: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
+
+  - job: Donor_Import_Integration_Tests
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - template: build-pipeline-run-tests.yml
+      parameters:
+        project: Atlas.DonorImport.Test.Integration
+        testRunTitle: 'Donor Import Integration Tests'
+        env:
+          ConnectionStrings__DonorStoreSql: '$(sqlServerConnection)Initial Catalog=AtlasSystemTests;'
+
+  - job: Match_Prediction_Integration_Tests
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - template: build-pipeline-run-tests.yml
+      parameters:
+        project: Atlas.MatchPrediction.Test.Integration
+        testRunTitle: 'Match Prediction Integration Tests'
+        env:
+          ConnectionStrings__MatchPredictionSql: '$(sqlServerConnection)Initial Catalog=AtlasSystemTests;'
+
+  - job: Multiple_Allele_Code_Dictionary_Integration_Tests
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - template: build-pipeline-run-tests.yml
+      parameters:
+        project: Atlas.MultipleAlleleCodeDictionary.Test.Integration
+        testRunTitle: 'MAC Dictionary Integration Tests'
+        sqlServer: false
+        azurite: true
+
+# The images are built from the sources, in Docker, so this stage needs nothing from the Build stage.
+- stage: Publish
+  dependsOn:
+  - Build
+  - Unit_Tests
+  - Integration_Tests
+  jobs:
+  - job: Docker_Images
+    strategy:
+      matrix:
+        MatchPredictionWorker:
+          imageRepository: 'atlas-match-prediction'
+          dockerfile: 'Atlas.MatchPrediction.Worker/Dockerfile'
+        MatchingPrecomputeWorker:
+          imageRepository: 'atlas-matching-precompute'
+          dockerfile: 'Atlas.MatchingAlgorithm.PrecomputeWorker/Dockerfile'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - checkout: self
+      fetchDepth: 1
+    - task: Docker@2
+      displayName: 'Build and Push $(imageRepository) Image'
+      inputs:
+        command: 'buildAndPush'
+        repository: '$(imageRepository)'
+        buildContext: '$(System.DefaultWorkingDirectory)'
+        dockerfile: '$(dockerfile)'
+        containerRegistry: 'AN Container Registry-Atlas'
+        tags: |
+          $(Build.BuildNumber)
+          latest

@@ -216,12 +216,15 @@ Once terraform has created ATLAS resources for the first time, certain actions m
 
 ## System Tests
 
-The system tests pipeline ("test-pipeline.yml") runs the integration test suites and the matching validation tests, twice a day, on `master`.
-To run it on another branch, run the pipeline manually, and choose the branch.
+The build pipeline ("build-pipeline.yml") runs the unit tests, the integration test suites and the matching validation tests on every commit to `master`.
+To run them on another branch, run the pipeline manually, and choose the branch.
 
-It needs no Azure resources, and no pipeline variables or secrets:
-- The Build stage builds the test projects once, and publishes them as the `SystemTests` artifact.
-- Each job of the Test stage starts what its tests need in a container on the build agent (see "test-pipeline-run-tests.yml"):
+Its stages:
+- Build, Unit Tests and Integration Tests run in parallel. Only the Build stage publishes artifacts, as the release pipeline downloads every artifact of the build.
+- Publish builds and pushes the Docker images, only once the three stages before it have succeeded.
+
+The integration tests need no Azure resources, and no pipeline variables or secrets:
+- Each job of the Integration Tests stage builds its own test project, and starts what its tests need in a container on the build agent (see "build-pipeline-run-tests.yml"):
   SQL Server, in its Developer edition, which supports the `ONLINE` index operations of the matching migrations; or Azurite, the Azure Storage emulator.
   The tests create and migrate their own databases, and create their own tables.
 - Connection strings are passed as environment variables (e.g., `ConnectionStrings__SqlA`), which override the local defaults in each test project's `appsettings.json`.
