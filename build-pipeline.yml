@@ -440,24 +440,42 @@ stages:
   dependsOn: Build_Tests
   jobs:
   - job: Unit_Tests
+    # The HLA Metadata Dictionary tests take minutes, nearly all to generate the matched HLA their fixtures share,
+    # so they run on their own agent, beside the other unit tests.
+    strategy:
+      matrix:
+        HlaMetadataDictionary:
+          unitTestShard: 'HLA Metadata Dictionary'
+          unitTestPatterns: 'Unit/Atlas.HlaMetadataDictionary.Test/**'
+        Other:
+          unitTestShard: 'Other'
+          unitTestPatterns: |
+            Unit/**
+            !Unit/Atlas.HlaMetadataDictionary.Test/**
     pool:
       vmImage: 'ubuntu-latest'
     steps:
-    - checkout: none
+    # Some unit tests read files from the repository: the approval tests their approved files, next to their sources,
+    # and the dependency injection tests the function apps' settings templates, from the repository root above them.
+    # So the repository is checked out where the Build Tests stage built it, and the test projects are downloaded into it.
+    - checkout: self
+      fetchDepth: 1
     - task: UseDotNet@2
       displayName: 'Use .Net sdk'
       inputs:
         version: 10.0.x
-    - download: current
-      artifact: Tests
-      patterns: 'Unit/**'
+    - task: DownloadPipelineArtifact@2
       displayName: 'Download unit test projects'
-    # Every unit test project in one run, each in its own test host, from its own build output.
+      inputs:
+        artifact: Tests
+        patterns: '$(unitTestPatterns)'
+        targetPath: '$(Build.SourcesDirectory)/TestBuild'
+    # Every unit test project of the shard in one run, each in its own test host, from its own build output.
     - bash: |
         testAssemblies=$(for folder in */; do project=${folder%/}; echo "$project/$project.dll"; done)
         dotnet test $testAssemblies --logger trx --results-directory "$(Agent.TempDirectory)/TestResults" -- RunConfiguration.MaxCpuCount=0
-      displayName: 'Unit Tests'
-      workingDirectory: '$(Pipeline.Workspace)/Tests/Unit'
+      displayName: 'Unit Tests - $(unitTestShard)'
+      workingDirectory: '$(Build.SourcesDirectory)/TestBuild/Unit'
     - task: PublishTestResults@2
       displayName: 'Publish test results'
       condition: succeededOrFailed()
@@ -465,7 +483,7 @@ stages:
         testResultsFormat: VSTest
         testResultsFiles: '**/*.trx'
         searchFolder: '$(Agent.TempDirectory)/TestResults'
-        testRunTitle: 'Unit Tests'
+        testRunTitle: 'Unit Tests - $(unitTestShard)'
 
 # Each job runs its tests against its own SQL Server, or Azurite, as it needs (see build-pipeline-run-tests.yml).
 # Connection strings are passed as environment variables, which override the local defaults in each project's appsettings.json.
