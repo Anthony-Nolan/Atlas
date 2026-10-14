@@ -76,6 +76,7 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
                 .SetBasePath(Directory.GetCurrentDirectory())
+                .AddEnvironmentVariables()
                 .Build();
 
             services.AddSingleton<IConfiguration>(sp => configuration);

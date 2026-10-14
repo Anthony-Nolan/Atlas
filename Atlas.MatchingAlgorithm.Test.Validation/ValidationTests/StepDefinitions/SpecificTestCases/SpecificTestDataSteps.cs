@@ -5,7 +5,6 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
-using Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.StaticDataSelection;
@@ -27,7 +26,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
                 DonorType = DonorType.Adult
             };
 
-            await AddDonors(new[] {donorInfo});
+            await AddDonors(new[] {donorInfo}, scenarioContext);
 
             staticDataProvider.SetExpectedDonorIds(new[] {donorInfo.DonorId});
 
@@ -35,11 +34,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             scenarioContext.Set((IExpectedDonorProvider) staticDataProvider);
         }
 
-        private static async Task AddDonors(IReadOnlyCollection<DonorInfo> donors)
+        private static async Task AddDonors(IReadOnlyCollection<DonorInfo> donors, ScenarioContext scenarioContext)
         {
             await AlgorithmTestingService.AddDonors(donors);
 
-            var testDataRepo = ServiceConfiguration.Provider.GetService<ITestDataRepository>();
+            var testDataRepo = scenarioContext.Get<IServiceScope>().ServiceProvider.GetRequiredService<ITestDataRepository>();
             testDataRepo.AddDonorsToAtlasDonorStore(donors.Select(d => d.DonorId));
         }
 

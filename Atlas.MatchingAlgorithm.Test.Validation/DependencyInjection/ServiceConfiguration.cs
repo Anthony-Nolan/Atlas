@@ -18,8 +18,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection
     /// </summary>
     internal static class ServiceConfiguration
     {
-        private static ServiceProvider provider;
-
         public static ServiceProvider CreateProvider()
         {
             var services = new ServiceCollection();
@@ -34,6 +32,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
                 .AddUserSecrets(Assembly.GetExecutingAssembly())
+                .AddEnvironmentVariables()
                 .Build();
 
             services.AddSingleton<IConfiguration>(sp => configuration);
@@ -43,9 +42,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection
             services.AddSingleton<IMetaDonorsData, MetaDonorsData>();
             services.AddSingleton<IMetaDonorRepository, MetaDonorRepository>();
 
-            // Services will only be fetched from .NET Core DI once per scenario, in the "BeforeScenario" hook.
-            // As such these are closer to a scoped lifetime than a transient one in usage. 
-            // We do not use "AddScoped" here as the DI framework does not appear consider new tests a different scope
+            // Services are fetched once per scenario, from the scope that the "BeforeScenario" hook creates for it.
             services.AddTransient<IAlleleRepository, AlleleRepository>();
             services.AddTransient<ITestDataService, TestDataService>();
 
@@ -61,8 +58,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection
 
             return services.BuildServiceProvider();
         }
-
-        public static ServiceProvider Provider => provider ??= CreateProvider();
 
         private static void RegisterDataServices(this IServiceCollection services)
         {

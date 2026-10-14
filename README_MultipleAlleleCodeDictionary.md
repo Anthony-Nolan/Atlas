@@ -50,10 +50,10 @@ In order these are:
 
 For unit tests of other parts of ATLAS, it is possibly to simply mock out the entire MACDictionary to return expected results.
 
-### AzureStorage
+### Matching validation tests
 
-For validation tests we want our data to be as close as possible to the real thing, so we use azure table storage. A full MAC Import should be run on this to ensure it contains the full MAC Data.
-If you are using the same storage account for integration and validation tests, be sure to not use the TestAtlasMultipleAlleleCodes table, as it is used for import integration tests, so does not reliably contain test data.
+The matching validation tests also use the `FileBackedMacDictionaryRepository`. Its csv holds every MAC that their test data uses, copied from the real MAC Dictionary.
+A MAC used by a new validation test must be added to it, or the validation test will not find it.
 
 ### TestAtlasMultipleAlleleCodes
 

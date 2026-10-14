@@ -216,51 +216,19 @@ Once terraform has created ATLAS resources for the first time, certain actions m
 
 ## System Tests
 
-### Resources
+The system tests pipeline ("test-pipeline.yml") runs the integration test suites and the matching validation tests, twice a day, on `master`.
+To run it on another branch, run the pipeline manually, and choose the branch.
 
-The system tests require some Azure resources of their own: SQL databases, Azure Storage, and App Configuration.
-These resources are controlled by terraform scripts, which will be run by the test pipeline (see "test-pipeline.yml").
-
-#### DevOps
-Create a new DevOps variable group named "TestTerraform", with the following variables:
-- `TerraformWorkspace` - e.g., `atlas-system-tests`
-- `TF_VAR_AZURE_SUBSCRIPTION_ID` - ID of the Azure subscription into which the test resources will be deployed.
-- SQL server info:
-  - `TF_VAR_DATABASE_SERVER_ADMIN_LOGIN_PASSWORD`
-  - `TF_VAR_DATABASE_SERVER_AZUREAD_ADMINISTRATOR_LOGIN_USERNAME` - Name of the AD group used to control admin access to the system-tests SQL server
-  - `TF_VAR_DATABASE_SERVER_AZUREAD_ADMINISTRATOR_OBJECTID` - Object ID of AD group
-  - `TF_VAR_DATABASE_SERVER_AZUREAD_ADMINISTRATOR_TENANTID` - ID of Tenant where AD group resides
-
-#### Azure Configuration
-The second App Registration created during [the previous Azure Configuration step](#azure-configuration) must have the role of `Contributor` and `App Configuration Data Owner` on the `ATLAS-SYSTEM-TEST-RESOURCE-GROUP` to allow terraform to create and access the required resources. This can be set at the Azure subscription level.
-
-### One-time Set-up
-
-Before the full suite of system tests can be run, some one-time set up must be performed. 
-
-#### HLA Metadata Dictionary
-
-The HLA Metadata dictionary must be refreshed to version 3330 for the matching validation test suite to run. 
-
-This can be achieved by configuring an ATLAS installation to use the test storage account (locally is recommended, but you can use a deployed environment if local running is not an option), then triggering the refresh job.
-
-This is triggered via an HTTP endpoint in the Matching Algorithm Functions App.
-
-The HLA Metadata Dictionary needs to be set to version 3330, as that was when the validation tests were written.
-So send a POST request to `http://localhost:7071/api/RefreshHlaMetadataDictionaryToSpecificVersion` with the body:
-```
-{
-	"Version": "3330"
-}
-``` 
-
-#### MAC Dictionary
-
-A full import of the latest MACs should be performed (this can be a one-off, as tests should not ues as-yet unpublished MAC values)
-
-This can be achieved by configuring an ATLAS installation to use the test storage account (locally is recommended, but you can use a deployed environment if local running is not an option), then triggering the refresh job. 
-
-This is triggered via an HTTP endpoint in the Atlas Functions App.
+It needs no Azure resources, and no pipeline variables or secrets:
+- The Build stage builds the test projects once, and publishes them as the `SystemTests` artifact.
+- Each job of the Test stage starts what its tests need in a container on the build agent (see "test-pipeline-run-tests.yml"):
+  SQL Server, in its Developer edition, which supports the `ONLINE` index operations of the matching migrations; or Azurite, the Azure Storage emulator.
+  The tests create and migrate their own databases, and create their own tables.
+- Connection strings are passed as environment variables (e.g., `ConnectionStrings__SqlA`), which override the local defaults in each test project's `appsettings.json`.
+- The matching validation tests read the HLA Metadata Dictionary, at version 3330, and the MAC Dictionary from the same files as the integration tests,
+  so nothing needs to be prepared for them in advance. A MAC used by a new validation test must be added to `LargeMacDictionary.csv`.
+- The matching integration tests and the matching validation tests are each split across several jobs, by namespace, to keep each job short.
+  Each split has a shard named "Other", which runs every test that the other shards do not.
 
 ## Releasing to multiple environments
 

@@ -72,7 +72,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
         [Test]
         public async Task DataRefresh_RecordsHlaNomenclatureVersionAndHlaMetadataDictionarySnapshot()
         {
-            var refreshRecord = new DataRefreshRecord {Database = "DatabaseA"};
+            // The dummy successful record of the set-up makes A active, so B is dormant. A refresh record names its dormant database.
+            var refreshRecord = new DataRefreshRecord {Database = "DatabaseB"};
             var refreshRecordId = await dataRefreshHistoryRepository.Create(refreshRecord);
 
             await dataRefreshRunner.RefreshData(refreshRecordId);

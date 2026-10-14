@@ -6,6 +6,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.HlaMetadataDictionary.Repositories;
+using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
@@ -21,8 +22,9 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
         public static IServiceProvider CreateProvider()
         {
             var services = new ServiceCollection();
+            services.RegisterConfiguration();
             services.RegisterFileBasedHlaMetadataDictionaryForTesting(
-                _ => new ApplicationInsightsSettings(){LogLevel = "Info"}, 
+                _ => new ApplicationInsightsSettings(){LogLevel = "Info"},
                 DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>());
             return services.BuildServiceProvider();
         }
@@ -40,8 +42,6 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
             
             services.SetUpMacDictionaryWithFileBackedRepository(fetchApplicationInsightsSettings, fetchMacDictionarySettings);
 
-            services.RegisterConfiguration();
-
             // Replace Repositories with File-Backed equivalents.
             // Register them as singletons so that we don't have to re-populate for every new scope.
             services.AddSingleton<IHlaScoringMetadataRepository, FileBackedHlaScoringMetadataRepository>();
@@ -57,6 +57,10 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
             // Substituted for the same reason as the repositories above: these tests run against file-backed data,
             // with no storage account to reach, and the real one would need a connection string to construct.
             services.AddSingleton(_ => Substitute.For<IHlaMetadataRecreationRepository>());
+
+            // The file-backed repositories ignore recreated tables, so generating the metadata would be wasted work, and it
+            // needs the WMDA nomenclature files, which tests do not have. A data refresh recreates the dictionary every run.
+            services.AddSingleton(_ => Substitute.For<IRecreateHlaMetadataService>());
             services.AddSingleton(sp =>
             {
                 var wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();

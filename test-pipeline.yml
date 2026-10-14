@@ -9,301 +9,146 @@ schedules:
 
 pr: none
 
+# Every dependency of the tests runs in a container on the build agent (see test-pipeline-run-tests.yml),
+# so no Azure resources, and no secrets, are needed.
+# To also run the performance tests, define a RUN_CI_PERF_TESTS variable here (see IgnoreExceptOnCiPerfTestAttribute.cs).
 variables:
-  - group: Terraform
-  - group: TestTerraform
-  - name: RUN_CI_PERF_TESTS_OFF
-    value: 'This will get defined as an Environment Variable, which will enable various Perf-Test-only tests. See IgnoreExceptOnCiPerfTestAttribute.cs'
+  # SQL Server runs in a container on each agent, so this password never leaves the agent.
+  - name: sqlSaPassword
+    value: 'Atlas-System-Tests-1'
+  - name: sqlServerConnection
+    value: 'Server=localhost,1433;User ID=sa;Password=$(sqlSaPassword);MultipleActiveResultSets=True;TrustServerCertificate=True;'
 
-jobs:
-- job: Terraform
-  pool:
-    vmImage: 'ubuntu-latest'
-  steps:
-    - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
-      displayName: 'Use Terraform 1.16.5'
+stages:
+- stage: Build
+  jobs:
+  - job: Build
+    pool:
+      vmImage: 'ubuntu-latest'
+    variables:
+      testProjects: >-
+        Atlas.MatchingAlgorithm.Test.Integration
+        Atlas.MatchingAlgorithm.Test.Validation
+        Atlas.DonorImport.Test.Integration
+        Atlas.MatchPrediction.Test.Integration
+        Atlas.MultipleAlleleCodeDictionary.Test.Integration
+    steps:
+    - task: UseDotNet@2
+      displayName: 'Use .Net sdk'
       inputs:
-        terraformVersion: '1.16.5'
-    - script: 'terraform init -reconfigure -backend-config="storage_account_name=$(BACKEND_STORAGE_ACCOUNT_NAME)" -backend-config="container_name=$(BACKEND_STORAGE_CONTAINER_NAME)" -backend-config="resource_group_name=$(BACKEND_RESOURCE_GROUP_NAME)"'
-      workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/system-tests'
-      displayName: 'terraform init'
-      env:
-        ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
-    - script: |
-        echo Validating the syntax
-
-        terraform validate
-      workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/system-tests'
-      displayName: 'terraform validate'
-      env:
-        ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
-        ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+        version: 10.0.x
+    # Only the test projects, and what they reference, in one build, so that MSBuild builds them in parallel.
     - bash: |
-        echo Select terraform workspace and create if not exists
-        terraform workspace select $(TerraformWorkspace) || terraform workspace new $(TerraformWorkspace)
-      workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/system-tests'
-      displayName: 'terraform workspace'
-      env:
-        ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
-        ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-    - script: 'terraform apply -auto-approve -input=false'
-      workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/system-tests'
-      displayName: 'terraform apply'
-      env:
-        ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
-        ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-        ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-        TF_VAR_DATABASE_SERVER_ADMIN_LOGIN_PASSWORD: $(TF_VAR_DATABASE_SERVER_ADMIN_LOGIN_PASSWORD)
+        dotnet new sln --name SystemTests --format slnx
+        for project in $(testProjects); do
+          dotnet sln SystemTests.slnx add "$project/$project.csproj"
+        done
+        dotnet restore SystemTests.slnx -p:RestoreUseStaticGraphEvaluation=true
+        dotnet build SystemTests.slnx --no-restore -p:RunAnalyzersDuringBuild=false
+      displayName: 'Build test projects'
+    # Published in the "SystemTests" artifact, in a folder named after each project, for the jobs of the Test stage.
+    # The test projects do not all build to the same folder, so MSBuild is asked where each one did.
+    - bash: |
+        for project in $(testProjects); do
+          outputFolder=$(dotnet msbuild "$project/$project.csproj" -getProperty:TargetDir)
+          cp -r "$outputFolder" "$(Build.ArtifactStagingDirectory)/$project"
+        done
+      displayName: 'Collect test projects'
+    - publish: '$(Build.ArtifactStagingDirectory)'
+      artifact: SystemTests
+      displayName: 'Publish test projects'
 
-    - task: Powershell@2
-      name: OutputTFVars
-      env:
-        ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
-        ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-      inputs:
-        targetType: 'inline'
-        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/system-tests'
-        script: |
-          $output = terraform output -json
+# Each job runs its tests against its own SQL Server, or Azurite, as it needs (see test-pipeline-run-tests.yml).
+# Connection strings are passed as environment variables, which override the local defaults in each project's appsettings.json.
+- stage: Test
+  dependsOn: Build
+  jobs:
+  - job: Matching_Algorithm_Integration_Tests
+    # The tests share the state of their databases, so they cannot run in parallel within a process.
+    # Instead, they are split across agents, by namespace, each shard with its own SQL Server.
+    strategy:
+      matrix:
+        Search:
+          matchingTestFilter: 'FullyQualifiedName~.IntegrationTests.Search.'
+          matchingShard: 'Search'
+        Matching:
+          matchingTestFilter: 'FullyQualifiedName~.IntegrationTests.Matching.'
+          matchingShard: 'Matching'
+        Other:
+          matchingTestFilter: 'FullyQualifiedName!~.IntegrationTests.Search.&FullyQualifiedName!~.IntegrationTests.Matching.'
+          matchingShard: 'Other'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - template: test-pipeline-run-tests.yml
+      parameters:
+        project: Atlas.MatchingAlgorithm.Test.Integration
+        testRunTitle: 'Matching Algorithm Integration Tests - $(matchingShard)'
+        filter: '$(matchingTestFilter)'
+        env:
+          # A and B must be different databases: some tests check that the active database is left alone while the dormant one changes.
+          ConnectionStrings__SqlA: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationTests;'
+          ConnectionStrings__SqlB: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationTestsB;'
+          ConnectionStrings__PersistentSql: '$(sqlServerConnection)Initial Catalog=AtlasSystemTests;'
 
-          $json = $output | ConvertFrom-Json
+  - job: Matching_Algorithm_Validation_Tests
+    # The scenarios are split across agents, each shard with its own SQL Server, and its own copy of the test data.
+    # Running them in parallel within one process does not help: the searches compete for the agent's few cores.
+    # The shards take about a minute each; the 8/10 searches are moved out of AdultSearch to balance them.
+    strategy:
+      matrix:
+        AdultSearch:
+          validationTestFilter: 'FullyQualifiedName~.ValidationTests.Features.AdultSearch.&FullyQualifiedName!~.AdultSearch.EightOutOfTenSearch.'
+          validationShard: 'AdultSearch'
+        Scoring:
+          validationTestFilter: 'FullyQualifiedName~.ValidationTests.Features.Scoring.'
+          validationShard: 'Scoring'
+        Other:
+          validationTestFilter: '(FullyQualifiedName!~.ValidationTests.Features.AdultSearch.&FullyQualifiedName!~.ValidationTests.Features.Scoring.)|FullyQualifiedName~.AdultSearch.EightOutOfTenSearch.'
+          validationShard: 'Other'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - template: test-pipeline-run-tests.yml
+      parameters:
+        project: Atlas.MatchingAlgorithm.Test.Validation
+        testRunTitle: 'Matching Algorithm Validation Tests - $(validationShard)'
+        filter: '$(validationTestFilter)'
+        env:
+          ConnectionStrings__DonorSql: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
+          ConnectionStrings__SqlA: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
+          ConnectionStrings__SqlB: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
+          ConnectionStrings__PersistentSql: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
 
-          Write-Host $json
+  - job: Donor_Import_Integration_Tests
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - template: test-pipeline-run-tests.yml
+      parameters:
+        project: Atlas.DonorImport.Test.Integration
+        testRunTitle: 'Donor Import Integration Tests'
+        env:
+          ConnectionStrings__DonorStoreSql: '$(sqlServerConnection)Initial Catalog=AtlasSystemTests;'
 
-          foreach($prop in $json.psobject.properties) {
+  - job: Match_Prediction_Integration_Tests
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - template: test-pipeline-run-tests.yml
+      parameters:
+        project: Atlas.MatchPrediction.Test.Integration
+        testRunTitle: 'Match Prediction Integration Tests'
+        env:
+          ConnectionStrings__MatchPredictionSql: '$(sqlServerConnection)Initial Catalog=AtlasSystemTests;'
 
-          Write-Host("##vso[task.setvariable variable=$($prop.Name);isOutput=true;]$($prop.Value.value)")
-          Write-Host(“Setting {0} to {1}” –f $prop.name, $prop.Value.value)
-          }
-
-- job: Matching_Algorithm_Integration_Tests
-  dependsOn: Terraform
-  variables:
-    matching_algorithm_db_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.matching_algorithm_db_connection_string'] ]
-  pool:
-    vmImage: 'ubuntu-latest'
-  steps:
-  - task: DotNetCoreCLI@2
-    displayName: 'Nuget Restore'
-    inputs:
-      command: 'restore'
-      feedsToUse: 'select'
-  - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
-    displayName: 'Update connection string ''SqlA'''
-    inputs:
-      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Integration/appsettings.json'
-      keyname: SqlA
-      connectionstringvalue: '$(matching_algorithm_db_connection_string)'
-
-  - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
-    displayName: 'Update connection string ''SqlB'''
-    inputs:
-      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Integration/appsettings.json'
-      keyname: SqlB
-      connectionstringvalue: '$(matching_algorithm_db_connection_string)'
-
-  - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
-    displayName: 'Update connection string ''PersistentSql'' '
-    inputs:
-      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Integration/appsettings.json'
-      keyname: PersistentSql
-      connectionstringvalue: '$(matching_algorithm_db_connection_string)'
-  - task: DotNetCoreCLI@2
-    displayName: 'Matching Integration Tests'
-    inputs:
-      command: test
-      projects: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Integration/Atlas.MatchingAlgorithm.Test.Integration.csproj'
-      arguments: '--no-restore -v d'
-
-- job: Matching_Algorithm_Validation_Tests
-  dependsOn: Terraform
-  variables:
-    matching_algorithm_validation_db_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.matching_algorithm_validation_db_connection_string'] ]
-    azure_storage_account_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.azure_storage_account_connection_string'] ]
-    azure_app_configuration_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.azure_app_configuration_connection_string'] ]
-  pool:
-    vmImage: 'ubuntu-latest'
-  #Your build pipeline references an undefined variable named ‘Parameters.packagesDirectory’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-  steps:
-  - task: UseDotNet@2
-    displayName: 'Use .Net sdk'
-    inputs:
-      version: 8.0.x
-      
-  - task: UseDotNet@2
-    displayName: 'Use .Net sdk'
-    inputs:
-      version: 10.0.x
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Nuget Restore'
-    inputs:
-      command: 'restore'
-      feedsToUse: 'select'
-
-  - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
-    displayName: 'Update connection string ''DonorSql'''
-    inputs:
-      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
-      keyname: DonorSql
-      connectionstringvalue: '$(matching_algorithm_validation_db_connection_string)'
-
-  - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
-    displayName: 'Update connection string ''SqlA'''
-    inputs:
-      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
-      keyname: SqlA
-      connectionstringvalue: '$(matching_algorithm_validation_db_connection_string)'
-
-  - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
-    displayName: 'Update connection string ''SqlB'''
-    inputs:
-      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
-      keyname: SqlB
-      connectionstringvalue: '$(matching_algorithm_validation_db_connection_string)'
-
-  - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
-    displayName: 'Update connection string ''PersistentSql'' '
-    inputs:
-      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
-      keyname: PersistentSql
-      connectionstringvalue: '$(matching_algorithm_validation_db_connection_string)'
-
-  - task: bendayconsulting.build-task.setjsonvalue.setjsonvalue@1
-    displayName: 'Set Azure Storage ConnectionString'
-    inputs:
-      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
-      numberOfLevels: 2
-      keyname1: AzureStorage
-      keyname2: ConnectionString
-      valueToSet: '$(azure_storage_account_connection_string)'
-
-  - task: bendayconsulting.build-task.setjsonvalue.setjsonvalue@1
-    displayName: 'Set MAC Dictionary ConnectionString'
-    inputs:
-      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
-      numberOfLevels: 2
-      keyname1: MacDictionary
-      keyname2: AzureStorageConnectionString
-      valueToSet: '$(azure_storage_account_connection_string)'
-
-  - task: bendayconsulting.build-task.setjsonvalue.setjsonvalue@1
-    displayName: 'Set HLA Metadata Dictionary ConnectionString'
-    inputs:
-      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
-      numberOfLevels: 2
-      keyname1: HlaMetadataDictionary
-      keyname2: AzureStorageConnectionString
-      valueToSet: '$(azure_storage_account_connection_string)'
-
-  - task: bendayconsulting.build-task.setjsonvalue.setjsonvalue@1
-    displayName: 'Set Notification Service Bus ConnectionString'
-    inputs:
-      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
-      numberOfLevels: 2
-      keyname1: NotificationsServiceBus
-      keyname2: ConnectionString
-#     ServiceBus is not used directly in tests, but DI will fail without a valid service bus connection string.
-      valueToSet: '$(SERVICE_BUS_CONNECTION_STRING)'
-
-  - task: bendayconsulting.build-task.setjsonvalue.setjsonvalue@1
-    displayName: 'Set Azure App Configuration ConnectionString'
-    inputs:
-      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
-      numberOfLevels: 2
-      keyname1: AzureAppConfiguration
-      keyname2: ConnectionString
-      valueToSet: '$(azure_app_configuration_connection_string)'
-
-  - task: bendayconsulting.build-task.setjsonvalue.setjsonvalue@1
-    displayName: 'Set Search Tracking Service Bus ConnectionString'
-    inputs:
-      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
-      numberOfLevels: 2
-      keyname1: SearchTrackingServiceBus
-      keyname2: ConnectionString
-      valueToSet: '$(SERVICE_BUS_CONNECTION_STRING)'
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Matching Validation Tests'
-    inputs:
-      command: test
-      projects: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/Atlas.MatchingAlgorithm.Test.Validation.csproj'
-      arguments: '--no-restore -v d'
-
-- job: Donor_Import_Integration_Tests
-  dependsOn: Terraform
-  variables:
-    donor_import_db_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.donor_import_db_connection_string'] ]
-  pool:
-    vmImage: 'ubuntu-latest'
-  steps:
-    - task: DotNetCoreCLI@2
-      displayName: 'Nuget Restore'
-      inputs:
-        command: 'restore'
-        feedsToUse: 'select'
-    - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
-      displayName: 'Update Sql connection string'
-      inputs:
-        filename: '$(System.DefaultWorkingDirectory)/Atlas.DonorImport.Test.Integration/appsettings.json'
-        keyname: DonorStoreSql
-        connectionstringvalue: '$(donor_import_db_connection_string)'
-
-    - task: DotNetCoreCLI@2
-      displayName: 'Donor Import Integration Tests'
-      inputs:
-        command: test
-        projects: '$(System.DefaultWorkingDirectory)/Atlas.DonorImport.Test.Integration/Atlas.DonorImport.Test.Integration.csproj'
-        arguments: '--no-restore -v d'
-- job: Match_Prediction_Integration_Tests
-  dependsOn: Terraform
-  variables:
-    match_prediction_db_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.match_prediction_db_connection_string'] ]
-  pool:
-    vmImage: 'ubuntu-latest'
-  steps:
-    - task: DotNetCoreCLI@2
-      displayName: 'Nuget Restore'
-      inputs:
-        command: 'restore'
-        feedsToUse: 'select'
-    - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
-      displayName: 'Update Sql connection string'
-      inputs:
-        filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchPrediction.Test.Integration/appsettings.json'
-        keyname: MatchPredictionSql
-        connectionstringvalue: '$(match_prediction_db_connection_string)'
-    - task: DotNetCoreCLI@2
-      displayName: 'MPA Integration Tests'
-      inputs:
-        command: test
-        projects: '$(System.DefaultWorkingDirectory)/Atlas.MatchPrediction.Test.Integration/Atlas.MatchPrediction.Test.Integration.csproj'
-        arguments: '--no-restore -v d'
-- job: Multiple_Allele_Code_Dictionary_Integration_Tests
-  dependsOn: Terraform
-  variables:
-    azure_storage_account_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.azure_storage_account_connection_string'] ]
-  pool:
-    vmImage: 'ubuntu-latest'
-  steps:
-    - task: DotNetCoreCLI@2
-      displayName: 'Nuget Restore'
-      inputs:
-        command: 'restore'
-        feedsToUse: 'select'
-    - task: bendayconsulting.build-task.setjsonvalue.setjsonvalue@1
-      displayName: 'Set Azure Storage ConnectionString'
-      inputs:
-        filename: '$(System.DefaultWorkingDirectory)/Atlas.MultipleAlleleCodeDictionary.Test.Integration/appsettings.json'
-        numberOfLevels: 2
-        keyname1: MacDictionary
-        keyname2: AzureStorageConnectionString
-        valueToSet: '$(azure_storage_account_connection_string)'
-    - task: DotNetCoreCLI@2
-      displayName: 'MacDictionary Integration Tests'
-      inputs:
-        command: test
-        projects: '$(System.DefaultWorkingDirectory)/Atlas.MultipleAlleleCodeDictionary.Test.Integration/Atlas.MultipleAlleleCodeDictionary.Test.Integration.csproj'
-        arguments: '--no-restore -v d'
-
+  - job: Multiple_Allele_Code_Dictionary_Integration_Tests
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - template: test-pipeline-run-tests.yml
+      parameters:
+        project: Atlas.MultipleAlleleCodeDictionary.Test.Integration
+        testRunTitle: 'MAC Dictionary Integration Tests'
+        sqlServer: false
+        azurite: true

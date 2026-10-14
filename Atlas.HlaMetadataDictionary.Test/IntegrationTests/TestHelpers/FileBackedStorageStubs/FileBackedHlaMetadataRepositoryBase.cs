@@ -23,8 +23,14 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
         IHlaMetadataRepository
         where TSerialisableHlaMetadata : ISerialisableHlaMetadata
     {
+        /// <summary>
+        /// Versions that some test data is encoded at, but that have no file here: lookups at them find no data.
+        /// The Match Prediction snapshot tests import HF sets at 3410 (reg-2-3.json, reg-1-2-eth-1.json), and their expected
+        /// results rely on none of those haplotypes being found in the dictionary.
+        /// </summary>
+        private static readonly IReadOnlySet<string> VersionsWithoutTestData = new HashSet<string> { "3410" };
+
         // Dictionary of dictionaries. First layer keyed by HlaVersion. Second layer by (locus, lookupName).
-        // Make no effort to protect against innappropriate versions being passed in.
         protected Dictionary<string, Dictionary<(Locus, string), TSerialisableHlaMetadata>> HlaMetadata = new Dictionary<string, Dictionary<(Locus, string), TSerialisableHlaMetadata>>();
 
         protected FileBackedHlaMetadataRepositoryBase()
@@ -57,8 +63,20 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
 
         protected Task<TSerialisableHlaMetadata> LookupMetadata(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
-            var metadata = HlaMetadata[hlaNomenclatureVersion].GetValueOrDefault((locus, lookupName));
-            return Task.FromResult(metadata);
+            if (HlaMetadata.TryGetValue(hlaNomenclatureVersion, out var versionMetadata))
+            {
+                return Task.FromResult(versionMetadata.GetValueOrDefault((locus, lookupName)));
+            }
+
+            if (VersionsWithoutTestData.Contains(hlaNomenclatureVersion))
+            {
+                // Answered as "no data", like a name missing from a loaded version.
+                return Task.FromResult<TSerialisableHlaMetadata>(default);
+            }
+
+            throw new InvalidOperationException(
+                $"There is no file-backed HLA metadata at version {hlaNomenclatureVersion}. Add all_hla_metadata_v{hlaNomenclatureVersion}.json, " +
+                $"or, if the test relies on finding no data at that version, add it to {nameof(VersionsWithoutTestData)}.");
         }
 
         // This method has a one-off cost of ~2s. Therefore the first test run in a suite using the file-backed dictionary will have a ~2s delay.

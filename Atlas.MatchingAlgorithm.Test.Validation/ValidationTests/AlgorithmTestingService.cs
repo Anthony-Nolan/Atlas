@@ -1,18 +1,28 @@
 ﻿using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.FeatureManagement;
+using Atlas.Common.Notifications;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
 using Atlas.MatchingAlgorithm.Api;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
+using Atlas.MultipleAlleleCodeDictionary.Settings;
+using Atlas.SearchTracking.Common.Clients;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
+using NSubstitute;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests
 {
@@ -21,43 +31,48 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests
         private const string ApiKeyHeader = "X-Samples-ApiKey";
         private const string ApiKey = "test-key";
 
+        private static IHost host;
         private static TestServer server;
 
         public static void StartServer()
         {
-
-            var builder = new WebHostBuilder()
+            host = new HostBuilder()
+                .UseEnvironment(Startup.ValidationTestsEnvironment)
                 .UseContentRoot(Environment.CurrentDirectory)
                 .ConfigureAppConfiguration((context, config) =>
                 {
                     config.AddJsonFile("appsettings.json", true, true);
                     config.AddUserSecrets(Assembly.GetExecutingAssembly());
-
-                    AddFeatureManagement(config);
+                    config.AddEnvironmentVariables();
                 })
-                .UseStartup<Startup>();
-            server = new TestServer(builder);
+                .ConfigureWebHost(webHost => webHost
+                    .UseTestServer()
+                    .UseStartup<Startup>()
+                    .ConfigureTestServices(RegisterTestServices))
+                .Start();
+            server = host.GetTestServer();
         }
 
-        /// <summary>
-        /// Feature management, leave it configured even if there is no active feature flags in use
-        /// </summary>
-        /// <param name="configBuilder">Configuration builder</param>
-        private static void AddFeatureManagement(IConfigurationBuilder configBuilder)
+        private static void RegisterTestServices(IServiceCollection services)
         {
-            var configuration = configBuilder.Build();
-            var azureConfigurationConnectionString = configuration.GetValue<string>("AzureAppConfiguration:ConnectionString");
-            configBuilder.AddAzureAppConfiguration(options =>
-            {
-                options.Connect(azureConfigurationConnectionString)
-                    .Select("_")
-                    .UseFeatureFlags();
-            });
+            // The test data is at the file-backed HLA nomenclature version, so the dictionaries are read from the files
+            // that the integration tests use, rather than from a storage account prepared in advance.
+            services.RegisterFileBasedHlaMetadataDictionaryForTesting(
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<MacDictionarySettings>());
+
+            // Every search publishes search tracking events, and failures raise notifications. These tests check matching and
+            // scoring only, so nothing reads those messages: sending them to a real Service Bus would only slow each search down.
+            services.AddScoped(_ => Substitute.For<ISearchTrackingServiceBusClient>());
+            services.AddScoped(_ => Substitute.For<INotificationsClient>());
+
+            // Feature flags live in Azure App Configuration, which these tests do not connect to: every flag reads as off.
+            services.AddScoped(_ => Substitute.For<IAtlasFeatureManager>());
         }
 
         public static void StopServer()
         {
-            server.Dispose();
+            host.Dispose();
         }
 
         public static async Task<SearchAlgorithmApiResult> Search(SearchRequest matchingRequest)

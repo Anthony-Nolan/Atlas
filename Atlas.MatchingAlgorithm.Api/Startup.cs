@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Reflection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
@@ -19,17 +20,22 @@ namespace Atlas.MatchingAlgorithm.Api
 {
     public class Startup
     {
+        /// <summary>
+        /// The hosting environment of the in-memory server that the MatchAlg Validation tests run. The tests configure that server themselves.
+        /// </summary>
+        public const string ValidationTestsEnvironment = "ValidationTests";
+
         private readonly IConfiguration configuration;
 
-        // Configuration has been set up by the framework via WebHost.CreateDefaultBuilder
-        public Startup(IConfiguration configuration, IHostingEnvironment env)
+        // Configuration has been set up by the framework via Host.CreateDefaultBuilder
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             // Note that this code is also initiated by the MatchAlg Validation tests when running a virtual Server.
             // When it does so, the appSettings file that is being looked at is the one *in the Validation folder*,
             // so anything that this project looks for needs to be defined over there, as well as in this project's
             // appSettings file.
             // (Comment duplicated in Validation.ServiceConfiguration, Validation.appSettings, Api.Startup (twice), Api.appSettings)
-            if (!env.ContentRootPath.Contains("Test"))
+            if (!env.IsEnvironment(ValidationTestsEnvironment))
             {
                 var builder = new ConfigurationBuilder();
                 builder.AddConfiguration(configuration);
@@ -121,7 +127,7 @@ namespace Atlas.MatchingAlgorithm.Api
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.ConfigureSwagger();
 

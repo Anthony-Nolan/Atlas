@@ -16,7 +16,7 @@ namespace Atlas.MatchingAlgorithm.Api
             return services;
         }
 
-        public static IApplicationBuilder ConfigureSwagger(this IApplicationBuilder app, IHostingEnvironment env = null)
+        public static IApplicationBuilder ConfigureSwagger(this IApplicationBuilder app)
         {
             app.UseSwagger();
             app.UseSwaggerUI(c =>

@@ -1,0 +1,102 @@
+# Runs one test project, built by the Build stage, against the dependencies it needs, started in containers on the build agent.
+# Templates are expanded before the job runs, so the job needs nothing from the repository but the build output.
+parameters:
+  # The test project. Its build output is in the "SystemTests" artifact, in a folder of the same name.
+  - name: project
+    type: string
+  - name: testRunTitle
+    type: string
+  - name: filter
+    type: string
+    default: ''
+  # Environment variables for the test run: connection strings that override the local defaults in appsettings.json.
+  - name: env
+    type: object
+    default: {}
+  # SQL Server, in its Developer edition, which supports the ONLINE index operations used by the matching migrations.
+  # The tests create and migrate their own databases, so an empty server is enough.
+  - name: sqlServer
+    type: boolean
+    default: true
+  # Azurite, the Azure Storage emulator, which the tests' default "UseDevelopmentStorage=true" connection string points at.
+  # The tests create their own tables.
+  - name: azurite
+    type: boolean
+    default: false
+
+steps:
+  - checkout: none
+
+  # The dependencies are pinned to versions, so that a new image cannot break the tests unannounced.
+  # They are started first and waited for last, so that they start up while the .NET SDK installs and the build output downloads.
+  - ${{ if parameters.sqlServer }}:
+    - bash: docker run -d --name atlas-sql -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD="$SQL_SA_PASSWORD" -p 1433:1433 mcr.microsoft.com/mssql/server:2022-CU27-ubuntu-22.04
+      displayName: 'Start SQL Server'
+      env:
+        SQL_SA_PASSWORD: $(sqlSaPassword)
+  - ${{ if parameters.azurite }}:
+    - bash: >
+        docker run -d --name atlas-azurite -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/azure-storage/azurite:3.37.0
+        azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --skipApiVersionCheck
+      displayName: 'Start Azurite'
+
+  # The same SDK as the Build stage, rather than whichever the agent image has.
+  - task: UseDotNet@2
+    displayName: 'Use .Net sdk'
+    inputs:
+      version: 10.0.x
+
+  - download: current
+    artifact: SystemTests
+    patterns: '${{ parameters.project }}/**'
+    displayName: 'Download ${{ parameters.project }}'
+
+  - ${{ if parameters.sqlServer }}:
+    - bash: |
+        for attempt in $(seq 1 60); do
+          if docker exec atlas-sql /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$SQL_SA_PASSWORD" -Q "SELECT 1" -b > /dev/null 2>&1; then
+            echo "SQL Server is ready"
+            exit 0
+          fi
+          sleep 2
+        done
+
+        docker logs atlas-sql
+        echo "##vso[task.logissue type=error]SQL Server did not accept queries within 2 minutes"
+        exit 1
+      displayName: 'Wait for SQL Server'
+      env:
+        SQL_SA_PASSWORD: $(sqlSaPassword)
+  - ${{ if parameters.azurite }}:
+    - bash: |
+        for attempt in $(seq 1 30); do
+          if (echo > /dev/tcp/127.0.0.1/10002) 2> /dev/null; then
+            echo "Azurite is ready"
+            exit 0
+          fi
+          sleep 2
+        done
+
+        docker logs atlas-azurite
+        echo "##vso[task.logissue type=error]Azurite did not start within a minute"
+        exit 1
+      displayName: 'Wait for Azurite'
+
+  # Run from the build output, where the tests read appsettings.json from.
+  - bash: |
+      filter='${{ parameters.filter }}'
+      dotnet test ${{ parameters.project }}.dll \
+        --logger trx --results-directory "$(Agent.TempDirectory)/TestResults" \
+        ${filter:+--filter "$filter"}
+    displayName: '${{ parameters.testRunTitle }}'
+    workingDirectory: '$(Pipeline.Workspace)/SystemTests/${{ parameters.project }}'
+    env: ${{ parameters.env }}
+
+  - task: PublishTestResults@2
+    displayName: 'Publish test results'
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: '**/*.trx'
+      searchFolder: '$(Agent.TempDirectory)/TestResults'
+      testRunTitle: '${{ parameters.testRunTitle }}'
