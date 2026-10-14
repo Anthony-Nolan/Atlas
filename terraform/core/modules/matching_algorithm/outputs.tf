@@ -28,8 +28,10 @@ output "sql_database" {
   value = {
     sql_server                  = var.sql_server.fully_qualified_domain_name
     persistent_database_kv_ref  = local.sql_kv_ref["matching-persistent-sql-connection-string"]
+    transient_a_database_id     = azurerm_mssql_database.atlas-matching-transient-a.id
     transient_a_database_name   = azurerm_mssql_database.atlas-matching-transient-a.name
     transient_a_database_kv_ref = local.sql_kv_ref["matching-transient-a-sql-connection-string"]
+    transient_b_database_id     = azurerm_mssql_database.atlas-matching-transient-b.id
     transient_b_database_name   = azurerm_mssql_database.atlas-matching-transient-b.name
     transient_b_database_kv_ref = local.sql_kv_ref["matching-transient-b-sql-connection-string"]
   }
