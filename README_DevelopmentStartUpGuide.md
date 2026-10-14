@@ -164,6 +164,69 @@ It can be useful to run the Matching Algorithm API when locally debugging and te
 The matching validation tests need the same SQL Server as the integration tests, and nothing else:
 the HLA Metadata Dictionary and the MAC Dictionary are read from files, and the Service Bus clients are substituted.
 
+## Running the Integration and Validation Tests in Docker
+Instead of installing SQL Server and Azurite, you can run them in containers, as the system tests pipeline does.
+This needs a container runtime, e.g., Docker Desktop, Rancher Desktop or Podman.
+
+### Start the containers
+These are the image versions the pipeline uses (see `test-pipeline-run-tests.yml`); keep them in step with it.
+SQL Server is published on port 14330, so that it does not clash with a SQL Server installed locally on 1433.
+
+```bash
+docker run -d --name atlas-sql -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD=Atlas-System-Tests-1 -p 14330:1433 mcr.microsoft.com/mssql/server:2022-CU27-ubuntu-22.04
+docker run -d --name atlas-azurite -p 10000-10002:10000-10002 mcr.microsoft.com/azure-storage/azurite:3.37.0 azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --skipApiVersionCheck
+```
+
+SQL Server takes up to half a minute to accept connections after it starts.
+Azurite listens on the standard ports, so the default `UseDevelopmentStorage=true` connection string needs no change.
+
+### Point the tests at the containers
+The tests create and migrate their own databases, so the server only needs to be running.
+Set the connection strings as environment variables, which override the defaults in each test project's `appsettings.json`.
+Give each test project its own databases, so that one project's tests cannot clash with another's:
+
+| Test project | Environment variables |
+|---|---|
+| `Atlas.MatchingAlgorithm.Test.Integration` | `ConnectionStrings__SqlA`, `ConnectionStrings__SqlB` (a different database to `SqlA`), `ConnectionStrings__PersistentSql` |
+| `Atlas.MatchingAlgorithm.Test.Validation` | `ConnectionStrings__DonorSql`, `ConnectionStrings__SqlA`, `ConnectionStrings__SqlB`, `ConnectionStrings__PersistentSql` (all may name the same database) |
+| `Atlas.DonorImport.Test.Integration` | `ConnectionStrings__DonorStoreSql` |
+| `Atlas.MatchPrediction.Test.Integration` | `ConnectionStrings__MatchPredictionSql` |
+| `Atlas.MultipleAlleleCodeDictionary.Test.Integration` | none: it only needs Azurite |
+
+Each connection string has the form:
+`Server=localhost,14330;User ID=sa;Password=Atlas-System-Tests-1;Initial Catalog=<database>;MultipleActiveResultSets=True;TrustServerCertificate=True;`
+
+For example, from PowerShell:
+
+```powershell
+$server = 'Server=localhost,14330;User ID=sa;Password=Atlas-System-Tests-1;MultipleActiveResultSets=True;TrustServerCertificate=True;'
+$env:ConnectionStrings__SqlA = "${server}Initial Catalog=AtlasMatchingIntegrationTests;"
+$env:ConnectionStrings__SqlB = "${server}Initial Catalog=AtlasMatchingIntegrationTestsB;"
+$env:ConnectionStrings__PersistentSql = "${server}Initial Catalog=AtlasMatchingIntegrationTestsPersistent;"
+dotnet test Atlas.MatchingAlgorithm.Test.Integration
+```
+
+To run the tests from Rider or Visual Studio, put the same variables in a `.runsettings` file, and select it as the test settings in the IDE:
+
+```xml
+<RunSettings>
+  <RunConfiguration>
+    <EnvironmentVariables>
+      <ConnectionStrings__SqlA>Server=localhost,14330;User ID=sa;Password=Atlas-System-Tests-1;Initial Catalog=AtlasMatchingIntegrationTests;MultipleActiveResultSets=True;TrustServerCertificate=True;</ConnectionStrings__SqlA>
+      <!-- ... and the other variables in the table above -->
+    </EnvironmentVariables>
+  </RunConfiguration>
+</RunSettings>
+```
+
+The variables of a `.runsettings` file apply to every test project run with it, and several projects share names such as `SqlA`.
+So with one such file, run one test project at a time: each project clears its databases when its tests start.
+
+### Stop the containers
+```bash
+docker rm -f atlas-sql atlas-azurite
+```
+
 ## Terraform
 
 - Install terraform.
