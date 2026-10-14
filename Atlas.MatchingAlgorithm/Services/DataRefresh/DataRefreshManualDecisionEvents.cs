@@ -14,7 +14,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh;
 /// resume. Query: <c>customEvents | where name startswith "Data refresh"</c>.
 /// </summary>
 /// <remarks>
-/// Events are sampled like other telemetry. The paused alert is the main signal; these events give a trail.
+/// The events can be sampled. The worker sends them with its own Application Insights SDK, which has adaptive sampling on by
+/// default. The sampling settings in host.json apply only to the Functions host, not to the worker. So the paused alert is the
+/// main signal; these events give a trail.
 /// </remarks>
 public interface IDataRefreshManualDecisionEvents
 {

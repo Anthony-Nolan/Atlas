@@ -316,10 +316,10 @@ resumes applies it:
   no message is out, so an attempt that stops at any step can do the steps again.
 - `Fail`: the endpoint closes the record as failed, notifies, and cancels the run. No refresh resumes.
 
-When the refresh fails, it closes its record, then cancels the run and removes the staging data. The workers skip every
-message of a closed record, and the claim skips every batch of a cancelled run. `RunDataRefreshCleanup` does the same
-for each refresh record that it closes. The data deletion (stage 20) of the next refresh removes all the precomputation
-tables of the database.
+When the refresh fails, it closes its record, clears the manual decision state, then cancels the run and removes the
+staging data. The workers skip every message of a closed record, and the claim skips every batch of a cancelled run.
+`RunDataRefreshCleanup` does the same for each refresh record that it closes. The data deletion (stage 20) of the next
+refresh removes all the precomputation tables of the database.
 
 Stage 80 (queued donor updates) also precomputes the donors that it writes, as the Donor Management app does for a
 donor update.

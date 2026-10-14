@@ -436,6 +436,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 await MarkDataHistoryRecordAsComplete(dataRefreshRecordId, false, null);
                 await NotifyOfCompletion(dataRefreshRecordId, false);
 
+                // A closed record needs no decision. A refresh that fails after a manual retry decision, before the precomputation
+                // stage applies it, still has the decision. After the notifications, so that an error here cannot stop them.
+                await dataRefreshHistoryRepository.ClearManualDecisionState(dataRefreshRecordId);
+
                 // Only here: after a SqlException the request is delivered again and the stage continues its run, and after a lost
                 // lease the record belongs to another invocation. Last, because the removal of the staging data waits for the
                 // statements of the workers, and must not delay the failure notifications.

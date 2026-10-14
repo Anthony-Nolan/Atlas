@@ -290,6 +290,10 @@ curl -X POST "https://<data refresh function app>.azurewebsites.net/api/ResolveP
 | 409 | Nothing changed. The record is closed, has a decision already, or is not paused. After the paused alert, the record is not paused until the scale-down has ended: try again later. |
 | 500 | `Complete` or `RetryFailedBatches`: the decision is recorded, but the refresh request was not published. **Do not send the decision again.** The watchdog requests the refresh, within about 75 minutes at the default settings. To resume at once, publish the request yourself, as in [Intervening before the watchdog does](#intervening-before-the-watchdog-does). |
 
+A `Fail` call can take about a minute. The record is closed at once, but then the call removes the staging data from the
+dormant database, which can be auto-paused and must resume first. If the database does not resume in time, the call
+still returns 200, and the next refresh removes the staging data.
+
 Each decision appends one line to `SupportComments`, for example
 `2026-10-08 14:05:12Z Manual decision: RetryFailedBatches (by J. Smith).`
 
@@ -307,7 +311,8 @@ Each decision appends one line to `SupportComments`, for example
 
 Application Insights events: `Data refresh paused for a manual decision`, `Data refresh paused again for a manual
 decision`, `Data refresh manual decision taken`, and `Data refresh resumed after a manual decision`
-(`customEvents | where name startswith "Data refresh"`). Events are sampled, so the alert is the main signal.
+(`customEvents | where name startswith "Data refresh"`). These events can be sampled: the worker sends them with adaptive
+sampling on, and the `samplingSettings` in `host.json` apply only to the Functions host. So the alert is the main signal.
 
 If the invocation stops during the scale-down, the record is not paused yet. The watchdog resumes it when the lease
 has expired and the grace period has passed (about 95 minutes at the default settings). Stage 30 scales the database up
