@@ -403,18 +403,33 @@ variable "MATCHING_DATA_REFRESH_DB_SIZE_ACTIVE" {
   type        = string
   default     = "S4"
   description = "Size of Azure Database used for active matching database. Allowed values according to the Azure DTU/GeneralPurpose Serverless model service tiers."
+
+  validation {
+    condition     = contains(keys(local.matching_database_tier_max_size_gb), var.MATCHING_DATA_REFRESH_DB_SIZE_ACTIVE)
+    error_message = "MATCHING_DATA_REFRESH_DB_SIZE_ACTIVE must be one of the tiers the data refresh can scale to: ${join(", ", keys(local.matching_database_tier_max_size_gb))}."
+  }
 }
 
 variable "MATCHING_DATA_REFRESH_DB_SIZE_DORMANT" {
   type        = string
   default     = "S0"
   description = "Size of Azure Database used for dormant matching database. Allowed values according to the Azure DTU/GeneralPurpose Serverless model service tiers."
+
+  validation {
+    condition     = contains(keys(local.matching_database_tier_max_size_gb), var.MATCHING_DATA_REFRESH_DB_SIZE_DORMANT)
+    error_message = "MATCHING_DATA_REFRESH_DB_SIZE_DORMANT must be one of the tiers the data refresh can scale to: ${join(", ", keys(local.matching_database_tier_max_size_gb))}."
+  }
 }
 
 variable "MATCHING_DATA_REFRESH_DB_SIZE_REFRESH" {
   type        = string
   default     = "P1"
   description = "Size to temporarily scale the dormant Azure Database to, whilst refreshing the matching database. Allowed values according to the Azure DTU model service tiers. Premium tier is recommended due to a large IO throughput."
+
+  validation {
+    condition     = contains(keys(local.matching_database_tier_max_size_gb), var.MATCHING_DATA_REFRESH_DB_SIZE_REFRESH)
+    error_message = "MATCHING_DATA_REFRESH_DB_SIZE_REFRESH must be one of the tiers the data refresh can scale to: ${join(", ", keys(local.matching_database_tier_max_size_gb))}."
+  }
 }
 
 variable "MATCHING_DATA_REFRESH_LEASE_DURATION_MINUTES" {
@@ -474,7 +489,20 @@ variable "MATCHING_DATA_REFRESH_PRECOMPUTE_REQUEUE_BATCHES_CRON_SCHEDULE" {
 variable "MATCHING_DATABASE_MAX_SIZE_GB" {
   type        = string
   default     = "250"
-  description = "Maximum size in gigabytes, refer to Azure documentation for supported sizes"
+  description = "Maximum size in gigabytes of each transient matching database, refer to Azure documentation for supported sizes. It must allow for the matching data plus the stored donor genotype sets of the data refresh, and be no more than the limit of any of the active, dormant and refresh tiers: the data refresh changes the tier, not the max size."
+
+  validation {
+    condition     = can(tonumber(var.MATCHING_DATABASE_MAX_SIZE_GB)) && try(tonumber(var.MATCHING_DATABASE_MAX_SIZE_GB) > 0 && floor(tonumber(var.MATCHING_DATABASE_MAX_SIZE_GB)) == tonumber(var.MATCHING_DATABASE_MAX_SIZE_GB), false)
+    error_message = "MATCHING_DATABASE_MAX_SIZE_GB must be a whole number of gigabytes."
+  }
+
+  validation {
+    condition = !can(tonumber(var.MATCHING_DATABASE_MAX_SIZE_GB)) || alltrue([
+      for tier in values(local.matching_data_refresh_db_sizes) :
+      tonumber(var.MATCHING_DATABASE_MAX_SIZE_GB) <= lookup(local.matching_database_tier_max_size_gb, tier, tonumber(var.MATCHING_DATABASE_MAX_SIZE_GB))
+    ])
+    error_message = "MATCHING_DATABASE_MAX_SIZE_GB (${var.MATCHING_DATABASE_MAX_SIZE_GB}) is more than a matching database tier allows, so the data refresh could not scale the database to it: ${join(", ", [for name, tier in local.matching_data_refresh_db_sizes : "${name} ${tier} allows ${local.matching_database_tier_max_size_gb[tier]}" if contains(keys(local.matching_database_tier_max_size_gb), tier) && try(tonumber(var.MATCHING_DATABASE_MAX_SIZE_GB) > local.matching_database_tier_max_size_gb[tier], false)])}. Raise the tier or lower the max size."
+  }
 }
 
 variable "MATCHING_DATABASE_OPERATION_POLLING_INTERVAL_MILLISECONDS" {
@@ -485,6 +513,17 @@ variable "MATCHING_DATABASE_OPERATION_POLLING_INTERVAL_MILLISECONDS" {
 
 variable "MATCHING_DATABASE_PASSWORD" {
   type = string
+}
+
+variable "MATCHING_DATABASE_STORAGE_ALERT_THRESHOLD_PERCENT" {
+  type        = number
+  default     = 85
+  description = "Percentage of MATCHING_DATABASE_MAX_SIZE_GB used in a transient matching database above which the Atlas team is alerted, so the max size can be raised before the data refresh or search fills the database. No alert is created when USE_EXTERNAL_SQL is true."
+
+  validation {
+    condition     = var.MATCHING_DATABASE_STORAGE_ALERT_THRESHOLD_PERCENT > 0 && var.MATCHING_DATABASE_STORAGE_ALERT_THRESHOLD_PERCENT < 100
+    error_message = "MATCHING_DATABASE_STORAGE_ALERT_THRESHOLD_PERCENT must be between 0 and 100."
+  }
 }
 
 variable "MATCHING_DATABASE_USERNAME" {

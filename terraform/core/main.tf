@@ -420,6 +420,21 @@ module "support" {
     }
   }
 
+  // With external SQL, the apps do not use the Terraform-managed transient databases, so there is nothing to alert on.
+  matching_transient_databases = {
+    for key, database in {
+      transient-a = {
+        id   = module.matching_algorithm.sql_database.transient_a_database_id
+        name = module.matching_algorithm.sql_database.transient_a_database_name
+      }
+      transient-b = {
+        id   = module.matching_algorithm.sql_database.transient_b_database_id
+        name = module.matching_algorithm.sql_database.transient_b_database_name
+      }
+    } : key => database if !var.USE_EXTERNAL_SQL
+  }
+
   // Release variables
-  SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID = var.SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID
+  MATCHING_DATABASE_STORAGE_ALERT_THRESHOLD_PERCENT = var.MATCHING_DATABASE_STORAGE_ALERT_THRESHOLD_PERCENT
+  SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID         = var.SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID
 }
