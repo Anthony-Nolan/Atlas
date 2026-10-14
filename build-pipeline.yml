@@ -11,8 +11,8 @@ variables:
 
 pr: none
 
-# Build, Unit Tests and Integration Tests run in parallel; Publish pushes the images only once all three have succeeded.
-# Only the Build stage publishes artifacts: the release pipeline downloads every artifact of the build.
+# Build and Build Tests run in parallel; Unit Tests and Integration Tests run the test projects that Build Tests built, in parallel.
+# Publish pushes the images only once the build and every test have succeeded.
 stages:
 - stage: Build
   jobs:
@@ -383,13 +383,20 @@ stages:
           PathtoPublish: '$(System.DefaultWorkingDirectory)/terraform/core'
           ArtifactName: 'terraform-atlas-core'
 
-- stage: Unit_Tests
-  displayName: 'Unit Tests'
+- stage: Build_Tests
+  displayName: 'Build Tests'
   dependsOn: []
   jobs:
-  - job: Unit_Tests
+  - job: Build_Tests
     pool:
       vmImage: 'ubuntu-latest'
+    variables:
+      integrationTestProjects: >-
+        Atlas.MatchingAlgorithm.Test.Integration
+        Atlas.MatchingAlgorithm.Test.Validation
+        Atlas.DonorImport.Test.Integration
+        Atlas.MatchPrediction.Test.Integration
+        Atlas.MultipleAlleleCodeDictionary.Test.Integration
     steps:
     - checkout: self
       fetchDepth: 1
@@ -397,15 +404,60 @@ stages:
       displayName: 'Use .Net sdk'
       inputs:
         version: 10.0.x
-    # Every *.Test project, and only what they reference, in one build, so that MSBuild builds them in parallel.
+    # The unit test projects are every *.Test project.
     - bash: |
-        dotnet new sln --name UnitTests --format slnx
-        dotnet sln UnitTests.slnx add */*Test.csproj
-        dotnet restore UnitTests.slnx -p:RestoreUseStaticGraphEvaluation=true
-        dotnet build UnitTests.slnx --no-restore -p:RunAnalyzersDuringBuild=false
-      displayName: 'Build unit test projects'
-    - bash: dotnet test UnitTests.slnx --no-build --logger trx --results-directory "$(Agent.TempDirectory)/TestResults"
+        unitTestProjects=$(ls -d */*Test.csproj | cut -d/ -f1 | tr '\n' ' ')
+        echo "##vso[task.setvariable variable=unitTestProjects]$unitTestProjects"
+      displayName: 'Find unit test projects'
+    # Only the test projects, and what they reference, in one build, so that MSBuild builds them in parallel.
+    - bash: |
+        dotnet new sln --name Tests --format slnx
+        for project in $(unitTestProjects) $(integrationTestProjects); do
+          dotnet sln Tests.slnx add "$project/$project.csproj"
+        done
+        dotnet restore Tests.slnx -p:RestoreUseStaticGraphEvaluation=true
+        dotnet build Tests.slnx --no-restore -p:RunAnalyzersDuringBuild=false
+      displayName: 'Build test projects'
+    # Published in the "Tests" artifact, in a "Unit" or an "Integration" folder, in a folder named after each project.
+    # The test projects do not all build to the same folder, so MSBuild is asked where each one did.
+    - bash: |
+        collect() {
+          for project in ${@:2}; do
+            outputFolder=$(dotnet msbuild "$project/$project.csproj" -getProperty:TargetDir)
+            mkdir -p "$(Build.ArtifactStagingDirectory)/$1"
+            cp -r "$outputFolder" "$(Build.ArtifactStagingDirectory)/$1/$project"
+          done
+        }
+        collect Unit $(unitTestProjects)
+        collect Integration $(integrationTestProjects)
+      displayName: 'Collect test projects'
+    - publish: '$(Build.ArtifactStagingDirectory)'
+      artifact: Tests
+      displayName: 'Publish test projects'
+
+- stage: Unit_Tests
+  displayName: 'Unit Tests'
+  dependsOn: Build_Tests
+  jobs:
+  - job: Unit_Tests
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - checkout: none
+    - task: UseDotNet@2
+      displayName: 'Use .Net sdk'
+      inputs:
+        version: 10.0.x
+    - download: current
+      artifact: Tests
+      patterns: 'Unit/**'
+      displayName: 'Download unit test projects'
+    # Every unit test project in one run, each in its own test host, from its own build output.
+    - bash: |
+        testAssemblies=$(for folder in */; do project=${folder%/}; echo "$project/$project.dll"; done)
+        dotnet test $testAssemblies --logger trx --results-directory "$(Agent.TempDirectory)/TestResults" -- RunConfiguration.MaxCpuCount=0
       displayName: 'Unit Tests'
+      workingDirectory: '$(Pipeline.Workspace)/Tests/Unit'
     - task: PublishTestResults@2
       displayName: 'Publish test results'
       condition: succeededOrFailed()
@@ -420,7 +472,7 @@ stages:
 # To also run the performance tests, define a RUN_CI_PERF_TESTS variable (see IgnoreExceptOnCiPerfTestAttribute.cs).
 - stage: Integration_Tests
   displayName: 'Integration Tests'
-  dependsOn: []
+  dependsOn: Build_Tests
   jobs:
   - job: Matching_Algorithm_Integration_Tests
     # The tests share the state of their databases, so they cannot run in parallel within a process.

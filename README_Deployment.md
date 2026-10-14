@@ -220,11 +220,12 @@ The build pipeline ("build-pipeline.yml") runs the unit tests, the integration t
 To run them on another branch, run the pipeline manually, and choose the branch.
 
 Its stages:
-- Build, Unit Tests and Integration Tests run in parallel. Only the Build stage publishes artifacts, as the release pipeline downloads every artifact of the build.
-- Publish builds and pushes the Docker images, only once the three stages before it have succeeded.
+- Build, and Build Tests, run in parallel. Build Tests builds the unit and integration test projects once, and publishes them as the `Tests` artifact.
+- Unit Tests and Integration Tests run the test projects from the `Tests` artifact, in parallel.
+- Publish builds and pushes the Docker images, only once the build and every test have succeeded.
 
 The integration tests need no Azure resources, and no pipeline variables or secrets:
-- Each job of the Integration Tests stage builds its own test project, and starts what its tests need in a container on the build agent (see "build-pipeline-run-tests.yml"):
+- Each job of the Integration Tests stage starts what its tests need in a container on the build agent (see "build-pipeline-run-tests.yml"):
   SQL Server, in its Developer edition, which supports the `ONLINE` index operations of the matching migrations; or Azurite, the Azure Storage emulator.
   The tests create and migrate their own databases, and create their own tables.
 - Connection strings are passed as environment variables (e.g., `ConnectionStrings__SqlA`), which override the local defaults in each test project's `appsettings.json`.
