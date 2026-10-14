@@ -492,6 +492,12 @@ variable "MATCHING_DATABASE_USERNAME" {
   default = "matching"
 }
 
+variable "MATCHING_DEBUG_ALLOW_PRECOMPUTE_WRITES" {
+  type        = bool
+  default     = false
+  description = "When set, the genotype set compute debug endpoint of the Data Refresh functions app can save genotype sets to the active matching database, where search reads them. Set it in test environments (DEV, UAT) only."
+}
+
 variable "MATCHING_DONOR_WRITE_TRANSACTIONALITY__DATA_REFRESH" {
   type        = bool
   default     = false

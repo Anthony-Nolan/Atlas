@@ -38,6 +38,7 @@ setting; see [Key Vault bootstrap](./README_Deployment.md#key-vault-bootstrap).
 | LOG-ANALYTICS-DAILY-QUOTA-GB | N/A | N/A | The Log Analytics workspace daily quota for ingestion in GB. Default is -1 (unlimited). |
 | LOG-ANALYTICS-SKU | N/A | N/A | Log Analytics Workspace SKU. Default is `Pay As You Go`. |
 | MATCHING-DATA-REFRESH-AUTO-RUN | DATA-REFRESH-FUNCTION | DataRefresh-AutoRunDataRefresh | When set, the data refresh will automatically run once new HLA nomenclature is detected. This can be disabled to allow manual control on when new nomenclature is imported. |
+| MATCHING-DEBUG-ALLOW-PRECOMPUTE-WRITES | DATA-REFRESH-FUNCTION | Debug-AllowPrecomputeWrites | When set, the genotype set compute debug endpoint can save genotype sets to the active matching database, where search reads them. Default is `false`. Set it in test environments only. See [the Match Prediction README](README_MatchPredictionAlgorithm.md#checking-stored-genotype-sets-debug-endpoint). |
 
 ## Donor Import
 Settings for the donor import app (`ATLAS-DONOR-IMPORT-FUNCTIONS`).

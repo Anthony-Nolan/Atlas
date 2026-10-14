@@ -298,6 +298,11 @@ does steps 2 to 4.
      scale-down to a tier that is too small fails.
 6. **Haplotype frequency sets.** Make sure that the haplotype frequency sets are imported, with a global set. If no set
    applies to a donor, the donor fails stage 65.
+7. **Debug endpoint setting.** The release also has the genotype set compute debug endpoint
+   ([ATL-454](https://anthonynolan.atlassian.net/browse/ATL-454)) on the Data Refresh app. It uses the Match Prediction
+   settings that the app already has for stage 80. Terraform adds one setting, `Debug:AllowPrecomputeWrites`.
+   - Set `MATCHING_DEBUG_ALLOW_PRECOMPUTE_WRITES` to `true` in test environments (DEV, UAT) only. In LIVE it stays
+     `false`, so the endpoint can only read there.
 
 ### Release steps
 

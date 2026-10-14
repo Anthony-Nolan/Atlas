@@ -31,6 +31,7 @@ using Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
+using Atlas.MatchingAlgorithm.Services.Debug.Precompute;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Services.Search;
@@ -373,6 +374,39 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
             services.Replace(ServiceDescriptor.Scoped<IPrecomputedDonorGenotypeSetReader, PrecomputedDonorGenotypeSetReader>());
             services.Replace(ServiceDescriptor.Scoped<IPrecomputedDonorGenotypeSetWriter, PrecomputedDonorGenotypeSetWriter>());
+        }
+
+        /// <summary>
+        /// The genotype set compute debug endpoint (<see cref="IGenotypeSetDebugService"/>): it imputes a typing or donors
+        /// live, and can store the sets in the active transient database. Call it after <see cref="RegisterDataRefresh"/>,
+        /// which registers the transient databases, the data refresh history and the repository factories that it reads.
+        /// </summary>
+        /// <remarks>
+        /// Registers the Match Prediction genotype set pipeline, so the host needs its settings: the Match Prediction SQL
+        /// connection string (haplotype frequency sets), <see cref="GenotypeImputationSettings"/>, and
+        /// <c>IOptions&lt;HaplotypeFrequencySetCacheSettings&gt;</c>, which the host registers itself.
+        /// </remarks>
+        public static void RegisterGenotypeSetDebug(
+            this IServiceCollection services,
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
+            Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
+            Func<IServiceProvider, GenotypeImputationSettings> fetchGenotypeImputationSettings,
+            Func<IServiceProvider, DebugSettings> fetchDebugSettings,
+            Func<IServiceProvider, string> fetchMatchPredictionSqlConnectionString)
+        {
+            services.RegisterGenotypeSetPipeline(
+                fetchApplicationInsightsSettings,
+                fetchHlaMetadataDictionarySettings,
+                fetchMacDictionarySettings,
+                fetchGenotypeImputationSettings,
+                fetchMatchPredictionSqlConnectionString);
+
+            // For a frequency set chosen by its id, which can be inactive.
+            services.RegisterHaplotypeFrequenciesReader(fetchMatchPredictionSqlConnectionString);
+
+            services.MakeSettingsAvailableForUse(fetchDebugSettings);
+            services.AddScoped<IGenotypeSetDebugService, GenotypeSetDebugService>();
         }
 
         /// <summary>
