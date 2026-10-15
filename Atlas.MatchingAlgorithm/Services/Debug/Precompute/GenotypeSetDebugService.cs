@@ -311,7 +311,9 @@ internal class GenotypeSetDebugService : IGenotypeSetDebugService
 
             var saved = subjects.Select(subject => subject.WithSavedValues(ids, existingIds)).ToList();
 
-            // As the pre-computation does: a donor gets its link rows only when all its values are stored.
+            // As the pre-computation does, a donor gets its link rows only when all its requested values are stored.
+            // The upsert replaces the donor's rows for these combinations, also for a frequency set that search would
+            // not choose.
             var linkedDonors = saved.Where(subject => subject.CanBeLinked).ToList();
             var assignments = linkedDonors
                 .SelectMany(subject => subject.Items.Select(item => new DonorSubjectGenotypeSetAssignment(
