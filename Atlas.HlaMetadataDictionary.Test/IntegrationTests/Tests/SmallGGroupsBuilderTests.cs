@@ -40,6 +40,21 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
                 .BeFalse();
         }
 
+        /// <remarks>
+        /// Also fails if an allele is listed twice within one small g group.
+        /// </remarks>
+        [Test]
+        public void BuildSmallGGroups_NoAlleleIsInMoreThanOneSmallGGroupOfItsLocus()
+        {
+            allSmallGGroups
+                .SelectMany(group => group.Alleles.Select(allele => new { group.Locus, Allele = allele }))
+                .GroupBy(allele => allele)
+                .Where(occurrences => occurrences.Count() > 1)
+                .Select(occurrences => occurrences.Key)
+                .Should()
+                .BeEmpty();
+        }
+
         [TestCase(Locus.A)]
         [TestCase(Locus.B)]
         [TestCase(Locus.C)]
