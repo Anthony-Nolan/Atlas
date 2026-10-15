@@ -48,6 +48,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         /// it starts the scale-down of the dormant database, sends the paused alert, and waits until the scale-down ends.
         /// The later stages do not run, and this method does not write the record: the caller sets the pause.
         /// </para>
+        ///
+        /// <para>
+        /// When all stages are complete, the staging data of the donor genotype precomputation stage is removed, before the
+        /// caller closes the record. Normally the stage removed it already. After a manual Complete decision, it is still there.
+        /// </para>
         /// </remarks>
         /// <param name="cancellationToken">
         /// Cancelled if this invocation loses its run-level lease on the refresh record, meaning another invocation has
@@ -77,6 +82,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private readonly IDonorImporter donorImporter;
         private readonly IHlaProcessor hlaProcessor;
         private readonly IDonorGenotypePrecomputationStage donorGenotypePrecomputationStage;
+        private readonly IDonorGenotypePrecomputationRunCanceller precomputationRunCanceller;
         private readonly IDonorUpdateProcessor differentialDonorUpdateProcessor;
         private readonly IMatchingAlgorithmImportLogger logger;
         private readonly IDataRefreshManualDecisionEvents manualDecisionEvents;
@@ -117,7 +123,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             {DataRefreshStage.IndexRecreation, true},
 
             // When this stage is complete, its run is complete, so nothing is left to do. Its staging data is gone, except after a
-            // manual Complete decision: then the orchestrator removes it after the swap.
+            // manual Complete decision: then it is removed when all stages are complete.
             {DataRefreshStage.DonorGenotypePrecomputation, true},
 
             // Failing to scale down the Database has a cost impact, and it is possible for someone to manually scale the DB back up between interruption and retry.
@@ -139,6 +145,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IDonorImporter donorImporter,
             IHlaProcessor hlaProcessor,
             IDonorGenotypePrecomputationStage donorGenotypePrecomputationStage,
+            IDonorGenotypePrecomputationRunCanceller precomputationRunCanceller,
             IDonorUpdateProcessor differentialDonorUpdateProcessor,
             IMatchingAlgorithmImportLogger logger,
             IDataRefreshSupportNotificationSender dataRefreshNotificationSender,
@@ -154,6 +161,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             this.donorImporter = donorImporter;
             this.hlaProcessor = hlaProcessor;
             this.donorGenotypePrecomputationStage = donorGenotypePrecomputationStage;
+            this.precomputationRunCanceller = precomputationRunCanceller;
             this.differentialDonorUpdateProcessor = differentialDonorUpdateProcessor;
             this.logger = logger;
             this.dataRefreshNotificationSender = dataRefreshNotificationSender;
@@ -192,6 +200,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                         return DataRefreshRunResult.Paused(pauseReport);
                     }
                 }
+
+                // After a manual Complete decision, the staging data of the precomputation stage is still in the database. The
+                // decision is cleared when it is applied, so an attempt after one that stopped in a later stage cannot see it:
+                // every attempt that completes removes the data. Before the swap, so that the active database is not touched.
+                await precomputationRunCanceller.RemoveStagingData(refreshRecord);
 
                 return DataRefreshRunResult.Completed(refreshRecord.HlaNomenclatureVersion);
             }

@@ -9,6 +9,7 @@ using Atlas.MatchingAlgorithm.Models.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
+using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Test.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
 using AutoFixture;
@@ -29,6 +30,7 @@ public class PausedDataRefreshResolverTests
     private IDataRefreshCompletionNotifier completionNotifier;
     private IDonorGenotypePrecomputationRunCanceller precomputationRunCanceller;
     private IDataRefreshManualDecisionEvents manualDecisionEvents;
+    private DataRefreshSettings dataRefreshSettings;
     private DateTimeOffset now;
     private DataRefreshRecord pausedRecord;
 
@@ -43,6 +45,7 @@ public class PausedDataRefreshResolverTests
         completionNotifier = Substitute.For<IDataRefreshCompletionNotifier>();
         precomputationRunCanceller = Substitute.For<IDonorGenotypePrecomputationRunCanceller>();
         manualDecisionEvents = Substitute.For<IDataRefreshManualDecisionEvents>();
+        dataRefreshSettings = fixture.Create<DataRefreshSettings>();
         now = fixture.Create<DateTimeOffset>();
 
         pausedRecord = DataRefreshRecordBuilder.New
@@ -60,6 +63,7 @@ public class PausedDataRefreshResolverTests
             completionNotifier,
             precomputationRunCanceller,
             manualDecisionEvents,
+            dataRefreshSettings,
             new InstantTimeProvider(now),
             NullLogger<PausedDataRefreshResolver>.Instance);
     }
@@ -200,7 +204,19 @@ public class PausedDataRefreshResolverTests
         resolution.Outcome.Should().Be(PausedDataRefreshResolutionOutcome.NotPublished);
         resolution.Message.Should().Contain("Do not send the decision again");
         await dataRefreshHistoryRepository.Received(1).TryTakeManualDecision(pausedRecord.Id, decision, Arg.Any<DateTime>(), Arg.Any<string>());
-        await dataRefreshHistoryRepository.DidNotReceiveWithAnyArgs().ClearManualDecisionState(default);
+        await dataRefreshHistoryRepository.DidNotReceiveWithAnyArgs().CloseRecord(default, default, default, default);
+    }
+
+    [Test]
+    public async Task Resolve_WhenThePublishFails_GivesTheWatchdogDelayFromTheSettings()
+    {
+        serviceBusClient.PublishToRequestTopic(default).ThrowsAsyncForAnyArgs(new Exception(fixture.Create<string>()));
+
+        var resolution = await resolver.Resolve(Request(DataRefreshManualDecision.Complete));
+
+        resolution.Message.Should()
+            .Contain($"within {dataRefreshSettings.WatchdogGraceDurationMinutes} minutes plus one watchdog interval")
+            .And.Contain(dataRefreshSettings.WatchdogCronSchedule);
     }
 
     #endregion

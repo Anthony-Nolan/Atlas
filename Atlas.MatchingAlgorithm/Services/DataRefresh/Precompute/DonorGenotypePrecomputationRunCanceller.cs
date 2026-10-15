@@ -11,13 +11,13 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 
 /// <summary>
 /// Stops the donor genotype precomputation run of a data refresh that failed, and removes the staging data of a data refresh
-/// that ended.
+/// that completed.
 /// </summary>
 public interface IDonorGenotypePrecomputationRunCanceller
 {
     /// <summary>
-    /// Removes the staging data of the database of the record. Call it for a record that is closed as successful: its
-    /// database is the active one now. The run stays.
+    /// Removes the staging data of the database of the record. Call it when all stages of the refresh are complete, before
+    /// the record is closed: its database is still the dormant one. The run stays.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -26,8 +26,8 @@ public interface IDonorGenotypePrecomputationRunCanceller
     /// </para>
     ///
     /// <para>
-    /// <b>Does not throw.</b> The record is closed and its notifications are sent already, so an error here is only logged.
-    /// The next refresh of the database removes the staging data.
+    /// <b>Does not throw.</b> All stages are complete, so an error here must not fail the refresh: it is only logged. The next
+    /// refresh of the database removes the staging data.
     /// </para>
     /// </remarks>
     Task RemoveStagingData(DataRefreshRecord refreshRecord);
@@ -81,7 +81,8 @@ internal class DonorGenotypePrecomputationRunCanceller : IDonorGenotypePrecomput
             await repository.TruncateStagingTables();
 
             logger.LogInformation(
-                LoggingPrefix + " The staging data of data refresh record {DataRefreshRecordId} ({TargetDatabase}) was removed after the swap.",
+                LoggingPrefix + " The staging data of data refresh record {DataRefreshRecordId} ({TargetDatabase}) was removed at the end of " +
+                "the refresh.",
                 recordId, database);
         }
         catch (Exception e)
@@ -89,7 +90,7 @@ internal class DonorGenotypePrecomputationRunCanceller : IDonorGenotypePrecomput
             logger.LogError(
                 e,
                 LoggingPrefix + " The staging data of data refresh record {DataRefreshRecordId} ({TargetDatabase}) could not be removed " +
-                "after the swap. The next refresh of the database removes it.",
+                "at the end of the refresh. The next refresh of the database removes it.",
                 recordId, recordDatabase);
         }
     }

@@ -93,11 +93,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             var dataRefreshRecords = dataRefreshHistoryRepository.GetIncompleteRefreshJobs().ToList();
             foreach (var job in dataRefreshRecords)
             {
-                await dataRefreshHistoryRepository.UpdateExecutionDetails(job.Id, job.HlaNomenclatureVersion, DateTime.UtcNow);
-                await dataRefreshHistoryRepository.UpdateSuccessFlag(job.Id, false);
-
-                // A closed record needs no decision.
-                await dataRefreshHistoryRepository.ClearManualDecisionState(job.Id);
+                // The close also clears the pause and the pending decision: a closed record needs no decision.
+                await dataRefreshHistoryRepository.CloseRecord(job.Id, false, job.HlaNomenclatureVersion, DateTime.UtcNow);
 
                 // A closed record does not continue, so its precomputation run must stop too.
                 await precomputationRunCanceller.CancelRun(job);

@@ -10,6 +10,7 @@ using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Models.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
+using Atlas.MatchingAlgorithm.Settings;
 using Microsoft.Extensions.Logging;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh;
@@ -28,8 +29,9 @@ public interface IPausedDataRefreshResolver
     /// <see cref="DataRefreshManualDecision.Fail"/> closes the record as failed, then notifies, then cancels the run.
     /// </summary>
     /// <remarks>
-    /// Only the persistent database is written, so the dormant database, which is scaled down and can be paused, is not
-    /// needed. Only a Fail decision reads it, to remove the staging data, and that is best effort.
+    /// For Complete and RetryFailedBatches, only the persistent database is written, so the dormant database, which is
+    /// scaled down and can be paused, is not needed. A Fail decision also removes the staging data from the dormant
+    /// database, and that is best effort.
     /// </remarks>
     /// <param name="request">The body of the request. Null when the body is empty.</param>
     Task<PausedDataRefreshResolution> Resolve(ResolvePausedDataRefreshRequest? request);
@@ -75,6 +77,7 @@ internal class PausedDataRefreshResolver : IPausedDataRefreshResolver
     private readonly IDataRefreshCompletionNotifier completionNotifier;
     private readonly IDonorGenotypePrecomputationRunCanceller precomputationRunCanceller;
     private readonly IDataRefreshManualDecisionEvents manualDecisionEvents;
+    private readonly DataRefreshSettings dataRefreshSettings;
     private readonly TimeProvider timeProvider;
     private readonly ILogger<PausedDataRefreshResolver> logger;
 
@@ -84,6 +87,7 @@ internal class PausedDataRefreshResolver : IPausedDataRefreshResolver
         IDataRefreshCompletionNotifier completionNotifier,
         IDonorGenotypePrecomputationRunCanceller precomputationRunCanceller,
         IDataRefreshManualDecisionEvents manualDecisionEvents,
+        DataRefreshSettings dataRefreshSettings,
         TimeProvider timeProvider,
         ILogger<PausedDataRefreshResolver> logger)
     {
@@ -92,6 +96,7 @@ internal class PausedDataRefreshResolver : IPausedDataRefreshResolver
         this.completionNotifier = completionNotifier;
         this.precomputationRunCanceller = precomputationRunCanceller;
         this.manualDecisionEvents = manualDecisionEvents;
+        this.dataRefreshSettings = dataRefreshSettings;
         this.timeProvider = timeProvider;
         this.logger = logger;
     }
@@ -150,7 +155,9 @@ internal class PausedDataRefreshResolver : IPausedDataRefreshResolver
             return new PausedDataRefreshResolution(
                 PausedDataRefreshResolutionOutcome.NotPublished,
                 $"The decision {decision} for data refresh record {recordId} is recorded, but the refresh request could not be published. " +
-                "Do not send the decision again. The watchdog requests the refresh again, within about 75 minutes at the default settings.",
+                "Do not send the decision again. The watchdog requests the refresh again, within " +
+                $"{dataRefreshSettings.WatchdogGraceDurationMinutes} minutes plus one watchdog interval (schedule " +
+                $"'{dataRefreshSettings.WatchdogCronSchedule}').",
                 recordId,
                 decision);
         }

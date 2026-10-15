@@ -308,16 +308,17 @@ A manual decision on a paused refresh is recorded on the refresh record (`Pendin
 resumes applies it:
 
 - `Complete`: before it chooses the stage modes, the refresh marks stage 65 as complete and clears the decision, in one
-  save. So stages 30 to 65 are skipped, and stages 70 and 80 run. After the swap, the orchestrator removes the staging
-  data that stage 65 left.
+  save. So stages 30 to 65 are skipped, and stages 70 and 80 run. After stage 80, before the swap, the refresh removes
+  the staging data that stage 65 left. Every attempt that completes removes it, because a later attempt cannot see the
+  decision any more.
 - `RetryFailedBatches`: stage 30 scales the database up. Then stage 65 resets the permanently failed batches and the
   batches with failed groups to `Pending` (manual retry, `ManualRetryCount` + 1), clears the decision, sends only these
   batches, waits, and reports again. If the staging data is gone, the stage fails. Until the stage sends the batches,
   no message is out, so an attempt that stops at any step can do the steps again.
 - `Fail`: the endpoint closes the record as failed, notifies, and cancels the run. No refresh resumes.
 
-When the refresh fails, it closes its record, clears the manual decision state, then cancels the run and removes the
-staging data. The workers skip every message of a closed record, and the claim skips every batch of a cancelled run.
+When the refresh fails, it closes its record, then cancels the run and removes the staging data. The update that closes
+a record also clears its manual decision state. The workers skip every message of a closed record, and the claim skips every batch of a cancelled run.
 `RunDataRefreshCleanup` does the same for each refresh record that it closes. The data deletion (stage 20) of the next
 refresh removes all the precomputation tables of the database.
 

@@ -178,7 +178,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             dataRefreshRunner.RefreshData(Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(DataRefreshRunResult.Completed(NewHlaVersion));
 
             await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
-            await dataRefreshHistoryRepository.Received().UpdateExecutionDetails(DefaultRecordId, NewHlaVersion, Arg.Any<DateTime?>());
+            await dataRefreshHistoryRepository.Received().CloseRecord(DefaultRecordId, true, NewHlaVersion, Arg.Any<DateTime>());
         }
 
         [Test]
@@ -186,15 +186,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         {
             await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
-            await dataRefreshHistoryRepository.Received().UpdateSuccessFlag(DefaultRecordId, true);
-        }
-
-        [Test]
-        public async Task OrchestrateDataRefresh_WhenJobSuccessful_UpdatesExecutionDetails()
-        {
-            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
-
-            await dataRefreshHistoryRepository.ReceivedWithAnyArgs().UpdateExecutionDetails(default, default, default);
+            await dataRefreshHistoryRepository.Received(1).CloseRecord(DefaultRecordId, true, Arg.Any<string>(), Arg.Any<DateTime>());
         }
 
         [Test]
@@ -209,17 +201,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
 
         [Test]
-        public async Task OrchestrateDataRefresh_WhenDataRefreshFails_UpdatesExecutionDetails()
-        {
-            const string exceptionMessage = "something very bad happened";
-            dataRefreshRunner.RefreshData(Arg.Any<int>(), Arg.Any<CancellationToken>()).Throws(new Exception(exceptionMessage));
-
-            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
-
-            await dataRefreshHistoryRepository.ReceivedWithAnyArgs().UpdateExecutionDetails(default, default, default);
-        }
-
-        [Test]
         public async Task OrchestrateDataRefresh_WhenDataRefreshFails_StoresSuccessFlagAsFalse()
         {
             const string exceptionMessage = "something very bad happened";
@@ -227,7 +208,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
-            await dataRefreshHistoryRepository.Received().UpdateSuccessFlag(DefaultRecordId, false);
+            await dataRefreshHistoryRepository.Received(1).CloseRecord(DefaultRecordId, false, Arg.Any<string>(), Arg.Any<DateTime>());
         }
 
         [Test]
@@ -258,7 +239,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
 
             // Marking refresh record as complete will switch over which database is considered "active". Emulating this with mocks here.
-            dataRefreshHistoryRepository.WhenForAnyArgs(r => r.UpdateSuccessFlag(0, true)).Do(x =>
+            dataRefreshHistoryRepository.WhenForAnyArgs(r => r.CloseRecord(default, default, default, default)).Do(x =>
             {
                 activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseB);
             });
@@ -312,9 +293,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
-            await dataRefreshHistoryRepository.Received()
-                .UpdateExecutionDetails(DefaultRecordId, Arg.Any<string>(), Arg.Is<DateTime?>(finishTime => finishTime.HasValue));
-            await dataRefreshHistoryRepository.Received().UpdateSuccessFlag(DefaultRecordId, false);
+            await dataRefreshHistoryRepository.Received(1).CloseRecord(DefaultRecordId, false, Arg.Any<string>(), Arg.Any<DateTime>());
         }
 
         [Test]
@@ -352,7 +331,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             Received.InOrder(() =>
             {
-                dataRefreshHistoryRepository.UpdateSuccessFlag(DefaultRecordId, false);
+                dataRefreshHistoryRepository.CloseRecord(DefaultRecordId, false, Arg.Any<string>(), Arg.Any<DateTime>());
                 dataRefreshCompletionNotifier.NotifyOfFailure(DefaultRecordId);
             });
         }
@@ -366,8 +345,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
-            await dataRefreshHistoryRepository.Received().UpdateSuccessFlag(DefaultRecordId, true);
-            await dataRefreshHistoryRepository.DidNotReceive().UpdateSuccessFlag(DefaultRecordId, false);
+            await dataRefreshHistoryRepository.Received(1).CloseRecord(DefaultRecordId, true, Arg.Any<string>(), Arg.Any<DateTime>());
+            await dataRefreshHistoryRepository.DidNotReceive().CloseRecord(DefaultRecordId, false, Arg.Any<string>(), Arg.Any<DateTime>());
         }
 
         [Test]
@@ -410,8 +389,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
-            await dataRefreshHistoryRepository.Received().UpdateSuccessFlag(DefaultRecordId, true);
-            await dataRefreshHistoryRepository.DidNotReceive().UpdateSuccessFlag(DefaultRecordId, false);
+            await dataRefreshHistoryRepository.Received(1).CloseRecord(DefaultRecordId, true, Arg.Any<string>(), Arg.Any<DateTime>());
+            await dataRefreshHistoryRepository.DidNotReceive().CloseRecord(DefaultRecordId, false, Arg.Any<string>(), Arg.Any<DateTime>());
         }
 
         [Test]
@@ -484,7 +463,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             Received.InOrder(() =>
             {
-                dataRefreshHistoryRepository.UpdateSuccessFlag(DefaultRecordId, false);
+                dataRefreshHistoryRepository.CloseRecord(DefaultRecordId, false, Arg.Any<string>(), Arg.Any<DateTime>());
                 dataRefreshCompletionNotifier.NotifyOfFailure(DefaultRecordId);
                 precomputationRunCanceller.CancelRun(Arg.Is<DataRefreshRecord>(r => r.Id == DefaultRecordId));
             });
@@ -649,7 +628,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
-            await dataRefreshHistoryRepository.DidNotReceiveWithAnyArgs().UpdateSuccessFlag(default, default);
+            await dataRefreshHistoryRepository.DidNotReceiveWithAnyArgs().CloseRecord(default, default, default, default);
             await dataRefreshCompletionNotifier.DidNotReceiveWithAnyArgs().NotifyOfFailure(default);
             await dataRefreshCompletionNotifier.DidNotReceiveWithAnyArgs().NotifyOfSuccess(default);
         }
@@ -718,12 +697,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             var act = () => dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
             await act.Should().NotThrowAsync();
-            await dataRefreshHistoryRepository.DidNotReceiveWithAnyArgs().UpdateSuccessFlag(default, default);
-            await dataRefreshHistoryRepository.DidNotReceiveWithAnyArgs().UpdateExecutionDetails(default, default, default);
+            await dataRefreshHistoryRepository.DidNotReceiveWithAnyArgs().CloseRecord(default, default, default, default);
             await dataRefreshCompletionNotifier.DidNotReceiveWithAnyArgs().NotifyOfSuccess(default);
             await dataRefreshCompletionNotifier.DidNotReceiveWithAnyArgs().NotifyOfFailure(default);
             await precomputationRunCanceller.DidNotReceiveWithAnyArgs().CancelRun(default);
-            await precomputationRunCanceller.DidNotReceiveWithAnyArgs().RemoveStagingData(default);
             await azureDatabaseManager.DidNotReceiveWithAnyArgs().UpdateDatabaseSize(default, default, default);
         }
 
@@ -800,65 +777,12 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             logger.Received().SendTrace(Arg.Is<string>(message => message.Contains(ResolvePausedDataRefreshRequest.EndpointName)));
         }
 
-        [Test]
-        public async Task OrchestrateDataRefresh_WhenRefreshFails_ClearsTheManualDecisionStateAfterNotifyingAndBeforeCancellingTheRun()
-        {
-            // A refresh that fails after a manual retry decision, before the stage applies it, still has the decision.
-            GivenTheRefreshFails();
-
-            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
-
-            Received.InOrder(() =>
-            {
-                dataRefreshCompletionNotifier.NotifyOfFailure(DefaultRecordId);
-                dataRefreshHistoryRepository.ClearManualDecisionState(DefaultRecordId);
-                precomputationRunCanceller.CancelRun(Arg.Is<DataRefreshRecord>(r => r.Id == DefaultRecordId));
-            });
-        }
-
-        [Test]
-        public async Task OrchestrateDataRefresh_WhenLeaseIsLostMidRun_DoesNotClearTheManualDecisionState()
-        {
-            // The invocation that took the lease over applies the decision.
-            GivenTheLeaseIsLostDuringA(refresh: token => token.ThrowIfCancellationRequested());
-
-            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
-
-            await dataRefreshHistoryRepository.DidNotReceiveWithAnyArgs().ClearManualDecisionState(default);
-        }
-
         private DonorGenotypePrecomputationFailureReport GivenTheRefreshPauses()
         {
             var report = fixture.Create<DonorGenotypePrecomputationFailureReport>();
             dataRefreshRunner.RefreshData(default, default).ReturnsForAnyArgs(DataRefreshRunResult.Paused(report));
             dataRefreshHistoryRepository.TryPauseAndReleaseLease(default, default, default).ReturnsForAnyArgs(true);
             return report;
-        }
-
-        #endregion
-
-        #region The staging data after a swap
-
-        [Test]
-        public async Task OrchestrateDataRefresh_WhenJobSuccessful_RemovesTheStagingDataOfTheRecordAfterNotifyingOfSuccess()
-        {
-            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
-
-            Received.InOrder(() =>
-            {
-                dataRefreshCompletionNotifier.NotifyOfSuccess(DefaultRecordId);
-                precomputationRunCanceller.RemoveStagingData(Arg.Is<DataRefreshRecord>(r => r.Id == DefaultRecordId));
-            });
-        }
-
-        [Test]
-        public async Task OrchestrateDataRefresh_WhenRefreshFails_DoesNotRemoveTheStagingDataAfterASwap()
-        {
-            GivenTheRefreshFails();
-
-            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
-
-            await precomputationRunCanceller.DidNotReceiveWithAnyArgs().RemoveStagingData(default);
         }
 
         #endregion

@@ -256,19 +256,42 @@ internal class DataRefreshManualDecisionTests
         record.DonorGenotypePrecomputationCompleted.Should().BeNull();
     }
 
+    #endregion
+
+    #region Closing a record
+
     [Test]
-    public async Task ClearManualDecisionState_ClearsThePauseAndThePendingDecision()
+    public async Task CloseRecord_SetsTheResultAndTheVersion_AndClearsThePauseAndThePendingDecision([Values] bool wasSuccessful)
     {
         var recordId = await dataRefreshHistoryRepository.Create(DataRefreshRecordBuilder.New
             .PausedForManualDecision()
             .WithPendingManualDecision(DataRefreshManualDecision.RetryFailedBatches)
+            .With(r => r.WasSuccessful, (bool?)null)
             .Build());
+        var hlaNomenclatureVersion = fixture.Create<string>();
+        var refreshEnd = DateTime.UtcNow;
 
-        await dataRefreshHistoryRepository.ClearManualDecisionState(recordId);
+        await dataRefreshHistoryRepository.CloseRecord(recordId, wasSuccessful, hlaNomenclatureVersion, refreshEnd);
 
         var record = await ReadRecord(recordId);
+        record.RefreshEndUtc.Should().BeCloseTo(refreshEnd, TimeSpan.FromMilliseconds(10));
+        record.WasSuccessful.Should().Be(wasSuccessful);
+        record.HlaNomenclatureVersion.Should().Be(hlaNomenclatureVersion);
         record.AwaitingManualDecisionSinceUtc.Should().BeNull();
         record.PendingManualDecision.Should().BeNull();
+    }
+
+    [Test]
+    public async Task CloseRecord_WithNoVersion_KeepsTheRecordedVersion()
+    {
+        var recordedVersion = fixture.Create<string>();
+        var recordId = await dataRefreshHistoryRepository.Create(DataRefreshRecordBuilder.New
+            .With(r => r.HlaNomenclatureVersion, recordedVersion)
+            .Build());
+
+        await dataRefreshHistoryRepository.CloseRecord(recordId, false, null, DateTime.UtcNow);
+
+        (await ReadRecord(recordId)).HlaNomenclatureVersion.Should().Be(recordedVersion);
     }
 
     #endregion

@@ -44,6 +44,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         private IDonorImporter donorImporter;
         private IHlaProcessor hlaProcessor;
         private IDonorGenotypePrecomputationStage donorGenotypePrecomputationStage;
+        private IDonorGenotypePrecomputationRunCanceller precomputationRunCanceller;
         private IDonorUpdateProcessor donorUpdateProcessor;
         private IDataRefreshSupportNotificationSender dataRefreshNotificationSender;
         private IDataRefreshHistoryRepository dataRefreshHistoryRepository;
@@ -66,6 +67,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             donorImporter = Substitute.For<IDonorImporter>();
             hlaProcessor = Substitute.For<IHlaProcessor>();
             donorGenotypePrecomputationStage = Substitute.For<IDonorGenotypePrecomputationStage>();
+            precomputationRunCanceller = Substitute.For<IDonorGenotypePrecomputationRunCanceller>();
             donorUpdateProcessor = Substitute.For<IDonorUpdateProcessor>();
             logger = Substitute.For<IMatchingAlgorithmImportLogger>();
             dataRefreshNotificationSender = Substitute.For<IDataRefreshSupportNotificationSender>();
@@ -147,7 +149,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         {
             var calls = new List<string>();
             dataRefreshHistoryRepository
-                .When(r => r.UpdateExecutionDetails(Arg.Any<int>(), LatestHlaVersion, Arg.Any<DateTime?>()))
+                .When(r => r.UpdateExecutionDetails(Arg.Any<int>(), LatestHlaVersion))
                 .Do(_ => calls.Add("record version"));
             hlaMetadataDictionary
                 .When(d => d.RecreateHlaMetadataDictionary(Arg.Any<CreationBehaviour>()))
@@ -185,7 +187,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             await dataRefreshRunner.RefreshData(default);
 
             hlaMetadataDictionary.DidNotReceive().GetLatestStableHlaNomenclatureVersion();
-            await dataRefreshHistoryRepository.DidNotReceiveWithAnyArgs().UpdateExecutionDetails(default, default, default);
+            await dataRefreshHistoryRepository.DidNotReceiveWithAnyArgs().UpdateExecutionDetails(default, default);
             await hlaMetadataDictionary.Received(1).RecreateHlaMetadataDictionary(
                 Arg.Is<CreationBehaviour>(b => b.CreationMode == CreationBehaviour.Mode.Specific && b.SpecificVersion == recordedVersion));
             await dataRefreshHistoryRepository.Received(1).MarkHlaMetadataDictionaryRefreshAsComplete(Arg.Any<DataRefreshRecord>(), SnapshotUtc);
@@ -304,6 +306,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
                 donorImporter,
                 hlaProcessor,
                 donorGenotypePrecomputationStage,
+                precomputationRunCanceller,
                 donorUpdateProcessor,
                 logger,
                 dataRefreshNotificationSender,

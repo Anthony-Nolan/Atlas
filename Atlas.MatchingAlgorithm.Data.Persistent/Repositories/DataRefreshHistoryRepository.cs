@@ -36,8 +36,20 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
 
         Task<DataRefreshRecord> GetRecord(int dataRefreshRecordId);
         Task UpdateRunAttemptDetails(int recordId);
-        Task UpdateExecutionDetails(int recordId, string wmdaHlaNomenclatureVersion, DateTime? finishTimeUtc = null);
-        Task UpdateSuccessFlag(int recordId, bool wasSuccess);
+        Task UpdateExecutionDetails(int recordId, string wmdaHlaNomenclatureVersion);
+
+        /// <summary>
+        /// Closes the record, in one save: sets <see cref="DataRefreshRecord.RefreshEndUtc"/> and
+        /// <see cref="DataRefreshRecord.WasSuccessful"/>, records the HLA nomenclature version, and clears
+        /// <see cref="DataRefreshRecord.AwaitingManualDecisionSinceUtc"/> and <see cref="DataRefreshRecord.PendingManualDecision"/>.
+        /// </summary>
+        /// <remarks>
+        /// One save, so a closed record always has its result, and never has a pause or a pending decision. A refresh that
+        /// fails after a manual retry decision, before the precomputation stage applies it, still has the decision.
+        /// </remarks>
+        /// <param name="hlaNomenclatureVersion">The version of the new data. Null keeps the version that the record has.</param>
+        Task CloseRecord(int recordId, bool wasSuccessful, string hlaNomenclatureVersion, DateTime refreshEndUtc);
+
         Task UpdateLastSafelyProcessedDonor(int recordId, int donorId);
         Task MarkStageAsComplete(DataRefreshRecord record, DataRefreshStage stage);
 
@@ -140,12 +152,6 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
 
         /// <summary>Clears the <see cref="DataRefreshRecord.PendingManualDecision"/> of the record.</summary>
         Task ClearPendingManualDecision(DataRefreshRecord record);
-
-        /// <summary>
-        /// Ends the pause, and clears the pending decision, of the record. For a record that is closed as failed: by the manual
-        /// cleanup, or after a refresh that failed.
-        /// </summary>
-        Task ClearManualDecisionState(int recordId);
     }
 
     public class DataRefreshHistoryRepository : IDataRefreshHistoryRepository
@@ -214,18 +220,22 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
             await Context.SaveChangesAsync();
         }
 
-        public async Task UpdateExecutionDetails(int recordId, string wmdaHlaNomenclatureVersion, DateTime? finishTimeUtc)
+        public async Task UpdateExecutionDetails(int recordId, string wmdaHlaNomenclatureVersion)
         {
             var record = await GetRecord(recordId);
-            record.HlaNomenclatureVersion = wmdaHlaNomenclatureVersion ?? record.HlaNomenclatureVersion; // Don't wipe the HLA version if we already recorded it.
-            record.RefreshEndUtc = finishTimeUtc;
+            record.HlaNomenclatureVersion = wmdaHlaNomenclatureVersion;
             await Context.SaveChangesAsync();
         }
 
-        public async Task UpdateSuccessFlag(int recordId, bool wasSuccess)
+        /// <inheritdoc />
+        public async Task CloseRecord(int recordId, bool wasSuccessful, string hlaNomenclatureVersion, DateTime refreshEndUtc)
         {
             var record = await GetRecord(recordId);
-            record.WasSuccessful = wasSuccess;
+            record.HlaNomenclatureVersion = hlaNomenclatureVersion ?? record.HlaNomenclatureVersion; // Don't wipe the HLA version if we already recorded it.
+            record.RefreshEndUtc = refreshEndUtc;
+            record.WasSuccessful = wasSuccessful;
+            record.AwaitingManualDecisionSinceUtc = null;
+            record.PendingManualDecision = null;
             await Context.SaveChangesAsync();
         }
 
@@ -372,16 +382,6 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         {
             record.PendingManualDecision = null;
             await Context.SaveChangesAsync();
-        }
-
-        /// <inheritdoc />
-        public async Task ClearManualDecisionState(int recordId)
-        {
-            await Context.DataRefreshRecords
-                .Where(r => r.Id == recordId)
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(r => r.AwaitingManualDecisionSinceUtc, (DateTime?) null)
-                    .SetProperty(r => r.PendingManualDecision, (DataRefreshManualDecision?) null));
         }
 
         public async Task<DataRefreshRecord> GetRecord(int recordId)

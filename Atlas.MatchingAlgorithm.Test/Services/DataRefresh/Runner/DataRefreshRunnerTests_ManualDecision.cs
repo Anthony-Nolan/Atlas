@@ -199,6 +199,64 @@ public partial class DataRefreshRunnerTests
 
     #endregion
 
+    #region The staging data of the precomputation stage
+
+    [Test]
+    public async Task RefreshData_WhenAllStagesComplete_RemovesTheStagingDataOfTheRecordAfterTheLastStage()
+    {
+        var record = GivenARecord();
+
+        await dataRefreshRunner.RefreshData(record.Id);
+
+        Received.InOrder(() =>
+        {
+            dataRefreshHistoryRepository.MarkStageAsComplete(record, DataRefreshStage.QueuedDonorUpdateProcessing);
+            precomputationRunCanceller.RemoveStagingData(record);
+        });
+    }
+
+    [Test]
+    public async Task RefreshData_AfterAnAttemptThatAppliedACompleteDecision_StillRemovesTheStagingData()
+    {
+        // The attempt that applied the decision stopped in a later stage, so this record has no decision any more.
+        var record = DataRefreshRecordBuilder.New
+            .With(r => r.Id, fixture.Create<int>())
+            .WithStagesCompletedUpToAndIncluding(DataRefreshStage.DonorGenotypePrecomputation)
+            .Build();
+        dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(record);
+
+        await dataRefreshRunner.RefreshData(record.Id);
+
+        await precomputationRunCanceller.Received(1).RemoveStagingData(record);
+    }
+
+    [Test]
+    public async Task RefreshData_WhenThePrecomputationAwaitsAManualDecision_DoesNotRemoveTheStagingData()
+    {
+        GivenARecord();
+        GivenThePrecomputationAwaitsAManualDecision();
+        GivenTheScaleDownStarts();
+
+        await dataRefreshRunner.RefreshData(default);
+
+        await precomputationRunCanceller.DidNotReceiveWithAnyArgs().RemoveStagingData(default);
+    }
+
+    [Test]
+    public async Task RefreshData_WhenAStageFails_DoesNotRemoveTheStagingData()
+    {
+        GivenARecord();
+        donorUpdateProcessor.ApplyDifferentialDonorUpdatesDuringRefresh(default, default)
+            .ThrowsAsyncForAnyArgs(new Exception(fixture.Create<string>()));
+
+        var act = () => dataRefreshRunner.RefreshData(default);
+
+        await act.Should().ThrowAsync<Exception>();
+        await precomputationRunCanceller.DidNotReceiveWithAnyArgs().RemoveStagingData(default);
+    }
+
+    #endregion
+
     private DataRefreshRecord GivenARecord()
     {
         var record = DataRefreshRecordBuilder.New.With(r => r.Id, fixture.Create<int>()).Build();

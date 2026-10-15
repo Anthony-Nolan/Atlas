@@ -56,6 +56,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             dataRefreshRequester = BuildDataRefreshRequester();
 
             dataRefreshHistoryRepository.Create(default).ReturnsForAnyArgs(NewRecordId);
+            dataRefreshHistoryRepository.GetPausedRefreshRecords().Returns(new List<DataRefreshRecord>());
         }
 
         private DataRefreshRequester BuildDataRefreshRequester(DataRefreshSettings dataRefreshSettings = null)
@@ -92,9 +93,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
         [TestCase(true)]
         [TestCase(false)]
-        public async Task RequestDataRefresh_WhenAnOpenRecordIsPaused_ThrowsWithTheRecordAndTheDecisionEndpoint(bool shouldForce)
+        public async Task RequestDataRefresh_WhenARecordIsPaused_ThrowsWithTheRecordAndTheDecisionEndpoint(bool shouldForce)
         {
             var pausedRecord = DataRefreshRecordBuilder.New.With(r => r.Id, fixture.Create<int>()).PausedForManualDecision().Build();
+            dataRefreshHistoryRepository.GetPausedRefreshRecords().Returns(new List<DataRefreshRecord> {pausedRecord});
             dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(new List<DataRefreshRecord> {pausedRecord});
 
             var act = () => dataRefreshRequester.RequestDataRefresh(new DataRefreshRequest {ForceDataRefresh = shouldForce}, true);

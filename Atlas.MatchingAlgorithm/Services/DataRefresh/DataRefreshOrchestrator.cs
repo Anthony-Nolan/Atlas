@@ -406,11 +406,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 await MarkDataHistoryRecordAsComplete(dataRefreshRecordId, true, result.HlaNomenclatureVersion);
                 await ScaleDownDatabaseToDormantLevel(dataRefreshRecordId, previouslyActiveDatabase);
                 await NotifyOfCompletion(dataRefreshRecordId, true);
-
-                // After a manual Complete decision, the staging data of the precomputation stage is still in the database that is
-                // now active. Normally the tables are empty already, and this costs nothing. Last, because it must not delay the
-                // notifications.
-                await precomputationRunCanceller.RemoveStagingData(incompleteJob);
                 logger.SendTrace("Data Refresh Succeeded.");
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -432,13 +427,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 logger.SendTrace($"Data Refresh Failed: ${e}", LogLevel.Critical);
 
                 // Close the record before the notifications. If a notification failed first, the record would stay open, and the
-                // next delivery of the request would claim it and run the failed refresh again.
+                // next delivery of the request would claim it and run the failed refresh again. The close also clears the manual
+                // decision state.
                 await MarkDataHistoryRecordAsComplete(dataRefreshRecordId, false, null);
                 await NotifyOfCompletion(dataRefreshRecordId, false);
-
-                // A closed record needs no decision. A refresh that fails after a manual retry decision, before the precomputation
-                // stage applies it, still has the decision. After the notifications, so that an error here cannot stop them.
-                await dataRefreshHistoryRepository.ClearManualDecisionState(dataRefreshRecordId);
 
                 // Only here: after a SqlException the request is delivered again and the stage continues its run, and after a lost
                 // lease the record belongs to another invocation. Last, because the removal of the staging data waits for the
@@ -508,8 +500,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
         private async Task MarkDataHistoryRecordAsComplete(int recordId, bool wasSuccess, string wmdaHlaNomenclatureVersion)
         {
-            await dataRefreshHistoryRepository.UpdateExecutionDetails(recordId, wmdaHlaNomenclatureVersion, DateTime.UtcNow);
-            await dataRefreshHistoryRepository.UpdateSuccessFlag(recordId, wasSuccess);
+            await dataRefreshHistoryRepository.CloseRecord(recordId, wasSuccess, wmdaHlaNomenclatureVersion, DateTime.UtcNow);
         }
     }
 }

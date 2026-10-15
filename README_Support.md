@@ -267,7 +267,7 @@ record is paused, so the queries of the failed groups and the failed donors work
 
 | Decision | Use it when | What happens |
 |---|---|---|
-| `Complete` | You accept the failures. | The refresh resumes, and marks stage 65 as complete. It does not scale the database up. Stages 70 and 80 run, the database is swapped, and the `CompletedDataRefresh` message goes out. The failed donors have no stored genotype set until they are updated, or until the next full refresh. The staging data is removed after the swap. |
+| `Complete` | You accept the failures. | The refresh resumes, and marks stage 65 as complete. It does not scale the database up. Stages 70 and 80 run, the database is swapped, and the `CompletedDataRefresh` message goes out. The failed donors have no stored genotype set until they are updated, or until the next full refresh. The staging data is removed after stage 80, before the swap. |
 | `RetryFailedBatches` | You fixed the cause, for example a missing haplotype frequency set, or an outage. | The refresh resumes. Stage 30 scales the database up. Stage 65 resets the permanently failed batches and the batches with failed groups, and sends only these batches again. Then the refresh continues, or pauses again if too many donors fail again ("paused again"). |
 | `Fail` | You do not want this refresh. | The record is closed as failed. Then the failure alert and a `CompletedDataRefresh` message (not successful) go out, and the run is cancelled. There is no swap. You can request a new refresh. |
 

@@ -69,10 +69,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 return new DataRefreshResponse {WasRefreshRun = false};
             }
 
-            var openRecords = dataRefreshHistoryRepository.GetIncompleteRefreshJobs().ToList();
-
             // Also with ForceDataRefresh: a paused refresh needs a decision, and a second refresh cannot start next to it.
-            var pausedRecord = openRecords.FirstOrDefault(r => r.AwaitingManualDecisionSinceUtc != null);
+            var pausedRecord = (await dataRefreshHistoryRepository.GetPausedRefreshRecords()).FirstOrDefault();
             if (pausedRecord != null)
             {
                 throw new InvalidDataRefreshRequestHttpException(
@@ -80,7 +78,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     $"Send the decision to the {ResolvePausedDataRefreshRequest.EndpointName} endpoint first. Data Refresh not started.");
             }
 
-            if (openRecords.Any())
+            if (dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Any())
             {
                 throw new InvalidDataRefreshRequestHttpException("Data refresh seems to already be in progress. Data Refresh not started.");
             }
