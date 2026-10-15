@@ -64,14 +64,25 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators
 
         private static IEnumerable<SmallGGroup> BuildSmallGGroupsFromPGroups(WmdaDataset wmdaDataset)
         {
-            return wmdaDataset.PGroups.Select(p => BuildSmallGGroupFromSinglePGroup(wmdaDataset.GGroups, p));
+            // Indexed once here: every P group looks up the G groups that share one of its alleles.
+            var gGroupIndexesByAllele = wmdaDataset.GGroups
+                .SelectMany((gGroup, index) => gGroup.Alleles.Select(allele => (Key: (gGroup.TypingLocus, allele), Index: index)))
+                .ToLookup(x => x.Key, x => x.Index);
+
+            return wmdaDataset.PGroups.Select(p => BuildSmallGGroupFromSinglePGroup(wmdaDataset.GGroups, gGroupIndexesByAllele, p));
         }
 
-        private static SmallGGroup BuildSmallGGroupFromSinglePGroup(IEnumerable<HlaNomG> gGroups, IWmdaAlleleGroup pGroup)
+        private static SmallGGroup BuildSmallGGroupFromSinglePGroup(
+            IList<HlaNomG> gGroups,
+            ILookup<(string TypingLocus, string Allele), int> gGroupIndexesByAllele,
+            IWmdaAlleleGroup pGroup)
         {
-            var nullAlleles = gGroups
-                .Where(g => g.TypingLocus == pGroup.TypingLocus && g.Alleles.Intersect(pGroup.Alleles).Any())
-                .SelectMany(g => g.Alleles.Where(ExpressionSuffixParser.IsAlleleNull));
+            // Each G group once, in the order of the dataset, as when every G group was searched.
+            var nullAlleles = pGroup.Alleles
+                .SelectMany(allele => gGroupIndexesByAllele[(pGroup.TypingLocus, allele)])
+                .Distinct()
+                .Order()
+                .SelectMany(index => gGroups[index].Alleles.Where(ExpressionSuffixParser.IsAlleleNull));
 
             var allAlleles = pGroup.Alleles.Concat(nullAlleles).ToList();
 
@@ -90,10 +101,11 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators
 
         private static IEnumerable<SmallGGroup> BuildSmallGGroupsFromNullAllelesNotMappedToPGroups(WmdaDataset wmdaDataset)
         {
-            var pGroupAlleles = wmdaDataset.PGroups.SelectMany(p => p.GetAlleleNamesWithLocus()).ToList();
+            // A set, so that each G group is checked without searching all the P group alleles.
+            var pGroupAlleles = wmdaDataset.PGroups.SelectMany(p => p.GetAlleleNamesWithLocus()).ToHashSet();
 
             return wmdaDataset.GGroups
-                .Where(g => !g.GetAlleleNamesWithLocus().Intersect(pGroupAlleles).Any())
+                .Where(g => !g.GetAlleleNamesWithLocus().Any(pGroupAlleles.Contains))
                 .GroupBy(g => g.TypingLocus)
                 .SelectMany(grp => BuildSmallGGroupsFromNullAllelesOfASingleLocus(grp.Key, grp));
         }

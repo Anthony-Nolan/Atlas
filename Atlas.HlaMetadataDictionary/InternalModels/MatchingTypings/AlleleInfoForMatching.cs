@@ -33,7 +33,7 @@ namespace Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            return Equals((AlleleInfoForMatching) obj);
+            return obj is AlleleInfoForMatching other && Equals(other);
         }
 
         public override int GetHashCode()

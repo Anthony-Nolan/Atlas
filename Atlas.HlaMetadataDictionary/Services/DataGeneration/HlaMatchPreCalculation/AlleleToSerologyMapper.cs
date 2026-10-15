@@ -12,7 +12,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalcula
         /// <returns>Serologies that directly and indirectly match to the submitted allele.</returns>
         public static IEnumerable<MatchingSerology> GetSerologiesMatchingToAllele(AlleleTyping alleleTyping, IHlaInfoToMapAlleleToSerology hlaInfo)
         {
-            var assignments = GetSerologyAssignmentsForAllele(hlaInfo.AlleleToSerologyRelationships, alleleTyping);
+            var assignments = GetSerologyAssignmentsForAllele(hlaInfo.AlleleToSerologyRelationshipsByTyping, alleleTyping);
 
             var matchingSerologies = GetMatchingSerologiesFromSerologyAssignments(
                     hlaInfo.SerologyInfoForMatching,
@@ -24,11 +24,11 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalcula
         }
 
         private static IEnumerable<SerologyAssignment> GetSerologyAssignmentsForAllele(
-            IEnumerable<RelDnaSer> alleleToSerologyRelationships,
+            ILookup<(string TypingLocus, string Name), RelDnaSer> alleleToSerologyRelationships,
             IWmdaHlaTyping allele)
         {
-            var relationshipForAllele = alleleToSerologyRelationships
-                .SingleOrDefault(r => r.TypingEquals(allele));
+            var relationshipForAllele = alleleToSerologyRelationships[(allele.TypingLocus, allele.Name)]
+                .SingleOrDefault();
 
             return relationshipForAllele != null
                 ? relationshipForAllele.Assignments

@@ -28,13 +28,21 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
 
         public IEnumerable<IAlleleNameMetadata> GetAlleleNames(IEnumerable<IAlleleNameMetadata> originalAlleleNames, string hlaNomenclatureVersion)
         {
-            var variantsNotFoundInHistories = originalAlleleNames.SelectMany(n => GetAlleleNameVariantsNotFoundInHistories(n, hlaNomenclatureVersion)).ToList();
+            // Indexed once here: every allele name is looked up in hla_nom.
+            var allelesByTyping = AllelesInVersionOfHlaNom(hlaNomenclatureVersion).ToLookup(a => (a.TypingLocus, a.Name));
+
+            var variantsNotFoundInHistories = originalAlleleNames
+                .SelectMany(n => GetAlleleNameVariantsNotFoundInHistories(n, allelesByTyping, hlaNomenclatureVersion))
+                .ToList();
             return GroupAlleleNamesByLocusAndLookupName(variantsNotFoundInHistories);
         }
 
-        private IEnumerable<IAlleleNameMetadata> GetAlleleNameVariantsNotFoundInHistories(IAlleleNameMetadata alleleName, string hlaNomenclatureVersion)
+        private IEnumerable<IAlleleNameMetadata> GetAlleleNameVariantsNotFoundInHistories(
+            IAlleleNameMetadata alleleName,
+            ILookup<(string TypingLocus, string Name), HlaNom> allelesByTyping,
+            string hlaNomenclatureVersion)
         {
-            var currentName = IsLookupNameMarkedAsDeletedInHlaNom(alleleName, hlaNomenclatureVersion)
+            var currentName = IsLookupNameMarkedAsDeletedInHlaNom(alleleName, allelesByTyping)
                 ? alleleName.LookupName
                 : alleleName.CurrentAlleleNames.First();
 
@@ -49,12 +57,15 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
                     alleleName.CurrentAlleleNames));
         }
 
-        private bool IsLookupNameMarkedAsDeletedInHlaNom(IHlaMetadata allele, string hlaNomenclatureVersion)
+        private static bool IsLookupNameMarkedAsDeletedInHlaNom(
+            IHlaMetadata allele,
+            ILookup<(string TypingLocus, string Name), HlaNom> allelesByTyping)
         {
             var typingFromLookupName = new AlleleTyping(allele.Locus, allele.LookupName);
 
-            return AllelesInVersionOfHlaNom(hlaNomenclatureVersion)
-                .SingleOrDefault(a => a.TypingEquals(typingFromLookupName))
+            // SingleOrDefault still throws if hla_nom lists the allele twice.
+            return allelesByTyping[(typingFromLookupName.TypingLocus, typingFromLookupName.Name)]
+                .SingleOrDefault()
                 ?.IsDeleted ?? false;
         }
 
