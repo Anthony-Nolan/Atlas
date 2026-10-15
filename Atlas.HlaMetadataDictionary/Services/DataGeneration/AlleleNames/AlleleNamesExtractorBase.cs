@@ -1,5 +1,4 @@
-﻿using Atlas.Common.GeneticData.Hla.Models;
-using Atlas.HlaMetadataDictionary.Repositories;
+﻿using Atlas.HlaMetadataDictionary.Repositories;
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
@@ -9,7 +8,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
     internal abstract class AlleleNamesExtractorBase
     {
         private readonly IWmdaDataRepository dataRepository;
-        private readonly Dictionary<string, IList<HlaNom>> historicAlleleNamesCache = new Dictionary<string, IList<HlaNom>>();
+        private readonly Dictionary<string, HashSet<(string TypingLocus, string Name)>> historicAlleleNamesCache = new();
 
         protected AlleleNamesExtractorBase(IWmdaDataRepository dataRepository)
         {
@@ -23,24 +22,21 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
 
         protected bool AlleleNameIsNotInHistories(string locus, string alleleName, string hlaNomenclatureVersion)
         {
-            return !GetHistoricNamesAsTypings(hlaNomenclatureVersion).Any(historicalTyping =>
-                historicalTyping.TypingLocus.Equals(locus) &&
-                historicalTyping.Name.Equals(alleleName)
-            );
+            return !GetHistoricNames(hlaNomenclatureVersion).Contains((locus, alleleName));
         }
 
-        private IList<HlaNom> GetHistoricNamesAsTypings(string hlaNomenclatureVersion)
+        /// <remarks>
+        /// A set, as every allele name variant is checked against all the historic names.
+        /// </remarks>
+        private HashSet<(string TypingLocus, string Name)> GetHistoricNames(string hlaNomenclatureVersion)
         {
             if (!historicAlleleNamesCache.TryGetValue(hlaNomenclatureVersion, out var data))
             {
                 var dataset = dataRepository.GetWmdaDataset(hlaNomenclatureVersion);
                 data = dataset
                     .AlleleNameHistories
-                    .SelectMany(history =>
-                        history.DistinctAlleleNames, (history, historicalName) =>
-                        new HlaNom(TypingMethod.Molecular, history.TypingLocus, historicalName))
-                    .Distinct()
-                    .ToList();
+                    .SelectMany(history => history.DistinctAlleleNames, (history, historicalName) => (history.TypingLocus, historicalName))
+                    .ToHashSet();
                 historicAlleleNamesCache.Add(hlaNomenclatureVersion, data);
             }
 
