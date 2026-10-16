@@ -10,6 +10,12 @@ namespace Atlas.MatchPrediction.ExternalInterface
     {
         Task<HaplotypeFrequencySet> GetActiveGlobalHaplotypeFrequencySet();
         Task<IEnumerable<HaplotypeFrequencySet>> GetActiveHaplotypeFrequencySetByPopulationId(int populationId);
+
+        /// <summary>
+        /// The set with the given id, active or not; null when there is none. For a caller that imputes against a set it
+        /// chose, such as an older set that a newer import has replaced.
+        /// </summary>
+        Task<HaplotypeFrequencySet> GetHaplotypeFrequencySet(int id);
     }
 
     internal class HaplotypeFrequencySetReader : IHaplotypeFrequencySetReader
@@ -31,6 +37,13 @@ namespace Atlas.MatchPrediction.ExternalInterface
         {
             var sets = await readRepository.GetActiveHaplotypeFrequencySet(populationId);
             return sets.Select(ConvertToExternalModel);
+        }
+
+        /// <inheritdoc />
+        public async Task<HaplotypeFrequencySet> GetHaplotypeFrequencySet(int id)
+        {
+            var set = await readRepository.GetHaplotypeFrequencySet(id);
+            return set == null ? null : ConvertToExternalModel(set);
         }
 
         private static HaplotypeFrequencySet ConvertToExternalModel(Data.Models.HaplotypeFrequencySet set)

@@ -22,6 +22,16 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
         Task<DonorInfo> GetDonor(int donorId);
         Task<Dictionary<int, DonorInfo>> GetDonors(IEnumerable<int> donorIds);
 
+        /// <summary>
+        /// The donors with the given external donor codes, available for search or not. A code with no donor is absent
+        /// from the result.
+        /// </summary>
+        /// <remarks>
+        /// For debug endpoints, which look up a short list of donors. Each code is a separate SQL parameter, so the list
+        /// must stay well below the limit of about 2,100 parameters for each command.
+        /// </remarks>
+        Task<IReadOnlyCollection<DonorInfo>> GetDonorsByExternalDonorCodes(IReadOnlyCollection<string> externalDonorCodes);
+
         Task<IEnumerable<DonorIdWithPGroupNames>> GetPGroupsForDonors(IEnumerable<int> donorIds);
     }
 
@@ -46,6 +56,23 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             return !donorIds.Any()
                 ? new Dictionary<int, DonorInfo>()
                 : (await GetDonorInfos(donorIds)).ToDictionary(d => d.DonorId, d => d);
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyCollection<DonorInfo>> GetDonorsByExternalDonorCodes(IReadOnlyCollection<string> externalDonorCodes)
+        {
+            if (externalDonorCodes == null || externalDonorCodes.Count == 0)
+            {
+                return [];
+            }
+
+            const string sql = $"SELECT * FROM Donors WHERE {nameof(Donor.ExternalDonorCode)} IN @ExternalDonorCodes";
+
+            await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            {
+                var donors = await conn.QueryAsync<Donor>(sql, new { ExternalDonorCodes = externalDonorCodes.Distinct() }, commandTimeout: 300);
+                return donors.Select(d => d.ToDonorInfo()).ToList();
+            }
         }
 
         /// <summary>
