@@ -3,6 +3,7 @@ resource "azurerm_container_app_environment" "atlas" {
   location                   = local.location
   resource_group_name        = azurerm_resource_group.atlas_resource_group.name
   log_analytics_workspace_id = azurerm_log_analytics_workspace.ai_workspace.id
+  logs_destination           = "log-analytics"
   tags                       = local.common_tags
 
   lifecycle {
