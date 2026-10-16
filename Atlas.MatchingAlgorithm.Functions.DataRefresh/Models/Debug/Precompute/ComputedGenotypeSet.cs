@@ -36,6 +36,9 @@ internal class ComputedGenotypeSet
     /// <summary>The value row, when the request saves.</summary>
     public SavedValue Saved { get; set; }
 
+    /// <summary>The comparison with the stored row, when the request compares with the stored rows.</summary>
+    public ParityCheck ParityCheck { get; set; }
+
     /// <summary>Why the set could not be computed.</summary>
     public string Error { get; set; }
 
@@ -54,6 +57,7 @@ internal class ComputedGenotypeSet
             PayloadSizeBytes = item.PayloadSizeBytes,
             Genotypes = item.Genotypes?.Select(ComputedGenotype.From).ToList(),
             Saved = SavedValue.From(item.Saved),
+            ParityCheck = ParityCheck.From(item.ParityCheck),
             Error = item.Error
         };
     }

@@ -35,7 +35,7 @@ using NUnit.Framework;
 namespace Atlas.MatchingAlgorithm.Test.Services.Debug.Precompute;
 
 [TestFixture]
-internal class GenotypeSetDebugServiceTests
+internal partial class GenotypeSetDebugServiceTests
 {
     private Fixture fixture;
     private ActiveDataRefreshRecord activeRecord;
@@ -75,6 +75,8 @@ internal class GenotypeSetDebugServiceTests
         genotypeSetRepository.GetOrCreateValueIds(default).ReturnsForAnyArgs(callInfo =>
             callInfo.Arg<IReadOnlyCollection<SubjectGenotypeSetValueToStore>>()?.ToDictionary(value => value.Key, _ => nextValueId++)
             ?? new Dictionary<SubjectGenotypeSetKey, int>());
+        genotypeSetRepository.GetDonorSubjectGenotypeSets(default, default).ReturnsForAnyArgs(new Dictionary<int, StoredDonorSubjectGenotypeSet>());
+        genotypeSetRepository.GetSubjectGenotypeSetValue(default).ReturnsForAnyArgs((StoredSubjectGenotypeSetValue)null);
 
         repositoryFactory = Substitute.For<IStaticallyChosenDatabaseRepositoryFactory>();
         repositoryFactory.GetDonorInspectionRepositoryForDatabase(default).ReturnsForAnyArgs(donorRepository);
