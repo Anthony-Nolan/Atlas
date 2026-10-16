@@ -23,6 +23,17 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         /// </returns>
         ActiveDataRefreshRecord GetActiveRecord();
 
+        /// <returns>
+        /// The latest refresh record that wrote to <paramref name="database"/>, open or closed, successful or not: the refresh
+        /// that is filling it, or the last refresh that filled it. Null if no refresh has written to it. Not tracked.
+        /// </returns>
+        /// <remarks>
+        /// A refresh writes to its database from the end of the <see cref="DataRefreshStage.DataDeletion"/> stage. A newer
+        /// record that has not completed that stage has not changed the data: it is still at an earlier stage, or it stopped
+        /// before. So its HLA nomenclature version is not the version of the data, and it is not returned.
+        /// </remarks>
+        Task<DataRefreshRecord> GetLatestRecordThatWroteToDatabase(TransientDatabase database);
+
         IEnumerable<DataRefreshRecord> GetIncompleteRefreshJobs();
 
         /// <returns>The transient database of each open refresh record, by record id.</returns>
@@ -186,6 +197,18 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
                     lastCompletedRecord.Id,
                     lastCompletedRecord.Database.ParseToEnum<TransientDatabase>(),
                     lastCompletedRecord.HlaNomenclatureVersion);
+        }
+
+        /// <inheritdoc />
+        public async Task<DataRefreshRecord> GetLatestRecordThatWroteToDatabase(TransientDatabase database)
+        {
+            var databaseName = database.ToString();
+
+            return await Context.DataRefreshRecords
+                .AsNoTracking()
+                .Where(r => r.Database == databaseName && r.DataDeletionCompleted != null)
+                .OrderByDescending(r => r.Id)
+                .FirstOrDefaultAsync();
         }
 
         public IEnumerable<DataRefreshRecord> GetIncompleteRefreshJobs()

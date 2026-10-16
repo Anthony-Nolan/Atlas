@@ -14,6 +14,9 @@ internal class GenotypeSetDebugRequestValidator : AbstractValidator<GenotypeSetD
     /// </summary>
     internal const int MaxExternalDonorCodes = 20;
 
+    /// <summary>The largest <see cref="GenotypeSetDebugRequest.MaxDifferencesPerRow"/>, so that the response stays readable.</summary>
+    internal const int MaxDifferencesPerRowLimit = 1000;
+
     public GenotypeSetDebugRequestValidator()
     {
         RuleFor(r => r.HlaTyping)
@@ -47,6 +50,22 @@ internal class GenotypeSetDebugRequestValidator : AbstractValidator<GenotypeSetD
 
         RuleForEach(r => r.AllowedLociKeys)
             .IsInEnum();
+
+        RuleFor(r => r.CompareWithStored)
+            .Equal(false)
+            .When(r => r.Save)
+            .WithMessage("Compare with the stored rows or save, not both: a save changes the rows that the comparison reads.");
+
+        RuleFor(r => r.Database)
+            .IsInEnum();
+
+        RuleFor(r => r.Database)
+            .Equal(TransientDatabaseRole.Active)
+            .When(r => r.Save)
+            .WithMessage("Save writes to the active database only. Data Refresh writes to the dormant database.");
+
+        RuleFor(r => r.MaxDifferencesPerRow)
+            .InclusiveBetween(1, MaxDifferencesPerRowLimit);
     }
 
     private static bool HasDonorCodes(GenotypeSetDebugRequest request) => request.ExternalDonorCodes is { Count: > 0 };
