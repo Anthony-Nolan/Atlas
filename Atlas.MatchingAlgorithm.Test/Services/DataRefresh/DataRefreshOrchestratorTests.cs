@@ -8,6 +8,7 @@ using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
+using Atlas.MatchingAlgorithm.Models.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
@@ -38,6 +39,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         private IDataRefreshSupportNotificationSender dataRefreshSupportNotificationSender;
         private IDataRefreshCompletionNotifier dataRefreshCompletionNotifier;
         private IDonorGenotypePrecomputationRunCanceller precomputationRunCanceller;
+        private IDataRefreshManualDecisionEvents manualDecisionEvents;
 
         private IServiceScopeFactory serviceScopeFactory;
 
@@ -61,7 +63,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             dataRefreshSupportNotificationSender = Substitute.For<IDataRefreshSupportNotificationSender>();
             dataRefreshCompletionNotifier = Substitute.For<IDataRefreshCompletionNotifier>();
             precomputationRunCanceller = Substitute.For<IDonorGenotypePrecomputationRunCanceller>();
+            manualDecisionEvents = Substitute.For<IDataRefreshManualDecisionEvents>();
             serviceScopeFactory = BuildServiceScopeFactoryResolving(dataRefreshHistoryRepository);
+
+            dataRefreshRunner.RefreshData(default, default).ReturnsForAnyArgs(DataRefreshRunResult.Completed(NewHlaVersion));
 
             dataRefreshOrchestrator = BuildDataRefreshOrchestrator();
 
@@ -113,7 +118,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 dataRefreshSupportNotificationSender,
                 dataRefreshCompletionNotifier,
                 precomputationRunCanceller,
-                serviceScopeFactory
+                serviceScopeFactory,
+                manualDecisionEvents
             );
         }
 
@@ -169,10 +175,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         [Test]
         public async Task OrchestrateDataRefresh_EventuallyRecordsDataRefreshOccurredWithLatestWmdaVersion()
         {
-            dataRefreshRunner.RefreshData(Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(NewHlaVersion);
+            dataRefreshRunner.RefreshData(Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(DataRefreshRunResult.Completed(NewHlaVersion));
 
             await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
-            await dataRefreshHistoryRepository.Received().UpdateExecutionDetails(DefaultRecordId, NewHlaVersion, Arg.Any<DateTime?>());
+            await dataRefreshHistoryRepository.Received().CloseRecord(DefaultRecordId, true, NewHlaVersion, Arg.Any<DateTime>());
         }
 
         [Test]
@@ -180,15 +186,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         {
             await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
-            await dataRefreshHistoryRepository.Received().UpdateSuccessFlag(DefaultRecordId, true);
-        }
-
-        [Test]
-        public async Task OrchestrateDataRefresh_WhenJobSuccessful_UpdatesExecutionDetails()
-        {
-            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
-
-            await dataRefreshHistoryRepository.ReceivedWithAnyArgs().UpdateExecutionDetails(default, default, default);
+            await dataRefreshHistoryRepository.Received(1).CloseRecord(DefaultRecordId, true, Arg.Any<string>(), Arg.Any<DateTime>());
         }
 
         [Test]
@@ -203,17 +201,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
 
         [Test]
-        public async Task OrchestrateDataRefresh_WhenDataRefreshFails_UpdatesExecutionDetails()
-        {
-            const string exceptionMessage = "something very bad happened";
-            dataRefreshRunner.RefreshData(Arg.Any<int>(), Arg.Any<CancellationToken>()).Throws(new Exception(exceptionMessage));
-
-            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
-
-            await dataRefreshHistoryRepository.ReceivedWithAnyArgs().UpdateExecutionDetails(default, default, default);
-        }
-
-        [Test]
         public async Task OrchestrateDataRefresh_WhenDataRefreshFails_StoresSuccessFlagAsFalse()
         {
             const string exceptionMessage = "something very bad happened";
@@ -221,7 +208,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
-            await dataRefreshHistoryRepository.Received().UpdateSuccessFlag(DefaultRecordId, false);
+            await dataRefreshHistoryRepository.Received(1).CloseRecord(DefaultRecordId, false, Arg.Any<string>(), Arg.Any<DateTime>());
         }
 
         [Test]
@@ -252,7 +239,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
 
             // Marking refresh record as complete will switch over which database is considered "active". Emulating this with mocks here.
-            dataRefreshHistoryRepository.WhenForAnyArgs(r => r.UpdateSuccessFlag(0, true)).Do(x =>
+            dataRefreshHistoryRepository.WhenForAnyArgs(r => r.CloseRecord(default, default, default, default)).Do(x =>
             {
                 activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseB);
             });
@@ -306,9 +293,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
-            await dataRefreshHistoryRepository.Received()
-                .UpdateExecutionDetails(DefaultRecordId, Arg.Any<string>(), Arg.Is<DateTime?>(finishTime => finishTime.HasValue));
-            await dataRefreshHistoryRepository.Received().UpdateSuccessFlag(DefaultRecordId, false);
+            await dataRefreshHistoryRepository.Received(1).CloseRecord(DefaultRecordId, false, Arg.Any<string>(), Arg.Any<DateTime>());
         }
 
         [Test]
@@ -346,7 +331,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             Received.InOrder(() =>
             {
-                dataRefreshHistoryRepository.UpdateSuccessFlag(DefaultRecordId, false);
+                dataRefreshHistoryRepository.CloseRecord(DefaultRecordId, false, Arg.Any<string>(), Arg.Any<DateTime>());
                 dataRefreshCompletionNotifier.NotifyOfFailure(DefaultRecordId);
             });
         }
@@ -360,8 +345,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
-            await dataRefreshHistoryRepository.Received().UpdateSuccessFlag(DefaultRecordId, true);
-            await dataRefreshHistoryRepository.DidNotReceive().UpdateSuccessFlag(DefaultRecordId, false);
+            await dataRefreshHistoryRepository.Received(1).CloseRecord(DefaultRecordId, true, Arg.Any<string>(), Arg.Any<DateTime>());
+            await dataRefreshHistoryRepository.DidNotReceive().CloseRecord(DefaultRecordId, false, Arg.Any<string>(), Arg.Any<DateTime>());
         }
 
         [Test]
@@ -404,8 +389,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
-            await dataRefreshHistoryRepository.Received().UpdateSuccessFlag(DefaultRecordId, true);
-            await dataRefreshHistoryRepository.DidNotReceive().UpdateSuccessFlag(DefaultRecordId, false);
+            await dataRefreshHistoryRepository.Received(1).CloseRecord(DefaultRecordId, true, Arg.Any<string>(), Arg.Any<DateTime>());
+            await dataRefreshHistoryRepository.DidNotReceive().CloseRecord(DefaultRecordId, false, Arg.Any<string>(), Arg.Any<DateTime>());
         }
 
         [Test]
@@ -478,7 +463,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             Received.InOrder(() =>
             {
-                dataRefreshHistoryRepository.UpdateSuccessFlag(DefaultRecordId, false);
+                dataRefreshHistoryRepository.CloseRecord(DefaultRecordId, false, Arg.Any<string>(), Arg.Any<DateTime>());
                 dataRefreshCompletionNotifier.NotifyOfFailure(DefaultRecordId);
                 precomputationRunCanceller.CancelRun(Arg.Is<DataRefreshRecord>(r => r.Id == DefaultRecordId));
             });
@@ -643,7 +628,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
-            await dataRefreshHistoryRepository.DidNotReceiveWithAnyArgs().UpdateSuccessFlag(default, default);
+            await dataRefreshHistoryRepository.DidNotReceiveWithAnyArgs().CloseRecord(default, default, default, default);
             await dataRefreshCompletionNotifier.DidNotReceiveWithAnyArgs().NotifyOfFailure(default);
             await dataRefreshCompletionNotifier.DidNotReceiveWithAnyArgs().NotifyOfSuccess(default);
         }
@@ -696,8 +681,108 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 var cancellationToken = call.Arg<CancellationToken>();
                 cancellationToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(30));
                 refresh(cancellationToken);
-                return NewHlaVersion;
+                return DataRefreshRunResult.Completed(NewHlaVersion);
             });
+        }
+
+        #endregion
+
+        #region The pause for a manual decision
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenTheRefreshPauses_DoesNotCloseNotifyOrCancel()
+        {
+            GivenTheRefreshPauses();
+
+            var act = () => dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+
+            await act.Should().NotThrowAsync();
+            await dataRefreshHistoryRepository.DidNotReceiveWithAnyArgs().CloseRecord(default, default, default, default);
+            await dataRefreshCompletionNotifier.DidNotReceiveWithAnyArgs().NotifyOfSuccess(default);
+            await dataRefreshCompletionNotifier.DidNotReceiveWithAnyArgs().NotifyOfFailure(default);
+            await precomputationRunCanceller.DidNotReceiveWithAnyArgs().CancelRun(default);
+            await azureDatabaseManager.DidNotReceiveWithAnyArgs().UpdateDatabaseSize(default, default, default);
+        }
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenTheRefreshPauses_PausesTheRecordAndReleasesTheLeaseInOneUpdate_InsteadOfThePlainRelease()
+        {
+            GivenTheRefreshPauses();
+            var invocationId = Guid.NewGuid();
+
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId, invocationId);
+
+            await dataRefreshHistoryRepository.Received(1).TryPauseAndReleaseLease(DefaultRecordId, invocationId, Arg.Any<DateTime>());
+            await dataRefreshHistoryRepository.DidNotReceiveWithAnyArgs().ReleaseRefreshLease(default, default);
+        }
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenTheRecordIsPaused_SendsThePausedEvent()
+        {
+            var report = GivenTheRefreshPauses();
+
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+
+            manualDecisionEvents.Received(1).Paused(DefaultRecordId, report);
+        }
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenThePauseUpdateChangesNoRow_LogsAWarningAndSendsNoEvent()
+        {
+            GivenTheRefreshPauses();
+            dataRefreshHistoryRepository.TryPauseAndReleaseLease(default, default, default).ReturnsForAnyArgs(false);
+
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+
+            logger.Received().SendTrace(Arg.Is<string>(message => message.Contains("did not pause")), LogLevel.Warn);
+            manualDecisionEvents.DidNotReceiveWithAnyArgs().Paused(default, default);
+            await dataRefreshHistoryRepository.DidNotReceiveWithAnyArgs().ReleaseRefreshLease(default, default);
+        }
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenThePauseUpdateThrows_LogsAnErrorThenReleasesTheLease()
+        {
+            GivenTheRefreshPauses();
+            var failure = fixture.Create<string>();
+            var invocationId = Guid.NewGuid();
+            dataRefreshHistoryRepository.TryPauseAndReleaseLease(default, default, default).ThrowsAsyncForAnyArgs(new Exception(failure));
+
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId, invocationId);
+
+            Received.InOrder(() =>
+            {
+                logger.SendTrace(Arg.Is<string>(message => message.Contains(failure)), LogLevel.Error);
+                dataRefreshHistoryRepository.ReleaseRefreshLease(DefaultRecordId, invocationId);
+            });
+            manualDecisionEvents.DidNotReceiveWithAnyArgs().Paused(default, default);
+        }
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenTheRefreshCompletes_DoesNotPauseTheRecord()
+        {
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+
+            await dataRefreshHistoryRepository.DidNotReceiveWithAnyArgs().TryPauseAndReleaseLease(default, default, default);
+        }
+
+        [Test]
+        public async Task OrchestrateDataRefresh_WhenTheClaimIsRefusedForAPausedRecord_LogsTheDecisionEndpoint()
+        {
+            RefuseTheLeaseClaim();
+            dataRefreshHistoryRepository.GetRecord(DefaultRecordId).Returns(
+                DataRefreshRecordBuilder.New.With(r => r.Id, DefaultRecordId).PausedForManualDecision().Build());
+
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+
+            logger.Received().SendTrace(Arg.Is<string>(message => message.Contains(ResolvePausedDataRefreshRequest.EndpointName)));
+        }
+
+        private DonorGenotypePrecomputationFailureReport GivenTheRefreshPauses()
+        {
+            var report = fixture.Create<DonorGenotypePrecomputationFailureReport>();
+            dataRefreshRunner.RefreshData(default, default).ReturnsForAnyArgs(DataRefreshRunResult.Paused(report));
+            dataRefreshHistoryRepository.TryPauseAndReleaseLease(default, default, default).ReturnsForAnyArgs(true);
+            return report;
         }
 
         #endregion

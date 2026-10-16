@@ -61,7 +61,10 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
         public DateTime? DatabaseScalingTearDownCompleted { get; set; }
         public DateTime? QueuedDonorUpdatesCompleted { get; set; }
 
-        // ReSharper disable once UnusedMember.Global This is for manual Support Team use only. Neither written nor read anywhere in the code.
+        /// <summary>
+        /// Free text for the support team. The code only appends to it: one line for each manual decision on a paused
+        /// refresh (see <see cref="PendingManualDecision"/>). It never replaces the text.
+        /// </summary>
         public string SupportComments { get; set; }
 
         /// <summary>
@@ -87,6 +90,27 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
         public DateTime? LeaseExpiresUtc { get; set; }
 
         public DateTime? DonorGenotypePrecomputationCompleted { get; set; }
+
+        /// <summary>
+        /// Set when the refresh paused for a manual decision, because more donors failed in the donor genotype precomputation
+        /// stage than the threshold allows. Null when the refresh is not paused.
+        /// </summary>
+        /// <remarks>
+        /// Set in the same update that releases the lease, so a paused record never has a lease. While it is set, no
+        /// invocation can claim the record, and the watchdog does not request it again. A manual decision, or the manual
+        /// cleanup, clears it.
+        /// </remarks>
+        public DateTime? AwaitingManualDecisionSinceUtc { get; set; }
+
+        /// <summary>
+        /// A manual decision that the resumed refresh has not applied yet: <see cref="DataRefreshManualDecision.Complete"/> or
+        /// <see cref="DataRefreshManualDecision.RetryFailedBatches"/>. Null when there is no such decision.
+        /// </summary>
+        /// <remarks>
+        /// The decision endpoint records it, and the refresh that holds the lease applies it, then clears it. A
+        /// <see cref="DataRefreshManualDecision.Fail"/> decision closes the record at once, so it is never pending.
+        /// </remarks>
+        public DataRefreshManualDecision? PendingManualDecision { get; set; }
 
         public bool IsStageComplete(DataRefreshStage stage) => GetStageCompletionTime(stage) != null;
 

@@ -13,6 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * `DonorGenotypePrecomputationCompleted` - new column: when the donor genotype precomputation stage of the refresh
   completed. The stage runs after `IndexRecreationCompleted` and before `DatabaseScalingTearDownCompleted`.
+* `AwaitingManualDecisionSinceUtc` - new nullable column: when the refresh paused for a manual decision, because more
+  donors failed in the donor genotype precomputation stage than the threshold allows. Null when the refresh is not paused.
+  A paused record has no lease. A manual decision, or the manual cleanup, clears it.
+* `PendingManualDecision` - new nullable column, `nvarchar(32)`: a manual decision (`Complete` or `RetryFailedBatches`,
+  stored as the name) that the resumed refresh has not applied yet. The refresh clears it when it applies the decision, or
+  when it closes the record as failed.
+* Data workflow change: `SupportComments` is no longer only for manual use. The code appends one line for each manual
+  decision. It never replaces the text.
  
 * Added nullable column `HlaMetadataDictionarySnapshotUtc` to `MatchingAlgorithmPersistent.DataRefreshHistory`.
   It holds the UTC time that identifies the HLA Metadata Dictionary tables a data refresh run created. Existing rows are not filled in.

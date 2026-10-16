@@ -33,6 +33,12 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Context
             modelBuilder.Entity<ConfidenceWeighting>().Property(w => w.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<ConfidenceWeighting>().HasData(SeededConfidenceWeights());
 
+            // Stored as the member name, so support can read it in SQL. The longest name is 18 characters.
+            modelBuilder.Entity<DataRefreshRecord>()
+                .Property(r => r.PendingManualDecision)
+                .HasConversion<string>()
+                .HasMaxLength(32);
+
             base.OnModelCreating(modelBuilder);
         }
 

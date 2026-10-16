@@ -23,6 +23,7 @@ using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
+using AutoFixture;
 using AwesomeAssertions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -43,17 +44,21 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         private IDonorImporter donorImporter;
         private IHlaProcessor hlaProcessor;
         private IDonorGenotypePrecomputationStage donorGenotypePrecomputationStage;
+        private IDonorGenotypePrecomputationRunCanceller precomputationRunCanceller;
         private IDonorUpdateProcessor donorUpdateProcessor;
         private IDataRefreshSupportNotificationSender dataRefreshNotificationSender;
         private IDataRefreshHistoryRepository dataRefreshHistoryRepository;
+        private IDataRefreshManualDecisionEvents manualDecisionEvents;
 
         private IDataRefreshRunner dataRefreshRunner;
         private IMatchingAlgorithmImportLogger logger;
         private IDormantRepositoryFactory transientRepositoryFactory;
+        private Fixture fixture;
 
         [SetUp]
         public void SetUp()
         {
+            fixture = new Fixture();
             activeDatabaseProvider = Substitute.For<IActiveDatabaseProvider>();
             azureDatabaseManager = Substitute.For<IAzureDatabaseManager>();
             donorImportRepository = Substitute.For<IDonorImportRepository>();
@@ -62,13 +67,16 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             donorImporter = Substitute.For<IDonorImporter>();
             hlaProcessor = Substitute.For<IHlaProcessor>();
             donorGenotypePrecomputationStage = Substitute.For<IDonorGenotypePrecomputationStage>();
+            precomputationRunCanceller = Substitute.For<IDonorGenotypePrecomputationRunCanceller>();
             donorUpdateProcessor = Substitute.For<IDonorUpdateProcessor>();
             logger = Substitute.For<IMatchingAlgorithmImportLogger>();
             dataRefreshNotificationSender = Substitute.For<IDataRefreshSupportNotificationSender>();
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
+            manualDecisionEvents = Substitute.For<IDataRefreshManualDecisionEvents>();
 
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(DataRefreshRecordBuilder.New.Build());
             transientRepositoryFactory.GetDonorImportRepository().Returns(donorImportRepository);
+            donorGenotypePrecomputationStage.Run(default, default, default).ReturnsForAnyArgs(DonorGenotypePrecomputationStageResult.Complete);
 
             hlaMetadataDictionary.GetLatestStableHlaNomenclatureVersion().Returns(LatestHlaVersion);
             hlaMetadataDictionary.RecreateHlaMetadataDictionary(default).ReturnsForAnyArgs(call =>
@@ -91,9 +99,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             const string hlaNomenclatureVersion = "3390";
             hlaMetadataDictionary.GetLatestStableHlaNomenclatureVersion().Returns(hlaNomenclatureVersion);
 
-            var returnedHlaVersion = await dataRefreshRunner.RefreshData(default);
+            var result = await dataRefreshRunner.RefreshData(default);
 
-            returnedHlaVersion.Should().Be(hlaNomenclatureVersion);
+            result.Should().Be(DataRefreshRunResult.Completed(hlaNomenclatureVersion));
         }
 
         [Test]
@@ -141,7 +149,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         {
             var calls = new List<string>();
             dataRefreshHistoryRepository
-                .When(r => r.UpdateExecutionDetails(Arg.Any<int>(), LatestHlaVersion, Arg.Any<DateTime?>()))
+                .When(r => r.UpdateExecutionDetails(Arg.Any<int>(), LatestHlaVersion))
                 .Do(_ => calls.Add("record version"));
             hlaMetadataDictionary
                 .When(d => d.RecreateHlaMetadataDictionary(Arg.Any<CreationBehaviour>()))
@@ -179,7 +187,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             await dataRefreshRunner.RefreshData(default);
 
             hlaMetadataDictionary.DidNotReceive().GetLatestStableHlaNomenclatureVersion();
-            await dataRefreshHistoryRepository.DidNotReceiveWithAnyArgs().UpdateExecutionDetails(default, default, default);
+            await dataRefreshHistoryRepository.DidNotReceiveWithAnyArgs().UpdateExecutionDetails(default, default);
             await hlaMetadataDictionary.Received(1).RecreateHlaMetadataDictionary(
                 Arg.Is<CreationBehaviour>(b => b.CreationMode == CreationBehaviour.Mode.Specific && b.SpecificVersion == recordedVersion));
             await dataRefreshHistoryRepository.Received(1).MarkHlaMetadataDictionaryRefreshAsComplete(Arg.Any<DataRefreshRecord>(), SnapshotUtc);
@@ -298,11 +306,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
                 donorImporter,
                 hlaProcessor,
                 donorGenotypePrecomputationStage,
+                precomputationRunCanceller,
                 donorUpdateProcessor,
                 logger,
                 dataRefreshNotificationSender,
                 dataRefreshHistoryRepository,
-                new MatchingAlgorithmImportLoggingContext()
+                new MatchingAlgorithmImportLoggingContext(),
+                manualDecisionEvents
             );
         }
     }

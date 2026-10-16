@@ -8,6 +8,7 @@ using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
+using Atlas.MatchingAlgorithm.Models.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
@@ -56,6 +57,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private readonly IDataRefreshCompletionNotifier dataRefreshCompletionNotifier;
         private readonly IDonorGenotypePrecomputationRunCanceller precomputationRunCanceller;
         private readonly IServiceScopeFactory serviceScopeFactory;
+        private readonly IDataRefreshManualDecisionEvents manualDecisionEvents;
 
         public DataRefreshOrchestrator(
             IMatchingAlgorithmImportLogger logger,
@@ -68,8 +70,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IDataRefreshSupportNotificationSender dataRefreshNotificationSender,
             IDataRefreshCompletionNotifier dataRefreshCompletionNotifier,
             IDonorGenotypePrecomputationRunCanceller precomputationRunCanceller,
-            IServiceScopeFactory serviceScopeFactory)
+            IServiceScopeFactory serviceScopeFactory,
+            IDataRefreshManualDecisionEvents manualDecisionEvents)
         {
+            this.manualDecisionEvents = manualDecisionEvents;
             this.logger = logger;
             this.dataRefreshSettings = dataRefreshSettings;
             this.activeDatabaseProvider = activeDatabaseProvider;
@@ -97,6 +101,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             using var cancellationTokenSource = new CancellationTokenSource();
             var heartbeat = MaintainLease(dataRefreshRecordId, leaseOwner, leaseDuration, renewalInterval, cancellationTokenSource);
 
+            DonorGenotypePrecomputationFailureReport pauseReport = null;
             try
             {
                 var incompleteJob = FetchIncompleteJobRecord(dataRefreshRecordId);
@@ -104,7 +109,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 await dataRefreshNotificationSender.SendInProgressNotification(
                     dataRefreshRecordId, 1 + incompleteJob.RefreshAttemptedCount);
 
-                await ContinueRefreshJob(incompleteJob, cancellationTokenSource.Token);
+                pauseReport = await ContinueRefreshJob(incompleteJob, cancellationTokenSource.Token);
             }
             finally
             {
@@ -113,7 +118,15 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 // is holding, blocking the next run until it expired.
                 await cancellationTokenSource.CancelAsync();
                 await ObserveHeartbeat(heartbeat, dataRefreshRecordId);
-                await ReleaseLease(dataRefreshRecordId, leaseOwner);
+
+                if (pauseReport != null)
+                {
+                    await PauseAndReleaseLease(dataRefreshRecordId, leaseOwner, pauseReport);
+                }
+                else
+                {
+                    await ReleaseLease(dataRefreshRecordId, leaseOwner);
+                }
             }
         }
 
@@ -154,8 +167,14 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             try
             {
                 var record = await dataRefreshHistoryRepository.GetRecord(dataRefreshRecordId);
-                return record.RefreshEndUtc != null
-                    ? $"The record was already completed at {record.RefreshEndUtc:u}."
+                if (record.RefreshEndUtc != null)
+                {
+                    return $"The record was already completed at {record.RefreshEndUtc:u}.";
+                }
+
+                return record.AwaitingManualDecisionSinceUtc != null
+                    ? $"It is paused for a manual decision since {record.AwaitingManualDecisionSinceUtc:u}. Send the decision to the " +
+                      $"{ResolvePausedDataRefreshRequest.EndpointName} endpoint."
                     : $"It is held by invocation {record.LeaseOwner}, until {record.LeaseExpiresUtc:u}.";
             }
             catch (Exception e)
@@ -283,6 +302,51 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             }
         }
 
+        /// <summary>
+        /// Pauses the record for a manual decision, and releases the lease, in one update fenced by the lease owner. Does
+        /// not throw.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The runner has scaled the database down and sent the paused alert already. So a paused record always has its
+        /// alert, and never has a lease: a decision can start the resumed refresh at once.
+        /// </para>
+        ///
+        /// <para>
+        /// When the update fails, the lease is released as usual. The record is then open and not paused, so the watchdog
+        /// resumes it, and the pause starts again.
+        /// </para>
+        /// </remarks>
+        private async Task PauseAndReleaseLease(int recordId, Guid leaseOwner, DonorGenotypePrecomputationFailureReport pauseReport)
+        {
+            bool wasPaused;
+            try
+            {
+                wasPaused = await dataRefreshHistoryRepository.TryPauseAndReleaseLease(recordId, leaseOwner, DateTime.UtcNow);
+            }
+            catch (Exception e)
+            {
+                logger.SendTrace(
+                    $"{LoggingPrefix} Failed to pause record {recordId} for a manual decision. The lease is released instead, and the " +
+                    $"watchdog resumes the record later: the pause then starts again. Exception: {e}", LogLevel.Error);
+                await ReleaseLease(recordId, leaseOwner);
+                return;
+            }
+
+            if (!wasPaused)
+            {
+                logger.SendTrace(
+                    $"{LoggingPrefix} Invocation {leaseOwner} did not pause record {recordId}: it no longer holds the lease, or the record " +
+                    "is closed.", LogLevel.Warn);
+                return;
+            }
+
+            manualDecisionEvents.Paused(recordId, pauseReport);
+            logger.SendTrace(
+                $"{LoggingPrefix} Record {recordId} is paused, and waits for a manual decision on the " +
+                $"{ResolvePausedDataRefreshRequest.EndpointName} endpoint. No invocation can claim it until then.", LogLevel.Warn);
+        }
+
         /// <remarks>
         /// With the lease claimed ahead of this check, a request naming a record that is already finished, or that names
         /// a different record from the one in progress, has already been turned away. What remains is the genuine data
@@ -317,16 +381,29 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         /// <summary>
         /// Refresh job will be "continued" from the appropriate point, including on the first attempt.
         /// </summary>
-        private async Task ContinueRefreshJob(DataRefreshRecord incompleteJob, CancellationToken cancellationToken)
+        /// <returns>
+        /// The failures that the refresh paused for, or null when it did not pause. The caller sets the pause, in the update
+        /// that releases the lease.
+        /// </returns>
+        private async Task<DonorGenotypePrecomputationFailureReport> ContinueRefreshJob(DataRefreshRecord incompleteJob, CancellationToken cancellationToken)
         {
             var dataRefreshRecordId = incompleteJob.Id;
 
             try
             {
                 await dataRefreshHistoryRepository.UpdateRunAttemptDetails(dataRefreshRecordId);
-                var newWmdaHlaNomenclatureVersion = await dataRefreshRunner.RefreshData(dataRefreshRecordId, cancellationToken);
+                var result = await dataRefreshRunner.RefreshData(dataRefreshRecordId, cancellationToken);
+                if (result.IsPaused)
+                {
+                    // The record stays open, with its run and its staging data: the manual decision decides how it ends. So no
+                    // close, no completion notification, and no cancel of the run.
+                    logger.SendTrace(
+                        $"{LoggingPrefix} Record {dataRefreshRecordId} pauses for a manual decision. It is not closed.", LogLevel.Warn);
+                    return result.PauseReport;
+                }
+
                 var previouslyActiveDatabase = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetActiveDatabase());
-                await MarkDataHistoryRecordAsComplete(dataRefreshRecordId, true, newWmdaHlaNomenclatureVersion);
+                await MarkDataHistoryRecordAsComplete(dataRefreshRecordId, true, result.HlaNomenclatureVersion);
                 await ScaleDownDatabaseToDormantLevel(dataRefreshRecordId, previouslyActiveDatabase);
                 await NotifyOfCompletion(dataRefreshRecordId, true);
                 logger.SendTrace("Data Refresh Succeeded.");
@@ -350,7 +427,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 logger.SendTrace($"Data Refresh Failed: ${e}", LogLevel.Critical);
 
                 // Close the record before the notifications. If a notification failed first, the record would stay open, and the
-                // next delivery of the request would claim it and run the failed refresh again.
+                // next delivery of the request would claim it and run the failed refresh again. The close also clears the manual
+                // decision state.
                 await MarkDataHistoryRecordAsComplete(dataRefreshRecordId, false, null);
                 await NotifyOfCompletion(dataRefreshRecordId, false);
 
@@ -359,6 +437,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 // statements of the workers, and must not delay the failure notifications.
                 await precomputationRunCanceller.CancelRun(incompleteJob);
             }
+
+            return null;
         }
 
         /// <summary>
@@ -420,8 +500,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
         private async Task MarkDataHistoryRecordAsComplete(int recordId, bool wasSuccess, string wmdaHlaNomenclatureVersion)
         {
-            await dataRefreshHistoryRepository.UpdateExecutionDetails(recordId, wmdaHlaNomenclatureVersion, DateTime.UtcNow);
-            await dataRefreshHistoryRepository.UpdateSuccessFlag(recordId, wasSuccess);
+            await dataRefreshHistoryRepository.CloseRecord(recordId, wasSuccess, wmdaHlaNomenclatureVersion, DateTime.UtcNow);
         }
     }
 }

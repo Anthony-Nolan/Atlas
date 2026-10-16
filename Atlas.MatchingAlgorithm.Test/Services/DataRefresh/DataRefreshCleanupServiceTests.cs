@@ -100,8 +100,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshCleanupService.RunDataRefreshCleanup();
 
-            await dataRefreshHistoryRepository.Received().UpdateExecutionDetails(record1Id, Arg.Any<string>(), Arg.Any<DateTime?>());
-            await dataRefreshHistoryRepository.Received().UpdateExecutionDetails(record2Id, Arg.Any<string>(), Arg.Any<DateTime?>());
+            await dataRefreshHistoryRepository.Received(1).CloseRecord(record1Id, Arg.Any<bool>(), Arg.Any<string>(), Arg.Any<DateTime>());
+            await dataRefreshHistoryRepository.Received(1).CloseRecord(record2Id, Arg.Any<bool>(), Arg.Any<string>(), Arg.Any<DateTime>());
         }
 
         [Test]
@@ -117,8 +117,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshCleanupService.RunDataRefreshCleanup();
 
-            await dataRefreshHistoryRepository.Received().UpdateSuccessFlag(record1Id, false);
-            await dataRefreshHistoryRepository.Received().UpdateSuccessFlag(record2Id, false);
+            await dataRefreshHistoryRepository.Received(1).CloseRecord(record1Id, false, Arg.Any<string>(), Arg.Any<DateTime>());
+            await dataRefreshHistoryRepository.Received(1).CloseRecord(record2Id, false, Arg.Any<string>(), Arg.Any<DateTime>());
         }
 
         [Test]
@@ -157,7 +157,25 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             Received.InOrder(() =>
             {
-                dataRefreshHistoryRepository.UpdateSuccessFlag(record.Id, false);
+                dataRefreshHistoryRepository.CloseRecord(record.Id, false, Arg.Any<string>(), Arg.Any<DateTime>());
+                precomputationRunCanceller.CancelRun(record);
+            });
+        }
+
+        [Test]
+        public async Task RunDataRefreshCleanup_WhenARecordIsPaused_ClosesItAsFailed_ThenCancelsItsRun()
+        {
+            var record = DataRefreshRecordBuilder.New
+                .With(r => r.Id, fixture.Create<int>())
+                .PausedForManualDecision()
+                .Build();
+            dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(new List<DataRefreshRecord> {record});
+
+            await dataRefreshCleanupService.RunDataRefreshCleanup();
+
+            Received.InOrder(() =>
+            {
+                dataRefreshHistoryRepository.CloseRecord(record.Id, false, record.HlaNomenclatureVersion, Arg.Any<DateTime>());
                 precomputationRunCanceller.CancelRun(record);
             });
         }

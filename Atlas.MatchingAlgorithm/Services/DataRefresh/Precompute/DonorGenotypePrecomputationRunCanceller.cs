@@ -10,10 +10,28 @@ using Microsoft.Extensions.Logging;
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 
 /// <summary>
-/// Stops the donor genotype precomputation run of a data refresh that failed.
+/// Stops the donor genotype precomputation run of a data refresh that failed, and removes the staging data of a data refresh
+/// that completed.
 /// </summary>
 public interface IDonorGenotypePrecomputationRunCanceller
 {
+    /// <summary>
+    /// Removes the staging data of the database of the record. Call it when all stages of the refresh are complete, before
+    /// the record is closed: its database is still the dormant one. The run stays.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Normally the stage removed the staging data already. After a manual Complete decision, the stage does not run again,
+    /// so its staging data stays until this removes it.
+    /// </para>
+    ///
+    /// <para>
+    /// <b>Does not throw.</b> All stages are complete, so an error here must not fail the refresh: it is only logged. The next
+    /// refresh of the database removes the staging data.
+    /// </para>
+    /// </remarks>
+    Task RemoveStagingData(DataRefreshRecord refreshRecord);
+
     /// <summary>
     /// Cancels the run of the record, if it is building or running, and then removes the staging data of the database of
     /// the record. Call it only for a record that is closed as failed.
@@ -48,6 +66,33 @@ internal class DonorGenotypePrecomputationRunCanceller : IDonorGenotypePrecomput
     {
         this.repositoryFactory = repositoryFactory;
         this.logger = logger;
+    }
+
+    /// <inheritdoc />
+    public async Task RemoveStagingData(DataRefreshRecord refreshRecord)
+    {
+        var recordId = refreshRecord.Id;
+        var recordDatabase = refreshRecord.Database;
+
+        try
+        {
+            var database = recordDatabase.ParseToEnum<TransientDatabase>();
+            var repository = repositoryFactory.GetDonorGenotypePrecomputationRepositoryForDatabase(database);
+            await repository.TruncateStagingTables();
+
+            logger.LogInformation(
+                LoggingPrefix + " The staging data of data refresh record {DataRefreshRecordId} ({TargetDatabase}) was removed at the end of " +
+                "the refresh.",
+                recordId, database);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(
+                e,
+                LoggingPrefix + " The staging data of data refresh record {DataRefreshRecordId} ({TargetDatabase}) could not be removed " +
+                "at the end of the refresh. The next refresh of the database removes it.",
+                recordId, recordDatabase);
+        }
     }
 
     /// <inheritdoc />

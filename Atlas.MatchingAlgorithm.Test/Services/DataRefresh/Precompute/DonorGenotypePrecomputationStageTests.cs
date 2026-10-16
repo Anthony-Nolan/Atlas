@@ -7,6 +7,7 @@ using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Models.Precompute;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
+using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.Precompute;
 using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
@@ -44,9 +45,13 @@ public class DonorGenotypePrecomputationStageTests
     private IActiveDatabaseProvider activeDatabaseProvider;
     private IDonorGenotypePrecomputationBatchDispatcher dispatcher;
     private IDataRefreshSupportNotificationSender notificationSender;
+    private IDataRefreshHistoryRepository dataRefreshHistoryRepository;
     private DonorGenotypePrecomputationSettings settings;
     private DataRefreshRecord record;
     private int runId;
+
+    /// <summary>The threshold is 1 in this many donors. At least 2, so a summary can be above it.</summary>
+    private int thresholdDenominator;
 
     private DonorGenotypePrecomputationStage stage;
 
@@ -64,11 +69,13 @@ public class DonorGenotypePrecomputationStageTests
 
         dispatcher = Substitute.For<IDonorGenotypePrecomputationBatchDispatcher>();
         notificationSender = Substitute.For<IDataRefreshSupportNotificationSender>();
+        dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
 
+        thresholdDenominator = fixture.Create<int>() + 1;
         settings = fixture.Build<DonorGenotypePrecomputationSettings>()
             .With(s => s.PollIntervalSeconds, PollIntervalSeconds)
             .With(s => s.StallAlertMinutes, StallAlertMinutes)
-            .With(s => s.MaxFailedDonorFraction, 1.0 / fixture.Create<int>())
+            .With(s => s.MaxFailedDonorFraction, 1.0 / thresholdDenominator)
             .Create();
 
         record = DataRefreshRecordBuilder.New.WithDatabase(DormantDatabase).Build();
@@ -82,6 +89,7 @@ public class DonorGenotypePrecomputationStageTests
             activeDatabaseProvider,
             dispatcher,
             notificationSender,
+            dataRefreshHistoryRepository,
             settings,
             new InstantTimeProvider(fixture.Create<DateTimeOffset>()),
             NullLogger<DonorGenotypePrecomputationStage>.Instance);
@@ -187,7 +195,7 @@ public class DonorGenotypePrecomputationStageTests
     public async Task Run_WhenTheRunIsComplete_NeitherBuildsNorDispatches(RunStatus status)
     {
         repository.GetRun(record.Id).Returns(RunWithStatus(status));
-        repository.GetFailureSummary(runId).Returns(FailureSummary());
+        repository.GetFailureSummary(runId).Returns(FailureSummaryBelowTheThreshold());
 
         await stage.Run(record, DataRefreshStageExecutionMode.Continuation, CancellationToken.None);
 
@@ -365,26 +373,28 @@ public class DonorGenotypePrecomputationStageTests
     #region The report
 
     [Test]
-    public async Task Run_WhenTheRunIsCompleteWithNoFailure_SendsNoAlertAndRemovesTheStagingData()
+    public async Task Run_WhenTheRunIsCompleteWithNoFailure_SendsNoAlertRemovesTheStagingDataAndCompletes()
     {
         repository.GetRun(record.Id).Returns(RunWithStatus(RunStatus.Completed));
 
-        await stage.Run(record, DataRefreshStageExecutionMode.Continuation, CancellationToken.None);
+        var result = await stage.Run(record, DataRefreshStageExecutionMode.Continuation, CancellationToken.None);
 
+        result.Should().Be(DonorGenotypePrecomputationStageResult.Complete);
         await repository.DidNotReceiveWithAnyArgs().GetFailureSummary(default);
         await notificationSender.DidNotReceiveWithAnyArgs().SendPrecomputationFailureSummary(default, default, default, default);
         await repository.Received(1).TruncateStagingTables();
     }
 
     [Test]
-    public async Task Run_WhenTheRunIsCompleteWithFailures_SendsTheFailureSummaryBeforeItRemovesTheStagingData()
+    public async Task Run_WhenTheRunIsCompleteWithFailuresAtOrBelowTheThreshold_SendsTheFailureSummaryBeforeItRemovesTheStagingData()
     {
-        var summary = FailureSummary();
+        var summary = FailureSummaryBelowTheThreshold();
         repository.GetRun(record.Id).Returns(RunWithStatus(RunStatus.CompletedWithFailures));
         repository.GetFailureSummary(runId).Returns(summary);
 
-        await stage.Run(record, DataRefreshStageExecutionMode.Continuation, CancellationToken.None);
+        var result = await stage.Run(record, DataRefreshStageExecutionMode.Continuation, CancellationToken.None);
 
+        result.Should().Be(DonorGenotypePrecomputationStageResult.Complete);
         Received.InOrder(() =>
         {
             notificationSender.SendPrecomputationFailureSummary(record.Id, runId, summary, settings.MaxFailedDonorFraction);
@@ -393,32 +403,156 @@ public class DonorGenotypePrecomputationStageTests
     }
 
     [Test]
-    public async Task Run_WhenMoreDonorsFailedThanTheThresholdAllows_SendsTheSummaryAndCompletes()
+    public async Task Run_WhenMoreDonorsFailedThanTheThresholdAllows_KeepsTheStagingDataAndAwaitsAManualDecision()
     {
-        settings.MaxFailedDonorFraction = 0;
-        var summary = FailureSummary();
-        repository.GetRun(record.Id).Returns(RunWithStatus(RunStatus.CompletedWithFailures));
+        var summary = FailureSummaryAboveTheThreshold();
+        var run = RunWithStatus(RunStatus.CompletedWithFailures);
+        repository.GetRun(record.Id).Returns(run);
         repository.GetFailureSummary(runId).Returns(summary);
 
-        var act = () => stage.Run(record, DataRefreshStageExecutionMode.Continuation, CancellationToken.None);
+        var result = await stage.Run(record, DataRefreshStageExecutionMode.Continuation, CancellationToken.None);
 
-        await act.Should().NotThrowAsync();
-        await notificationSender.Received(1).SendPrecomputationFailureSummary(record.Id, runId, summary, 0);
+        result.IsAwaitingManualDecision.Should().BeTrue();
+        result.FailureReport.Should().Be(
+            new DonorGenotypePrecomputationFailureReport(runId, summary, settings.MaxFailedDonorFraction, run.ManualRetryCount));
+        await notificationSender.DidNotReceiveWithAnyArgs().SendPrecomputationFailureSummary(default, default, default, default);
+        await repository.DidNotReceive().TruncateStagingTables();
+    }
+
+    [Test]
+    public async Task Run_WhenTheThresholdIsZero_AwaitsAManualDecisionForAnyFailedDonor()
+    {
+        settings.MaxFailedDonorFraction = 0;
+        repository.GetRun(record.Id).Returns(RunWithStatus(RunStatus.CompletedWithFailures));
+        repository.GetFailureSummary(runId).Returns(FailureSummaryWith(1, fixture.Create<int>() + 1));
+
+        var result = await stage.Run(record, DataRefreshStageExecutionMode.Continuation, CancellationToken.None);
+
+        result.IsAwaitingManualDecision.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task Run_WhenTheThresholdIsOne_CompletesEvenWhenEveryDonorFailed()
+    {
+        settings.MaxFailedDonorFraction = 1;
+        var donorCount = fixture.Create<int>();
+        repository.GetRun(record.Id).Returns(RunWithStatus(RunStatus.CompletedWithFailures));
+        repository.GetFailureSummary(runId).Returns(FailureSummaryWith(donorCount, donorCount));
+
+        var result = await stage.Run(record, DataRefreshStageExecutionMode.Continuation, CancellationToken.None);
+
+        result.Should().Be(DonorGenotypePrecomputationStageResult.Complete);
         await repository.Received(1).TruncateStagingTables();
     }
 
     [TestCase(RunStatus.Completed)]
     [TestCase(RunStatus.CompletedWithFailures)]
-    public async Task Run_WhenTheStagingDataIsGone_ReportsNothingAndRemovesNothing(RunStatus status)
+    public async Task Run_WhenTheStagingDataIsGone_ReportsNothingRemovesNothingAndCompletes(RunStatus status)
     {
         repository.GetRun(record.Id).Returns(RunWithStatus(status));
         repository.HasStagingData().Returns(false);
 
-        await stage.Run(record, DataRefreshStageExecutionMode.Continuation, CancellationToken.None);
+        var result = await stage.Run(record, DataRefreshStageExecutionMode.Continuation, CancellationToken.None);
 
+        result.Should().Be(DonorGenotypePrecomputationStageResult.Complete);
         await repository.DidNotReceiveWithAnyArgs().GetFailureSummary(default);
         await notificationSender.DidNotReceiveWithAnyArgs().SendPrecomputationFailureSummary(default, default, default, default);
         await repository.DidNotReceive().TruncateStagingTables();
+    }
+
+    #endregion
+
+    #region A pending manual retry
+
+    [Test]
+    public async Task Run_WithAPendingRetryAndARunCompleteWithFailures_ResetsThenClearsTheDecisionThenSends()
+    {
+        record.PendingManualDecision = DataRefreshManualDecision.RetryFailedBatches;
+        repository.GetRun(record.Id).Returns(
+            RunWithStatus(RunStatus.CompletedWithFailures),
+            RunWithStatus(RunStatus.Running),
+            RunWithStatus(RunStatus.Completed));
+
+        var result = await stage.Run(record, DataRefreshStageExecutionMode.Continuation, CancellationToken.None);
+
+        result.Should().Be(DonorGenotypePrecomputationStageResult.Complete);
+        Received.InOrder(() =>
+        {
+            repository.ResetFailedBatchesForManualRetry(runId);
+            dataRefreshHistoryRepository.ClearPendingManualDecision(record);
+            dispatcher.DispatchPendingBatches(new DonorGenotypePrecomputationRunLocation(record.Id, DormantDatabase, runId), PendingBatchSelection.All);
+        });
+        await repository.DidNotReceiveWithAnyArgs().StartBuild(default, default, default);
+    }
+
+    [Test]
+    public async Task Run_WithAPendingRetryAndARunningRun_ClearsTheDecisionAndSendsWithNoReset()
+    {
+        record.PendingManualDecision = DataRefreshManualDecision.RetryFailedBatches;
+        repository.GetRun(record.Id).Returns(RunWithStatus(RunStatus.Running), RunWithStatus(RunStatus.Completed));
+
+        await stage.Run(record, DataRefreshStageExecutionMode.Continuation, CancellationToken.None);
+
+        await repository.DidNotReceiveWithAnyArgs().ResetFailedBatchesForManualRetry(default);
+        Received.InOrder(() =>
+        {
+            dataRefreshHistoryRepository.ClearPendingManualDecision(record);
+            dispatcher.DispatchPendingBatches(new DonorGenotypePrecomputationRunLocation(record.Id, DormantDatabase, runId), PendingBatchSelection.All);
+        });
+    }
+
+    [Test]
+    public async Task Run_WithAPendingRetryAndNoStagingData_ThrowsWithNoReset()
+    {
+        record.PendingManualDecision = DataRefreshManualDecision.RetryFailedBatches;
+        repository.GetRun(record.Id).Returns(RunWithStatus(RunStatus.CompletedWithFailures));
+        repository.HasStagingData().Returns(false);
+
+        var act = () => stage.Run(record, DataRefreshStageExecutionMode.Continuation, CancellationToken.None);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        await repository.DidNotReceiveWithAnyArgs().ResetFailedBatchesForManualRetry(default);
+        await dataRefreshHistoryRepository.DidNotReceiveWithAnyArgs().ClearPendingManualDecision(default);
+        await dispatcher.DidNotReceiveWithAnyArgs().DispatchPendingBatches(default, default);
+    }
+
+    [TestCase(RunStatus.Completed)]
+    [TestCase(RunStatus.Building)]
+    [TestCase(RunStatus.Cancelled)]
+    public async Task Run_WithAPendingRetryAndARunThatCannotBeRetried_ThrowsWithNoReset(RunStatus status)
+    {
+        record.PendingManualDecision = DataRefreshManualDecision.RetryFailedBatches;
+        repository.GetRun(record.Id).Returns(RunWithStatus(status));
+
+        var act = () => stage.Run(record, DataRefreshStageExecutionMode.Continuation, CancellationToken.None);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        await repository.DidNotReceiveWithAnyArgs().ResetFailedBatchesForManualRetry(default);
+        await repository.DidNotReceiveWithAnyArgs().StartBuild(default, default, default);
+        await dataRefreshHistoryRepository.DidNotReceiveWithAnyArgs().ClearPendingManualDecision(default);
+    }
+
+    [Test]
+    public async Task Run_WithAPendingRetryAndNoRun_ThrowsWithNoBuild()
+    {
+        record.PendingManualDecision = DataRefreshManualDecision.RetryFailedBatches;
+        repository.GetRun(record.Id).Returns((DonorGenotypePrecomputationRun)null);
+
+        var act = () => stage.Run(record, DataRefreshStageExecutionMode.Continuation, CancellationToken.None);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        await repository.DidNotReceiveWithAnyArgs().StartBuild(default, default, default);
+    }
+
+    [Test]
+    public async Task Run_WithNoPendingDecision_DoesNotResetOrClear()
+    {
+        repository.GetRun(record.Id).Returns(RunWithStatus(RunStatus.Completed));
+
+        await stage.Run(record, DataRefreshStageExecutionMode.Continuation, CancellationToken.None);
+
+        await repository.DidNotReceiveWithAnyArgs().ResetFailedBatchesForManualRetry(default);
+        await dataRefreshHistoryRepository.DidNotReceiveWithAnyArgs().ClearPendingManualDecision(default);
     }
 
     #endregion
@@ -454,11 +588,17 @@ public class DonorGenotypePrecomputationStageTests
     private static DonorGenotypePrecomputationBatchCounts CountsWithTerminalBatches(int terminalBatchCount) =>
         new(new Dictionary<BatchStatus, int> { [BatchStatus.ResultsReceived] = terminalBatchCount, [BatchStatus.Requested] = 1 }, 0);
 
-    private DonorGenotypePrecomputationFailureSummary FailureSummary() =>
+    /// <summary>Half the threshold: 1 donor in twice the threshold denominator.</summary>
+    private DonorGenotypePrecomputationFailureSummary FailureSummaryBelowTheThreshold() => FailureSummaryWith(1, 2 * thresholdDenominator);
+
+    /// <summary>Twice the threshold: 2 donors in the threshold denominator.</summary>
+    private DonorGenotypePrecomputationFailureSummary FailureSummaryAboveTheThreshold() => FailureSummaryWith(2, thresholdDenominator);
+
+    private DonorGenotypePrecomputationFailureSummary FailureSummaryWith(int failedDonorCount, int totalDonorCount) =>
         new(
             fixture.Create<int>(),
             fixture.Create<int>(),
-            fixture.Create<int>(),
-            fixture.Create<int>(),
+            failedDonorCount,
+            totalDonorCount,
             fixture.CreateMany<DonorGenotypePrecomputationFailureSample>().ToList());
 }

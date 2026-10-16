@@ -47,6 +47,7 @@ locals {
     "DataRefresh:Precompute:AbandonBatchesCronSchedule"                                     = var.DATA_REFRESH_PRECOMPUTE_ABANDON_BATCHES_CRON_SCHEDULE
     "DataRefresh:Precompute:FinaliseRunsCronSchedule"                                       = var.DATA_REFRESH_PRECOMPUTE_FINALISE_RUNS_CRON_SCHEDULE
     "DataRefresh:Precompute:MaxBatchRetries"                                                = var.DATA_REFRESH_PRECOMPUTE_MAX_BATCH_RETRIES
+    "DataRefresh:Precompute:MaxFailedDonorFraction"                                         = var.DATA_REFRESH_PRECOMPUTE_MAX_FAILED_DONOR_FRACTION
     "DataRefresh:Precompute:RequestsSubscription"                                           = azurerm_servicebus_subscription.precomputation-worker.name
     "DataRefresh:Precompute:RequestsTopic"                                                  = azurerm_servicebus_topic.donor-genotype-precomputation-requests.name
     "DataRefresh:Precompute:RequeueBatchesCronSchedule"                                     = var.DATA_REFRESH_PRECOMPUTE_REQUEUE_BATCHES_CRON_SCHEDULE

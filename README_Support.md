@@ -171,6 +171,10 @@ If a refresh stalls locally, you can likely ignore the infrastructure part of th
     - If the `RunDataRefreshCleanup` function was used for infrastructure cleanup, this will have been covered by that function
   - The donor genotype precomputation run of the record must be cancelled, so that the workers stop.
     - `RunDataRefreshCleanup` does this. If you clean up by hand, use the SQL in [When the refresh fails](#when-the-refresh-fails).
+- A refresh that is [paused for a manual decision](#the-paused-data-refresh)
+  - `RunDataRefreshCleanup` also closes a paused record as failed, cancels its run, and clears its pause and its pending
+    decision. As for any record, it sends no failure alert and no `CompletedDataRefresh` message. To close a paused
+    refresh with these messages, send the `Fail` decision instead.
 
 ### Donor genotype precomputation (stage 65)
 
@@ -215,12 +219,13 @@ Use the [SQL for support](#sql-for-support) to see the batches.
 
 #### Alert: "Data refresh donor genotype precomputation failed for N donor(s)"
 
-The run is complete, and some donors have no stored genotype set for one or more combinations of loci. **The data
-refresh continued.** The alert gives the counts, the threshold (`DataRefresh:Precompute:MaxFailedDonorFraction`), and
-up to 10 sample errors: the first failure of each different message.
+Medium priority. The run is complete, and some donors have no stored genotype set for one or more combinations of
+loci. The failed donors are at or below the threshold (`DataRefresh:Precompute:MaxFailedDonorFraction`). **The data
+refresh continued.** The alert gives the counts, the threshold, and up to 10 sample errors: the first failure of each
+different message.
 
-- Medium priority: the failed donors are at or below the threshold.
-- High priority: the failed donors are above the threshold. Find the cause before the next refresh.
+Above the threshold, the refresh does not continue. It pauses, and sends the high-priority alert of
+[The paused data refresh](#the-paused-data-refresh) instead.
 
 Read the sample errors. Usual causes:
 
@@ -231,10 +236,95 @@ Read the sample errors. Usual causes:
 
 The stage removes the groups and their donors (the staging data) after it sends this alert. So the failed groups and
 the failed donors of the [SQL for support](#sql-for-support) are available only while the stage runs. After that, find
-the donors that have no stored set with the last query of that section.
+the donors that have no stored set with the last query of that section. A paused refresh keeps its staging data until
+the decision.
 
 The refresh does not compute these donors again. An update of a donor computes its sets again, and so does the next
 full data refresh.
+
+#### The paused data refresh
+
+##### Alert: "Data refresh paused: donor genotype precomputation failed for N donor(s)"
+
+High priority. More donors failed in stage 65 than `DataRefresh:Precompute:MaxFailedDonorFraction` allows (0.001 by
+default). The refresh does not continue, and it is not closed. It waits for your decision. There is no time limit.
+
+When the refresh pauses, it does these steps:
+
+1. It keeps the run, the batches and the staging data. Stage 65 is not marked as complete.
+2. It starts to scale the dormant database down to the dormant size, and sends this alert. The alert says if Azure
+   refused to start the scale-down. Then you must scale the database down by hand. The teardown failure alert also
+   comes.
+3. It waits until the scale-down has ended. On a full database, this can take a long time.
+4. It sets `AwaitingManualDecisionSinceUtc` on the record, and releases the lease, in one update. From then on, the
+   endpoint accepts a decision.
+
+The alert gives the counts, the threshold, the manual retries of the run so far, and up to 10 sample errors. Read the
+sample errors, and use the [SQL for support](#sql-for-support) to find the cause. The staging data stays while the
+record is paused, so the queries of the failed groups and the failed donors work.
+
+##### Choose a decision
+
+| Decision | Use it when | What happens |
+|---|---|---|
+| `Complete` | You accept the failures. | The refresh resumes, and marks stage 65 as complete. It does not scale the database up. Stages 70 and 80 run, the database is swapped, and the `CompletedDataRefresh` message goes out. The failed donors have no stored genotype set until they are updated, or until the next full refresh. The staging data is removed after stage 80, before the swap. |
+| `RetryFailedBatches` | You fixed the cause, for example a missing haplotype frequency set, or an outage. | The refresh resumes. Stage 30 scales the database up. Stage 65 resets the permanently failed batches and the batches with failed groups, and sends only these batches again. Then the refresh continues, or pauses again if too many donors fail again ("paused again"). |
+| `Fail` | You do not want this refresh. | The record is closed as failed. Then the failure alert and a `CompletedDataRefresh` message (not successful) go out, and the run is cancelled. There is no swap. You can request a new refresh. |
+
+##### Send the decision
+
+Call the `ResolvePausedDataRefresh` function of the Data Refresh Functions App (`DATA-REFRESH-FUNCTION`) with a
+function key. `DecidedBy` is optional. It goes into the `SupportComments` of the record, and into the telemetry event.
+
+```bash
+curl -X POST "https://<data refresh function app>.azurewebsites.net/api/ResolvePausedDataRefresh?code=<function key>" \
+  -H "Content-Type: application/json" \
+  -d '{ "DataRefreshRecordId": 123, "Decision": "RetryFailedBatches", "DecidedBy": "J. Smith" }'
+```
+
+| Response | Meaning |
+|---|---|
+| 200 | The decision is taken. The body says what happens next. |
+| 400 | The body is not valid. `Decision` must be `Complete`, `RetryFailedBatches` or `Fail`. |
+| 404 | There is no record with this id. |
+| 409 | Nothing changed. The record is closed, has a decision already, or is not paused. After the paused alert, the record is not paused until the scale-down has ended: try again later. |
+| 500 | `Complete` or `RetryFailedBatches`: the decision is recorded, but the refresh request was not published. **Do not send the decision again.** The watchdog requests the refresh, within about 75 minutes at the default settings. To resume at once, publish the request yourself, as in [Intervening before the watchdog does](#intervening-before-the-watchdog-does). |
+
+A `Fail` call can take about a minute. The record is closed at once, but then the call removes the staging data from the
+dormant database, which can be auto-paused and must resume first. If the database does not resume in time, the call
+still returns 200, and the next refresh removes the staging data.
+
+Each decision appends one line to `SupportComments`, for example
+`2026-10-08 14:05:12Z Manual decision: RetryFailedBatches (by J. Smith).`
+
+##### While the record is paused
+
+- No invocation can claim the record. A redelivered or replayed request completes, and does nothing.
+- The watchdog does not request the record again. At each sweep, it logs one warning for each paused record:
+  `Data refresh record <id> is paused for a manual decision since ...`. You can use this trace for a log alert rule.
+- A new refresh request is refused, also with `ForceDataRefresh`. The error names the paused record and the endpoint.
+- The precomputation timers do not read the run, so the dormant database can auto-pause.
+- Donor updates for the paused database stay on its subscription. Stage 80 applies them after the decision. A long
+  pause makes stage 80 longer.
+- The workers have no messages, so the worker Container App scales to zero.
+- `RunDataRefreshCleanup` closes the paused record as failed. See [(b) Manual cleanup](#b-manual-cleanup).
+
+Application Insights events: `Data refresh paused for a manual decision`, `Data refresh paused again for a manual
+decision`, `Data refresh manual decision taken`, and `Data refresh resumed after a manual decision`
+(`customEvents | where name startswith "Data refresh"`). These events can be sampled: the worker sends them with adaptive
+sampling on, and the `samplingSettings` in `host.json` apply only to the Functions host. So the alert is the main signal.
+
+If the invocation stops during the scale-down, the record is not paused yet. The watchdog resumes it when the lease
+has expired and the grace period has passed (about 95 minutes at the default settings). Stage 30 scales the database up
+again, stage 65 reports again, and the pause starts again, with a second alert.
+
+```sql
+-- Persistent database: the paused records, and the records with a decision that the refresh has not applied yet.
+SELECT Id, [Database], AwaitingManualDecisionSinceUtc, PendingManualDecision, LeaseOwner, LeaseExpiresUtc, SupportComments
+FROM [MatchingAlgorithmPersistent].[DataRefreshHistory]
+WHERE RefreshEndUtc IS NULL
+  AND (AwaitingManualDecisionSinceUtc IS NOT NULL OR PendingManualDecision IS NOT NULL)
+```
 
 #### SQL for support
 
@@ -242,9 +332,10 @@ Run the persistent database query first. Run the other queries on the transient 
 `Database` column gives `DatabaseA` or `DatabaseB`.
 
 ```sql
--- Persistent database: the open refresh record, and the stages that it has completed.
+-- Persistent database: the open refresh record, the stages that it has completed, and its manual decision state.
 SELECT Id, [Database], HlaNomenclatureVersion, RefreshRequestedUtc, RefreshLastContinuedUtc,
-       IndexRecreationCompleted, DonorGenotypePrecomputationCompleted, DatabaseScalingTearDownCompleted
+       IndexRecreationCompleted, DonorGenotypePrecomputationCompleted, DatabaseScalingTearDownCompleted,
+       AwaitingManualDecisionSinceUtc, PendingManualDecision
 FROM [MatchingAlgorithmPersistent].[DataRefreshHistory]
 WHERE RefreshEndUtc IS NULL
 ```

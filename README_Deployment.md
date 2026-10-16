@@ -282,6 +282,9 @@ does steps 2 to 4.
    `DataRefresh:Precompute:FinaliseRunsCronSchedule`, `DataRefresh:Precompute:AbandonBatchesCronSchedule` and
    `DataRefresh:Precompute:RequeueBatchesCronSchedule`. These settings have no default. The timer and dead-letter
    functions of stage 65 cannot start without them. The other `DataRefresh:Precompute:*` settings have defaults.
+   - Terraform sets `DataRefresh:Precompute:MaxFailedDonorFraction` from the variable
+     `MATCHING_DATA_REFRESH_PRECOMPUTE_MAX_FAILED_DONOR_FRACTION` (0.001 by default, from 0 to 1). Above this fraction of
+     failed donors, the refresh pauses for a manual decision.
    - Stage 80 also needs the Match Prediction settings of the Data Refresh app: `GenotypeImputation:*`,
      `HaplotypeFrequencySetCache:*` and the connection string `MatchPredictionSql`. Terraform sets them.
 5. **Database size.** Stage 65 adds the stored genotype sets to the refreshed transient database. Make sure that
@@ -319,6 +322,10 @@ does steps 2 to 4.
      - S0 to S2: 250. S3 to S12, and P1 to P6: 1024. P11 and P15: 4096.
      - GP_S_Gen5_1: 512. GP_S_Gen5_2 to GP_S_Gen5_6: 1024. GP_S_Gen5_8 and GP_S_Gen5_10: 2048.
        GP_S_Gen5_12 to GP_S_Gen5_20: 3072. GP_S_Gen5_24 to GP_S_Gen5_40: 4096.
+   - A paused refresh (see [the paused data refresh](README_Support.md#the-paused-data-refresh)) scales the refreshing
+     database down to the dormant tier too, also at the first refresh. The database keeps its sets and the staging data
+     of stage 65. If Azure refuses the scale-down, for example because the dormant tier is too small, the teardown
+     failure alert comes, and the refresh still pauses.
    - Apply the change when no data refresh is in progress, so that it does not clash with a scaling operation of the
      refresh.
    - Terraform alerts the Atlas team when a transient database uses more than
@@ -353,16 +360,19 @@ does steps 2 to 4.
    other donors live, as it does today. In `ForceLive` mode (the default), search does not read the stored sets.
 3. **Release.** Apply Terraform, run the database migrations, and release the function apps and the worker image.
    - Migrate the two transient databases (A and B) and the persistent database. The persistent database gets the
-     column `DonorGenotypePrecomputationCompleted`, which the new Data Refresh code needs.
+     columns `DonorGenotypePrecomputationCompleted`, `AwaitingManualDecisionSinceUtc` and `PendingManualDecision`,
+     which the new Data Refresh code needs. Run the persistent migration before the new Data Refresh code starts.
    - The new worker image can start before the migrations. It reads no database when it starts.
 4. **Full data refresh.** Trigger `SubmitDataRefreshRequestManual` with `forceDataRefresh` set to `true`.
 5. **Watch stage 65.** See [Normal progress](README_Support.md#normal-progress) in the Support README.
    - The build trace gives the counts of donors, groups and batches, and the time of each build step.
    - The count of done batches goes up, and the worker replicas scale out.
    - If a stall alert comes, follow the Support README.
-   - If a failure alert comes, the refresh continues. Compare the failed-donor fraction with
-     `DataRefresh:Precompute:MaxFailedDonorFraction`, and with the failed donors that stage 50 reported. Find the
-     cause. Search computes the failed donors live.
+   - If a medium-priority failure alert comes, the failed donors are at or below
+     `DataRefresh:Precompute:MaxFailedDonorFraction`, and the refresh continues. Compare the failed donors with the
+     failed donors that stage 50 reported. Find the cause. Search computes the failed donors live.
+   - If the "Data refresh paused" alert comes, the failed donors are above the threshold. The refresh waits for your
+     decision. See [the paused data refresh](README_Support.md#the-paused-data-refresh) in the Support README.
 6. **Check the result.** The `notifications` topic reports the successful refresh, and the refresh record has a value in
    `DonorGenotypePrecomputationCompleted`. Each donor has four rows in `DonorSubjectGenotypeSets`, except the failed
    donors (see the last query of the [SQL for support](README_Support.md#sql-for-support)).

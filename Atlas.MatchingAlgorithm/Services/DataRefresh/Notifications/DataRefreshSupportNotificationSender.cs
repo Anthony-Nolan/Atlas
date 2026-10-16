@@ -6,6 +6,8 @@ using Atlas.Common.Notifications;
 using Atlas.MatchingAlgorithm.Config;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Models.Precompute;
+using Atlas.MatchingAlgorithm.Models.DataRefresh;
+using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications
 {
@@ -32,14 +34,21 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications
             DonorGenotypePrecomputationBatchCounts batchCounts);
 
         /// <summary>
-        /// The failures of a donor genotype precomputation run that has finished: high priority above the threshold, else
-        /// medium. The data refresh continues in both cases.
+        /// A medium-priority summary: the failures of a donor genotype precomputation run that has finished at or below the
+        /// threshold. The data refresh continues.
         /// </summary>
         Task SendPrecomputationFailureSummary(
             int recordId,
             int runId,
             DonorGenotypePrecomputationFailureSummary failureSummary,
             double maxFailedDonorFraction);
+
+        /// <summary>
+        /// A high-priority alert: more donors failed in the donor genotype precomputation run than the threshold allows, and
+        /// the data refresh pauses until support takes a manual decision.
+        /// </summary>
+        /// <param name="wasScaleDownStarted">False when Azure refused to start the scale-down of the dormant database.</param>
+        Task SendPrecomputationPausedAlert(int recordId, DonorGenotypePrecomputationFailureReport failureReport, bool wasScaleDownStarted);
     }
     
     public class DataRefreshSupportNotificationSender: IDataRefreshSupportNotificationSender
@@ -146,24 +155,61 @@ The data refresh waits until every batch is done. Check that the precomputation 
             DonorGenotypePrecomputationFailureSummary failureSummary,
             double maxFailedDonorFraction)
         {
-            var isAboveThreshold = failureSummary.IsAboveThreshold(maxFailedDonorFraction);
-            var comparison = isAboveThreshold ? "above" : "at or below";
             var summary = $"Data refresh donor genotype precomputation failed for {failureSummary.FailedDonorCount} donor(s) (#{recordId})";
-            var samples = failureSummary.Samples.Select(sample =>
-                sample.GroupId == null
-                    ? $"- Batch {sample.BatchId}: {sample.FailureMessage}"
-                    : $"- Batch {sample.BatchId}, group {sample.GroupId}: {sample.FailureMessage}");
             var description =
 $@"The donor genotype precomputation run {runId} (data refresh record {recordId}) has finished with failures.
-{failureSummary.FailedDonorCount} of {failureSummary.TotalDonorCount} donors ({failureSummary.FailedDonorFraction:P3}) have no stored genotype set for at least one combination of loci. This is {comparison} the threshold of {maxFailedDonorFraction:P3}.
+{DescribeFailures(failureSummary)} This is at or below the threshold of {maxFailedDonorFraction:P3}.
 Permanently failed batches: {failureSummary.PermanentlyFailedBatchCount}. Failed groups in the other batches: {failureSummary.FailedGroupCount}.
 The data refresh continued.
 
 The first failure of each distinct message:
-{string.Join(Environment.NewLine, samples)}";
+{DescribeSamples(failureSummary)}";
 
-            await SendAlert(summary, description, isAboveThreshold ? Priority.High : Priority.Medium);
+            await SendAlert(summary, description, Priority.Medium);
         }
+
+        public async Task SendPrecomputationPausedAlert(int recordId, DonorGenotypePrecomputationFailureReport failureReport, bool wasScaleDownStarted)
+        {
+            var failureSummary = failureReport.FailureSummary;
+            var endpoint = ResolvePausedDataRefreshRequest.EndpointName;
+            var scaleDown = wasScaleDownStarted
+                ? "The data refresh is scaling the dormant database down to the dormant size."
+                : "Azure refused to scale the dormant database down, so it stays at the size for the refresh. Scale it down by hand: see the teardown failure alert.";
+
+            var summary = $"Data refresh paused: donor genotype precomputation failed for {failureSummary.FailedDonorCount} donor(s) (#{recordId})";
+            var description =
+$@"The donor genotype precomputation run {failureReport.RunId} (data refresh record {recordId}) has finished with failures.
+{DescribeFailures(failureSummary)} This is above the threshold of {failureReport.MaxFailedDonorFraction:P3}.
+Permanently failed batches: {failureSummary.PermanentlyFailedBatchCount}. Failed groups in the other batches: {failureSummary.FailedGroupCount}.
+Manual retries of the run so far: {failureReport.ManualRetryCount}.
+
+The data refresh is paused. It does not continue, and it is not closed, until you take a decision. The run and its staging data stay.
+{scaleDown}
+
+Find the cause of the failures first, then choose one decision:
+- Complete: accept the failures. The refresh continues with the later stages and swaps the database. The failed donors have no stored genotype set.
+- RetryFailedBatches: the cause is fixed. The refresh scales the database up and computes only the failed batches again. It can pause again.
+- Fail: close the refresh as failed. There is no swap, and a new refresh can be requested.
+
+Send the decision to the {endpoint} function of the data refresh function app: POST /api/{endpoint} with a function key, and this body:
+{{ ""DataRefreshRecordId"": {recordId}, ""Decision"": ""RetryFailedBatches"", ""DecidedBy"": ""<your name>"" }}
+The endpoint accepts a decision only after the scale-down has ended. Until then, it returns 409. See the paused data refresh section of README_Support.md.
+
+The first failure of each distinct message:
+{DescribeSamples(failureSummary)}";
+
+            await SendAlert(summary, description, Priority.High);
+        }
+
+        private static string DescribeFailures(DonorGenotypePrecomputationFailureSummary failureSummary) =>
+            $"{failureSummary.FailedDonorCount} of {failureSummary.TotalDonorCount} donors ({failureSummary.FailedDonorFraction:P3}) have no stored " +
+            "genotype set for at least one combination of loci.";
+
+        private static string DescribeSamples(DonorGenotypePrecomputationFailureSummary failureSummary) =>
+            string.Join(Environment.NewLine, failureSummary.Samples.Select(sample =>
+                sample.GroupId == null
+                    ? $"- Batch {sample.BatchId}: {sample.FailureMessage}"
+                    : $"- Batch {sample.BatchId}, group {sample.GroupId}: {sample.FailureMessage}"));
 
         private static string DescribeBatchCounts(DonorGenotypePrecomputationBatchCounts batchCounts) =>
             string.Join(", ", Enum.GetValues<DonorGenotypePrecomputationBatchStatus>()

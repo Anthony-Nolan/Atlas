@@ -36,8 +36,20 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
 
         Task<DataRefreshRecord> GetRecord(int dataRefreshRecordId);
         Task UpdateRunAttemptDetails(int recordId);
-        Task UpdateExecutionDetails(int recordId, string wmdaHlaNomenclatureVersion, DateTime? finishTimeUtc = null);
-        Task UpdateSuccessFlag(int recordId, bool wasSuccess);
+        Task UpdateExecutionDetails(int recordId, string wmdaHlaNomenclatureVersion);
+
+        /// <summary>
+        /// Closes the record, in one save: sets <see cref="DataRefreshRecord.RefreshEndUtc"/> and
+        /// <see cref="DataRefreshRecord.WasSuccessful"/>, records the HLA nomenclature version, and clears
+        /// <see cref="DataRefreshRecord.AwaitingManualDecisionSinceUtc"/> and <see cref="DataRefreshRecord.PendingManualDecision"/>.
+        /// </summary>
+        /// <remarks>
+        /// One save, so a closed record always has its result, and never has a pause or a pending decision. A refresh that
+        /// fails after a manual retry decision, before the precomputation stage applies it, still has the decision.
+        /// </remarks>
+        /// <param name="hlaNomenclatureVersion">The version of the new data. Null keeps the version that the record has.</param>
+        Task CloseRecord(int recordId, bool wasSuccessful, string hlaNomenclatureVersion, DateTime refreshEndUtc);
+
         Task UpdateLastSafelyProcessedDonor(int recordId, int donorId);
         Task MarkStageAsComplete(DataRefreshRecord record, DataRefreshStage stage);
 
@@ -50,14 +62,20 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
 
         /// <summary>
         /// Attempts to take the run-level lease on a record, so that only one invocation processes it at a time.
-        /// The claim succeeds if the record is still open and is either unleased, leased to <paramref name="owner"/>
-        /// already, or held by an owner whose lease has expired.
+        /// The claim succeeds if the record is still open, is not paused for a manual decision, and is either unleased,
+        /// leased to <paramref name="owner"/> already, or held by an owner whose lease has expired.
         /// </summary>
         /// <remarks>
         /// Re-claiming for the current <paramref name="owner"/> is deliberately permitted, so that a message redelivered
         /// to the invocation that already holds the lease is harmless.
+        ///
+        /// A paused record (<see cref="DataRefreshRecord.AwaitingManualDecisionSinceUtc"/>) is refused, so a redelivered or
+        /// replayed request does not resume it. Only a manual decision ends the pause.
         /// </remarks>
-        /// <returns>True if this owner now holds the lease. False if another invocation holds it, or the record is already finished.</returns>
+        /// <returns>
+        /// True if this owner now holds the lease. False if another invocation holds it, the record is already finished, or
+        /// the record is paused.
+        /// </returns>
         Task<bool> TryClaimRefreshLease(int recordId, Guid owner, DateTime nowUtc, TimeSpan ttl);
 
         /// <summary>
@@ -88,9 +106,52 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         /// to be leased, and so has one whose run has just failed and released its lease while Service Bus redelivers
         /// the request. Both recover unaided. Requiring the record to have been idle for the whole grace period as well
         /// excludes them, and catches the one stall no lease can reveal - a request message that was never delivered.
+        ///
+        /// A paused record is not stalled: it waits for a manual decision, and no invocation can claim it. A record with a
+        /// pending decision is not paused, so it is found here when the request of the decision was not published.
         /// </remarks>
         /// <param name="graceCutoffUtc">The record must have been idle since before this time to count as stalled.</param>
         Task<IReadOnlyCollection<int>> GetStalledRefreshRecordIds(DateTime graceCutoffUtc);
+
+        /// <returns>The record with this id, or null when there is none. Not tracked, so it always shows the stored values.</returns>
+        Task<DataRefreshRecord> FindRecord(int recordId);
+
+        /// <returns>The open records that are paused for a manual decision. Not tracked.</returns>
+        Task<IReadOnlyCollection<DataRefreshRecord>> GetPausedRefreshRecords();
+
+        /// <summary>
+        /// Pauses the record for a manual decision, and releases the lease, in one update. Only while
+        /// <paramref name="owner"/> holds the lease, and the record is open.
+        /// </summary>
+        /// <remarks>
+        /// One update, so a paused record never has a lease, and an invocation that stops before the update leaves a record
+        /// that is open and not paused, which the watchdog resumes.
+        /// </remarks>
+        /// <returns>False when this owner does not hold the lease, or the record is closed: nothing changed.</returns>
+        Task<bool> TryPauseAndReleaseLease(int recordId, Guid owner, DateTime pausedSinceUtc);
+
+        /// <summary>
+        /// Takes a manual decision for a paused record, in one compare-and-swap update: only while the record is open and
+        /// paused. The update ends the pause, and appends <paramref name="supportComment"/> to
+        /// <see cref="DataRefreshRecord.SupportComments"/> as a new line.
+        /// <see cref="DataRefreshManualDecision.Complete"/> and <see cref="DataRefreshManualDecision.RetryFailedBatches"/>
+        /// become the <see cref="DataRefreshRecord.PendingManualDecision"/>.
+        /// <see cref="DataRefreshManualDecision.Fail"/> closes the record as failed.
+        /// </summary>
+        /// <remarks>
+        /// No lease check: a paused record never has a lease, and no invocation can claim it while it is paused.
+        /// </remarks>
+        /// <returns>False when the record is not paused, or is closed: nothing changed.</returns>
+        Task<bool> TryTakeManualDecision(int recordId, DataRefreshManualDecision decision, DateTime nowUtc, string supportComment);
+
+        /// <summary>
+        /// Applies a pending <see cref="DataRefreshManualDecision.Complete"/> decision: marks the
+        /// <see cref="DataRefreshStage.DonorGenotypePrecomputation"/> stage as complete, and clears the decision, in one write.
+        /// </summary>
+        Task ApplyManualCompleteDecision(DataRefreshRecord record);
+
+        /// <summary>Clears the <see cref="DataRefreshRecord.PendingManualDecision"/> of the record.</summary>
+        Task ClearPendingManualDecision(DataRefreshRecord record);
     }
 
     public class DataRefreshHistoryRepository : IDataRefreshHistoryRepository
@@ -159,18 +220,22 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
             await Context.SaveChangesAsync();
         }
 
-        public async Task UpdateExecutionDetails(int recordId, string wmdaHlaNomenclatureVersion, DateTime? finishTimeUtc)
+        public async Task UpdateExecutionDetails(int recordId, string wmdaHlaNomenclatureVersion)
         {
             var record = await GetRecord(recordId);
-            record.HlaNomenclatureVersion = wmdaHlaNomenclatureVersion ?? record.HlaNomenclatureVersion; // Don't wipe the HLA version if we already recorded it.
-            record.RefreshEndUtc = finishTimeUtc;
+            record.HlaNomenclatureVersion = wmdaHlaNomenclatureVersion;
             await Context.SaveChangesAsync();
         }
 
-        public async Task UpdateSuccessFlag(int recordId, bool wasSuccess)
+        /// <inheritdoc />
+        public async Task CloseRecord(int recordId, bool wasSuccessful, string hlaNomenclatureVersion, DateTime refreshEndUtc)
         {
             var record = await GetRecord(recordId);
-            record.WasSuccessful = wasSuccess;
+            record.HlaNomenclatureVersion = hlaNomenclatureVersion ?? record.HlaNomenclatureVersion; // Don't wipe the HLA version if we already recorded it.
+            record.RefreshEndUtc = refreshEndUtc;
+            record.WasSuccessful = wasSuccessful;
+            record.AwaitingManualDecisionSinceUtc = null;
+            record.PendingManualDecision = null;
             await Context.SaveChangesAsync();
         }
 
@@ -204,6 +269,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
             var rowsUpdated = await Context.DataRefreshRecords
                 .Where(r => r.Id == recordId
                             && r.RefreshEndUtc == null
+                            && r.AwaitingManualDecisionSinceUtc == null
                             && (r.LeaseOwner == null || r.LeaseOwner == owner || r.LeaseExpiresUtc < nowUtc))
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(r => r.LeaseOwner, owner)
@@ -240,10 +306,82 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         {
             return await Context.DataRefreshRecords
                 .Where(r => r.RefreshEndUtc == null
+                            && r.AwaitingManualDecisionSinceUtc == null
                             && (r.LeaseOwner == null || r.LeaseExpiresUtc < graceCutoffUtc)
                             && (r.RefreshLastContinuedUtc ?? r.RefreshRequestedUtc) < graceCutoffUtc)
                 .Select(r => r.Id)
                 .ToListAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task<DataRefreshRecord> FindRecord(int recordId)
+        {
+            return await Context.DataRefreshRecords.AsNoTracking().SingleOrDefaultAsync(r => r.Id == recordId);
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyCollection<DataRefreshRecord>> GetPausedRefreshRecords()
+        {
+            return await Context.DataRefreshRecords
+                .AsNoTracking()
+                .Where(r => r.RefreshEndUtc == null && r.AwaitingManualDecisionSinceUtc != null)
+                .ToListAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> TryPauseAndReleaseLease(int recordId, Guid owner, DateTime pausedSinceUtc)
+        {
+            var rowsUpdated = await Context.DataRefreshRecords
+                .Where(r => r.Id == recordId && r.LeaseOwner == owner && r.RefreshEndUtc == null)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(r => r.AwaitingManualDecisionSinceUtc, pausedSinceUtc)
+                    .SetProperty(r => r.LeaseOwner, (Guid?) null)
+                    .SetProperty(r => r.LeaseExpiresUtc, (DateTime?) null));
+
+            return rowsUpdated == 1;
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> TryTakeManualDecision(int recordId, DataRefreshManualDecision decision, DateTime nowUtc, string supportComment)
+        {
+            var newLineAndComment = Environment.NewLine + supportComment;
+
+            var rowsUpdated = await Context.DataRefreshRecords
+                .Where(r => r.Id == recordId && r.RefreshEndUtc == null && r.AwaitingManualDecisionSinceUtc != null)
+                .ExecuteUpdateAsync(s =>
+                {
+                    s.SetProperty(r => r.AwaitingManualDecisionSinceUtc, (DateTime?) null);
+                    s.SetProperty(
+                        r => r.SupportComments,
+                        r => r.SupportComments == null || r.SupportComments == "" ? supportComment : r.SupportComments + newLineAndComment);
+
+                    if (decision == DataRefreshManualDecision.Fail)
+                    {
+                        s.SetProperty(r => r.RefreshEndUtc, nowUtc);
+                        s.SetProperty(r => r.WasSuccessful, false);
+                    }
+                    else
+                    {
+                        s.SetProperty(r => r.PendingManualDecision, decision);
+                    }
+                });
+
+            return rowsUpdated == 1;
+        }
+
+        /// <inheritdoc />
+        public async Task ApplyManualCompleteDecision(DataRefreshRecord record)
+        {
+            record.SetStageCompletionTime(DataRefreshStage.DonorGenotypePrecomputation, DateTime.UtcNow);
+            record.PendingManualDecision = null;
+            await Context.SaveChangesAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task ClearPendingManualDecision(DataRefreshRecord record)
+        {
+            record.PendingManualDecision = null;
+            await Context.SaveChangesAsync();
         }
 
         public async Task<DataRefreshRecord> GetRecord(int recordId)
