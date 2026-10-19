@@ -12,7 +12,10 @@ internal class ComputeGenotypeSetsRequest
     /// <summary>A typing to compute, for example a patient's. Give this or <see cref="ExternalDonorCodes"/>, not both.</summary>
     public PhenotypeInfoTransfer<string> HlaTyping { get; set; }
 
-    /// <summary>At most 20 donors. Their typing and their registry and ethnicity codes are read from the active matching database.</summary>
+    /// <summary>
+    /// At most 20 donors. Their typing and their registry and ethnicity codes are read from the matching database that
+    /// <see cref="Database"/> names (the active one by default).
+    /// </summary>
     public List<string> ExternalDonorCodes { get; set; }
 
     /// <summary>
@@ -36,6 +39,25 @@ internal class ComputeGenotypeSetsRequest
     /// </summary>
     public bool Save { get; set; }
 
+    /// <summary>
+    /// Compares each computed set with its stored row, as search reads it, and gives a parity result for each set. Not with
+    /// <c>Save</c>.
+    /// </summary>
+    public bool CompareWithStored { get; set; }
+
+    /// <summary>
+    /// The matching database to read: <c>Active</c> (when it is not given) or <c>Dormant</c>. Data Refresh writes to the
+    /// dormant database, so <c>Dormant</c> checks its rows before the databases swap. The sets are then computed at the
+    /// nomenclature version of the latest refresh that wrote to it. Not <c>Dormant</c> with <c>Save</c>.
+    /// </summary>
+    public TransientDatabaseRole? Database { get; set; }
+
+    /// <summary>
+    /// With <c>CompareWithStored</c>: the most differences to give for one genotype set, from 1 to 1,000. When it is not
+    /// given, 10. All the differences are counted.
+    /// </summary>
+    public int? MaxDifferencesPerRow { get; set; }
+
     public GenotypeSetDebugRequest ToGenotypeSetDebugRequest() => new()
     {
         HlaTyping = HlaTyping?.ToPhenotypeInfo(),
@@ -44,6 +66,9 @@ internal class ComputeGenotypeSetsRequest
         HaplotypeFrequencySetId = HaplotypeFrequencySetId,
         AllowedLociKeys = AllowedLociKeys,
         IncludeGenotypes = IncludeGenotypes,
-        Save = Save
+        Save = Save,
+        CompareWithStored = CompareWithStored,
+        Database = Database ?? TransientDatabaseRole.Active,
+        MaxDifferencesPerRow = MaxDifferencesPerRow ?? GenotypeSetDebugRequest.DefaultMaxDifferencesPerRow
     };
 }

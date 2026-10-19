@@ -36,7 +36,8 @@ public class PrecomputeDebugFunctions
     /// Computes the genotype set of a typing, or of up to 20 donors, live, with the engine of the pre-computation and of
     /// search. Returns the typing key, the frequency set, the genotype count, the sum of likelihoods and the size of the
     /// stored data, and the genotypes on request. With <c>Save</c>, it also stores the sets in the active matching
-    /// database, where the app setting <c>Debug:AllowPrecomputeWrites</c> allows it.
+    /// database, where the app setting <c>Debug:AllowPrecomputeWrites</c> allows it. With <c>CompareWithStored</c>, it
+    /// compares each set with its stored row, in the active or the dormant database, and gives a parity result.
     /// </summary>
     /// <remarks>
     /// Each donor is imputed once for each locus combination, which can be slow. The request must finish within the HTTP
