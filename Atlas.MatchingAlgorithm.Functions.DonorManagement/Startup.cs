@@ -1,5 +1,6 @@
 using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Caching;
 using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchingAlgorithm.DependencyInjection;
@@ -48,12 +49,17 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement
                 OptionsReaderFor<GenotypeImputationSettings>(),
                 ConnectionStringReader("MatchPredictionSql")
             );
+
+            // The cache that this app shares, through Redis, with its other instances and the other Atlas apps. Off when
+            // DistributedCache:ConnectionString is empty.
+            services.RegisterDistributedCacheTypes(OptionsReaderFor<DistributedCacheSettings>());
         }
 
         private static void RegisterSettings(IServiceCollection services)
         {
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
             services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
+            services.RegisterAsOptions<DistributedCacheSettings>("DistributedCache");
             services.RegisterAsOptions<DonorManagementSettings>("MessagingServiceBus:DonorManagement");
             services.RegisterAsOptions<GenotypeImputationSettings>("GenotypeImputation");
             services.RegisterAsOptions<HaplotypeFrequencySetCacheSettings>("HaplotypeFrequencySetCache");

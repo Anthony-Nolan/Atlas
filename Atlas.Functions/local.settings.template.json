@@ -44,6 +44,9 @@
 
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
 
+    "DistributedCache:ConnectionString": "",
+    "DistributedCache:ManagedIdentityClientId": "",
+
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
 
     "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",

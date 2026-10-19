@@ -1,4 +1,5 @@
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Caching;
 using Atlas.Common.ServiceBus.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
@@ -34,6 +35,10 @@ public static class Startup
             OptionsReaderFor<MacDictionarySettings>(),
             OptionsReaderFor<GenotypeImputationSettings>(),
             ConnectionStringReader("MatchPredictionSql"));
+
+        // The cache that this app shares, through Redis, with its other replicas and the other Atlas apps. Off when
+        // DistributedCache:ConnectionString is empty.
+        services.RegisterDistributedCacheTypes(OptionsReaderFor<DistributedCacheSettings>());
 
         // The logger of the repository factory.
         services.AddScoped<MatchingAlgorithmImportLoggingContext>();
