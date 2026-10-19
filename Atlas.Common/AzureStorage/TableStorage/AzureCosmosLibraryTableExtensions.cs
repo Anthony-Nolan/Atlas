@@ -32,7 +32,7 @@ namespace Atlas.Common.AzureStorage.TableStorage
         internal const int MaxBatchRequestBytes = 3 * 1024 * 1024;
 
         /// <summary>
-        /// Allows for the multipart headers and the request line (which holds the keys) of each operation in the batch.
+        /// Allows for the multipart headers and the request line (which holds the table URL) of each operation in the batch.
         /// </summary>
         private const int RequestOverheadBytesPerEntity = 1024;
 
