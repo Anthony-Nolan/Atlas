@@ -45,6 +45,9 @@ Feature flags permit greater control over the release of new features (see this 
 * E: New debug endpoint on the Data Refresh functions app (`<ENV>-DATA-REFRESH-FUNCTION`): `POST debug/precompute/genotypeSets/compute`. It computes the precomputed genotype set of a typing, or of up to 20 donors, live, with the engine of the pre-computation and of search. It returns the typing key, the haplotype frequency set, the genotype count, the sum of likelihoods, the size of the stored data, and on request the genotypes. With `Save`, it also stores the sets in the active matching database. A new app setting, `Debug:AllowPrecomputeWrites` (Terraform variable `MATCHING_DEBUG_ALLOW_PRECOMPUTE_WRITES`, default `false`), allows this. Turn it on in test environments only. The endpoint is in the Data Refresh app, not in the matching algorithm app, so that its imputations do not compete with searches. See the [Match Prediction README](/README_MatchPredictionAlgorithm.md#checking-stored-genotype-sets-debug-endpoint).
 * See [ADR 010](/ArchitecturalDecisionRecord/Phase2/010-Publish_Debug_Client.md#update-2).
 
+### 4.0.1
+* BF: A data refresh to HLA nomenclature version 3660 no longer fails while it recreates the HLA Metadata Dictionary. Batch inserts into Azure Table Storage now also have a size limit, not only a limit of 50 rows. Before, a batch of large rows (such as the serology to alleles lookup) could exceed the 4 MiB limit of a table batch, and the storage service rejected it (`413 RequestBodyTooLarge`). This change also applies to the import of the Multiple Allele Code Dictionary, which uses the same batch insert.
+
 ### 3.0.0
 * E: Updated .NET version from 6.0 to 8.0
 
