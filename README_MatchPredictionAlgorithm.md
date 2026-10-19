@@ -311,7 +311,9 @@ computed live even when the batch has a key.
 ## Checking stored genotype sets (debug endpoint)
 SQL can show which stored rows exist, and their key, frequency set and "unrepresented" flag. It cannot read the stored
 data, and it cannot make the typing key of a typing. The debug endpoint `POST debug/precompute/genotypeSets/compute`
-on the Data Refresh functions app (`<ENV>-DATA-REFRESH-FUNCTION`, function key needed) does these parts.
+on the Data Refresh functions app (`<ENV>-DATA-REFRESH-FUNCTION`, function key needed) does these parts. It can also
+compare the stored rows with a live computation (the parity check, below). This gives the evidence that the stored sets
+are the same as the live sets, before `MatchPrediction:Precompute:Mode` changes from `ForceLive`.
 
 **Why the Data Refresh app.** One request can impute up to 80 sets (20 donors, 4 locus combinations), and each frequency
 set that it loads stays in the app's cache for up to an hour. In the matching algorithm app, which runs searches, that
@@ -320,14 +322,15 @@ pipeline and its settings, and it is the app that writes the stored sets (stage 
 80). So the endpoint can also be used in LIVE, where it only reads.
 
 - **Input.** One typing (`HlaTyping`, for example a patient's), or up to 20 donors (`ExternalDonorCodes`). For donors,
-  the typing and the registry and ethnicity codes are read from the active matching database.
+  the typing and the registry and ethnicity codes are read from the matching database that `Database` names: the active
+  one by default (see the dormant database, below).
 - **Frequency set.** By default, it is chosen with the rules of search: the donor's codes, or `FrequencySetMetadata` for
   a typing (the global set when this is not given). `HaplotypeFrequencySetId` uses exactly that set, even when it is no
   longer active. `IsActive` in the response says whether search would choose the set now.
 - **Computation.** Each locus combination of `AllowedLociKeys` (all four by default) is imputed live, with the engine
-  that the pre-computation and search use, at the nomenclature version of the active database. The response gives the
-  typing key (`HlaTypingKey`, for SQL), `IsUnrepresented`, the genotype count, the sum of likelihoods and the size of the
-  stored data. `IncludeGenotypes` also returns each genotype and its exact likelihood.
+  that the pre-computation and search use, at the nomenclature version of the database that it reads. The response
+  gives the typing key (`HlaTypingKey`, for SQL), `IsUnrepresented`, the genotype count, the sum of likelihoods and the
+  size of the stored data. `IncludeGenotypes` also returns each genotype and its exact likelihood.
 - **Save.** With `Save`, it stores the sets in the active database. It finds or creates the value rows, and reports each
   value row as `Created` or `AlreadyExisted`. Then it writes the link rows of each donor whose requested values are all
   stored, for the requested combinations only. It replaces the link rows that the donor has for these combinations. In
@@ -346,8 +349,10 @@ pipeline and its settings, and it is the app that writes the stored sets (stage 
   Saving is allowed only when the app setting `Debug:AllowPrecomputeWrites` is `true` (Terraform variable
   `MATCHING_DEBUG_ALLOW_PRECOMPUTE_WRITES`). Turn it on in test environments only, because search reads these rows.
   When it is off, a request that saves gets `403` and changes nothing. A save never writes to the dormant database.
-- **Errors.** An error of one donor or of one combination is given in its entry and does not fail the request. A request
-  that is not valid gets `400`. If no data refresh has completed, the request gets `409`.
+- **Errors.** An error of one donor or of one combination is given in its entry and does not fail the request. If the
+  donors cannot be read, each donor code gives that error, with `Found` false. A request that is not valid gets `400`.
+  If no data refresh has completed, or the request reads the dormant database and no refresh has written to it, the
+  request gets `409`.
 - **Time.** Each donor is imputed once for each combination, and the request must finish within the HTTP limit of 230
   seconds. If the request takes longer, the caller gets `502`, but the request continues in the app and can still save.
   To find out, look for the rows with SQL, or send the request again: a second save finds the rows and reports
@@ -359,6 +364,61 @@ pipeline and its settings, and it is the app that writes the stored sets (stage 
   app restart, after which the refresh continues only when its lease and the watchdog allow. Calls during stage 65 are
   safe, because the precompute workers, not this app, do the imputations of that stage. To see which stage a refresh is
   in, see the stage completion columns of `DataRefreshHistory`.
+
+### Parity check (`CompareWithStored`)
+With `CompareWithStored`, each computed set is compared with its stored row, as search reads it. It only reads, so it
+can also check the stored rows of LIVE. It cannot be used with `Save`, because a save changes the rows that it reads.
+- **Which row.** For a donor: the value row that the donor's link row points to. For a typing, for example a patient's
+  row that the warm step of search stored: the value row with the key of the live set. The key includes the frequency
+  set, so a row of an older set is not found. To check such a row, give its `HaplotypeFrequencySetId`. For a donor,
+  `HaplotypeFrequencySetId` changes only the set of the live computation, not the row that is read. So give it only to
+  check a row that was stored with that set, for example after a save with an older set. If search has stored the row
+  again with the set that it uses (see Save, above), send the request without it. For that row, a request with it gives
+  `Mismatch`, and the first difference is `HaplotypeFrequencySet`, with the two set ids. If the row has another set than
+  the set that search uses, the result is `StaleFrequencySet`.
+- **What is compared.** The stored data is decoded and compared with the live set: the frequency set of the row,
+  `IsUnrepresented`, the genotype count, the sum of likelihoods, and each genotype (its two resolutions and its
+  likelihood). The order of the genotypes does not matter. The two positions of a locus are compared as they are: the
+  engine is deterministic, so a swap is a difference. Likelihoods are compared by value, with no rounding and no
+  tolerance: `1.10` and `1.1` are equal. As in search, an unrepresented row is the empty set.
+- **Result.** Each set gets a `ParityCheck` with one `Result`. When more than one result applies, the result is the
+  first in this table, which is the order of the checks of search.
+
+| `Result` | Meaning |
+|---|---|
+| `Error` | The live computation failed, or the stored row could not be read. `Error` gives the text. |
+| `NoStoredRow` | No row is stored. |
+| `TypingChanged` | Donors only. The stored row was computed from another typing (`StoredHlaTypingKey`) than the donor's typing now (`HlaTypingKey`). Search does not use the row. |
+| `StaleFrequencySet` | Donors only. The stored row has another frequency set (`StoredHaplotypeFrequencySetId`) than the set that search would use now (`SearchHaplotypeFrequencySetId`). Search computes the donor live. |
+| `DecodeFailed` | The stored data cannot be decoded. `DecodeError` gives the text. |
+| `Mismatch` | The stored set is not the same as the live set. |
+| `Match` | The stored set is the same as the live set. |
+
+- **Differences.** The comparison also runs for `TypingChanged` and `StaleFrequencySet`, to show the effect. When the
+  row has another frequency set than the live set, the first difference is `HaplotypeFrequencySet`: the other
+  differences then come from the two sets, not from the stored data.
+  `DifferenceCount` gives the number of differences, and `Differences` gives the first `MaxDifferencesPerRow` of them
+  (10 by default, from 1 to 1,000). Each difference gives the live and the stored value as text with all their digits,
+  because a client that reads a JSON number as a double can round two different likelihoods to the same number.
+- **Totals.** The response also gives `ParityCounts` (the number of sets with each result, also when it is 0),
+  `DonorsNotFound`, and `SubjectErrors`: the subjects that failed as a whole, so that they have no sets to compare, for
+  example because the donors could not be read. For evidence that the stored sets are correct, every count in
+  `ParityCounts` except `Match` must be 0, and so must `DonorsNotFound` and `SubjectErrors`.
+- **After a frequency set import.** Each app keeps the active frequency sets in a cache for
+  `HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes` (5 minutes by default). An import clears only the cache of
+  the app that imports. So for that time, this app and search can still choose the old set. Wait that long before you
+  check for `StaleFrequencySet`.
+
+### The dormant database (`Database`)
+With `Database` set to `Dormant`, the endpoint reads the other matching database, which Data Refresh writes to: its
+donors and its stored rows. So it can check the rows of stage 65 before the databases swap, for example while a refresh
+is paused for a manual decision. During stage 65, the donors that are not done yet give `NoStoredRow`.
+- **Version.** The sets are computed at the nomenclature version of the latest refresh that wrote to the database: an
+  open refresh that is filling it, or the last refresh that filled it. A refresh writes to the database from the end of
+  its data deletion stage. If no refresh has written to it, the request gets `409`.
+- **A paused database.** A serverless dormant database can be paused. The first read starts it again, but that read
+  fails (SQL error 40613). The donors, or the stored rows, then give that error. Call again after about a minute.
+- **Read only.** The endpoint never writes to the dormant database, so `Dormant` cannot be used with `Save`.
 
 ## Match Prediction Requests
 - Match prediction requests (outside of search) can be submitted to the http-triggered function within the Match prediction project.
