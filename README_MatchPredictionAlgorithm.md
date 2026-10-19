@@ -373,8 +373,9 @@ can also check the stored rows of LIVE. It cannot be used with `Save`, because a
   set, so a row of an older set is not found. To check such a row, give its `HaplotypeFrequencySetId`. For a donor,
   `HaplotypeFrequencySetId` changes only the set of the live computation, not the row that is read. So give it only to
   check a row that was stored with that set, for example after a save with an older set. If search has stored the row
-  again with the set that it uses (see Save, above), send the request without it. If you give it, the result is
-  `Mismatch`, and the first difference is `HaplotypeFrequencySet`, with the two set ids.
+  again with the set that it uses (see Save, above), send the request without it. For that row, a request with it gives
+  `Mismatch`, and the first difference is `HaplotypeFrequencySet`, with the two set ids. If the row has another set than
+  the set that search uses, the result is `StaleFrequencySet`.
 - **What is compared.** The stored data is decoded and compared with the live set: the frequency set of the row,
   `IsUnrepresented`, the genotype count, the sum of likelihoods, and each genotype (its two resolutions and its
   likelihood). The order of the genotypes does not matter. The two positions of a locus are compared as they are: the
