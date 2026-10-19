@@ -2,23 +2,23 @@
 # Manual edits may be lost in future updates.
 
 provider "registry.terraform.io/hashicorp/azurerm" {
-  version     = "4.74.0"
-  constraints = "4.74.0"
+  version     = "5.9.0"
+  constraints = "5.9.0"
   hashes = [
-    "h1:PBiXTNz3vQjxlmEEO4ZwaEPms8ztbtf+NIIUuyDgtwI=",
-    "h1:yvqCYq9U8R+ujUFUFM1lHLvJqd+s5iqFO5MqCiqoHFA=",
-    "zh:004decccb53c332710894b890f3a5fd724aeeb440c32a8d337d6a2fe9f4427cc",
-    "zh:10ee232dfa76c987cbd226f81f825bbbe36786a8097fcb811ff655f2b471959c",
-    "zh:43ffac27efbbcc741ec6e0e96e0def151ddb04d7ce7fd0b67032dc4cdaa20e90",
-    "zh:459438a78b6cb43ba09e2c11832c6234848a08ab264dc2efe809db8b073057d6",
-    "zh:4f156cb69b8ed3d43b52fd90106d06609736019bc79faf6c1695aa942bbdade4",
+    "h1:64seBtS9R9PK0V9u/SY+fGeUWYUj92C+CR0pkKdH8fU=",
+    "h1:d4Pss+4L4JJQEFbw6dgQlCc4IroeMHkMjfxab+RsSSQ=",
+    "zh:1c2dca15d1c24bcd98fb4d163bfcaad9cfb6cfda8b9965297fcaa918dfadc5f0",
+    "zh:3d3ad0a26eb7058f61f412722bf9d03795eb23bf97d693fdc8cbebe830090116",
+    "zh:44a755607e385f5811e6eb2f73016f9bab73340d138528da73bb0cf994f7524f",
+    "zh:46445bfad9348b0fe5b67e96a5f380070658e8197c2ae2cbf4ad1c3a63181d2e",
+    "zh:5e29b89e72632a90660e112df3cd66381f18e251933ae30b1a2e6ce90010586e",
     "zh:78d5eefdd9e494defcb3c68d282b8f96630502cac21d1ea161f53cfe9bb483b3",
-    "zh:921285f6e9beb02a7482bb8036e6b032255bc0c4aa61a11def63870c1ee10672",
-    "zh:994cf51bdc8aefa7e8a93474a322c9231df3512e85bc603c9295343ebc31228c",
-    "zh:9c6136ed2ae6cbbbfc57e74cdd7b83af9faea5ca3c7e3fa82877aca0b215fd27",
-    "zh:a0349f105af1882bf9d795a6fdac2fbe71f2e588ca6f4587b87de7b5423a0be8",
-    "zh:c7a91501928e23d5d8f088909aaa633a13d5f032fbc2043c6618305beb090058",
-    "zh:f11cb049e16a459f799c4f394ac20f8e9b3d0ef210cf56cb0850e0beffeaf4e1",
+    "zh:85a73cddbfc5f14af00ac3f4564588005ae5b87e50b81d09a29ce63d0d486d2b",
+    "zh:aa47ad909ce010d56ba6077bd1659d3dd1c89700527fa9c0538d03c61e14f1ba",
+    "zh:baabe9098de552aac2888a6bb43d4a34d8cedb7f3e7d030d4fcdee7b15acda6e",
+    "zh:c5d2d0d2ae868abe15684fe5cf52b8d36f9352e3fc246143f723eab9b603a48e",
+    "zh:e33f2f7b629424804d82765552e0c2af0fd5e0714fdab322ce91f7ac955f455d",
+    "zh:eecefc94b21cf555ba5147e6813cdb036d2cc55097b5b0c3019d910b92183981",
   ]
 }
 
