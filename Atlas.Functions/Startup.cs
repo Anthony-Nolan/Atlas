@@ -1,6 +1,7 @@
 using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
+using Atlas.Common.Caching;
 using Atlas.Common.Notifications;
 using Atlas.Common.ServiceBus;
 using Atlas.Common.ServiceBus.DependencyInjection;
@@ -86,6 +87,8 @@ namespace Atlas.Functions
 
             // This app caches HLA Metadata Dictionary data, so it has to be told when the dictionary is recreated.
             services.RegisterHlaMetadataDictionaryCacheInvalidation();
+
+            services.RegisterDistributedCacheTypes(OptionsReaderFor<DistributedCacheSettings>());
         }
 
         private static void RegisterSettings(IServiceCollection services)
@@ -97,6 +100,7 @@ namespace Atlas.Functions
 
             // Shared settings
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
+            services.RegisterAsOptions<DistributedCacheSettings>("DistributedCache");
             services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
             services.RegisterAsOptions<SearchTrackingServiceBusSettings>("SearchTrackingServiceBus");
 

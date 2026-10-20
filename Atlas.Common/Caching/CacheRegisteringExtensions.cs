@@ -1,7 +1,13 @@
-﻿using LazyCache;
+﻿using System;
+using LazyCache;
 using LazyCache.Providers;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Atlas.Common.Caching
 {
@@ -37,6 +43,71 @@ namespace Atlas.Common.Caching
 
                 return new PersistentCacheProvider(MakeCache(lifeTime, underlyingCache), underlyingCache);
             });
+        }
+
+        /// <summary>
+        /// Registers <see cref="IDistributedCacheProvider"/>: the distributed cache in Redis, or a cache that keeps nothing
+        /// when <see cref="DistributedCacheSettings.ConnectionString"/> is empty.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Safe to call more than once, e.g. from two components of the same host: only the first call registers.
+        /// </para>
+        ///
+        /// <para>
+        /// Nothing connects to Redis here, nor when the provider is constructed: the connection opens on the first read or
+        /// write. A connection string that is not valid is logged as an error, and the app then runs without the cache,
+        /// as the cache is never a dependency.
+        /// </para>
+        ///
+        /// <para>
+        /// Deliberately does not register <see cref="IDistributedCache"/>: other libraries would pick it up, and callers
+        /// could reach Redis around the provider, which keeps the faults of Redis from them.
+        /// </para>
+        /// </remarks>
+        public static void RegisterDistributedCacheTypes(
+            this IServiceCollection services,
+            Func<IServiceProvider, DistributedCacheSettings> fetchDistributedCacheSettings)
+        {
+            services.TryAddSingleton(TimeProvider.System);
+            services.TryAddSingleton<IDistributedCacheMetrics, DistributedCacheMetrics>();
+            services.TryAddSingleton(sp => MakeDistributedCacheProvider(sp, fetchDistributedCacheSettings(sp)));
+        }
+
+        private static IDistributedCacheProvider MakeDistributedCacheProvider(IServiceProvider serviceProvider, DistributedCacheSettings settings)
+        {
+            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+
+            if (string.IsNullOrWhiteSpace(settings.ConnectionString))
+            {
+                return new DisabledDistributedCacheProvider(loggerFactory.CreateLogger<DisabledDistributedCacheProvider>());
+            }
+
+            try
+            {
+                // To find a connection string that is not valid now. Each connection attempt builds its own options.
+                RedisConnection.BuildOptions(settings);
+            }
+            catch (ArgumentException exception)
+            {
+                // Not the connection string itself: a connection string can hold a password.
+                loggerFactory.CreateLogger<DistributedCacheProvider>().LogError(
+                    exception,
+                    "The distributed cache connection string is not valid. The app runs without the distributed cache.");
+                return new DisabledDistributedCacheProvider(loggerFactory.CreateLogger<DisabledDistributedCacheProvider>());
+            }
+
+            var timeProvider = serviceProvider.GetRequiredService<TimeProvider>();
+            var store = new RedisCache(Options.Create(new RedisCacheOptions
+            {
+                ConnectionMultiplexerFactory = RedisConnection.ConnectionFactory(settings, timeProvider)
+            }));
+
+            return new DistributedCacheProvider(
+                store,
+                serviceProvider.GetRequiredService<IDistributedCacheMetrics>(),
+                loggerFactory.CreateLogger<DistributedCacheProvider>(),
+                timeProvider);
         }
 
         private static CachingService MakeCache(int lifeTimeSeconds, MemoryCache underlyingCache = null)

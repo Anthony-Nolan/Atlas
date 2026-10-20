@@ -1,5 +1,6 @@
 ﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
+using Atlas.Common.Caching;
 using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
@@ -53,6 +54,8 @@ public static class Startup
 
         // This app caches HLA Metadata Dictionary data, so it has to be told when the dictionary is recreated.
         services.RegisterHlaMetadataDictionaryCacheInvalidation();
+
+        services.RegisterDistributedCacheTypes(OptionsReaderFor<DistributedCacheSettings>());
 
         services.RegisterMatchPredictionRequester(
             OptionsReaderFor<MessagingServiceBusSettings>(),

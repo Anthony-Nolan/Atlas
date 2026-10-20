@@ -1,4 +1,5 @@
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Caching;
 using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
@@ -60,6 +61,8 @@ namespace Atlas.MatchingAlgorithm.Functions.DataRefresh
                 OptionsReaderFor<GenotypeImputationSettings>(),
                 OptionsReaderFor<DebugSettings>(),
                 ConnectionStringReader("MatchPredictionSql"));
+
+            services.RegisterDistributedCacheTypes(OptionsReaderFor<DistributedCacheSettings>());
         }
 
         private static void RegisterSettings(IServiceCollection services)
@@ -70,6 +73,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DataRefresh
             services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
             services.RegisterAsOptions<DataRefreshSettings>("DataRefresh");
             services.RegisterAsOptions<DebugSettings>("Debug");
+            services.RegisterAsOptions<DistributedCacheSettings>("DistributedCache");
             services.RegisterAsOptions<DonorGenotypePrecomputationSettings>("DataRefresh:Precompute");
             services.RegisterAsOptions<DonorManagementSettings>("DataRefresh:DonorManagement");
             services.RegisterAsOptions<GenotypeImputationSettings>("GenotypeImputation");

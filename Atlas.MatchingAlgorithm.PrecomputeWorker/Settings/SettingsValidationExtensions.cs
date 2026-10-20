@@ -1,4 +1,5 @@
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
@@ -17,6 +18,7 @@ internal static class SettingsValidationExtensions
     public static void AddWorkerValidatedOptions(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddOptions<ApplicationInsightsSettings>(configuration, "ApplicationInsights");
+        services.AddOptions<DistributedCacheSettings>(configuration, "DistributedCache");
         services.AddValidatedOptions<HlaMetadataDictionarySettings, HlaMetadataDictionarySettingsValidator>(configuration, "HlaMetadataDictionary");
         services.AddOptions<HaplotypeFrequencySetCacheSettings>(configuration, "HaplotypeFrequencySetCache");
         services.AddOptions<GenotypeImputationSettings>(configuration, "GenotypeImputation");
