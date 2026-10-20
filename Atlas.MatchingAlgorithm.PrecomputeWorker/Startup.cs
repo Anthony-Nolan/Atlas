@@ -36,8 +36,6 @@ public static class Startup
             OptionsReaderFor<GenotypeImputationSettings>(),
             ConnectionStringReader("MatchPredictionSql"));
 
-        // The cache that this app shares, through Redis, with its other replicas and the other Atlas apps. Off when
-        // DistributedCache:ConnectionString is empty.
         services.RegisterDistributedCacheTypes(OptionsReaderFor<DistributedCacheSettings>());
 
         // The logger of the repository factory.

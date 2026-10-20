@@ -36,6 +36,8 @@ namespace Atlas.Common.Caching
     /// metric is not. Query: <c>customMetrics | where name startswith "DistributedCache."</c>, split by
     /// <c>customDimensions.Cache</c>, <c>customDimensions.Operation</c> and <c>customDimensions.Result</c>. The hit ratio of
     /// a cache is its count of <c>Get</c> calls with the result <c>Hit</c>, divided by its count of all <c>Get</c> calls.
+    /// For the latency of a cache, use only the results <c>Hit</c>, <c>Miss</c> and <c>Succeeded</c>: a <c>Skipped</c>
+    /// call, and a <c>Failed</c> call while there is no connection, take almost no time.
     /// </remarks>
     internal interface IDistributedCacheMetrics
     {

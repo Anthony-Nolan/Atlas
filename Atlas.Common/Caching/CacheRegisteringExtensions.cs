@@ -97,16 +97,17 @@ namespace Atlas.Common.Caching
                 return new DisabledDistributedCacheProvider(loggerFactory.CreateLogger<DisabledDistributedCacheProvider>());
             }
 
+            var timeProvider = serviceProvider.GetRequiredService<TimeProvider>();
             var store = new RedisCache(Options.Create(new RedisCacheOptions
             {
-                ConnectionMultiplexerFactory = RedisConnection.ConnectionFactory(settings)
+                ConnectionMultiplexerFactory = RedisConnection.ConnectionFactory(settings, timeProvider)
             }));
 
             return new DistributedCacheProvider(
                 store,
                 serviceProvider.GetRequiredService<IDistributedCacheMetrics>(),
                 loggerFactory.CreateLogger<DistributedCacheProvider>(),
-                serviceProvider.GetRequiredService<TimeProvider>());
+                timeProvider);
         }
 
         private static CachingService MakeCache(int lifeTimeSeconds, MemoryCache underlyingCache = null)

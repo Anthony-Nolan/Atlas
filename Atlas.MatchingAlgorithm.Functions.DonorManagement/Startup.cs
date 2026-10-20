@@ -50,8 +50,6 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement
                 ConnectionStringReader("MatchPredictionSql")
             );
 
-            // The cache that this app shares, through Redis, with its other instances and the other Atlas apps. Off when
-            // DistributedCache:ConnectionString is empty.
             services.RegisterDistributedCacheTypes(OptionsReaderFor<DistributedCacheSettings>());
         }
 

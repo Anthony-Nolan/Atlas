@@ -63,8 +63,9 @@ namespace Atlas.Common.Caching
     internal sealed class DistributedCacheProvider : IDistributedCacheProvider, IDisposable
     {
         // The circuit opens when half of the calls in the sampling duration fail. Then no call goes to the store for the
-        // break duration, so a store that is down or slow costs the callers nothing. The break is longer than a failover
-        // of Azure Managed Redis, so the probe call after it usually finds Redis available again.
+        // break duration, so in a burst of calls a store that is down or slow costs the callers nothing. At low traffic
+        // the circuit does not open: there, RedisConnection.CommandTimeout limits the cost of each call. The break is
+        // longer than a failover of Azure Managed Redis, so the probe call after it usually finds Redis available again.
         internal const double BreakerFailureRatio = 0.5;
         internal const int BreakerMinimumThroughput = 10;
         internal static readonly TimeSpan BreakerSamplingDuration = TimeSpan.FromSeconds(30);

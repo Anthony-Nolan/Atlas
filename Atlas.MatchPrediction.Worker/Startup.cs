@@ -55,8 +55,6 @@ public static class Startup
         // This app caches HLA Metadata Dictionary data, so it has to be told when the dictionary is recreated.
         services.RegisterHlaMetadataDictionaryCacheInvalidation();
 
-        // The cache that this app shares, through Redis, with its other replicas and the other Atlas apps. Off when
-        // DistributedCache:ConnectionString is empty.
         services.RegisterDistributedCacheTypes(OptionsReaderFor<DistributedCacheSettings>());
 
         services.RegisterMatchPredictionRequester(
