@@ -98,15 +98,29 @@ namespace Atlas.MatchingAlgorithm.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DonorId")
-                        .HasDatabaseName("FI_DonorIdsWithoutLocusDQB1")
-                        .HasFilter("[DQB1_1] IS NULL AND [DQB1_2] IS NULL");
-
-                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("DonorId"), new[] { "DQB1_1", "DQB1_2" });
-
                     b.HasIndex("ExternalDonorCode");
 
                     b.HasIndex("DonorType", "RegistryCode");
+
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("DonorType", "RegistryCode"), new[] { "DonorId" });
+
+                    b.HasIndex(new[] { "DonorId" }, "FI_DonorIdsWithoutLocusC")
+                        .HasFilter("[C_1] IS NULL AND [C_2] IS NULL");
+
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex(new[] { "DonorId" }, "FI_DonorIdsWithoutLocusC"), new[] { "C_1", "C_2" });
+
+                    b.HasIndex(new[] { "DonorId" }, "FI_DonorIdsWithoutLocusDQB1")
+                        .HasFilter("[DQB1_1] IS NULL AND [DQB1_2] IS NULL");
+
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex(new[] { "DonorId" }, "FI_DonorIdsWithoutLocusDQB1"), new[] { "DQB1_1", "DQB1_2" });
+
+                    b.HasIndex(new[] { "DonorId" }, "IX_DonorId");
+
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex(new[] { "DonorId" }, "IX_DonorId"), new[] { "DonorType", "RegistryCode" });
+
+                    b.HasIndex(new[] { "DonorType" }, "IX_DonorType__DonorId");
+
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex(new[] { "DonorType" }, "IX_DonorType__DonorId"), new[] { "DonorId" });
 
                     b.ToTable("Donors");
                 });
