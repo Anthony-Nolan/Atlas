@@ -52,6 +52,13 @@ Staging, truncated when the run completes. The donors of each group: four rows p
 
 * `GroupId`, `DonorId` - the clustered primary key
 
+## 4.0.1
+- Covering columns added to two indexes on the `Donors` table, by migration `20260826104901_Add_Covering_Columns_to_Donors_Indexes`:
+  - `IX_Donors_DonorType_RegistryCode` now includes `DonorId`.
+  - `IX_DonorId` now includes `DonorType` and `RegistryCode`.
+- The migration must run on **both** transient databases (A and B).
+- It rebuilds each index online (`DROP_EXISTING = ON, ONLINE = ON`), so the index stays in use during the rebuild. It does nothing for an index that already has the right covering columns, for example where they were added by hand. On large databases, the rebuild can be done before the release with `SqlScripts/20260821-ATL-310-AddCoveringColumnsToDonorsIndexes.sql`. The migration then only records itself as applied.
+
 ## 3.0.0
 * Updated .NET version from 6.0 to 8.0
 
