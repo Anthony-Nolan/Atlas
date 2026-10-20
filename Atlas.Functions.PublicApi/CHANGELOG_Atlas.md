@@ -48,6 +48,7 @@ Feature flags permit greater control over the release of new features (see this 
 
 ### 4.0.1
 * BF: A data refresh to HLA nomenclature version 3660 no longer fails while it recreates the HLA Metadata Dictionary. Batch inserts into Azure Table Storage now also have a size limit, not only a limit of 50 rows. Before, a batch of large rows (such as the serology to alleles lookup) could exceed the 4 MiB limit of a table batch, and the storage service rejected it (`413 RequestBodyTooLarge`). This change also applies to the import of the Multiple Allele Code Dictionary, which uses the same batch insert.
+* BF: Faster matching searches. The two indexes on the `Donors` table of the matching algorithm databases that the donor join uses now have covering columns: `IX_Donors_DonorType_RegistryCode` includes `DonorId`, and `IX_DonorId` includes `DonorType` and `RegistryCode`. Before, SQL Server had to read the table for every candidate donor, and searches could time out. See [the data changelog](/Atlas.MatchingAlgorithm.Data/CHANGELOG_Data.md#401) for the migration.
 
 ### 3.0.0
 * E: Updated .NET version from 6.0 to 8.0
