@@ -1,6 +1,9 @@
 # This workflow will:
 # * Identify creation of (but not updates to) release candidate branches, as denoted by `rc/*`
 # * Bump the minor version of the service on the *master* branch
+#
+# Hotfix branches (`hotfix/*`) are not handled here: a hotfix PR sets its patch version by hand.
+# See README_Contribution_Versioning.md.
 
 name: Post Release Candidate Branch Creation
 
@@ -8,14 +11,24 @@ on:
   # Runs on create of *any* branch. See https://github.community/t/trigger-job-on-branch-created/16878/5 - cannot currently trigger on create and filter by branch.
   # We can either manually filter, or only trigger on push - and we don't want to bump the version every time we push to an rc branch!
   create:
-  # Allows you to run this workflow manually from the Actions tab
+  # Allows you to run this workflow manually from the Actions tab: to test it with a dry run, or to bump master after a failed run.
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Bump and show the change, but do not push it to master'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  # Only for the issue that the failure step opens.
+  issues: write
 
 jobs:
   bump-version:
     name: Post Release Candidate Branch Creation
-    # Only run if *creating* an rc branch (excludes hotfix/* and all other branches)
-    if: ${{ contains(github.ref, 'refs/heads/rc/') }}
+    # Only run if *creating* an rc branch (excludes hotfix/* and all other branches), or when run by hand.
+    if: ${{ github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/heads/rc/') }}
     # Must run on windows - npm package used to bump version does not work on Ubuntu. https://github.com/vweevers/dotnet-bump/issues/1
     runs-on: windows-latest
 
@@ -24,16 +37,16 @@ jobs:
         with:
           # By default, will checkout the pushed branch. We want to bump the version on *master*
           ref: 'master'
+          # Otherwise checkout saves GITHUB_TOKEN in the git config, and git sends it instead of the app token on push.
+          # GITHUB_TOKEN cannot push to master: the master ruleset only accepts changes through a pull request, and lets
+          # only the release-cascade-bot app past that rule (as for the cascade merges, see cascade_merge_release_branches.yml).
+          persist-credentials: false
 
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
 
       - run: npm install -g dotnet-bump
-
-      # Cannot push without identification
-      - run: git config --global user.email ${{ github.actor }}
-      - run: git config --global user.name ${{ github.actor }}
 
       # dotnet-bump only understands a literal <Version> tag, not <VersionPrefix>, which Atlas
       # .csproj files use so that `dotnet pack --version-suffix` keeps working for CI prerelease
@@ -65,6 +78,53 @@ jobs:
           }
           echo "VERSION=$version" >> $env:GITHUB_ENV
 
-      - run: git add -A
-      - run: git commit -m "v${{ env.VERSION }}"
-      - run: git push
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.RELEASE_CASCADE_BOT_APP_ID }}
+          private-key: ${{ secrets.RELEASE_CASCADE_BOT_APP_PRIVATE_KEY }}
+
+      - name: Commit and push to master
+        shell: bash
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+        run: |
+          git config user.name "release-cascade-bot[bot]"
+          git config user.email "4664930+release-cascade-bot[bot]@users.noreply.github.com"
+
+          git add -A
+          git commit -m "v${VERSION}"
+          git show --stat HEAD
+
+          if [[ "$DRY_RUN" == "true" ]]; then
+            echo "Dry run - not pushing."
+            exit 0
+          fi
+
+          # master may have moved since the checkout. The bump commit only touches version lines, so it rebases cleanly.
+          git pull --rebase "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" master
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" HEAD:master
+
+      # A failed run used to go unnoticed, and master kept the old version (ATL-468). Make the failure visible.
+      - name: Report failure
+        if: ${{ failure() && inputs.dry_run != true }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          message="The minor version bump on master failed after ${GITHUB_REF_NAME} was created. master still has the old version.
+          Fix: run this workflow again by hand (Actions > Post Release Candidate Branch Creation > Run workflow, with dry_run unchecked),
+          or bump version.json and every csproj <VersionPrefix> on master in a pull request. Failed run: ${RUN_URL}"
+
+          echo "::error::${message}"
+          echo "$message" >> "$GITHUB_STEP_SUMMARY"
+          gh issue create --repo "${{ github.repository }}" \
+            --title "Version bump on master failed after ${GITHUB_REF_NAME} was created" \
+            --body "$message" \
+            --assignee "${{ github.actor }}" \
+            || gh issue create --repo "${{ github.repository }}" \
+              --title "Version bump on master failed after ${GITHUB_REF_NAME} was created" \
+              --body "@${{ github.actor }} $message"
