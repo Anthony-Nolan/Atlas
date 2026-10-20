@@ -2,6 +2,7 @@
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
@@ -28,10 +29,26 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 /// </summary>
 public interface IHaplotypeFrequencyCache
 {
+    /// <summary>
+    /// The active sets, by registry and ethnicity code. Each process keeps them for
+    /// <c>HaplotypeFrequencySetCacheSettings.ActiveSetCacheExpiryMinutes</c>, and then reads them from the distributed
+    /// cache, which all processes share. So a change that <see cref="RefreshActiveHaplotypeFrequencySets"/> stores reaches
+    /// every process within that time.
+    /// </summary>
+    /// <remarks>
+    /// The result is a snapshot: an operation that must use one set of active sets from start to end can keep it.
+    /// </remarks>
     Task<IReadOnlyDictionary<(string RegistryCode, string EthnicityCode), HaplotypeFrequencySet>> GetActiveHaplotypeFrequencySets();
 
-    /// <summary>Invalidates the active set cache, e.g. after a new set has been imported.</summary>
-    void RemoveActiveHaplotypeFrequencySets();
+    /// <summary>
+    /// Reads the active sets from the database, and stores them in this process and in the distributed cache, e.g. after
+    /// a new set has been imported. This process uses them at once.
+    /// </summary>
+    /// <returns>
+    /// <c>false</c> if the distributed cache did not store them. Other processes can then use the replaced sets until the
+    /// sets in the distributed cache expire.
+    /// </returns>
+    Task<bool> RefreshActiveHaplotypeFrequencySets();
 
     /// <summary>
     /// Returns the cached entry for the set, loading it from the database on first access. Loading also runs the
@@ -67,9 +84,22 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
 {
     private const string ActiveHaplotypeFrequencySetsCacheKey = "hf-active-sets";
 
+    /// <summary>
+    /// The key of the active sets in the distributed cache. Change the version in the cache name when the stored format
+    /// changes: during a deployment, the old and the new code read the same cache.
+    /// </summary>
+    internal static readonly DistributedCacheKey ActiveHaplotypeFrequencySetsDistributedCacheKey = new("hf-active-sets-v1", "all");
+
+    /// <summary>
+    /// How long the distributed cache keeps the active sets. Each change made through this class is written to it, so this
+    /// is only how long a change that was not written can stay unseen - e.g. a set activated by hand, with SQL.
+    /// </summary>
+    internal static readonly TimeSpan ActiveHaplotypeFrequencySetsDistributedCacheTimeToLive = TimeSpan.FromHours(24);
+
     internal static string AllFrequenciesCacheKey(int setId) => $"hf-set-{setId}";
 
     private readonly IAppCache cache;
+    private readonly IDistributedCacheProvider distributedCache;
     private readonly IFrequencySetResidencyTracker residencyTracker;
     private readonly IHaplotypeFrequenciesRepository frequencyRepository;
     private readonly IHaplotypeFrequencySetRepository frequencySetRepository;
@@ -79,6 +109,7 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
 
     public HaplotypeFrequencyCache(
         IHaplotypeFrequencySetCacheProvider cacheProvider,
+        IDistributedCacheProvider distributedCache,
         IFrequencySetResidencyTracker residencyTracker,
         IHaplotypeFrequenciesRepository frequencyRepository,
         IHaplotypeFrequencySetRepository frequencySetRepository,
@@ -87,6 +118,7 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
         IOptions<HaplotypeFrequencySetCacheSettings> cacheSettings)
     {
         cache = cacheProvider.Cache;
+        this.distributedCache = distributedCache;
         this.residencyTracker = residencyTracker;
         this.frequencyRepository = frequencyRepository;
         this.frequencySetRepository = frequencySetRepository;
@@ -98,28 +130,47 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
     /// <inheritdoc />
     public async Task<IReadOnlyDictionary<(string RegistryCode, string EthnicityCode), HaplotypeFrequencySet>> GetActiveHaplotypeFrequencySets()
     {
+        // GetOrAddAsync runs one factory at a time for the key, and concurrent callers wait for it. So when the distributed
+        // cache misses or cannot be reached, this process reads the database once for each local entry, not once for each
+        // caller.
         return await cache.GetOrAddAsync(
             ActiveHaplotypeFrequencySetsCacheKey,
             async () =>
             {
-                using (logger.RunTimed("Get active HF sets - from SQL database", LogLevel.Verbose))
+                var storedSets = await distributedCache.GetAsync(ActiveHaplotypeFrequencySetsDistributedCacheKey);
+                if (storedSets != null)
                 {
-                    var activeSets = await frequencySetRepository.GetAllActiveSets();
-                    return activeSets.ToDictionary(
-                        set => (set.RegistryCode, set.EthnicityCode),
-                        MapDataModelToClientModel
-                    );
+                    return ByRegistryAndEthnicity(JsonSerializer.Deserialize<List<HaplotypeFrequencySet>>(storedSets));
                 }
+
+                var activeSets = await GetActiveSetsFromDatabase();
+
+                // Sets that are not stored are no fault here: the next local entry reads the database again.
+                await distributedCache.SetAsync(
+                    ActiveHaplotypeFrequencySetsDistributedCacheKey,
+                    JsonSerializer.SerializeToUtf8Bytes(activeSets),
+                    ActiveHaplotypeFrequencySetsDistributedCacheTimeToLive);
+
+                return ByRegistryAndEthnicity(activeSets);
             },
-            new MemoryCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(cacheSettings.ActiveSetCacheExpiryMinutes)
-            }
+            ActiveSetsLocalEntryOptions()
         );
     }
 
     /// <inheritdoc />
-    public void RemoveActiveHaplotypeFrequencySets() => cache.Remove(ActiveHaplotypeFrequencySetsCacheKey);
+    public async Task<bool> RefreshActiveHaplotypeFrequencySets()
+    {
+        var activeSets = await GetActiveSetsFromDatabase();
+
+        // Straight into this process's cache, not through the distributed cache: this process uses the new sets at once,
+        // also when the distributed cache does not store them.
+        cache.Add(ActiveHaplotypeFrequencySetsCacheKey, ByRegistryAndEthnicity(activeSets), ActiveSetsLocalEntryOptions());
+
+        return await distributedCache.SetAsync(
+            ActiveHaplotypeFrequencySetsDistributedCacheKey,
+            JsonSerializer.SerializeToUtf8Bytes(activeSets),
+            ActiveHaplotypeFrequencySetsDistributedCacheTimeToLive);
+    }
 
     /// <inheritdoc />
     public async Task<FrequencySetCacheEntry> GetAllHaplotypeFrequencies(int setId)
@@ -193,6 +244,25 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
         // subject can therefore pay it many times over while the warm is still running.
         return frequencyConsolidator.ConsolidateFrequenciesForHaplotype(entry, hla, excludedLoci);
     }
+
+    private async Task<List<HaplotypeFrequencySet>> GetActiveSetsFromDatabase()
+    {
+        using (logger.RunTimed("Get active HF sets - from SQL database", LogLevel.Verbose))
+        {
+            var activeSets = await frequencySetRepository.GetAllActiveSets();
+            return activeSets.Select(MapDataModelToClientModel).ToList();
+        }
+    }
+
+    private static IReadOnlyDictionary<(string RegistryCode, string EthnicityCode), HaplotypeFrequencySet> ByRegistryAndEthnicity(
+        IEnumerable<HaplotypeFrequencySet> activeSets) =>
+        activeSets.ToDictionary(set => (set.RegistryCode, set.EthnicityCode));
+
+    /// <summary>An absolute expiry, not a sliding one: a process that reads the sets all the time still reads them again.</summary>
+    private MemoryCacheEntryOptions ActiveSetsLocalEntryOptions() => new()
+    {
+        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(cacheSettings.ActiveSetCacheExpiryMinutes)
+    };
 
     private async Task<FrequencySetCacheEntry> BuildEntryFromDatabase(int setId)
     {

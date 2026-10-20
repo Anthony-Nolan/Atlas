@@ -54,6 +54,25 @@ namespace Atlas.MatchPrediction.Functions.Functions
             }
         }
 
+        /// <summary>
+        /// Reads the active haplotype frequency sets from the database, and writes them to the distributed cache, as an import
+        /// does. Call it after a change of the active sets with SQL (see README_Support.md): without it, other processes can
+        /// use the replaced sets until the sets in the distributed cache expire. It writes twice, 30 seconds apart, so it
+        /// returns after 30 seconds or more.
+        /// </summary>
+        [Function(nameof(RefreshActiveHaplotypeFrequencySetCache))]
+        public async Task<IActionResult> RefreshActiveHaplotypeFrequencySetCache(
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            HttpRequest request)
+        {
+            return await haplotypeFrequencyService.RefreshActiveHaplotypeFrequencySetCache()
+                ? new OkResult()
+                : new ObjectResult("The distributed cache did not store the active haplotype frequency sets. Call again later.")
+                {
+                    StatusCode = StatusCodes.Status503ServiceUnavailable
+                };
+        }
+
         [QueryStringParameter(DonorEthnicityQueryParam, "Ethnicity ID of the donor", DataType = typeof(string))]
         [QueryStringParameter(DonorRegistryQueryParam, "Registry ID of the donor", DataType = typeof(string))]
         [QueryStringParameter(PatientEthnicityQueryParam, "Ethnicity ID of the patient", DataType = typeof(string))]

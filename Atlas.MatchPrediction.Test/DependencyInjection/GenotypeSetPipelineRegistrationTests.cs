@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Caching;
 using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
@@ -113,8 +114,9 @@ internal class GenotypeSetPipelineRegistrationTests
     private static ServiceCollection PipelineOnly()
     {
         var services = new ServiceCollection();
-        // The one input the host provides itself - see RegisterGenotypeSetPipeline's remarks.
+        // The inputs the host provides itself - see RegisterGenotypeSetPipeline's remarks.
         services.AddSingleton(Options.Create(new HaplotypeFrequencySetCacheSettings()));
+        services.RegisterDistributedCacheTypes(_ => new DistributedCacheSettings());
 
         services.RegisterGenotypeSetPipeline(
             _ => new ApplicationInsightsSettings { LogLevel = "Info" },
@@ -128,6 +130,9 @@ internal class GenotypeSetPipelineRegistrationTests
 
     private static void RegisterWholeAlgorithm(IServiceCollection services)
     {
+        // As the host does - see RegisterGenotypeSetPipeline's remarks. Only the first call registers.
+        services.RegisterDistributedCacheTypes(_ => new DistributedCacheSettings());
+
         services.RegisterMatchPredictionAlgorithm(
             _ => new ApplicationInsightsSettings { LogLevel = "Info" },
             _ => new HlaMetadataDictionarySettings(),

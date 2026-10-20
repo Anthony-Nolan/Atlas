@@ -38,6 +38,7 @@ A high level overview of the match prediction algorithm's logic is as follows:
   * For each patient and donor, a suitable HF set is selected
   * Sets are identified by a combination of the ethnicity and registry data for the donor/patient. If a specific set cannot be found 
   for their ethnicity/registry data, a less specific set will be used, ultimately defaulting to the "global" or default set.
+  * The list of active sets is cached: see [The active set cache](#the-active-set-cache).
   
 ### Genotype Expansion
   * Both patient and donor genotypes must be expanded from _potentially ambiguous allele representations of unknown phase_
@@ -149,6 +150,43 @@ pinned by `ImputationEquivalenceTests`, `ExpandedGenotypeTruncaterTests`, `PairR
 - The match prediction algorithm first tries to convert HLA typings using the HF set HLA version.
 - If this first attempt fails (e.g., when an allele belongs to a subsequent nomenclature version), it will attempt to convert the typing using the matching algorithm HLA version (as long as it is different to the HF set version).
 - If both attempts fail, there is a significant risk of the subject being deemed "unrepresented", depending on the point at which conversion fails and the overall typing resolution.
+
+## The active set cache
+Each frequency set selection reads the list of active sets: one set for each registry and ethnicity pair. The list is
+kept in two caches:
+- **In each process**, for `HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes` (1 minute). The expiry is absolute:
+  a process that reads the list all the time still reads it again each minute.
+- **In the distributed cache** (Redis), which all processes share, for 24 hours. When no Redis is configured
+  (`DistributedCache:ConnectionString` is empty), each process reads the list from SQL instead.
+
+**After an import.** Before the import sends its success notification, it reads the new list from SQL and writes it to
+the distributed cache. The importing process uses the new set at once. The other processes use it when their own copy
+expires: within 1 minute of the notification. 30 seconds later, the import writes the list again. Another process can
+read SQL before the import activates its sets, and write what it read to the distributed cache after the first write of
+the import. The second write replaces that old list.
+
+**When the distributed cache does not store the list.** Each write that it does not store is logged as a warning. The
+import writes the list again every 30 seconds, up to 4 times. If the list is still not stored, the import sends a
+medium-priority alert: other processes can then use the replaced sets for up to 24 hours. When the cache is available,
+call the refresh endpoint (below).
+
+**A change of the active sets with SQL** (for example, a rollback: see
+[README_Support](README_Support.md#rolling-back-an-upload)), or a restore or a copy of the database (see
+[README_Support](README_Support.md#after-a-restore-or-a-copy-of-the-match-prediction-database)), does not change the
+distributed cache. After the change, call `POST /api/RefreshActiveHaplotypeFrequencySetCache` on the match prediction
+functions app (function key needed). It writes the list twice, 30 seconds apart, as an import does, so it returns after
+30 seconds or more. It returns `200` when the distributed cache stored the list, and `503` when it did not: then call it
+again later.
+
+**SQL reads are limited.** In each process, one read of the list runs at a time, and concurrent callers wait for it. So
+when the distributed cache misses or cannot be reached, each process reads SQL at most once a minute. There is no limit
+across processes: a lock in Redis cannot work while Redis is down, which is when the processes read SQL.
+
+**Long operations.** A set can change while a donor import or a data refresh (stage 65) computes genotype sets. These
+operations do not keep one list of active sets for their whole run: each batch looks up its sets once. Each stored
+genotype set records its frequency set, and search does not use a stored set of a replaced frequency set
+(`StaleFrequencySet`, see [When a donor is computed live](#when-a-donor-is-computed-live)). See also the stage 65
+[failures](README_MatchingAlgorithm.md#failures).
 
 ## Precomputed donor genotype sets (search)
 Donor genotype sets can be computed ahead of time and stored in the transient matching database. Today the differential
@@ -404,10 +442,10 @@ can also check the stored rows of LIVE. It cannot be used with `Save`, because a
   `DonorsNotFound`, and `SubjectErrors`: the subjects that failed as a whole, so that they have no sets to compare, for
   example because the donors could not be read. For evidence that the stored sets are correct, every count in
   `ParityCounts` except `Match` must be 0, and so must `DonorsNotFound` and `SubjectErrors`.
-- **After a frequency set import.** Each app keeps the active frequency sets in a cache for
-  `HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes` (5 minutes by default). An import clears only the cache of
-  the app that imports. So for that time, this app and search can still choose the old set. Wait that long before you
-  check for `StaleFrequencySet`.
+- **After a frequency set import.** Each app keeps the active frequency sets for
+  `HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes` (1 minute by default). So for that time, this app and search
+  can still choose the old set (see [The active set cache](#the-active-set-cache)). Wait that long before you check for
+  `StaleFrequencySet`.
 
 ### The dormant database (`Database`)
 With `Database` set to `Dormant`, the endpoint reads the other matching database, which Data Refresh writes to: its

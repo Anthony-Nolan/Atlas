@@ -325,7 +325,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         /// <remarks>
         /// Registers the Match Prediction genotype set pipeline, so the host needs its settings: the Match Prediction
         /// SQL connection string (haplotype frequency sets), <see cref="GenotypeImputationSettings"/>, and
-        /// <c>IOptions&lt;HaplotypeFrequencySetCacheSettings&gt;</c>, which the host registers itself.
+        /// <c>IOptions&lt;HaplotypeFrequencySetCacheSettings&gt;</c> and the distributed cache
+        /// (<c>RegisterDistributedCacheTypes</c>), which the host registers itself.
         /// </remarks>
         public static void RegisterDonorImportGenotypeSetPrecompute(
             this IServiceCollection services,
@@ -386,7 +387,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         /// <remarks>
         /// Registers the Match Prediction genotype set pipeline, so the host needs its settings: the Match Prediction SQL
         /// connection string (haplotype frequency sets), <see cref="GenotypeImputationSettings"/>, and
-        /// <c>IOptions&lt;HaplotypeFrequencySetCacheSettings&gt;</c>, which the host registers itself.
+        /// <c>IOptions&lt;HaplotypeFrequencySetCacheSettings&gt;</c> and the distributed cache
+        /// (<c>RegisterDistributedCacheTypes</c>), which the host registers itself.
         /// </remarks>
         public static void RegisterGenotypeSetDebug(
             this IServiceCollection services,

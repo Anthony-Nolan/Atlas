@@ -288,6 +288,12 @@ dormant database: the database that the refresh fills.
 - An unknown error is a temporary error.
 - A group uses the haplotype frequency set of its registry and ethnicity. If that set does not exist, it uses the set of
   the registry, and then the global set. If no global set exists, its batch fails until it has no retries left.
+- A frequency set import during the stage changes the set that some groups use: the batches before the change use the
+  old set, and the batches after it use the new set (within 1 minute, see
+  [the active set cache](README_MatchPredictionAlgorithm.md#the-active-set-cache)). The stage does not keep one list of
+  active sets for its whole run. Each stored row records its frequency set, and search does not use a row of a replaced
+  set: it computes the donor live, and stores the set again (`StaleFrequencySet`). With one list for the whole run, every
+  row of that population would be stale, not only the rows from before the change.
 - A batch that fails more than `MaxGroupFailuresPerBatch` groups fails as a whole, and is sent again.
 
 #### Continuation

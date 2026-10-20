@@ -31,24 +31,44 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         /// <param name="importBehaviour"></param>
         /// <returns></returns>
         public Task ImportFrequencySet(FrequencySetFile file, FrequencySetImportBehaviour importBehaviour = null);
+
+        /// <summary>
+        /// Reads the active sets from the database, and writes them to the distributed cache, as an import does. Use it
+        /// after the active sets were changed by hand, with SQL: every process then uses them within
+        /// <c>HaplotypeFrequencySetCacheSettings.ActiveSetCacheExpiryMinutes</c>.
+        /// </summary>
+        /// <returns><c>false</c> if the distributed cache did not store the sets. Then try again later.</returns>
+        Task<bool> RefreshActiveHaplotypeFrequencySetCache();
     }
 
     internal class HaplotypeFrequencyService : HaplotypeFrequencyLookupService, IHaplotypeFrequencyService
     {
         private const string SupportSummaryPrefix = "Haplotype Frequency Set Import";
 
+        /// <summary>
+        /// The wait before each new write of the active sets to the distributed cache. It is much longer than another process
+        /// can take between its read of the database and its write of what it read (a Redis command fails after 1 s). It is
+        /// also as long as the distributed cache waits, after a failed attempt to connect, before it tries again.
+        /// </summary>
+        internal static readonly TimeSpan ActiveSetCacheRewriteDelay = TimeSpan.FromSeconds(30);
+
+        internal const int MaxActiveSetCacheRewriteAttempts = 4;
+
         private readonly IFrequencySetImporter frequencySetImporter;
         private readonly INotificationSender notificationSender;
+        private readonly TimeProvider timeProvider;
 
         public HaplotypeFrequencyService(
             IFrequencySetImporter frequencySetImporter,
             INotificationSender notificationSender,
             IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
-            IHaplotypeFrequencyCache haplotypeFrequencyCache)
+            IHaplotypeFrequencyCache haplotypeFrequencyCache,
+            TimeProvider timeProvider)
             : base(logger, haplotypeFrequencyCache)
         {
             this.frequencySetImporter = frequencySetImporter;
             this.notificationSender = notificationSender;
+            this.timeProvider = timeProvider;
         }
 
         public async Task ImportFrequencySet(FrequencySetFile file, FrequencySetImportBehaviour importBehaviour)
@@ -58,10 +78,21 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             try
             {
                 await frequencySetImporter.Import(file, importBehaviour);
-                HaplotypeFrequencyCache.RemoveActiveHaplotypeFrequencySets();
+                await TryRefreshActiveSetCache();
                 file.ImportedDateTime = DateTimeOffset.UtcNow;
 
                 await SendSuccessNotification(file);
+
+                if (!await RewriteActiveSetCacheUntilStored())
+                {
+                    await LogErrorAndSendAlert(
+                        file,
+                        "The new active sets are not confirmed in the distributed cache: the writes after the import failed. Other processes " +
+                        "can use the replaced sets for up to " +
+                        $"{HaplotypeFrequencies.HaplotypeFrequencyCache.ActiveHaplotypeFrequencySetsDistributedCacheTimeToLive.TotalHours} hours. When the " +
+                        "cache is available, call RefreshActiveHaplotypeFrequencySetCache on the match prediction functions app.",
+                        null);
+                }
             }
             catch (EmptyHaplotypeFileException ex)
             {
@@ -89,6 +120,61 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
                 await SendErrorAlert(file, ex);
                 throw;
             }
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> RefreshActiveHaplotypeFrequencySetCache()
+        {
+            await TryRefreshActiveSetCache();
+            return await RewriteActiveSetCacheUntilStored();
+        }
+
+        /// <summary>
+        /// Writes the active sets to the distributed cache again, until it stores them: at most
+        /// <see cref="MaxActiveSetCacheRewriteAttempts"/> times, each after <see cref="ActiveSetCacheRewriteDelay"/>.
+        /// </summary>
+        /// <remarks>
+        /// The first new write is done also when the write before it was stored. Another process can read the database before
+        /// the sets change, and store what it read after that write. The new write replaces it.
+        /// </remarks>
+        /// <returns>Whether the distributed cache stored the sets.</returns>
+        private async Task<bool> RewriteActiveSetCacheUntilStored()
+        {
+            for (var attempt = 0; attempt < MaxActiveSetCacheRewriteAttempts; attempt++)
+            {
+                await Task.Delay(ActiveSetCacheRewriteDelay, timeProvider);
+
+                if (await TryRefreshActiveSetCache())
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <returns>Whether the distributed cache stored the active sets.</returns>
+        /// <remarks>
+        /// Never throws. After an import, the new sets are already active: if this threw, the import would be reported as
+        /// failed, and its file imported again when the message is delivered again.
+        /// </remarks>
+        private async Task<bool> TryRefreshActiveSetCache()
+        {
+            try
+            {
+                if (await HaplotypeFrequencyCache.RefreshActiveHaplotypeFrequencySets())
+                {
+                    return true;
+                }
+
+                Logger.SendTrace("The distributed cache did not store the active haplotype frequency sets.", LogLevel.Warn);
+            }
+            catch (Exception exception)
+            {
+                Logger.SendException(exception, LogLevel.Warn);
+            }
+
+            return false;
         }
 
         private async Task SendSuccessNotification(FrequencySetFile file)

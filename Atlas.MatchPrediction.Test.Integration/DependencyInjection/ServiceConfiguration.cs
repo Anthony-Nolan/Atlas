@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Caching;
 using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
@@ -9,6 +10,7 @@ using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
+using Atlas.MatchPrediction.Test.TestHelpers;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Test.Integration.DependencyInjection;
 using Microsoft.Extensions.Configuration;
@@ -27,6 +29,10 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
             var services = new ServiceCollection();
 
             services.SetUpConfiguration();
+
+            // Off, as in the hosts until a Redis is configured. ActiveSetDistributedCacheTests shares one between two caches.
+            services.RegisterDistributedCacheTypes(_ => new DistributedCacheSettings());
+
             services.RegisterMatchPredictionAlgorithm(
                 ApplicationInsightsSettingsReader,
                 _ => new HlaMetadataDictionarySettings(),
@@ -77,6 +83,10 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
         private static void SetUpMockServices(this IServiceCollection services)
         {
             services.AddScoped(sp => Substitute.For<INotificationSender>());
+
+            // Each import writes the active sets to the distributed cache a second time, 30 seconds later. Many tests import
+            // sets, and none of them tests that delay.
+            services.AddSingleton<TimeProvider>(new ImmediateTimersTimeProvider());
         }
 
         private static Func<IServiceProvider, ApplicationInsightsSettings> ApplicationInsightsSettingsReader =>

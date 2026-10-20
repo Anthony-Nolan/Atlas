@@ -81,6 +81,12 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
         /// </para>
         ///
         /// <para>
+        /// <b>The host must also register the distributed cache</b>, with
+        /// <see cref="Atlas.Common.Caching.CacheRegisteringExtensions.RegisterDistributedCacheTypes"/>: the frequency set
+        /// cache shares the active sets through it. Every host of the pipeline registers it, with its own settings.
+        /// </para>
+        ///
+        /// <para>
         /// Safe to call as well as <see cref="RegisterMatchPredictionAlgorithm"/>, which calls it: the services it adds
         /// are added only if not already registered, so a host that registers both gets one of each.
         /// </para>
@@ -282,6 +288,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             services.AddScoped<IFrequencyFileParser, FrequencyFileParser>();
             services.AddScoped<IFrequencySetValidator, FrequencySetValidator>();
             services.AddScoped<IHaplotypeFrequencyService, HaplotypeFrequencyService>();
+            services.TryAddSingleton(TimeProvider.System);
 
             services.AddScoped<IMatchCalculationService, MatchCalculationService>();
 

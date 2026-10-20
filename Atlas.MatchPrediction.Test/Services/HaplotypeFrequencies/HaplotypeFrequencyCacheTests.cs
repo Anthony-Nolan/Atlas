@@ -2,6 +2,7 @@ using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
@@ -14,6 +15,8 @@ using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using AutoFixture;
 using AwesomeAssertions;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -25,10 +28,20 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies;
 [TestFixture]
 internal class HaplotypeFrequencyCacheTests
 {
+    private const int ActiveSetCacheExpiryMinutes = 5;
+    private static readonly TimeSpan ActiveSetLocalEntryLifetime = TimeSpan.FromMinutes(ActiveSetCacheExpiryMinutes);
+
+    /// <summary>Much longer than a test takes in real time - see <see cref="MoveClockTo"/>.</summary>
+    private static readonly TimeSpan ClockMargin = TimeSpan.FromSeconds(5);
+
     private IHaplotypeFrequenciesRepository frequencyRepository;
     private IHaplotypeFrequencySetRepository frequencySetRepository;
     private IFrequencyConsolidator frequencyConsolidator;
     private IMatchPredictionLogger<MatchProbabilityLoggingContext> logger;
+
+    // The clock of the local caches, so that a test can move past the expiry of a local entry.
+    private DateTimeOffset now;
+    private ISystemClock clock;
 
     private Fixture fixture;
 
@@ -43,6 +56,10 @@ internal class HaplotypeFrequencyCacheTests
         frequencyConsolidator = Substitute.For<IFrequencyConsolidator>();
         logger = Substitute.For<IMatchPredictionLogger<MatchProbabilityLoggingContext>>();
 
+        now = DateTimeOffset.UtcNow;
+        clock = Substitute.For<ISystemClock>();
+        clock.UtcNow.Returns(_ => now);
+
         // Pinned rather than left to AutoFixture: AwaitConsolidatedFrequencyWarm decides whether the pre-consolidation
         // is on the critical path, so every test below would otherwise be exercising whichever mode the fixture picked.
         sut = BuildSut(awaitConsolidatedFrequencyWarm: false);
@@ -51,17 +68,31 @@ internal class HaplotypeFrequencyCacheTests
     private HaplotypeFrequencyCache BuildSut(bool awaitConsolidatedFrequencyWarm, int maxCachedFrequencySets = 1000) =>
         BuildSutWithCacheProvider(awaitConsolidatedFrequencyWarm, maxCachedFrequencySets).Sut;
 
+    /// <summary>The cache of one process: a local cache of its own, over <paramref name="distributedCache"/>.</summary>
+    private HaplotypeFrequencyCache BuildInstance(IDistributedCacheProvider distributedCache) =>
+        BuildSutWithCacheProvider(distributedCache: distributedCache).Sut;
+
+    /// <summary>
+    /// Sets the clock of the local caches to <paramref name="afterTheRealTime"/> after the real time. The clock follows the
+    /// real time because LazyCache sets the expiry of an entry that <c>GetOrAddAsync</c> stores from the real clock, and
+    /// the local cache compares it with this clock.
+    /// </summary>
+    private void MoveClockTo(TimeSpan afterTheRealTime) => now = DateTimeOffset.UtcNow + afterTheRealTime;
+
     private (HaplotypeFrequencyCache Sut, IHaplotypeFrequencySetCacheProvider CacheProvider) BuildSutWithCacheProvider(
-        bool awaitConsolidatedFrequencyWarm = false, int maxCachedFrequencySets = 1000)
+        bool awaitConsolidatedFrequencyWarm = false,
+        int maxCachedFrequencySets = 1000,
+        IDistributedCacheProvider distributedCache = null)
     {
         var cacheSettings = fixture.Build<HaplotypeFrequencySetCacheSettings>()
-            .With(x => x.ActiveSetCacheExpiryMinutes, 5)
+            .With(x => x.ActiveSetCacheExpiryMinutes, ActiveSetCacheExpiryMinutes)
             .With(x => x.MaxCachedFrequencySets, maxCachedFrequencySets)
             .With(x => x.SetCacheExpiryMinutes, 60)
             .With(x => x.AwaitConsolidatedFrequencyWarm, awaitConsolidatedFrequencyWarm)
             .Create();
 
-        var cacheProvider = new HaplotypeFrequencySetCacheProvider(AppCacheBuilder.NewDefaultCache());
+        var cacheProvider = new HaplotypeFrequencySetCacheProvider(
+            AppCacheBuilder.NewCacheOver(new MemoryCache(new MemoryCacheOptions { Clock = clock })));
         var residencyTracker = new FrequencySetResidencyTracker(
             maxCachedFrequencySets,
             evictedSetId => cacheProvider.Cache.Remove(HaplotypeFrequencyCache.AllFrequenciesCacheKey(evictedSetId))
@@ -69,6 +100,7 @@ internal class HaplotypeFrequencyCacheTests
 
         var sut = new HaplotypeFrequencyCache(
             cacheProvider,
+            distributedCache ?? DistributedCacheBuilder.NewProvider(),
             residencyTracker,
             frequencyRepository,
             frequencySetRepository,
@@ -93,17 +125,139 @@ internal class HaplotypeFrequencyCacheTests
     }
 
     [Test]
-    public async Task RemoveActiveHaplotypeFrequencySets_CausesRepositoryToBeReQueried()
+    public async Task RefreshActiveHaplotypeFrequencySets_ThisInstanceReturnsTheNewSetsAtOnce()
     {
         var firstActiveSet = fixture.Create<Data.Models.HaplotypeFrequencySet>();
         var secondActiveSet = fixture.Create<Data.Models.HaplotypeFrequencySet>();
         frequencySetRepository.GetAllActiveSets().Returns([firstActiveSet], [secondActiveSet]);
 
         await sut.GetActiveHaplotypeFrequencySets();
-        sut.RemoveActiveHaplotypeFrequencySets();
-        await sut.GetActiveHaplotypeFrequencySets();
+        await sut.RefreshActiveHaplotypeFrequencySets();
+        var result = await sut.GetActiveHaplotypeFrequencySets();
+
+        result.Values.Should().ContainSingle().Which.Id.Should().Be(secondActiveSet.Id);
+        await frequencySetRepository.Received(2).GetAllActiveSets();
+    }
+
+    [Test]
+    public async Task GetActiveHaplotypeFrequencySets_WhenAnotherInstanceStoredTheSets_DoesNotQueryTheRepository()
+    {
+        var store = DistributedCacheBuilder.NewSharedStore();
+        var instanceA = BuildInstance(DistributedCacheBuilder.NewProviderOver(store));
+        var instanceB = BuildInstance(DistributedCacheBuilder.NewProviderOver(store));
+        var globalSet = fixture.Build<Data.Models.HaplotypeFrequencySet>()
+            .With(x => x.RegistryCode, (string)null)
+            .With(x => x.EthnicityCode, (string)null)
+            .Create();
+        frequencySetRepository.GetAllActiveSets().Returns([globalSet, fixture.Create<Data.Models.HaplotypeFrequencySet>()]);
+
+        var setsOfA = await instanceA.GetActiveHaplotypeFrequencySets();
+        var setsOfB = await instanceB.GetActiveHaplotypeFrequencySets();
+
+        setsOfB.Should().BeEquivalentTo(setsOfA);
+        setsOfB.Should().ContainKey((null, null));
+        await frequencySetRepository.Received(1).GetAllActiveSets();
+    }
+
+    [Test]
+    public async Task GetActiveHaplotypeFrequencySets_AfterAnotherInstanceRefreshes_ReturnsTheNewSetsWhenTheLocalEntryExpires()
+    {
+        var store = DistributedCacheBuilder.NewSharedStore();
+        var instanceA = BuildInstance(DistributedCacheBuilder.NewProviderOver(store));
+        var instanceB = BuildInstance(DistributedCacheBuilder.NewProviderOver(store));
+        var replacedSet = fixture.Create<Data.Models.HaplotypeFrequencySet>();
+        var newSet = fixture.Create<Data.Models.HaplotypeFrequencySet>();
+        frequencySetRepository.GetAllActiveSets().Returns([replacedSet], [newSet]);
+
+        await instanceB.GetActiveHaplotypeFrequencySets();
+        await instanceA.RefreshActiveHaplotypeFrequencySets();
+        var setsOfBBeforeTheExpiry = await instanceB.GetActiveHaplotypeFrequencySets();
+        MoveClockTo(ActiveSetLocalEntryLifetime + ClockMargin);
+        var setsOfBAfterTheExpiry = await instanceB.GetActiveHaplotypeFrequencySets();
+
+        setsOfBBeforeTheExpiry.Values.Should().ContainSingle().Which.Id.Should().Be(replacedSet.Id);
+        setsOfBAfterTheExpiry.Values.Should().ContainSingle().Which.Id.Should().Be(newSet.Id);
+        // Once for the first read of B, and once for the refresh of A: the read of B after the expiry used the
+        // distributed cache.
+        await frequencySetRepository.Received(2).GetAllActiveSets();
+    }
+
+    [Test]
+    public async Task GetActiveHaplotypeFrequencySets_LocalEntryExpiresAFixedTimeAfterItWasStored()
+    {
+        var instance = BuildInstance(UnreachableDistributedCache());
+        frequencySetRepository.GetAllActiveSets().Returns([fixture.Create<Data.Models.HaplotypeFrequencySet>()]);
+
+        await instance.GetActiveHaplotypeFrequencySets();
+        MoveClockTo(ActiveSetLocalEntryLifetime - ClockMargin);
+        // A sliding expiry would start again from this read.
+        await instance.GetActiveHaplotypeFrequencySets();
+        MoveClockTo(ActiveSetLocalEntryLifetime + ClockMargin);
+        await instance.GetActiveHaplotypeFrequencySets();
 
         await frequencySetRepository.Received(2).GetAllActiveSets();
+    }
+
+    [Test]
+    public async Task GetActiveHaplotypeFrequencySets_ConcurrentCallsWhenTheDistributedCacheMisses_ReadTheDatabaseOnce()
+    {
+        var instance = BuildInstance(UnreachableDistributedCache());
+        var databaseRead = new TaskCompletionSource<IReadOnlyCollection<Data.Models.HaplotypeFrequencySet>>();
+        frequencySetRepository.GetAllActiveSets().Returns(databaseRead.Task);
+
+        var calls = Enumerable.Range(0, 10).Select(_ => instance.GetActiveHaplotypeFrequencySets()).ToList();
+        databaseRead.SetResult([fixture.Create<Data.Models.HaplotypeFrequencySet>()]);
+        await Task.WhenAll(calls);
+
+        await frequencySetRepository.Received(1).GetAllActiveSets();
+    }
+
+    [Test]
+    public async Task GetActiveHaplotypeFrequencySets_OnAMiss_StoresTheSetsForTwentyFourHours()
+    {
+        var distributedCache = UnreachableDistributedCache();
+        var instance = BuildInstance(distributedCache);
+        frequencySetRepository.GetAllActiveSets().Returns([fixture.Create<Data.Models.HaplotypeFrequencySet>()]);
+
+        await instance.GetActiveHaplotypeFrequencySets();
+
+        await distributedCache.Received(1).SetAsync(
+            HaplotypeFrequencyCache.ActiveHaplotypeFrequencySetsDistributedCacheKey,
+            Arg.Any<byte[]>(),
+            TimeSpan.FromHours(24),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task RefreshActiveHaplotypeFrequencySets_StoresTheSetsForTwentyFourHours()
+    {
+        var distributedCache = UnreachableDistributedCache();
+        var instance = BuildInstance(distributedCache);
+        frequencySetRepository.GetAllActiveSets().Returns([fixture.Create<Data.Models.HaplotypeFrequencySet>()]);
+
+        await instance.RefreshActiveHaplotypeFrequencySets();
+
+        await distributedCache.Received(1).SetAsync(
+            HaplotypeFrequencyCache.ActiveHaplotypeFrequencySetsDistributedCacheKey,
+            Arg.Any<byte[]>(),
+            TimeSpan.FromHours(24),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task RefreshActiveHaplotypeFrequencySets_WhenTheDistributedCacheDoesNotStoreTheSets_ReturnsFalse_AndThisInstanceStillReturnsTheNewSets()
+    {
+        var instance = BuildInstance(UnreachableDistributedCache());
+        var newSet = fixture.Create<Data.Models.HaplotypeFrequencySet>();
+        frequencySetRepository.GetAllActiveSets().Returns([newSet]);
+
+        var stored = await instance.RefreshActiveHaplotypeFrequencySets();
+        var result = await instance.GetActiveHaplotypeFrequencySets();
+
+        stored.Should().BeFalse();
+        result.Values.Should().ContainSingle().Which.Id.Should().Be(newSet.Id);
+        // The read used the local entry that the refresh stored.
+        await frequencySetRepository.Received(1).GetAllActiveSets();
     }
 
     [Test]
@@ -408,6 +562,15 @@ internal class HaplotypeFrequencyCacheTests
         }
 
         throw new TimeoutException("Condition was not met within the allotted time.");
+    }
+
+    /// <summary>A distributed cache that cannot be reached: every read misses, and no write is stored.</summary>
+    private static IDistributedCacheProvider UnreachableDistributedCache()
+    {
+        var distributedCache = Substitute.For<IDistributedCacheProvider>();
+        distributedCache.GetAsync(default).ReturnsForAnyArgs((byte[])null);
+        distributedCache.SetAsync(default, null, TimeSpan.Zero).ReturnsForAnyArgs(false);
+        return distributedCache;
     }
 
     private static LightweightHaplotypeFrequencyRecord Record(string a, string b, string c, string dqb1, string drb1, decimal frequency) =>
