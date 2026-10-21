@@ -95,8 +95,8 @@ resource "azurerm_servicebus_subscription" "audit-data-refresh-requests" {
   dead_lettering_on_message_expiration = false
 }
 
-resource "azurerm_servicebus_subscription" "matching-algorithm-data-refresh-requests" {
-  name                                 = "matching-algorithm"
+resource "azurerm_servicebus_subscription" "data-refresh-data-refresh-requests" {
+  name                                 = "data-refresh"
   topic_id                             = azurerm_servicebus_topic.data-refresh-requests.id
   auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
   default_message_ttl                  = var.default_servicebus_settings.long-expiry
