@@ -129,6 +129,8 @@ When used, the HMD then caches the contents of its CloudTables in memory, althou
 
 The run-time consumer of the HMD doesn't need to know much of those details though; all it needs to know is that the HMD will return data from an in-memory cache, and that if you want to ensure the first usage of the HMD is already fast, then you can pre-warm the cache.
 
+`IHlaMetadataCacheControl` has three warm-up methods: `PreWarmAllCaches` (every table, used by the data refresh), `PreWarmAlleleNameCache`, and `PreWarmMatchPredictionCaches` (only the tables match prediction reads; see `README_MatchPredictionAlgorithm.md`, "Cache warm-up for live imputation").
+
 #### Cache Invalidation
 Every in-memory cache of dictionary data is keyed by HLA Nomenclature version and nothing else - the whole-table caches in `TableClientRepositoryBase`, the individual lookup outcomes in `MetadataServiceBase`, and the objects the `Factory` hands out. Recreating the dictionary at a version that is *already* active therefore changes the stored data without changing anything a running process keys on, and that process would go on serving its old snapshot until the cache expired (24h) or the worker restarted. That is how a donor carrying newly-added lookup data came to be silently skipped during matching (ATL-395).
 

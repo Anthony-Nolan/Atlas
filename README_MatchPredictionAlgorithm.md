@@ -461,6 +461,30 @@ The Worker also connects to the matching algorithm's databases, to read and stor
 (the persistent database, which holds the data refresh history) and `ConnectionStrings:MatchingTransientASql` /
 `ConnectionStrings:MatchingTransientBSql` (the two transient databases).
 
+### Cache warm-up for live imputation (ATL-476)
+
+Live imputation looks up MACs and HLA Metadata Dictionary data in Table Storage. Both are cached in memory, but a cold
+cache answers each lookup with a single-row Table Storage read. A new worker replica starts cold, and the dictionary
+tables expire from the cache once a day. In one DEV test, this meant about 500k single-row reads.
+
+So each search batch warms the caches before its patient and donors run (`IMatchPredictionCacheWarmer`, on both the
+durable and the parallel path):
+
+* all MACs (`IMacDictionary.PreWarmAllMacs`, held for the life of the process);
+* the dictionary tables match prediction reads (`IHlaMetadataCacheControl.PreWarmMatchPredictionCaches`: allele
+  names, allele groups, small g groups, and the G group and small g group to P group lookups), for the nomenclature
+  version of every active haplotype frequency set and for the search's matching version.
+
+After the first batch of a process this costs a few cache reads. A batch that has a stored genotype set for the patient
+and for every donor skips it (`DonorGenotypeSetBatchContext.MayComputeLive`), because it imputes nothing live. The
+warm-up is best effort: if it fails, a warning is logged (`Match prediction cache warm-up failed`) and lookups fall back
+to single-row reads, as before. A warm-up that takes 1 s or more sends the event `Match prediction caches warmed`, with
+`WarmUpMs` and the versions it warmed.
+
+The MAC table client is one per process (`IMacTableClientProvider`), and the table is checked once. Before ATL-476,
+the scoped `MacRepository` checked the table in its constructor, without `await`, so the parallel path (one scope per
+donor) made one blocking Table Storage call per donor.
+
 ### `HaplotypeFrequencySetCache.AwaitConsolidatedFrequencyWarm`
 
 Loading a haplotype frequency set also runs a missing-loci pre-consolidation, which is three passes over the whole set

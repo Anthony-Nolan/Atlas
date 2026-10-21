@@ -12,6 +12,7 @@ using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
 using Atlas.MatchPrediction.Models;
+using Atlas.MatchPrediction.Services.CacheWarming;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Services.Precompute;
@@ -34,6 +35,7 @@ namespace Atlas.MatchPrediction.Test.Services
         private IServiceScopeFactory serviceScopeFactory;
         private IDonorGenotypeSetSourceResolver genotypeSetSourceResolver;
         private IDonorGenotypeSetBatchCompleter genotypeSetBatchCompleter;
+        private IMatchPredictionCacheWarmer cacheWarmer;
         private DonorGenotypeSetBatchContext batchContext;
         private IParallelMatchPredictionAlgorithm sut;
 
@@ -47,9 +49,11 @@ namespace Atlas.MatchPrediction.Test.Services
             serviceScopeFactory = Substitute.For<IServiceScopeFactory>();
             genotypeSetSourceResolver = Substitute.For<IDonorGenotypeSetSourceResolver>();
             genotypeSetBatchCompleter = Substitute.For<IDonorGenotypeSetBatchCompleter>();
+            cacheWarmer = Substitute.For<IMatchPredictionCacheWarmer>();
 
             sut = new ParallelMatchPredictionAlgorithm(
-                patientGenotypeSetProvider, resultUploader, logger, serviceScopeFactory, genotypeSetSourceResolver, genotypeSetBatchCompleter);
+                patientGenotypeSetProvider, resultUploader, logger, serviceScopeFactory, genotypeSetSourceResolver, genotypeSetBatchCompleter,
+                cacheWarmer);
 
             batchContext = DonorGenotypeSetBatchContext.Disabled(UsePrecomputedGenotypeSetsSource.FeatureFlag, PrecomputedGenotypeSetMode.ForceLive, null);
             genotypeSetSourceResolver.Resolve(default, default).ReturnsForAnyArgs(batchContext);
@@ -291,6 +295,38 @@ namespace Atlas.MatchPrediction.Test.Services
                     && o.Any(x => x.Source == DonorGenotypeSetSource.NoRow && x.DonorIdCount == 2 && x.GenotypeSetToStore == toStore)),
                 Arg.Any<PatientGenotypeSetSource>());
             calls.Should().Equal("upload", "complete");
+        }
+
+        [Test]
+        public async Task RunBatch_WhenTheBatchMayComputeLive_WarmsTheCachesOnceForTheWholeBatch()
+        {
+            var input = new MultipleDonorMatchProbabilityInput(new IdentifiedMatchProbabilityRequest
+            {
+                SearchRequestId = "search-request-id",
+                MatchingAlgorithmHlaNomenclatureVersion = "3660"
+            })
+            {
+                Donors = new List<DonorInput>
+                {
+                    DonorInputBuilder.Default.WithDonorIds(1).Build(),
+                    DonorInputBuilder.Default.WithDonorIds(2).Build(),
+                    DonorInputBuilder.Default.WithDonorIds(3).Build()
+                }
+            };
+
+            await sut.RunBatch(input, maxDegreeOfParallelism: 10, batchId: 1);
+
+            await cacheWarmer.Received(1).WarmUp("3660");
+        }
+
+        [Test]
+        public async Task RunBatch_WithNoDonors_DoesNotWarmTheCaches()
+        {
+            var input = new MultipleDonorMatchProbabilityInput(new IdentifiedMatchProbabilityRequest()) { Donors = new List<DonorInput>() };
+
+            await sut.RunBatch(input, maxDegreeOfParallelism: 10, batchId: 1);
+
+            await cacheWarmer.DidNotReceiveWithAnyArgs().WarmUp(default);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -38,18 +38,18 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
     internal class MacRepository : IMacRepository
     {
         private readonly IAtlasLogger logger;
-        protected readonly TableClient Table;
+        private readonly IMacTableClientProvider tableProvider;
 
         private readonly string NonMetaDataFilter = TableClient.CreateQueryFilter($"PartitionKey ne {LastStoredMacMetadataEntity.MetadataPartitionKey}");
 
-        public MacRepository(MacDictionarySettings macDictionarySettings, IAtlasLogger logger)
+        /// <remarks>
+        /// Builds no client and makes no call: this repository is scoped, and match prediction opens a scope per donor.
+        /// See <see cref="IMacTableClientProvider"/>.
+        /// </remarks>
+        public MacRepository(IMacTableClientProvider tableProvider, IAtlasLogger logger)
         {
             this.logger = logger;
-            var connectionString = macDictionarySettings.AzureStorageConnectionString;
-            var tableName = macDictionarySettings.TableName;
-             
-            Table = new TableClient(connectionString, tableName); //TODO: ATLAS-485. Combine this with the CloudTableFactory in HMD.
-            Table.CreateIfNotExists(); //TODO: ATLAS-512. Is there any mileage in using the "Lazy" Indexing Policy? (Apparently requires "Gateway" mode on the table?)
+            this.tableProvider = tableProvider;
         }
 
         public async Task<string> GetLastMacEntry(bool bypassMetadata)
@@ -72,13 +72,15 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
 
             var latestMac = orderedMacs.Last();
             var macEntities = orderedMacs.Select(mac => new MacEntity(mac));
-            await Table.BatchInsert(macEntities);
+            var table = await tableProvider.GetTable();
+            await table.BatchInsert(macEntities);
             await StoreLatestMacRecord(latestMac.Code);
         }
 
         public async Task<Mac> GetMac(string macCode)
         {
-            var macEntity = await Table.GetByPartitionAndRowKey<MacEntity>(macCode.AsPartitionKey(), macCode.AsRowKey());
+            var table = await tableProvider.GetTable();
+            var macEntity = await table.GetByPartitionAndRowKey<MacEntity>(macCode.AsPartitionKey(), macCode.AsRowKey());
             if (macEntity == null)
             {
                 throw new MacNotFoundException(macCode);
@@ -89,7 +91,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
 
         public async Task<IReadOnlyCollection<Mac>> GetAllMacs()
         {
-            var result = await Table.ExecuteQueryAsync<MacEntity>(NonMetaDataFilter);
+            var table = await tableProvider.GetTable();
+            var result = await table.ExecuteQueryAsync<MacEntity>(NonMetaDataFilter);
             return result.Select(x => new Mac(x)).ToList().AsReadOnly();
         }
 
@@ -97,7 +100,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
         public async IAsyncEnumerable<Mac> StreamAllMacs()
         {
             // QueryAsync returns a streaming AsyncPageable, so only one page of entities is held at a time.
-            await foreach (var entity in Table.QueryAsync<MacEntity>(NonMetaDataFilter))
+            var table = await tableProvider.GetTable();
+            await foreach (var entity in table.QueryAsync<MacEntity>(NonMetaDataFilter))
             {
                 yield return new Mac(entity);
             }
@@ -110,7 +114,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
                 Code = latestMac
             };
 
-            await Table.UpsertEntityAsync(metadataEntity, TableUpdateMode.Replace);
+            var table = await tableProvider.GetTable();
+            await table.UpsertEntityAsync(metadataEntity, TableUpdateMode.Replace);
         }
 
         /// <summary>
@@ -121,7 +126,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
         private async Task<string> CalculateLastMacEntry()
         {
             logger.SendTrace("Calculating last seen MAC from all MAC data. If this is called, last seen metadata has probably been deleted.");
-            var result = await Table.ExecuteQueryAsync<MacEntity>(NonMetaDataFilter);
+            var table = await tableProvider.GetTable();
+            var result = await table.ExecuteQueryAsync<MacEntity>(NonMetaDataFilter);
             var latestMac = result.InOrderOfDefinition().LastOrDefault()?.Code;
             await StoreLatestMacRecord(latestMac);
             return latestMac;
@@ -129,7 +135,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
 
         private async Task<string> FetchLastMacEntryFromMetadata()
         {
-            var metadataEntity = (await Table.GetByPartitionAndRowKey<LastStoredMacMetadataEntity>(
+            var table = await tableProvider.GetTable();
+            var metadataEntity = (await table.GetByPartitionAndRowKey<LastStoredMacMetadataEntity>(
                 LastStoredMacMetadataEntity.MetadataPartitionKey,
                 LastStoredMacMetadataEntity.LatestMacRowKey
             ));
@@ -149,7 +156,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
 
         private async Task DeleteAndRecreateTable()
         {
-            await Table.DeleteAsync();
+            var table = await tableProvider.GetTable();
+            await table.DeleteAsync();
 
 
             // According documentation, delete doesn't wait until the deletion is finalised before continuing.
@@ -161,7 +169,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
                 )
                 .WaitAndRetryAsync(120, _ => TimeSpan.FromSeconds(1));
 
-            await twoMinuteRetryPolicy.ExecuteAsync(async () => await Table.CreateIfNotExistsAsync());
+            await twoMinuteRetryPolicy.ExecuteAsync(async () => await table.CreateIfNotExistsAsync());
         }
 
         /// <remarks>
@@ -170,15 +178,16 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
         // ReSharper disable once UnusedMember.Local
         private async Task ExplicitlyDeleteAllMacRecords()
         {
+            var table = await tableProvider.GetTable();
             var existingMacs =
-                await Table.ExecuteQueryAsync<MacEntity>(""); // GetAllMacs would A) do unnecessary conversions and B) skip the LastUpdated record
+                await table.ExecuteQueryAsync<MacEntity>(""); // GetAllMacs would A) do unnecessary conversions and B) skip the LastUpdated record
 
             foreach (var macToDelete in existingMacs)
             {
                 // A TableEntities ETag property must be set to "*" to allow overwrites.
                 macToDelete.ETag = new ETag("*");
 
-                await Table.DeleteEntityAsync(macToDelete);
+                await table.DeleteEntityAsync(macToDelete);
             }
         }
     }

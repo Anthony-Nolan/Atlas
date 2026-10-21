@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Models;
@@ -47,6 +48,21 @@ public sealed class DonorGenotypeSetBatchContext
     /// just before it writes.
     /// </summary>
     public bool CanStore => BatchFallbackReason == null && MatchingAlgorithmDataRefreshRecordId != null;
+
+    /// <summary>
+    /// False only when the batch has a stored row for the patient and, for every donor input, one computed from the
+    /// search's typing - so it should impute nothing live, and has no need to warm the caches live imputation reads (ATL-476).
+    /// </summary>
+    /// <remarks>
+    /// A cheap check, not <see cref="TryGetPrecomputedGenotypeSet"/>: it does not compare frequency sets or decode. So it
+    /// can say false for a batch that then computes a donor live after all (a row for a since-replaced frequency set, or
+    /// a row that cannot be decoded - both rare). That donor's lookups then fall back to single-row reads, as they did
+    /// before the warm-up existed. Whenever a donor input or the patient has no usable row at all, it says true.
+    /// </remarks>
+    public bool MayComputeLive(IReadOnlyCollection<DonorInput> donors) =>
+        BatchFallbackReason != null
+        || patientRow == null
+        || donors.Any(donor => !donor.DonorIds.Any(id => rows.TryGetValue(id, out var row) && row.ComputedFromSearchTyping));
 
     private DonorGenotypeSetBatchContext(
         bool usePrecomputedGenotypeSets,

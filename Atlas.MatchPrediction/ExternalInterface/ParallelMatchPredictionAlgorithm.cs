@@ -8,6 +8,7 @@ using Atlas.Common.Utils.Concurrency;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
+using Atlas.MatchPrediction.Services.CacheWarming;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MatchPrediction.Services.Precompute;
 using Microsoft.Extensions.DependencyInjection;
@@ -49,6 +50,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
         private readonly IServiceScopeFactory serviceScopeFactory;
         private readonly IDonorGenotypeSetSourceResolver genotypeSetSourceResolver;
         private readonly IDonorGenotypeSetBatchCompleter genotypeSetBatchCompleter;
+        private readonly IMatchPredictionCacheWarmer cacheWarmer;
         private readonly IAtlasLogger logger;
 
         public ParallelMatchPredictionAlgorithm(
@@ -58,7 +60,8 @@ namespace Atlas.MatchPrediction.ExternalInterface
             IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
             IServiceScopeFactory serviceScopeFactory,
             IDonorGenotypeSetSourceResolver genotypeSetSourceResolver,
-            IDonorGenotypeSetBatchCompleter genotypeSetBatchCompleter)
+            IDonorGenotypeSetBatchCompleter genotypeSetBatchCompleter,
+            IMatchPredictionCacheWarmer cacheWarmer)
         {
             this.patientGenotypeSetProvider = patientGenotypeSetProvider;
             this.resultUploader = resultUploader;
@@ -66,6 +69,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
             this.serviceScopeFactory = serviceScopeFactory;
             this.genotypeSetSourceResolver = genotypeSetSourceResolver;
             this.genotypeSetBatchCompleter = genotypeSetBatchCompleter;
+            this.cacheWarmer = cacheWarmer;
         }
 
         public async Task<ParallelMatchPredictionBatchOutput> RunBatch(
@@ -88,6 +92,13 @@ namespace Atlas.MatchPrediction.ExternalInterface
                 var batchContext = await genotypeSetSourceResolver.Resolve(
                     multipleDonorMatchProbabilityInput,
                     multipleDonorMatchProbabilityInput.Donors);
+
+                // Before the patient and the donors run, so live imputation reads from memory, not one Table Storage row at a time.
+                // Once here, for the whole batch: the per-donor scopes below share the process-wide caches it fills.
+                if (batchContext.MayComputeLive(multipleDonorMatchProbabilityInput.Donors))
+                {
+                    await cacheWarmer.WarmUp(multipleDonorMatchProbabilityInput.MatchingAlgorithmHlaNomenclatureVersion);
+                }
 
                 var (patientGenotypeSet, patientGenotypeSetSource) =
                     await patientGenotypeSetProvider.Get(matchProbabilityInputs.First(), batchContext);

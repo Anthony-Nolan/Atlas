@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.MatchPrediction;
@@ -9,6 +9,7 @@ using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
+using Atlas.MatchPrediction.Services.CacheWarming;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MatchPrediction.Services.Precompute;
@@ -35,6 +36,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
         private readonly IDonorGenotypeSetSourceResolver genotypeSetSourceResolver;
         private readonly IDonorGenotypeSetBatchCompleter genotypeSetBatchCompleter;
         private readonly IPatientGenotypeSetProvider patientGenotypeSetProvider;
+        private readonly IMatchPredictionCacheWarmer cacheWarmer;
         private readonly IAtlasLogger logger;
 
         public MatchPredictionAlgorithm(
@@ -46,7 +48,8 @@ namespace Atlas.MatchPrediction.ExternalInterface
             ISearchDonorResultUploader resultUploader,
             IDonorGenotypeSetSourceResolver genotypeSetSourceResolver,
             IDonorGenotypeSetBatchCompleter genotypeSetBatchCompleter,
-            IPatientGenotypeSetProvider patientGenotypeSetProvider)
+            IPatientGenotypeSetProvider patientGenotypeSetProvider,
+            IMatchPredictionCacheWarmer cacheWarmer)
         {
             this.matchProbabilityService = matchProbabilityService;
             this.genotypeSetService = genotypeSetService;
@@ -56,6 +59,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
             this.genotypeSetSourceResolver = genotypeSetSourceResolver;
             this.genotypeSetBatchCompleter = genotypeSetBatchCompleter;
             this.patientGenotypeSetProvider = patientGenotypeSetProvider;
+            this.cacheWarmer = cacheWarmer;
         }
 
         /// <inheritdoc />
@@ -92,6 +96,12 @@ namespace Atlas.MatchPrediction.ExternalInterface
                 var batchContext = await genotypeSetSourceResolver.Resolve(
                     multipleDonorMatchProbabilityInput,
                     multipleDonorMatchProbabilityInput.Donors);
+
+                // Before the patient and the donors run, so live imputation reads from memory, not one Table Storage row at a time.
+                if (batchContext.MayComputeLive(multipleDonorMatchProbabilityInput.Donors))
+                {
+                    await cacheWarmer.WarmUp(multipleDonorMatchProbabilityInput.MatchingAlgorithmHlaNomenclatureVersion);
+                }
 
                 var (patientGenotypeSet, patientGenotypeSetSource) =
                     await patientGenotypeSetProvider.Get(matchProbabilityInputs.First(), batchContext);
