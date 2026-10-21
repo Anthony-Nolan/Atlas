@@ -155,7 +155,7 @@ request is what recovers it immediately.
 
 #### (b) Manual cleanup
  
-If you prefer not to continue a refresh, any live request messages must be purged from the `matching-algorithm` subscription, and teardown performed.
+If you prefer not to continue a refresh, any live request messages must be purged from the `data-refresh` subscription of the `data-refresh-requests` topic, and teardown performed.
 Teardown can either be done entirely manually, or the `RunDataRefreshCleanup` function (on the Data Refresh Functions App) can be run, which performs the described steps.
  
 If a refresh stalls locally, you can likely ignore the infrastructure part of this checklist.
