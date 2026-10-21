@@ -7,26 +7,29 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
-using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 
 namespace Atlas.MatchPrediction.Services.CacheWarming;
 
 public interface IMatchPredictionCacheWarmer
 {
     /// <summary>
-    /// Loads everything a match prediction batch looks up in Table Storage into memory, before the batch's donors run:
-    /// all MACs, and the HLA Metadata Dictionary tables match prediction reads, for the nomenclature version of every
-    /// active haplotype frequency set and for <paramref name="matchingAlgorithmHlaNomenclatureVersion"/>.
+    /// Loads the HLA Metadata Dictionary tables match prediction reads into memory, before the batch's donors run, for
+    /// the nomenclature version of every active haplotype frequency set and for
+    /// <paramref name="matchingAlgorithmHlaNomenclatureVersion"/>.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Call once per batch. After the first call of a process it costs a few cache reads: the MACs are held for the
-    /// life of the process, and the dictionary tables until their cache entry expires (once a day), when the next call
-    /// loads them again.
+    /// Call once per batch. After the first call of a process it costs a few cache reads: the tables stay cached until
+    /// their cache entry expires (once a day), when the next call loads them again.
     /// </para>
     /// <para>
-    /// Without it, each lookup that misses a cold cache is its own Table Storage read (ATL-476: about 500k of them in
-    /// one ATL-474 test run, repeated on every new replica).
+    /// Without it, each lookup that misses a cold cache is its own Table Storage read (ATL-476: about 240k of them on
+    /// the small g group tables alone in one ATL-474 test run, repeated on every new replica).
+    /// </para>
+    /// <para>
+    /// MACs are deliberately not warmed. Warming all of them (1.36 million on DEV) took 74-100 s on each new replica,
+    /// raised worker memory by about 1.6 GB towards the replica's 4 GiB limit, and made live imputation no faster. A MAC
+    /// is looked up when it is first seen and then kept for the life of the process.
     /// </para>
     /// <para>
     /// Best effort, never throws: if the warm-up fails, lookups still work, one row at a time, as before.
@@ -50,18 +53,15 @@ internal class MatchPredictionCacheWarmer : IMatchPredictionCacheWarmer
     internal static readonly TimeSpan LoggedWarmUpThreshold = TimeSpan.FromSeconds(1);
 
     private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
-    private readonly IMacDictionary macDictionary;
     private readonly IHaplotypeFrequencyCache haplotypeFrequencyCache;
     private readonly IAtlasLogger logger;
 
     public MatchPredictionCacheWarmer(
         IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
-        IMacDictionary macDictionary,
         IHaplotypeFrequencyCache haplotypeFrequencyCache,
         IAtlasLogger logger)
     {
         this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
-        this.macDictionary = macDictionary;
         this.haplotypeFrequencyCache = haplotypeFrequencyCache;
         this.logger = logger;
     }
@@ -77,9 +77,8 @@ internal class MatchPredictionCacheWarmer : IMatchPredictionCacheWarmer
             versions = await HlaNomenclatureVersions(matchingAlgorithmHlaNomenclatureVersion);
 
             // Concurrently: on a cold process every one of these is a whole-table read, and the batch waits for all of them.
-            await Task.WhenAll(versions
-                .Select(version => hlaMetadataDictionaryFactory.BuildCacheControl(version).PreWarmMatchPredictionCaches())
-                .Append(macDictionary.PreWarmAllMacs()));
+            await Task.WhenAll(versions.Select(version =>
+                hlaMetadataDictionaryFactory.BuildCacheControl(version).PreWarmMatchPredictionCaches()));
         }
         catch (Exception exception)
         {

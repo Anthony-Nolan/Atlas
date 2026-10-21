@@ -6,7 +6,6 @@ using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Services.CacheWarming;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
-using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using AwesomeAssertions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -18,7 +17,6 @@ namespace Atlas.MatchPrediction.Test.Services.CacheWarming;
 internal class MatchPredictionCacheWarmerTests
 {
     private IHlaMetadataDictionaryFactory hmdFactory;
-    private IMacDictionary macDictionary;
     private IHaplotypeFrequencyCache frequencyCache;
     private IAtlasLogger logger;
     private Dictionary<string, IHlaMetadataCacheControl> cacheControls;
@@ -28,7 +26,6 @@ internal class MatchPredictionCacheWarmerTests
     public void SetUp()
     {
         hmdFactory = Substitute.For<IHlaMetadataDictionaryFactory>();
-        macDictionary = Substitute.For<IMacDictionary>();
         frequencyCache = Substitute.For<IHaplotypeFrequencyCache>();
         logger = Substitute.For<IAtlasLogger>();
 
@@ -47,7 +44,7 @@ internal class MatchPredictionCacheWarmerTests
 
         GivenActiveSetVersions("3480", "3480", "3660");
 
-        warmer = new MatchPredictionCacheWarmer(hmdFactory, macDictionary, frequencyCache, logger);
+        warmer = new MatchPredictionCacheWarmer(hmdFactory, frequencyCache, logger);
     }
 
     [Test]
@@ -81,17 +78,10 @@ internal class MatchPredictionCacheWarmerTests
     }
 
     [Test]
-    public async Task WarmUp_WarmsAllMacs()
-    {
-        await warmer.WarmUp("3660");
-
-        await macDictionary.Received(1).PreWarmAllMacs();
-    }
-
-    [Test]
     public async Task WarmUp_WhenAWarmFails_DoesNotThrowAndLogsAWarning()
     {
-        macDictionary.PreWarmAllMacs().ThrowsAsync(new Exception("storage is down"));
+        await warmer.WarmUp("3660");
+        cacheControls["3660"].PreWarmMatchPredictionCaches().ThrowsAsync(new Exception("storage is down"));
 
         var act = () => warmer.WarmUp("3660");
 
@@ -125,7 +115,10 @@ internal class MatchPredictionCacheWarmerTests
     [Test]
     public async Task WarmUp_WhenTheWarmIsSlow_LogsOneEventWithItsDuration()
     {
-        macDictionary.PreWarmAllMacs().Returns(Task.Delay(MatchPredictionCacheWarmer.LoggedWarmUpThreshold + TimeSpan.FromMilliseconds(100)));
+        await warmer.WarmUp("3660");
+        logger.ClearReceivedCalls();
+        cacheControls["3660"].PreWarmMatchPredictionCaches()
+            .Returns(Task.Delay(MatchPredictionCacheWarmer.LoggedWarmUpThreshold + TimeSpan.FromMilliseconds(100)));
 
         await warmer.WarmUp("3660");
 

@@ -463,19 +463,20 @@ The Worker also connects to the matching algorithm's databases, to read and stor
 
 ### Cache warm-up for live imputation (ATL-476)
 
-Live imputation looks up MACs and HLA Metadata Dictionary data in Table Storage. Both are cached in memory, but a cold
-cache answers each lookup with a single-row Table Storage read. A new worker replica starts cold, and the dictionary
-tables expire from the cache once a day. In one DEV test, this meant about 500k single-row reads.
+Live imputation looks up HLA Metadata Dictionary data in Table Storage. It is cached in memory, but a cold cache answers
+each lookup with a single-row Table Storage read. A new worker replica starts cold, and the dictionary tables expire
+from the cache once a day. In one DEV test, this meant about 240k single-row reads on the small g group tables alone.
 
-So each search batch warms the caches before its patient and donors run (`IMatchPredictionCacheWarmer`, on both the
-durable and the parallel path):
+So each search batch warms the dictionary tables match prediction reads before its patient and donors run
+(`IMatchPredictionCacheWarmer`, on both the durable and the parallel path; `IHlaMetadataCacheControl.PreWarmMatchPredictionCaches`:
+allele names, allele groups, small g groups, and the G group and small g group to P group lookups), for the nomenclature
+version of every active haplotype frequency set and for the search's matching version.
 
-* all MACs (`IMacDictionary.PreWarmAllMacs`, held for the life of the process);
-* the dictionary tables match prediction reads (`IHlaMetadataCacheControl.PreWarmMatchPredictionCaches`: allele
-  names, allele groups, small g groups, and the G group and small g group to P group lookups), for the nomenclature
-  version of every active haplotype frequency set and for the search's matching version.
+MACs are not warmed. A DEV test warmed all of them (1.36 million): it took 74-100 s on each new replica, raised worker
+memory by about 1.6 GB towards the 4 GiB limit, and made live imputation no faster. A MAC is looked up when it is first
+seen, and then kept for the life of the process (`MacStore`).
 
-After the first batch of a process this costs a few cache reads. A batch that has a stored genotype set for the patient
+After the first batch of a process the warm-up costs a few cache reads. A batch that has a stored genotype set for the patient
 and for every donor skips it (`DonorGenotypeSetBatchContext.MayComputeLive`), because it imputes nothing live. The
 warm-up is best effort: if it fails, a warning is logged (`Match prediction cache warm-up failed`) and lookups fall back
 to single-row reads, as before. A warm-up that takes 1 s or more sends the event `Match prediction caches warmed`, with
