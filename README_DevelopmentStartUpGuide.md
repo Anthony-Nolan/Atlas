@@ -75,7 +75,7 @@ It's highly recommended that you read the sections outside ZtH in parallel with 
 
 #### Run an Initial Data Refresh
 - Open up Service Bus Explorer and connect to your local development Service Bus.
-- Create the topic, `data-refresh-requests` with subscription `matching-algorithm`.
+- Create the topic, `data-refresh-requests` with subscription `data-refresh`.
 - Create the topic, `completed-data-refresh-jobs`. It needs no subscription: the refresh publishes a completion message to it when the job ends.
 - Create the topic, `donor-genotype-precomputation-requests` with subscription `precomputation-worker`. The donor genotype precomputation workers read the subscription, and `MatchingAlgorithm.Functions.DataRefresh` reads its dead-letter queue.
 - Set up the donor genotype precomputation worker, `Atlas.MatchingAlgorithm.PrecomputeWorker`. It computes the work of data refresh stage 65 (see the [Matching Algorithm README](README_MatchingAlgorithm.md#donor-genotype-precomputation-data-refresh-stage-65)).

@@ -16,7 +16,7 @@
     "DataRefresh:ActiveDatabaseSize": "S3",
     "DataRefresh:AutoRunDataRefresh": "false",
     "DataRefresh:RequestsTopic": "data-refresh-requests",
-    "DataRefresh:RequestsTopicSubscription": "matching-algorithm",
+    "DataRefresh:RequestsTopicSubscription": "data-refresh",
     "DataRefresh:CompletionTopic": "completed-data-refresh-jobs",
     "DataRefresh:CronTab": "0 0 0 * * Monday",
     "DataRefresh:DatabaseAName": "not-used-locally",
