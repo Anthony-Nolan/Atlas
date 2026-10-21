@@ -141,6 +141,7 @@ namespace Atlas.RepeatSearch.Services.Search
                     MatchingAlgorithmDataRefreshRecordId = dataRefreshRecordId,
                     BlobStorageContainerName = azureStorageSettings.MatchingResultsBlobContainer,
                     NoLongerMatchingDonors = diff.RemovedResults.ToList(),
+                    BatchedResult = true,
                     MatchingStartTime = searchStartTime
                 };
 

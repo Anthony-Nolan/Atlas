@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.LogFile;
 using Atlas.Client.Models.SupportMessages;
-using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
@@ -336,7 +335,7 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
             async () => await resultsCombiner.DownloadBatchedMatchPredictionResults(batchResultLocations)
         );
 
-        resultSet.Results = await logger.RunTimedAsync("Combining search results", async () =>
+        await logger.RunTimedAsync("Combining search results", async () =>
              await CombineBatchedSearchResults(
                    resultSet.SearchRequestId,
                    run.IsRepeatSearch,
@@ -410,7 +409,7 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
         await repository.MarkRunFinalised(runId, DateTime.UtcNow);
     }
 
-    private async Task<IEnumerable<SearchResult>> CombineBatchedSearchResults(
+    private async Task CombineBatchedSearchResults(
         string searchRequestId,
         bool isRepeatSearch,
         IReadOnlyDictionary<int, MatchProbabilityResponse> matchPredictionResults,
@@ -418,7 +417,6 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
         string blobStorageContainerName
         )
     {
-        var allSearchResults = new List<SearchResult>();
         var batchNumber = 0;
 
         await foreach (var matchingResults in matchingResultsDownloader.DownloadResults(isRepeatSearch, batchFolder))
@@ -435,14 +433,9 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
             var currentSearchResults =
                 resultsCombiner.CombineResults(searchRequestId, matchingAlgorithmResults, matchPredictionResultsForCurrentDonors);
 
-
             await searchResultsBlobUploader.UploadResults(
                 currentSearchResults, blobStorageContainerName, $"{batchFolder}/{++batchNumber}.json"
             );
-
-            allSearchResults.AddRange(currentSearchResults);
         }
-
-        return allSearchResults;
     }
 }

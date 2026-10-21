@@ -111,6 +111,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     MatchingAlgorithmDataRefreshRecordId = dataRefreshRecordId,
                     BlobStorageContainerName = azureStorageSettings.SearchResultsBlobContainer,
                     SearchRequest = identifiedSearchRequest.SearchRequest,
+                    BatchedResult = true,
                     MatchingStartTime = searchStartTime
                 };
 

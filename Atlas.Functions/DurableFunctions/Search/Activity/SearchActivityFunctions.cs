@@ -257,8 +257,9 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
 
             resultSet.BlobStorageContainerName = resultSet.IsRepeatSearchSet ? azureStorageSettings.RepeatSearchResultsBlobContainer : azureStorageSettings.SearchResultsBlobContainer;
 
-            resultSet.Results = await logger.RunTimedAsync("Combining search results", async () =>
-                 await ProcessBatchedSearchResults(
+            resultSet.BatchedResult = true;
+            await logger.RunTimedAsync("Combining search results", async () =>
+                 await CombineAndUploadSearchResultBatches(
                     resultSet.SearchRequestId,
                     matchingResultsNotification.IsRepeatSearch,
                     parameters.MatchPredictionResultLocations.ResultSet,
@@ -331,7 +332,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                 );
         }
 
-        private async Task<IEnumerable<SearchResult>> ProcessBatchedSearchResults(
+        private async Task CombineAndUploadSearchResultBatches(
             string searchRequestId,
             bool isRepeatSearch,
             IReadOnlyDictionary<int, string> matchPredictionResultLocations,
@@ -339,7 +340,6 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             string blobStorageContainerName)
         {
             var batchNumber = 0;
-            var allSearchResults = new List<SearchResult>();
 
             await foreach (var matchingResults in matchingResultsDownloader.DownloadResults(isRepeatSearch, batchFolder))
             {
@@ -354,8 +354,6 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                 var currentSearchResults = await ProcessSearchResults(searchRequestId, matchingResults, matchPredictionResultLocationsForCurrentDonors);
                 await searchResultsBlobUploader.UploadResults(currentSearchResults, blobStorageContainerName, $"{batchFolder}/{++batchNumber}.json");
             }
-
-            return allSearchResults;
         }
 
         private async Task<IEnumerable<SearchResult>> ProcessSearchResults(string searchRequestId, IEnumerable<MatchingAlgorithmResult> matchingResults, IReadOnlyDictionary<int, string> matchPredictionResultLocations) =>
