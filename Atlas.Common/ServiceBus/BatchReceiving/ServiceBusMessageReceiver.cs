@@ -15,7 +15,6 @@ namespace Atlas.Common.ServiceBus.BatchReceiving
         /// Fetches Azure service bus messages in batches and transforms them to a message collection of type T.
         /// </summary>
         /// <param name="batchSize">Maximum number of messages to fetch at once.</param>
-        /// <param name="prefetchCount">Number of messages to fetch in advance of processing.</param>
         Task<IEnumerable<DeserializedMessage<T>>> ReceiveMessageBatchAsync(int batchSize);
         
         Task RenewMessageLockAsync(object lockToken);
@@ -30,11 +29,10 @@ namespace Atlas.Common.ServiceBus.BatchReceiving
         public ServiceBusMessageReceiver(
             IMessageReceiverFactory factory,
             string topicName,
-            string subscriptionName,
-            int prefetchCount
+            string subscriptionName
             )
         {
-            messageReceiver = factory.GetMessageReceiver(topicName, subscriptionName, prefetchCount);
+            messageReceiver = factory.GetMessageReceiver(topicName, subscriptionName);
         }
 
         public async Task<IEnumerable<DeserializedMessage<T>>> ReceiveMessageBatchAsync(int batchSize)

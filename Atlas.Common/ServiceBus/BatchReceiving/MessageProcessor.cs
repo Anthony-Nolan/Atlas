@@ -29,7 +29,6 @@ namespace Atlas.Common.ServiceBus.BatchReceiving
         /// </summary>
         /// <param name="processMessagesFuncAsync">Function that will be run on the message batches</param>
         /// <param name="batchSize">Maximum number of messages to fetch at once</param>
-        /// <param name="prefetchCount">Number of messages to fetch in advance of processing</param>
         /// <exception cref="MessageBatchException{T}"></exception>
         public async Task ProcessAllMessagesInBatches_Async(
             Func<IEnumerable<DeserializedMessage<T>>, Task> processMessagesFuncAsync,
