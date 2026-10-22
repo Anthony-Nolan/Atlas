@@ -35,6 +35,7 @@ namespace Atlas.MatchPrediction.Test.Services
         private IServiceScopeFactory serviceScopeFactory;
         private IDonorGenotypeSetSourceResolver genotypeSetSourceResolver;
         private IDonorGenotypeSetBatchCompleter genotypeSetBatchCompleter;
+        private IGenotypeSetTimingEvents genotypeSetTimingEvents;
         private IMatchPredictionCacheWarmer cacheWarmer;
         private DonorGenotypeSetBatchContext batchContext;
         private IParallelMatchPredictionAlgorithm sut;
@@ -49,11 +50,12 @@ namespace Atlas.MatchPrediction.Test.Services
             serviceScopeFactory = Substitute.For<IServiceScopeFactory>();
             genotypeSetSourceResolver = Substitute.For<IDonorGenotypeSetSourceResolver>();
             genotypeSetBatchCompleter = Substitute.For<IDonorGenotypeSetBatchCompleter>();
+            genotypeSetTimingEvents = Substitute.For<IGenotypeSetTimingEvents>();
             cacheWarmer = Substitute.For<IMatchPredictionCacheWarmer>();
 
             sut = new ParallelMatchPredictionAlgorithm(
                 patientGenotypeSetProvider, resultUploader, logger, serviceScopeFactory, genotypeSetSourceResolver, genotypeSetBatchCompleter,
-                cacheWarmer);
+                genotypeSetTimingEvents, cacheWarmer);
 
             batchContext = DonorGenotypeSetBatchContext.Disabled(UsePrecomputedGenotypeSetsSource.FeatureFlag, PrecomputedGenotypeSetMode.ForceLive, null);
             genotypeSetSourceResolver.Resolve(default, default).ReturnsForAnyArgs(batchContext);
@@ -295,6 +297,38 @@ namespace Atlas.MatchPrediction.Test.Services
                     && o.Any(x => x.Source == DonorGenotypeSetSource.NoRow && x.DonorIdCount == 2 && x.GenotypeSetToStore == toStore)),
                 Arg.Any<PatientGenotypeSetSource>());
             calls.Should().Equal("upload", "complete");
+        }
+
+        [Test]
+        public async Task RunBatch_SendsOneTimingEventWithEveryDonorAfterCompleting()
+        {
+            var calls = new List<string>();
+            genotypeSetBatchCompleter.WhenForAnyArgs(c => c.Complete(default, default, default, default)).Do(_ => calls.Add("complete"));
+            genotypeSetTimingEvents.WhenForAnyArgs(e => e.Send(default)).Do(_ => calls.Add("timings"));
+            var timing = new DonorGenotypeSetTiming(TimeSpan.FromMilliseconds(1), null, 300, TimeSpan.Zero, TimeSpan.FromMilliseconds(5));
+            matchProbabilityService.CalculateMatchProbability(default, default, default).ReturnsForAnyArgs(
+                new MatchProbabilityResult(new MatchProbabilityResponse(null, new HashSet<Locus>()), 12, DonorGenotypeSetSource.Precomputed, null, timing));
+            var input = new MultipleDonorMatchProbabilityInput(new IdentifiedMatchProbabilityRequest { SearchRequestId = "search-request-id" })
+            {
+                Donors = new List<DonorInput>
+                {
+                    DonorInputBuilder.Default.WithDonorIds(1).Build(),
+                    DonorInputBuilder.Default.WithDonorIds(2, 3).Build()
+                }
+            };
+
+            await sut.RunBatch(input, maxDegreeOfParallelism: 4, batchId: 9);
+
+            genotypeSetTimingEvents.Received(1).Send(Arg.Is<GenotypeSetBatchTimings>(t =>
+                t.Request == input
+                && t.BatchContext == batchContext
+                && t.MatchPredictionPath == "Parallel"
+                && t.MaxDegreeOfParallelism == 4
+                && t.BatchId == 9
+                && t.PatientGenotypeSetSource == PatientGenotypeSetSource.PrecomputeDisabled
+                && t.Donors.Count == 2
+                && t.Donors.All(d => d.Source == DonorGenotypeSetSource.Precomputed && d.DonorGenotypeCount == 12 && d.Timing == timing)));
+            calls.Should().Equal("complete", "timings");
         }
 
         [Test]

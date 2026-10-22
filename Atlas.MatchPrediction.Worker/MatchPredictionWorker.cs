@@ -35,6 +35,7 @@ public class MatchPredictionWorker(
 
     private async Task ProcessMessageAsync(ProcessMessageEventArgs args)
     {
+        InFlightBatches.Started();
         try
         {
             // we don't expect a malformed body: every message on this topic is produced by our own
@@ -61,6 +62,10 @@ public class MatchPredictionWorker(
         {
             logger.LogError(ex, "Unexpected error processing parallel match prediction batch — abandoning message for redelivery/dead-lettering.");
             await args.AbandonMessageAsync(args.Message, cancellationToken: args.CancellationToken);
+        }
+        finally
+        {
+            InFlightBatches.Finished();
         }
     }
 

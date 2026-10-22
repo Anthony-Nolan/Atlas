@@ -97,6 +97,51 @@ internal class DonorGenotypeSetSourceResolverTests
         await reader.DidNotReceiveWithAnyArgs().GetDonorGenotypeSets(default, default, default, default);
         context.BatchFallbackReason.Should().Be(DonorGenotypeSetSource.PrecomputeDisabled);
         context.CanStore.Should().BeFalse();
+        context.ReadTime.Should().BeNull();
+    }
+
+    [Test]
+    public async Task Resolve_WhenRead_ReportsTheReadTimeRowsAndBytes()
+    {
+        settings.Mode = PrecomputedGenotypeSetMode.DefaultPrecomputed;
+        reader.GetDonorGenotypeSets(default, default, default, default).ReturnsForAnyArgs(async _ =>
+        {
+            await Task.Delay(20);
+            return new PrecomputedDonorGenotypeSetLookup(
+                "ABCDrb1Dqb1",
+                null,
+                new Dictionary<int, PrecomputedDonorGenotypeSetRow>
+                {
+                    { 1, new PrecomputedDonorGenotypeSetRow(7, false, new byte[100]) },
+                    { 2, new PrecomputedDonorGenotypeSetRow(7, true, null) },
+                },
+                new PrecomputedPatientGenotypeSetRow(false, new byte[30]));
+        });
+
+        var context = await resolver.Resolve(Request(null), Donors);
+
+        context.ReadTime.Should().BeGreaterThanOrEqualTo(TimeSpan.FromMilliseconds(15));
+        context.ReadRowCount.Should().Be(2);
+        context.ReadBytes.Should().Be(130);
+    }
+
+    [Test]
+    public async Task Resolve_WhenIdsAndThePatientShareARow_CountsTheRowAndItsBytesOnce()
+    {
+        settings.Mode = PrecomputedGenotypeSetMode.DefaultPrecomputed;
+        var payload = fixture.CreateMany<byte>(fixture.Create<int>() % 100 + 1).ToArray();
+        var sharedRow = new PrecomputedDonorGenotypeSetRow(fixture.Create<int>(), false, payload);
+        var donorIds = fixture.CreateMany<int>(3).ToList();
+        reader.GetDonorGenotypeSets(default, default, default, default).ReturnsForAnyArgs(new PrecomputedDonorGenotypeSetLookup(
+            "ABCDrb1Dqb1",
+            null,
+            donorIds.ToDictionary(donorId => donorId, _ => sharedRow),
+            new PrecomputedPatientGenotypeSetRow(false, payload)));
+
+        var context = await resolver.Resolve(Request(null), Donors);
+
+        context.ReadRowCount.Should().Be(1);
+        context.ReadBytes.Should().Be(payload.Length);
     }
 
     [Test]

@@ -1,4 +1,6 @@
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.MatchPrediction;
@@ -36,6 +38,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
         private readonly IDonorGenotypeSetSourceResolver genotypeSetSourceResolver;
         private readonly IDonorGenotypeSetBatchCompleter genotypeSetBatchCompleter;
         private readonly IPatientGenotypeSetProvider patientGenotypeSetProvider;
+        private readonly IGenotypeSetTimingEvents genotypeSetTimingEvents;
         private readonly IMatchPredictionCacheWarmer cacheWarmer;
         private readonly IAtlasLogger logger;
 
@@ -49,6 +52,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
             IDonorGenotypeSetSourceResolver genotypeSetSourceResolver,
             IDonorGenotypeSetBatchCompleter genotypeSetBatchCompleter,
             IPatientGenotypeSetProvider patientGenotypeSetProvider,
+            IGenotypeSetTimingEvents genotypeSetTimingEvents,
             IMatchPredictionCacheWarmer cacheWarmer)
         {
             this.matchProbabilityService = matchProbabilityService;
@@ -59,6 +63,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
             this.genotypeSetSourceResolver = genotypeSetSourceResolver;
             this.genotypeSetBatchCompleter = genotypeSetBatchCompleter;
             this.patientGenotypeSetProvider = patientGenotypeSetProvider;
+            this.genotypeSetTimingEvents = genotypeSetTimingEvents;
             this.cacheWarmer = cacheWarmer;
         }
 
@@ -92,20 +97,29 @@ namespace Atlas.MatchPrediction.ExternalInterface
                     return fileNames;
                 }
 
+                var batchStopwatch = Stopwatch.StartNew();
+
                 // Once per batch, not per donor: one read of the stored rows, and one decision about the kill-switch.
                 var batchContext = await genotypeSetSourceResolver.Resolve(
                     multipleDonorMatchProbabilityInput,
                     multipleDonorMatchProbabilityInput.Donors);
 
                 // Before the patient and the donors run, so live imputation reads from memory, not one Table Storage row at a time.
+                var warmUpTime = TimeSpan.Zero;
                 if (batchContext.MayComputeLive(multipleDonorMatchProbabilityInput.Donors))
                 {
+                    var warmUpStopwatch = Stopwatch.StartNew();
                     await cacheWarmer.WarmUp(multipleDonorMatchProbabilityInput);
+                    warmUpTime = warmUpStopwatch.Elapsed;
                 }
 
+                var patientStopwatch = Stopwatch.StartNew();
                 var (patientGenotypeSet, patientGenotypeSetSource) =
                     await patientGenotypeSetProvider.Get(matchProbabilityInputs.First(), batchContext);
+                var patientTime = patientStopwatch.Elapsed;
+
                 var outcomes = new List<DonorGenotypeSetBatchOutcome>(matchProbabilityInputs.Count);
+                var timingSamples = new List<DonorGenotypeSetTimingSample>(matchProbabilityInputs.Count);
 
                 foreach (var matchProbabilityInput in matchProbabilityInputs)
                 {
@@ -115,12 +129,28 @@ namespace Atlas.MatchPrediction.ExternalInterface
                         var matchProbabilityInputFileNames = await resultUploader.UploadSearchDonorResults(searchRequestId, matchProbabilityInput.Donor.DonorIds, result.Response);
                         fileNames = fileNames.Merge(matchProbabilityInputFileNames);
                         outcomes.Add(ToOutcome(matchProbabilityInput, result));
+                        timingSamples.Add(new DonorGenotypeSetTimingSample(result.GenotypeSetSource, result.DonorGenotypeCount, result.Timing));
                     }
                 }
 
                 // After every donor's results are uploaded. This activity returns only after the store, so the store
                 // does delay the end of the batch, and so of the search. The store's lock timeout keeps that delay short.
+                var completeStopwatch = Stopwatch.StartNew();
                 await genotypeSetBatchCompleter.Complete(multipleDonorMatchProbabilityInput, batchContext, outcomes, patientGenotypeSetSource);
+
+                genotypeSetTimingEvents.Send(new GenotypeSetBatchTimings(
+                    multipleDonorMatchProbabilityInput,
+                    batchContext,
+                    "Durable",
+                    1,
+                    null,
+                    patientGenotypeSetSource,
+                    patientGenotypeSet.Genotypes.Count,
+                    patientTime,
+                    timingSamples,
+                    completeStopwatch.Elapsed,
+                    batchStopwatch.Elapsed,
+                    warmUpTime));
 
                 return fileNames;
             }

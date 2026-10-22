@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -43,6 +44,21 @@ public sealed class DonorGenotypeSetBatchContext
     private readonly PrecomputedPatientGenotypeSetRow patientRow;
 
     /// <summary>
+    /// How long the read of the batch's stored rows took, with the choice of the donor inputs' frequency sets before it
+    /// (ATL-424); null when there was no read (ATL-474).
+    /// </summary>
+    public TimeSpan? ReadTime { get; }
+
+    /// <summary>
+    /// The number of stored rows read for the batch's donor inputs, not counting the patient's row. Each row is counted
+    /// once: the ids of a donor input, and inputs with one key, share one row (ATL-424).
+    /// </summary>
+    public int ReadRowCount { get; }
+
+    /// <summary>The payload bytes read for the batch: each donor row once, and the patient's row when it is not a donor row.</summary>
+    public long ReadBytes { get; }
+
+    /// <summary>
     /// True when a donor computed live should be stored for reuse: the switch is on, the rows were read, and so the
     /// transient database matching used was still active at the start of the batch. The writer checks that again
     /// just before it writes.
@@ -73,7 +89,8 @@ public sealed class DonorGenotypeSetBatchContext
         DonorGenotypeSetSource? batchFallbackReason,
         IReadOnlyDictionary<int, PrecomputedDonorGenotypeSetRow> rows,
         PatientGenotypeSetKey patientGenotypeSetKey,
-        PrecomputedPatientGenotypeSetRow patientRow)
+        PrecomputedPatientGenotypeSetRow patientRow,
+        TimeSpan? readTime)
     {
         UsePrecomputedGenotypeSets = usePrecomputedGenotypeSets;
         UsePrecomputedGenotypeSetsSource = source;
@@ -84,6 +101,17 @@ public sealed class DonorGenotypeSetBatchContext
         this.rows = rows ?? NoRows;
         PatientGenotypeSetKey = patientGenotypeSetKey;
         this.patientRow = patientRow;
+        ReadTime = readTime;
+
+        // The ids that share a row share one object, and the patient's payload is a donor row's when their keys are equal.
+        var distinctRows = this.rows.Values.Distinct<PrecomputedDonorGenotypeSetRow>(ReferenceEqualityComparer.Instance).ToList();
+        ReadRowCount = distinctRows.Count;
+        ReadBytes = distinctRows
+            .Select(row => row.SubjectGenotypeSetData)
+            .Append(patientRow?.SubjectGenotypeSetData)
+            .Where(data => data != null)
+            .Distinct<byte[]>(ReferenceEqualityComparer.Instance)
+            .Sum(data => (long)data.Length);
     }
 
     public static DonorGenotypeSetBatchContext Disabled(
@@ -92,16 +120,18 @@ public sealed class DonorGenotypeSetBatchContext
         int? matchingAlgorithmDataRefreshRecordId,
         PatientGenotypeSetKey patientGenotypeSetKey = null) =>
         new(false, source, mode, null, matchingAlgorithmDataRefreshRecordId, DonorGenotypeSetSource.PrecomputeDisabled, NoRows,
-            patientGenotypeSetKey, null);
+            patientGenotypeSetKey, null, null);
 
+    /// <param name="readTime">How long <paramref name="lookup"/> took to read; logged only.</param>
     public static DonorGenotypeSetBatchContext Enabled(
         UsePrecomputedGenotypeSetsSource source,
         PrecomputedGenotypeSetMode mode,
         int? matchingAlgorithmDataRefreshRecordId,
         PrecomputedDonorGenotypeSetLookup lookup,
-        PatientGenotypeSetKey patientGenotypeSetKey = null) =>
+        PatientGenotypeSetKey patientGenotypeSetKey = null,
+        TimeSpan? readTime = null) =>
         new(true, source, mode, lookup.AllowedLociKey, matchingAlgorithmDataRefreshRecordId, lookup.BatchFallbackReason, lookup.Rows,
-            patientGenotypeSetKey, lookup.PatientRow);
+            patientGenotypeSetKey, lookup.PatientRow, readTime);
 
     /// <summary>
     /// Finds and decodes the stored genotype set of a donor input.
@@ -125,9 +155,21 @@ public sealed class DonorGenotypeSetBatchContext
     public DonorGenotypeSetSource TryGetPrecomputedGenotypeSet(
         IReadOnlyCollection<int> donorIds,
         int donorFrequencySetId,
-        out SubjectGenotypeSet genotypeSet)
+        out SubjectGenotypeSet genotypeSet) =>
+        TryGetPrecomputedGenotypeSet(donorIds, donorFrequencySetId, out genotypeSet, out _);
+
+    /// <inheritdoc cref="TryGetPrecomputedGenotypeSet(IReadOnlyCollection{int}, int, out SubjectGenotypeSet)"/>
+    /// <param name="storedBytes">
+    /// The size of the payload of the row that was used, for logging (ATL-474); 0 when no row was used, or the row is unrepresented.
+    /// </param>
+    public DonorGenotypeSetSource TryGetPrecomputedGenotypeSet(
+        IReadOnlyCollection<int> donorIds,
+        int donorFrequencySetId,
+        out SubjectGenotypeSet genotypeSet,
+        out int storedBytes)
     {
         genotypeSet = null;
+        storedBytes = 0;
 
         if (BatchFallbackReason != null)
         {
@@ -159,6 +201,7 @@ public sealed class DonorGenotypeSetBatchContext
         try
         {
             genotypeSet = SubjectGenotypeSetPayload.Decode(row.SubjectGenotypeSetData);
+            storedBytes = row.SubjectGenotypeSetData.Length;
             return DonorGenotypeSetSource.Precomputed;
         }
         catch (InvalidDataException)
