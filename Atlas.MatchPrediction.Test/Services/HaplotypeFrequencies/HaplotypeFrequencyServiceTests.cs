@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.SupportMessages;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.MatchPrediction;
@@ -14,6 +15,7 @@ using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 using AutoFixture;
 using AwesomeAssertions;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using NUnit.Framework;
 using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
@@ -28,6 +30,7 @@ internal class HaplotypeFrequencyServiceTests
     private INotificationSender notificationSender;
     private IMatchPredictionLogger<MatchProbabilityLoggingContext> logger;
     private IHaplotypeFrequencyCache haplotypeFrequencyCache;
+    private FakeTimeProvider timeProvider;
 
     private Fixture fixture;
 
@@ -41,12 +44,14 @@ internal class HaplotypeFrequencyServiceTests
         notificationSender = Substitute.For<INotificationSender>();
         logger = Substitute.For<IMatchPredictionLogger<MatchProbabilityLoggingContext>>();
         haplotypeFrequencyCache = Substitute.For<IHaplotypeFrequencyCache>();
+        timeProvider = new FakeTimeProvider();
 
         sut = new HaplotypeFrequencyService(
             frequencySetImporter,
             notificationSender,
             logger,
-            haplotypeFrequencyCache
+            haplotypeFrequencyCache,
+            timeProvider
         );
     }
 
@@ -78,17 +83,93 @@ internal class HaplotypeFrequencyServiceTests
     }
 
     [Test]
-    public async Task ImportFrequencySet_SuccessfulImport_InvalidatesActiveSetCache()
+    public async Task ImportFrequencySet_SuccessfulImport_RefreshesTheActiveSetsBeforeTheSuccessNotification()
     {
         frequencySetImporter.Import(null, null).ReturnsForAnyArgs(Task.CompletedTask);
+        haplotypeFrequencyCache.RefreshActiveHaplotypeFrequencySets().Returns(true);
 
-        var file = fixture.Build<FrequencySetFile>()
-            .Without(f => f.Contents)
-            .Create();
+        await CompleteWhileTimePasses(sut.ImportFrequencySet(NewFile(), fixture.Create<FrequencySetImportBehaviour>()));
 
-        await sut.ImportFrequencySet(file, fixture.Create<FrequencySetImportBehaviour>());
+        Received.InOrder(() =>
+        {
+            haplotypeFrequencyCache.RefreshActiveHaplotypeFrequencySets();
+            notificationSender.SendNotification(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
+            haplotypeFrequencyCache.RefreshActiveHaplotypeFrequencySets();
+        });
+    }
 
-        haplotypeFrequencyCache.Received(1).RemoveActiveHaplotypeFrequencySets();
+    [Test]
+    public async Task ImportFrequencySet_SuccessfulImport_RefreshesTheActiveSetsAgainAfterTheDelay()
+    {
+        frequencySetImporter.Import(null, null).ReturnsForAnyArgs(Task.CompletedTask);
+        haplotypeFrequencyCache.RefreshActiveHaplotypeFrequencySets().Returns(true);
+
+        var import = sut.ImportFrequencySet(NewFile(), fixture.Create<FrequencySetImportBehaviour>());
+        timeProvider.Advance(HaplotypeFrequencyService.ActiveSetCacheRewriteDelay - TimeSpan.FromSeconds(1));
+        await haplotypeFrequencyCache.Received(1).RefreshActiveHaplotypeFrequencySets();
+        timeProvider.Advance(TimeSpan.FromSeconds(1));
+        await import;
+
+        await haplotypeFrequencyCache.Received(2).RefreshActiveHaplotypeFrequencySets();
+    }
+
+    [Test]
+    public async Task ImportFrequencySet_WhenTheDistributedCacheNeverStoresTheSets_TriesFourMoreTimes_LogsEachTry_AndSendsAnAlert()
+    {
+        frequencySetImporter.Import(null, null).ReturnsForAnyArgs(Task.CompletedTask);
+        haplotypeFrequencyCache.RefreshActiveHaplotypeFrequencySets().Returns(false);
+
+        await CompleteWhileTimePasses(sut.ImportFrequencySet(NewFile(), fixture.Create<FrequencySetImportBehaviour>()));
+
+        const int tries = 1 + HaplotypeFrequencyService.MaxActiveSetCacheRewriteAttempts;
+        await haplotypeFrequencyCache.Received(tries).RefreshActiveHaplotypeFrequencySets();
+        logger.Received(tries).SendTrace(
+            Arg.Is<string>(message => message.Contains("did not store the active haplotype frequency sets")),
+            LogLevel.Warn,
+            Arg.Any<Dictionary<string, string>>());
+        await notificationSender.Received(1).SendAlert(
+            Arg.Is<string>(summary => summary.Contains("RefreshActiveHaplotypeFrequencySetCache")),
+            Arg.Any<string>(),
+            Priority.Medium,
+            Arg.Any<string>());
+    }
+
+    [Test]
+    public async Task ImportFrequencySet_WhenTheRefreshThrows_StillSucceeds_WithNoAlert()
+    {
+        frequencySetImporter.Import(null, null).ReturnsForAnyArgs(Task.CompletedTask);
+        haplotypeFrequencyCache.RefreshActiveHaplotypeFrequencySets()
+            .Returns(Task.FromException<bool>(new InvalidOperationException(fixture.Create<string>())), Task.FromResult(true));
+
+        var import = () => CompleteWhileTimePasses(sut.ImportFrequencySet(NewFile(), fixture.Create<FrequencySetImportBehaviour>()));
+
+        await import.Should().NotThrowAsync();
+        await notificationSender.ReceivedWithAnyArgs(1).SendNotification(default, default, default);
+        await notificationSender.DidNotReceiveWithAnyArgs().SendAlert(default, default, default, default);
+    }
+
+    [Test]
+    public async Task RefreshActiveHaplotypeFrequencySetCache_WhenTheDistributedCacheStoresTheSets_ReturnsTrue()
+    {
+        haplotypeFrequencyCache.RefreshActiveHaplotypeFrequencySets().Returns(true);
+
+        var refresh = sut.RefreshActiveHaplotypeFrequencySetCache();
+        await CompleteWhileTimePasses(refresh);
+
+        (await refresh).Should().BeTrue();
+    }
+
+    [Test]
+    public async Task RefreshActiveHaplotypeFrequencySetCache_WhenTheDistributedCacheNeverStoresTheSets_ReturnsFalse_WithNoAlert()
+    {
+        haplotypeFrequencyCache.RefreshActiveHaplotypeFrequencySets().Returns(false);
+
+        var refresh = sut.RefreshActiveHaplotypeFrequencySetCache();
+        await CompleteWhileTimePasses(refresh);
+
+        (await refresh).Should().BeFalse();
+        // The caller of the endpoint gets the result. An alert is for an import, which nobody waits for.
+        await notificationSender.DidNotReceiveWithAnyArgs().SendAlert(default, default, default, default);
     }
 
     // The typed catch blocks send a Medium-priority alert and swallow; an unexpected (generic) exception must instead
@@ -107,7 +188,7 @@ internal class HaplotypeFrequencyServiceTests
 
         (await import.Should().ThrowAsync<InvalidOperationException>()).Which.Should().BeSameAs(exception);
         await notificationSender.Received(1).SendAlert(Arg.Any<string>(), Arg.Any<string>(), Priority.High, Arg.Any<string>());
-        haplotypeFrequencyCache.DidNotReceive().RemoveActiveHaplotypeFrequencySets();
+        await haplotypeFrequencyCache.DidNotReceive().RefreshActiveHaplotypeFrequencySets();
     }
 
     [Test]
@@ -264,6 +345,29 @@ internal class HaplotypeFrequencyServiceTests
         var result = await sut.GetFrequenciesForHla(setId, new List<HfSetHaplotypeNames>(), new HashSet<Locus>());
 
         result.Should().BeEmpty();
+    }
+
+    private FrequencySetFile NewFile() => fixture.Build<FrequencySetFile>().Without(f => f.Contents).Create();
+
+    /// <summary>
+    /// Moves the fake clock on, one rewrite delay at a time, until <paramref name="task"/> ends: each new write of the active
+    /// sets waits for that delay first.
+    /// </summary>
+    private async Task CompleteWhileTimePasses(Task task)
+    {
+        var deadline = DateTime.UtcNow.AddSeconds(5);
+        while (!task.IsCompleted && DateTime.UtcNow < deadline)
+        {
+            timeProvider.Advance(HaplotypeFrequencyService.ActiveSetCacheRewriteDelay);
+            await Task.Delay(10);
+        }
+
+        if (!task.IsCompleted)
+        {
+            throw new TimeoutException("The task did not end while the fake clock moved on.");
+        }
+
+        await task;
     }
 
     private static FrequencySetCacheEntry BuildEntry(

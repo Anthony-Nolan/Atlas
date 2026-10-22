@@ -42,6 +42,7 @@ How to run functions via Swagger using Visual Studio:
 - To use a local Redis, start one in a container: `docker run -d --name atlas-redis -p 6379:6379 redis:7.4` (Azure Managed Redis runs Redis 7.4).
   - Set `DistributedCache:ConnectionString` to `localhost:6379`: in `local.settings.json` for a Functions app, and in user secrets for the two workers.
   - Keep `DistributedCache:ManagedIdentityClientId` empty. It is for Azure Managed Redis, which accepts only Microsoft Entra ID sign-in.
+- After you rebuild a local database, or seed it again, empty the local Redis: `docker exec atlas-redis redis-cli FLUSHALL`. The cache keeps the list of active haplotype frequency sets for 24 hours, and a new database can give their ids to other sets.
 - To remove the container: `docker rm -f atlas-redis`.
 
 ## Running A Search

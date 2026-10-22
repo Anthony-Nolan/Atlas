@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Caching;
 using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchingAlgorithm.DependencyInjection;
@@ -83,6 +84,7 @@ namespace Atlas.MatchingAlgorithm.Test.DependencyInjection
             var services = new ServiceCollection();
             // Registered by the host itself, as in the Donor Management app's Startup.
             services.AddSingleton(Options.Create(new HaplotypeFrequencySetCacheSettings()));
+            services.RegisterDistributedCacheTypes(_ => new DistributedCacheSettings());
 
             services.RegisterDonorManagement(
                 _ => new ApplicationInsightsSettings { LogLevel = "Info" },

@@ -33,6 +33,15 @@ Feature flags permit greater control over the release of new features (see this 
 * BREAKING - Breaking change at the API level
 * FBC - Functionally Breaking Change, i.e., significant change to the behaviour of an existing feature but the API remains unchanged
 
+### 4.2.0
+
+#### Match Prediction
+* E: After a haplotype frequency set import, every app uses the new set within 1 minute of the success notification, not 5 minutes. The apps share the list of active sets through the distributed cache (Redis), when one is configured. See [the active set cache](/README_MatchPredictionAlgorithm.md#the-active-set-cache).
+  * An import takes 30 seconds longer: 30 seconds after the success notification, it writes the list to the distributed cache again. If the cache does not store the list after 4 more writes, the import sends a medium-priority alert (see [README_Support](/README_Support.md#alert-the-new-active-sets-are-not-confirmed-in-the-distributed-cache)).
+  * The default of the Terraform variable `MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES` changes from 5 to 1, and the match prediction worker container now uses it too. If your installation sets this variable, set it to 1: it is also how long an imported set can take to reach every app.
+* E: New endpoint on the Match Prediction functions app (`<ENV>-ATLAS-MATCH-PREDICTION-FUNCTION`): `POST /api/RefreshActiveHaplotypeFrequencySetCache`. It writes the active sets from SQL to the distributed cache. Call it after a change of the active sets with SQL (see [Rolling back an upload](/README_Support.md#rolling-back-an-upload)), and after a restore or a copy of the match prediction database (see [README_Support](/README_Support.md#after-a-restore-or-a-copy-of-the-match-prediction-database)).
+  * If the distributed cache is configured when you deploy this version, and a set is imported during the deployment, call this endpoint after the deployment. The apps of the old version do not write the distributed cache.
+
 ### 4.1.0
 
 #### Debug

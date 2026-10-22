@@ -50,7 +50,7 @@
     "DistributedCache:ConnectionString": "",
     "DistributedCache:ManagedIdentityClientId": "",
     "GenotypeImputation:MaximumExpandedGenotypesPerInput": 2000,
-    "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes": 5,
+    "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes": 1,
     "HaplotypeFrequencySetCache:MaxCachedFrequencySets": 10,
     "HaplotypeFrequencySetCache:SetCacheExpiryMinutes": 60,
     "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",

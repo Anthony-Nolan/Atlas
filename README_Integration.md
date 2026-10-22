@@ -111,7 +111,7 @@ Haplotype frequency sets should be provided in the [specified JSON schema](Schem
 They should be uploaded to the `haplotype-frequency-import` container within Azure Blob Storage. 
 Anything uploaded here will be automatically processed, stored in the SQL database, and activated if all validation passes.
 
-On success, a notification will be sent, and on failure, an alert.
+On success, a notification will be sent, and on failure, an alert. Every app uses the new set within a minute of the success notification.
 
 Donors/patients will use an appropriate set based on the ethnicity/registry codes provided - such codes must be identical strings to those used in HF set import to be used.
 

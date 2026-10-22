@@ -275,8 +275,8 @@ variable "MATCH_PREDICTION_DATABASE_USERNAME" {
 
 variable "MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES" {
   type        = number
-  default     = 5
-  description = "Absolute cache TTL, in minutes, for the active HaplotypeFrequencySets lookup used by the match prediction service."
+  default     = 1
+  description = "Absolute cache TTL, in minutes, for the active HaplotypeFrequencySets lookup in each app process. It is also how long an imported set can take to reach every process."
 }
 
 variable "MATCH_PREDICTION_MAX_CACHED_FREQUENCY_SETS" {

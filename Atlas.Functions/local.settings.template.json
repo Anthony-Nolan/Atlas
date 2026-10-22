@@ -64,7 +64,7 @@
     "Matching:MessagingServiceBus:SearchRequestsTopic": "matching-requests",
     "Matching:MessagingServiceBus:SearchResultsTopic": "matching-results-ready",
 
-    "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes": 5,
+    "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes": 1,
     "HaplotypeFrequencySetCache:MaxCachedFrequencySets": 10,
     "HaplotypeFrequencySetCache:SetCacheExpiryMinutes": 60,
 

@@ -46,8 +46,27 @@ very quickly roll back to a previous version.
 This is not automated - it will require manually changing the SQL database. The active set in question will need to have its `Active` column set to 0, and the desired replacement set to `1`. 
 These two steps must happen in order, as only one set can be active (per ethnicity/registry pair) at a time.
 
+After the SQL change, call `POST /api/RefreshActiveHaplotypeFrequencySetCache` on the match prediction functions app (function key needed). It writes the
+active sets to the distributed cache, so every app uses the rolled-back set within 1 minute. Without the call, an app can use the replaced set for up to 24 hours.
+The call takes 30 seconds or more. If it returns `503`, the distributed cache did not store the sets: call it again later.
+See [the active set cache](README_MatchPredictionAlgorithm.md#the-active-set-cache).
+
 Alternatively, an older file can be re-uploaded, which will automatically become active if successful. This does not require database access, but does require access to the upload file
-for the desired rollback, and will take longer than the manual SQL approach - especially for large sets (order of minutes).   
+for the desired rollback, and will take longer than the manual SQL approach - especially for large sets (order of minutes). A re-upload needs no call to the
+endpoint above: the import writes the distributed cache itself.
+
+### After a restore or a copy of the match prediction database
+
+A restore or a copy of the match prediction database (for example, a copy of LIVE into DEV) changes the active sets without an import. After it, call
+`POST /api/RefreshActiveHaplotypeFrequencySetCache` on the match prediction functions app (see [Rolling back an upload](#rolling-back-an-upload)).
+Without the call, apps can use the list of active sets of the old database, from the distributed cache, for up to 24 hours. Set ids are SQL identity values,
+so an id in that list can belong to a different set in the new database.
+
+### Alert: the new active sets are not confirmed in the distributed cache
+
+An import has completed, but its writes of the new list of active sets to the distributed cache (Redis) failed: the 4 writes in the 2 minutes after the import.
+Apps can use the replaced sets for up to 24 hours. When the cache is available again, call `POST /api/RefreshActiveHaplotypeFrequencySetCache` (see
+[Rolling back an upload](#rolling-back-an-upload)).
 
 
 ## Data Refresh 

@@ -4,6 +4,11 @@ namespace Atlas.MatchPrediction.ExternalInterface.Settings
 {
     public class HaplotypeFrequencySetCacheSettings
     {
+        /// <summary>
+        /// How long each process keeps the active haplotype frequency sets, before it reads them again from the distributed
+        /// cache (or from the database, when there is no distributed cache). So it is also how long an imported set can take
+        /// to reach every process. An absolute expiry, not a sliding one.
+        /// </summary>
         [Range(1, int.MaxValue)]
         public int ActiveSetCacheExpiryMinutes { get; set; }
 
