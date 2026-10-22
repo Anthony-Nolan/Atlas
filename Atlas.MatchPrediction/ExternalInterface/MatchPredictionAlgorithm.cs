@@ -100,7 +100,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
                 // Before the patient and the donors run, so live imputation reads from memory, not one Table Storage row at a time.
                 if (batchContext.MayComputeLive(multipleDonorMatchProbabilityInput.Donors))
                 {
-                    await cacheWarmer.WarmUp(multipleDonorMatchProbabilityInput.MatchingAlgorithmHlaNomenclatureVersion);
+                    await cacheWarmer.WarmUp(multipleDonorMatchProbabilityInput);
                 }
 
                 var (patientGenotypeSet, patientGenotypeSetSource) =

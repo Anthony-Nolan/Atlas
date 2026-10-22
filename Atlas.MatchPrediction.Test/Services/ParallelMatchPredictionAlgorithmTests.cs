@@ -316,7 +316,7 @@ namespace Atlas.MatchPrediction.Test.Services
 
             await sut.RunBatch(input, maxDegreeOfParallelism: 10, batchId: 1);
 
-            await cacheWarmer.Received(1).WarmUp("3660");
+            await cacheWarmer.Received(1).WarmUp(input);
         }
 
         [Test]

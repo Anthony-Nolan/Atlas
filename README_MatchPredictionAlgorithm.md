@@ -469,8 +469,16 @@ from the cache once a day. In one DEV test, this meant about 240k single-row rea
 
 So each search batch warms the dictionary tables match prediction reads before its patient and donors run
 (`IMatchPredictionCacheWarmer`, on both the durable and the parallel path; `IHlaMetadataCacheControl.PreWarmMatchPredictionCaches`:
-allele names, allele groups, small g groups, and the G group and small g group to P group lookups), for the nomenclature
-version of every active haplotype frequency set and for the search's matching version.
+allele names, allele groups, small g groups, and the G group and small g group to P group lookups). It warms the
+nomenclature version of each haplotype frequency set the batch's patient and donors use, and the search's matching
+version. So a process loads only the versions it needs.
+
+The scoring table is not warmed. Match prediction reads it only to find the G group of a null allele in a typing, and to
+convert a typing to G or P groups for a frequency set that holds haplotypes at those groups. With small g group
+frequency sets, only subjects with a null allele read it, and most processes never do. The first such lookup is a
+single-row read that starts a load of the whole table in the background, as for any table that is not warmed. If
+frequency sets at G or P group are imported, every subject reads the scoring table, and it should be added to the
+warm-up.
 
 MACs are not warmed. A DEV test warmed all of them (1.36 million): it took 74-100 s on each new replica, raised worker
 memory by about 1.6 GB towards the 4 GiB limit, and made live imputation no faster. A MAC is looked up when it is first
@@ -529,8 +537,8 @@ churning out of the cache before they'd naturally expire.
 keep 10 sets and 60 minutes). A search load touches many sets: on DEV, 40 searches used about 80, and with 10 cached each
 replica loaded each set about 3 times. Live imputation then spent 98 % of its time getting frequency data, and the
 reloads drove frequent gen 2 garbage collections (ATL-476). The GC heap stayed under 1.6 GB of its 3 GB limit (75 % of
-the 4 GiB container), which is the room the larger cache uses. Watch `GcHeapMB` in the `Match prediction worker runtime`
-event before raising it further. Note that `Get All Frequencies from HF set - from SQL database` is a verbose trace and is
+the 4 GiB container), which is the room the larger cache uses. Watch the memory of the `match-pred-ca` container app
+(the `WorkingSetBytes` metric in Azure Monitor) before raising it further. Note that `Get All Frequencies from HF set - from SQL database` is a verbose trace and is
 sampled in the worker; the consolidation trace logged with each load (`Calculating consolidated frequencies ...`) is
 the one to count, weighted by `itemCount`.
 

@@ -14,8 +14,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
 /// <remarks>
 /// <see cref="MacRepository"/> is scoped, and match prediction's parallel path opens a scope per donor. Creating the client
 /// (and checking that the table exists) in the repository's constructor therefore cost one blocking Table Storage round trip
-/// per donor - about 41k of them in one ATL-474 test run. A <see cref="TableClient"/> is thread-safe and meant to be reused,
-/// so it is built once here, and the table is checked once, asynchronously, on first use.
+/// per donor. A <see cref="TableClient"/> is thread-safe and meant to be reused, so it is built once here, and the table
+/// is checked once, asynchronously, on first use.
 /// </remarks>
 internal interface IMacTableClientProvider
 {

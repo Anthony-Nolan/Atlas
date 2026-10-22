@@ -5,7 +5,9 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
+using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 
 namespace Atlas.MatchPrediction.Services.CacheWarming;
@@ -14,8 +16,8 @@ public interface IMatchPredictionCacheWarmer
 {
     /// <summary>
     /// Loads the HLA Metadata Dictionary tables match prediction reads into memory, before the batch's donors run, for
-    /// the nomenclature version of every active haplotype frequency set and for
-    /// <paramref name="matchingAlgorithmHlaNomenclatureVersion"/>.
+    /// the nomenclature version of each haplotype frequency set the batch's patient and donors use, and for the
+    /// nomenclature version matching used for the search.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -23,22 +25,23 @@ public interface IMatchPredictionCacheWarmer
     /// their cache entry expires (once a day), when the next call loads them again.
     /// </para>
     /// <para>
-    /// Without it, each lookup that misses a cold cache is its own Table Storage read (ATL-476: about 240k of them on
-    /// the small g group tables alone in one ATL-474 test run, repeated on every new replica).
+    /// Only the versions the batch uses, so a process loads the tables of the versions it needs, as it did before the
+    /// warm-up existed.
     /// </para>
     /// <para>
-    /// MACs are deliberately not warmed. Warming all of them (1.36 million on DEV) took 74-100 s on each new replica,
-    /// raised worker memory by about 1.6 GB towards the replica's 4 GiB limit, and made live imputation no faster. A MAC
-    /// is looked up when it is first seen and then kept for the life of the process.
+    /// Without it, each lookup that misses a cold cache is its own Table Storage read, and every new replica repeats
+    /// them.
+    /// </para>
+    /// <para>
+    /// MACs are deliberately not warmed. The MAC table is much larger than the HLA tables: warming all of it made each
+    /// new replica slow to start and used a large share of its memory, and it made live imputation no faster. A MAC is
+    /// looked up when it is first seen and then kept for the life of the process.
     /// </para>
     /// <para>
     /// Best effort, never throws: if the warm-up fails, lookups still work, one row at a time, as before.
     /// </para>
     /// </remarks>
-    /// <param name="matchingAlgorithmHlaNomenclatureVersion">
-    /// The nomenclature version matching used for the search; null when the request has none.
-    /// </param>
-    Task WarmUp(string matchingAlgorithmHlaNomenclatureVersion);
+    Task WarmUp(MultipleDonorMatchProbabilityInput batch);
 }
 
 internal class MatchPredictionCacheWarmer : IMatchPredictionCacheWarmer
@@ -53,28 +56,28 @@ internal class MatchPredictionCacheWarmer : IMatchPredictionCacheWarmer
     internal static readonly TimeSpan LoggedWarmUpThreshold = TimeSpan.FromSeconds(1);
 
     private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
-    private readonly IHaplotypeFrequencyCache haplotypeFrequencyCache;
+    private readonly IHaplotypeFrequencyLookupService haplotypeFrequencyLookupService;
     private readonly IAtlasLogger logger;
 
     public MatchPredictionCacheWarmer(
         IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
-        IHaplotypeFrequencyCache haplotypeFrequencyCache,
+        IHaplotypeFrequencyLookupService haplotypeFrequencyLookupService,
         IAtlasLogger logger)
     {
         this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
-        this.haplotypeFrequencyCache = haplotypeFrequencyCache;
+        this.haplotypeFrequencyLookupService = haplotypeFrequencyLookupService;
         this.logger = logger;
     }
 
     /// <inheritdoc />
-    public async Task WarmUp(string matchingAlgorithmHlaNomenclatureVersion)
+    public async Task WarmUp(MultipleDonorMatchProbabilityInput batch)
     {
         var stopwatch = Stopwatch.StartNew();
         IReadOnlyCollection<string> versions = [];
 
         try
         {
-            versions = await HlaNomenclatureVersions(matchingAlgorithmHlaNomenclatureVersion);
+            versions = await HlaNomenclatureVersions(batch);
 
             // Concurrently: on a cold process every one of these is a whole-table read, and the batch waits for all of them.
             await Task.WhenAll(versions.Select(version =>
@@ -93,16 +96,31 @@ internal class MatchPredictionCacheWarmer : IMatchPredictionCacheWarmer
     }
 
     /// <summary>
-    /// The frequency sets' versions, because match prediction converts donor and patient typings in the frequency set's
-    /// nomenclature, and the matching version, which it falls back to when a typing is not in the frequency set's version.
+    /// The versions of the frequency sets the batch uses, because match prediction converts donor and patient typings in
+    /// the frequency set's nomenclature, and the matching version, which it falls back to when a typing is not in the
+    /// frequency set's version.
     /// </summary>
-    private async Task<IReadOnlyCollection<string>> HlaNomenclatureVersions(string matchingAlgorithmHlaNomenclatureVersion)
+    /// <remarks>
+    /// The sets are chosen as they are for the patient and the donors, by
+    /// <see cref="IHaplotypeFrequencyLookupService.GetSingleHaplotypeFrequencySet"/>: one cache read per distinct registry
+    /// and ethnicity, not a database read.
+    /// </remarks>
+    private async Task<IReadOnlyCollection<string>> HlaNomenclatureVersions(MultipleDonorMatchProbabilityInput batch)
     {
-        var activeSets = await haplotypeFrequencyCache.GetActiveHaplotypeFrequencySets();
+        var setMetadata = (batch.Donors ?? [])
+            .Select(donor => donor.DonorFrequencySetMetadata)
+            .Append(batch.PatientFrequencySetMetadata)
+            .Select(metadata => metadata ?? new FrequencySetMetadata())
+            .DistinctBy(metadata => (metadata.RegistryCode, metadata.EthnicityCode));
 
-        return activeSets.Values
-            .Select(set => set.HlaNomenclatureVersion)
-            .Append(matchingAlgorithmHlaNomenclatureVersion)
+        var versions = new List<string> { batch.MatchingAlgorithmHlaNomenclatureVersion };
+        foreach (var metadata in setMetadata)
+        {
+            var set = await haplotypeFrequencyLookupService.GetSingleHaplotypeFrequencySet(metadata);
+            versions.Add(set.HlaNomenclatureVersion);
+        }
+
+        return versions
             .Where(version => !string.IsNullOrEmpty(version))
             .Distinct()
             .Order()

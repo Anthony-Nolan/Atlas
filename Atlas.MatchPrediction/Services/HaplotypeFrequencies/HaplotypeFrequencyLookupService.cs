@@ -51,7 +51,6 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         /// fetched the set from the cache once per survivor, each time through the cache's lock, and a set pushed out of
         /// the cache in the meantime was loaded again mid-subject (ATL-476).
         /// </remarks>
-        // ReSharper disable once ParameterTypeCanBeEnumerable.Global
         Task<decimal[]> GetFrequenciesForHla(int setId, IReadOnlyList<HfSetHaplotypeNames> hlas, ISet<Locus> excludedLoci);
     }
 
@@ -123,7 +122,26 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         public async Task<decimal> GetFrequencyForHla(int setId, HfSetHaplotypeNames hla, ISet<Locus> excludedLoci)
         {
             var entry = await HaplotypeFrequencyCache.GetAllHaplotypeFrequencies(setId);
+            return FrequencyFromEntry(entry, hla, excludedLoci, excludedLoci.Any());
+        }
 
+        /// <inheritdoc />
+        public async Task<decimal[]> GetFrequenciesForHla(int setId, IReadOnlyList<HfSetHaplotypeNames> hlas, ISet<Locus> excludedLoci)
+        {
+            var entry = await HaplotypeFrequencyCache.GetAllHaplotypeFrequencies(setId);
+            var anyExcludedLoci = excludedLoci.Any();
+            var frequencies = new decimal[hlas.Count];
+
+            for (var i = 0; i < hlas.Count; i++)
+            {
+                frequencies[i] = FrequencyFromEntry(entry, hlas[i], excludedLoci, anyExcludedLoci);
+            }
+
+            return frequencies;
+        }
+
+        private decimal FrequencyFromEntry(FrequencySetCacheEntry entry, HfSetHaplotypeNames hla, ISet<Locus> excludedLoci, bool anyExcludedLoci)
+        {
             // The interner resolves a key when every allele is known to the set individually - but that does NOT
             // guarantee the *combination* is a stored haplotype (e.g. two haplotypes sharing alleles produce
             // resolvable cross-combinations that were never imported). So we must still probe the dictionary
@@ -137,39 +155,13 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
             // If no loci are excluded, there is nothing to calculate - the haplotype is just unrepresented.
             // We do not want to add all unrepresented haplotypes to the cache - this drastically reduces algorithm speed, increases memory, and has no benefit
-            if (!excludedLoci.Any())
+            if (!anyExcludedLoci)
             {
                 return 0;
             }
 
-            return await HaplotypeFrequencyCache.GetConsolidatedFrequency(setId, hla, excludedLoci);
-        }
-
-        /// <inheritdoc />
-        public async Task<decimal[]> GetFrequenciesForHla(int setId, IReadOnlyList<HfSetHaplotypeNames> hlas, ISet<Locus> excludedLoci)
-        {
-            var entry = await HaplotypeFrequencyCache.GetAllHaplotypeFrequencies(setId);
-            var anyExcludedLoci = excludedLoci.Any();
-            var frequencies = new decimal[hlas.Count];
-
-            for (var i = 0; i < hlas.Count; i++)
-            {
-                var hla = hlas[i];
-
-                // As GetFrequencyForHla: probe the dictionary, because a key that resolves is not necessarily a stored haplotype.
-                if (entry.Interner.TryResolve(a: hla.A, b: hla.B, c: hla.C, dqb1: hla.Dqb1, drb1: hla.Drb1, out var resolvedHaplotypeKey)
-                    && entry.SetFrequencies.TryGetValue(resolvedHaplotypeKey, out var haplotypeFrequency))
-                {
-                    frequencies[i] = haplotypeFrequency.Frequency;
-                }
-                else
-                {
-                    // Unrepresented: 0 with no excluded loci, else the consolidated frequency - from the same entry.
-                    frequencies[i] = anyExcludedLoci ? HaplotypeFrequencyCache.GetConsolidatedFrequency(entry, hla, excludedLoci) : 0;
-                }
-            }
-
-            return frequencies;
+            // From the entry already in hand, so a caller resolving many haplotypes fetches the set once.
+            return HaplotypeFrequencyCache.GetConsolidatedFrequency(entry, hla, excludedLoci);
         }
     }
 }

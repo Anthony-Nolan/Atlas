@@ -329,13 +329,13 @@ variable "MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS" {
 variable "MATCH_PREDICTION_WORKER_MAX_CACHED_FREQUENCY_SETS" {
   type        = number
   default     = 30
-  description = "Maximum number of haplotype frequency sets the match prediction worker keeps in memory at once (least recently used evicted). Larger than MATCH_PREDICTION_MAX_CACHED_FREQUENCY_SETS because a search load touches many sets: with 10, DEV searches reloaded each set about 3 times per replica (ATL-476). Check the GC heap in the 'Match prediction worker runtime' event when changing it."
+  description = "Maximum number of haplotype frequency sets the match prediction worker keeps in memory at once (least recently used evicted). Larger than MATCH_PREDICTION_MAX_CACHED_FREQUENCY_SETS because a search load touches many sets, and with 10 each replica loaded the same sets again and again (ATL-476). Check the memory of the match prediction container app (WorkingSetBytes) when changing it."
 }
 
 variable "MATCH_PREDICTION_WORKER_SET_CACHE_EXPIRY_MINUTES" {
   type        = number
   default     = 1440
-  description = "Absolute cache TTL, in minutes, for a haplotype frequency set in the match prediction worker. A day, as for the precompute worker: sets change only on import, and the active set lookup (MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES) picks up a new set."
+  description = "Absolute cache TTL, in minutes, for a haplotype frequency set in the match prediction worker. A day: sets change only on import, and the active set lookup (MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES) picks up a new set. The other hosts, including the precompute worker, use MATCH_PREDICTION_SET_CACHE_EXPIRY_MINUTES."
 }
 
 variable "MATCH_PREDICTION_WORKER_PREFETCH_COUNT" {

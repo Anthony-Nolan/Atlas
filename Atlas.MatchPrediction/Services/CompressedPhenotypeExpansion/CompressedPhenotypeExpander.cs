@@ -515,8 +515,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     ///
     /// <para>
     /// One call for all the survivors, not one per survivor: each call fetches the set from the cache, through its
-    /// lock, and a set pushed out in between was loaded again mid-donor. Live imputation on DEV spent about a fifth of
-    /// its time here when it made one call per survivor (ATL-476).
+    /// lock, and a set pushed out in between was loaded again mid-donor (ATL-476).
     /// </para>
     ///
     /// <para>

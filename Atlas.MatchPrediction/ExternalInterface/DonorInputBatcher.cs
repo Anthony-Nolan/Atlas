@@ -38,9 +38,9 @@ namespace Atlas.MatchPrediction.ExternalInterface
                 })
                 // By frequency set metadata, which is what picks a donor's haplotype frequency set, so a batch spans as
                 // few sets as possible and the batch's donors run set by set. A match prediction worker keeps only a
-                // few sets in memory: in matching-result order, a batch of 100 spanned many sets, and DEV searches
-                // loaded each set about 3 times per replica (ATL-476). A stable sort, and each donor's result depends
-                // only on its own input, so no result changes.
+                // few sets in memory: in matching-result order, a batch spanned many sets, and each replica loaded the
+                // same sets again and again (ATL-476). A stable sort, and each donor's result depends only on its own
+                // input, so no result changes.
                 .OrderBy(d => d.DonorFrequencySetMetadata?.RegistryCode, StringComparer.Ordinal)
                 .ThenBy(d => d.DonorFrequencySetMetadata?.EthnicityCode, StringComparer.Ordinal);
 

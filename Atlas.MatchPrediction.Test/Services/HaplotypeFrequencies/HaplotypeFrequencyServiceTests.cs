@@ -131,8 +131,8 @@ internal class HaplotypeFrequencyServiceTests
         var result = await sut.GetFrequencyForHla(setId, hla, new HashSet<Locus>());
 
         result.Should().Be(0.3m);
-        await haplotypeFrequencyCache.DidNotReceive()
-            .GetConsolidatedFrequency(Arg.Any<int>(), Arg.Any<HfSetHaplotypeNames>(), Arg.Any<ISet<Locus>>());
+        haplotypeFrequencyCache.DidNotReceive()
+            .GetConsolidatedFrequency(Arg.Any<FrequencySetCacheEntry>(), Arg.Any<HfSetHaplotypeNames>(), Arg.Any<ISet<Locus>>());
     }
 
     [Test]
@@ -146,8 +146,8 @@ internal class HaplotypeFrequencyServiceTests
         var result = await sut.GetFrequencyForHla(setId, hla, new HashSet<Locus>());
 
         result.Should().Be(0);
-        await haplotypeFrequencyCache.DidNotReceive()
-            .GetConsolidatedFrequency(Arg.Any<int>(), Arg.Any<HfSetHaplotypeNames>(), Arg.Any<ISet<Locus>>());
+        haplotypeFrequencyCache.DidNotReceive()
+            .GetConsolidatedFrequency(Arg.Any<FrequencySetCacheEntry>(), Arg.Any<HfSetHaplotypeNames>(), Arg.Any<ISet<Locus>>());
     }
 
     [Test]
@@ -155,13 +155,13 @@ internal class HaplotypeFrequencyServiceTests
     {
         const int setId = 1;
         haplotypeFrequencyCache.GetAllHaplotypeFrequencies(setId).Returns(BuildEntry(("a", "b", "c", "q", "r", 0.3m)));
-        haplotypeFrequencyCache.GetConsolidatedFrequency(setId, Arg.Any<HfSetHaplotypeNames>(), Arg.Any<ISet<Locus>>()).Returns(0.99m);
+        haplotypeFrequencyCache.GetConsolidatedFrequency(Arg.Any<FrequencySetCacheEntry>(), Arg.Any<HfSetHaplotypeNames>(), Arg.Any<ISet<Locus>>()).Returns(0.99m);
         var hla = new HfSetHaplotypeNames(valueA: "zzz", valueB: "b", valueC: "c", valueDqb1: "q", valueDrb1: "r");
 
         var result = await sut.GetFrequencyForHla(setId, hla, new HashSet<Locus> { Locus.C });
 
         result.Should().Be(0.99m);
-        await haplotypeFrequencyCache.Received(1).GetConsolidatedFrequency(setId, hla, Arg.Any<ISet<Locus>>());
+        haplotypeFrequencyCache.Received(1).GetConsolidatedFrequency(Arg.Any<FrequencySetCacheEntry>(), hla, Arg.Any<ISet<Locus>>());
     }
 
     // Regression guard: the interner resolves each allele independently, so a cross-combination of alleles that all
@@ -181,8 +181,8 @@ internal class HaplotypeFrequencyServiceTests
         var result = await sut.GetFrequencyForHla(setId, hla, new HashSet<Locus>());
 
         result.Should().Be(0);
-        await haplotypeFrequencyCache.DidNotReceive()
-            .GetConsolidatedFrequency(Arg.Any<int>(), Arg.Any<HfSetHaplotypeNames>(), Arg.Any<ISet<Locus>>());
+        haplotypeFrequencyCache.DidNotReceive()
+            .GetConsolidatedFrequency(Arg.Any<FrequencySetCacheEntry>(), Arg.Any<HfSetHaplotypeNames>(), Arg.Any<ISet<Locus>>());
     }
 
     [Test]
@@ -192,13 +192,13 @@ internal class HaplotypeFrequencyServiceTests
         haplotypeFrequencyCache.GetAllHaplotypeFrequencies(setId).Returns(BuildEntry(
             ("a1", "b1", "c1", "q1", "r1", 0.1m),
             ("a2", "b2", "c2", "q2", "r2", 0.2m)));
-        haplotypeFrequencyCache.GetConsolidatedFrequency(setId, Arg.Any<HfSetHaplotypeNames>(), Arg.Any<ISet<Locus>>()).Returns(0.55m);
+        haplotypeFrequencyCache.GetConsolidatedFrequency(Arg.Any<FrequencySetCacheEntry>(), Arg.Any<HfSetHaplotypeNames>(), Arg.Any<ISet<Locus>>()).Returns(0.55m);
         var hla = new HfSetHaplotypeNames(valueA: "a1", valueB: "b2", valueC: "c1", valueDqb1: "q1", valueDrb1: "r1");
 
         var result = await sut.GetFrequencyForHla(setId, hla, new HashSet<Locus> { Locus.C });
 
         result.Should().Be(0.55m);
-        await haplotypeFrequencyCache.Received(1).GetConsolidatedFrequency(setId, hla, Arg.Any<ISet<Locus>>());
+        haplotypeFrequencyCache.Received(1).GetConsolidatedFrequency(Arg.Any<FrequencySetCacheEntry>(), hla, Arg.Any<ISet<Locus>>());
     }
 
     [Test]
@@ -210,7 +210,6 @@ internal class HaplotypeFrequencyServiceTests
             ("a2", "b2", "c2", "q2", "r2", 0.2m));
         haplotypeFrequencyCache.GetAllHaplotypeFrequencies(setId).Returns(entry);
         haplotypeFrequencyCache.GetConsolidatedFrequency(entry, Arg.Any<HfSetHaplotypeNames>(), Arg.Any<ISet<Locus>>()).Returns(0.55m);
-        haplotypeFrequencyCache.GetConsolidatedFrequency(setId, Arg.Any<HfSetHaplotypeNames>(), Arg.Any<ISet<Locus>>()).Returns(0.55m);
         var hlas = new List<HfSetHaplotypeNames>
         {
             new(valueA: "a2", valueB: "b2", valueC: "c2", valueDqb1: "q2", valueDrb1: "r2"),

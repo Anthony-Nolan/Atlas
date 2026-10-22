@@ -97,7 +97,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
                 // Once here, for the whole batch: the per-donor scopes below share the process-wide caches it fills.
                 if (batchContext.MayComputeLive(multipleDonorMatchProbabilityInput.Donors))
                 {
-                    await cacheWarmer.WarmUp(multipleDonorMatchProbabilityInput.MatchingAlgorithmHlaNomenclatureVersion);
+                    await cacheWarmer.WarmUp(multipleDonorMatchProbabilityInput);
                 }
 
                 var (patientGenotypeSet, patientGenotypeSetSource) =

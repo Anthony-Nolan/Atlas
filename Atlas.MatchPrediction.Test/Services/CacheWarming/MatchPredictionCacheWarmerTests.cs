@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
+using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.CacheWarming;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using AwesomeAssertions;
@@ -17,7 +20,7 @@ namespace Atlas.MatchPrediction.Test.Services.CacheWarming;
 internal class MatchPredictionCacheWarmerTests
 {
     private IHlaMetadataDictionaryFactory hmdFactory;
-    private IHaplotypeFrequencyCache frequencyCache;
+    private IHaplotypeFrequencyLookupService frequencyLookupService;
     private IAtlasLogger logger;
     private Dictionary<string, IHlaMetadataCacheControl> cacheControls;
     private IMatchPredictionCacheWarmer warmer;
@@ -26,7 +29,7 @@ internal class MatchPredictionCacheWarmerTests
     public void SetUp()
     {
         hmdFactory = Substitute.For<IHlaMetadataDictionaryFactory>();
-        frequencyCache = Substitute.For<IHaplotypeFrequencyCache>();
+        frequencyLookupService = Substitute.For<IHaplotypeFrequencyLookupService>();
         logger = Substitute.For<IAtlasLogger>();
 
         cacheControls = new Dictionary<string, IHlaMetadataCacheControl>();
@@ -42,17 +45,23 @@ internal class MatchPredictionCacheWarmerTests
             return cacheControl;
         });
 
-        GivenActiveSetVersions("3480", "3480", "3660");
+        // The registry picks the set's version; any registry not listed gets the global set, at 3480.
+        var setVersionsByRegistry = new Dictionary<string, string> { { "R1", "3480" }, { "R2", "3500" }, { "R3", "3660" } };
+        frequencyLookupService.GetSingleHaplotypeFrequencySet(default).ReturnsForAnyArgs(call =>
+        {
+            var registry = call.Arg<FrequencySetMetadata>()?.RegistryCode ?? "";
+            return new HaplotypeFrequencySet { HlaNomenclatureVersion = setVersionsByRegistry.GetValueOrDefault(registry, "3480") };
+        });
 
-        warmer = new MatchPredictionCacheWarmer(hmdFactory, frequencyCache, logger);
+        warmer = new MatchPredictionCacheWarmer(hmdFactory, frequencyLookupService, logger);
     }
 
     [Test]
-    public async Task WarmUp_WarmsTheMatchPredictionTablesOnceForEachDistinctVersion()
+    public async Task WarmUp_WarmsTheMatchPredictionTablesOnceForEachDistinctVersionTheBatchUses()
     {
-        await warmer.WarmUp("3670");
+        await warmer.WarmUp(Batch("3670", patientRegistry: "R1", donorRegistries: ["R1", "R2", "R2"]));
 
-        cacheControls.Keys.Should().BeEquivalentTo("3480", "3660", "3670");
+        cacheControls.Keys.Should().BeEquivalentTo("3480", "3500", "3670");
         foreach (var cacheControl in cacheControls.Values)
         {
             await cacheControl.Received(1).PreWarmMatchPredictionCaches();
@@ -61,29 +70,42 @@ internal class MatchPredictionCacheWarmerTests
     }
 
     [Test]
-    public async Task WarmUp_WhenTheMatchingVersionIsAFrequencySetVersion_WarmsItOnce()
+    public async Task WarmUp_DoesNotWarmTheVersionsOfSetsTheBatchDoesNotUse()
     {
-        await warmer.WarmUp("3660");
+        await warmer.WarmUp(Batch("3480", patientRegistry: "R1", donorRegistries: ["R1"]));
 
-        cacheControls.Keys.Should().BeEquivalentTo("3480", "3660");
-        await cacheControls["3660"].Received(1).PreWarmMatchPredictionCaches();
+        cacheControls.Keys.Should().BeEquivalentTo("3480");
     }
 
     [Test]
-    public async Task WarmUp_WithNoMatchingVersion_WarmsOnlyTheFrequencySetVersions()
+    public async Task WarmUp_LooksUpEachDistinctRegistryAndEthnicityOnce()
     {
-        await warmer.WarmUp(null);
+        await warmer.WarmUp(Batch("3660", patientRegistry: "R1", donorRegistries: ["R1", "R2", "R2", "R2"]));
 
-        cacheControls.Keys.Should().BeEquivalentTo("3480", "3660");
+        await frequencyLookupService.ReceivedWithAnyArgs(2).GetSingleHaplotypeFrequencySet(default);
+    }
+
+    [Test]
+    public async Task WarmUp_WithNoMatchingVersionOrSetMetadata_WarmsTheGlobalSetVersion()
+    {
+        var batch = new MultipleDonorMatchProbabilityInput(new IdentifiedMatchProbabilityRequest())
+        {
+            Donors = [new DonorInput { DonorIds = [1] }]
+        };
+
+        await warmer.WarmUp(batch);
+
+        cacheControls.Keys.Should().BeEquivalentTo("3480");
     }
 
     [Test]
     public async Task WarmUp_WhenAWarmFails_DoesNotThrowAndLogsAWarning()
     {
-        await warmer.WarmUp("3660");
+        var batch = Batch("3660", patientRegistry: "R1", donorRegistries: ["R1"]);
+        await warmer.WarmUp(batch);
         cacheControls["3660"].PreWarmMatchPredictionCaches().ThrowsAsync(new Exception("storage is down"));
 
-        var act = () => warmer.WarmUp("3660");
+        var act = () => warmer.WarmUp(batch);
 
         await act.Should().NotThrowAsync();
         logger.Received(1).SendException(
@@ -94,11 +116,11 @@ internal class MatchPredictionCacheWarmerTests
     }
 
     [Test]
-    public async Task WarmUp_WhenReadingTheActiveSetsFails_DoesNotThrow()
+    public async Task WarmUp_WhenNoFrequencySetCanBeFound_DoesNotThrow()
     {
-        frequencyCache.GetActiveHaplotypeFrequencySets().ThrowsAsync(new Exception("sql is down"));
+        frequencyLookupService.GetSingleHaplotypeFrequencySet(default).ThrowsAsyncForAnyArgs(new Exception("No Global Haplotype frequency set was found"));
 
-        var act = () => warmer.WarmUp("3660");
+        var act = () => warmer.WarmUp(Batch("3660", patientRegistry: "R1", donorRegistries: ["R1"]));
 
         await act.Should().NotThrowAsync();
         logger.ReceivedWithAnyArgs(1).SendException(default, default, default);
@@ -107,7 +129,7 @@ internal class MatchPredictionCacheWarmerTests
     [Test]
     public async Task WarmUp_WhenEverythingIsAlreadyCached_DoesNotLogAnEvent()
     {
-        await warmer.WarmUp("3660");
+        await warmer.WarmUp(Batch("3660", patientRegistry: "R1", donorRegistries: ["R1"]));
 
         logger.DidNotReceiveWithAnyArgs().SendEvent(default);
     }
@@ -115,12 +137,13 @@ internal class MatchPredictionCacheWarmerTests
     [Test]
     public async Task WarmUp_WhenTheWarmIsSlow_LogsOneEventWithItsDuration()
     {
-        await warmer.WarmUp("3660");
+        var batch = Batch("3660", patientRegistry: "R1", donorRegistries: ["R1"]);
+        await warmer.WarmUp(batch);
         logger.ClearReceivedCalls();
         cacheControls["3660"].PreWarmMatchPredictionCaches()
             .Returns(Task.Delay(MatchPredictionCacheWarmer.LoggedWarmUpThreshold + TimeSpan.FromMilliseconds(100)));
 
-        await warmer.WarmUp("3660");
+        await warmer.WarmUp(batch);
 
         logger.Received(1).SendEvent(
             MatchPredictionCacheWarmer.WarmedEventName,
@@ -129,14 +152,23 @@ internal class MatchPredictionCacheWarmerTests
             Arg.Is<Dictionary<string, double>>(m => m["WarmUpMs"] >= MatchPredictionCacheWarmer.LoggedWarmUpThreshold.TotalMilliseconds));
     }
 
-    private void GivenActiveSetVersions(params string[] versions)
+    private static MultipleDonorMatchProbabilityInput Batch(string matchingVersion, string patientRegistry, string[] donorRegistries)
     {
-        var sets = new Dictionary<(string RegistryCode, string EthnicityCode), HaplotypeFrequencySet>();
-        for (var i = 0; i < versions.Length; i++)
+        var request = new IdentifiedMatchProbabilityRequest
         {
-            sets[($"registry-{i}", $"ethnicity-{i}")] = new HaplotypeFrequencySet { Id = i, HlaNomenclatureVersion = versions[i] };
-        }
+            MatchingAlgorithmHlaNomenclatureVersion = matchingVersion,
+            PatientFrequencySetMetadata = new FrequencySetMetadata { RegistryCode = patientRegistry }
+        };
 
-        frequencyCache.GetActiveHaplotypeFrequencySets().Returns(sets);
+        return new MultipleDonorMatchProbabilityInput(request)
+        {
+            Donors = donorRegistries
+                .Select((registry, i) => new DonorInput
+                {
+                    DonorIds = [i],
+                    DonorFrequencySetMetadata = new FrequencySetMetadata { RegistryCode = registry }
+                })
+                .ToList()
+        };
     }
 }

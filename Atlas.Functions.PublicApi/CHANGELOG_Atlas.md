@@ -52,11 +52,11 @@ Feature flags permit greater control over the release of new features (see this 
   * For local development, add a `data-refresh` subscription to the `data-refresh-requests` topic of your own Service Bus namespace.
 
 #### Match Prediction
-* E: Faster live imputation in match prediction, when donor genotype sets are not read from the pre-computed tables. In a DEV test of 40 searches, the live genotype set time went from about 1,000 ms to about 240 ms per donor.
+* E: Faster live imputation in match prediction, when donor genotype sets are not read from the pre-computed tables.
   * Donor inputs are batched by haplotype frequency set (registry and ethnicity), so each batch needs fewer frequency sets.
   * The match prediction worker keeps more frequency sets in its cache, for longer. New Terraform variables `MATCH_PREDICTION_WORKER_MAX_CACHED_FREQUENCY_SETS` (default `30`) and `MATCH_PREDICTION_WORKER_SET_CACHE_EXPIRY_MINUTES` (default `1440`) set them for the worker container only. The match prediction functions app is not changed.
   * The haplotype frequencies of a donor's genotypes are read from the cache in one call per donor, not one call per haplotype.
-  * The HLA metadata lookups that imputation uses are loaded in one go at the start of a batch that may impute live, instead of one row at a time.
+  * The HLA metadata lookups that imputation uses are loaded in one go at the start of a batch that may impute live, instead of one row at a time. Only the nomenclature versions of the frequency sets the batch uses, and the matching version, are loaded.
   * The Multiple Allele Code table is checked once per process, not once per donor.
 
 ### 4.0.1

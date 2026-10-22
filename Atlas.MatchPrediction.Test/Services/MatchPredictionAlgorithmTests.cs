@@ -233,7 +233,7 @@ namespace Atlas.MatchPrediction.Test.Services
 
             await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatch(input);
 
-            await cacheWarmer.Received(1).WarmUp("3660");
+            await cacheWarmer.Received(1).WarmUp(input);
             calls.Should().Equal("warm", "patient");
         }
 

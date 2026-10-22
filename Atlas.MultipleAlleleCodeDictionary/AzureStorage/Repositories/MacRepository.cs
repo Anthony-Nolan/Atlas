@@ -7,7 +7,6 @@ using Atlas.Common.AzureStorage.TableStorage;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using Atlas.MultipleAlleleCodeDictionary.Services;
-using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Azure;
 using Azure.Data.Tables;
 

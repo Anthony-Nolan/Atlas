@@ -49,9 +49,8 @@ internal class TypingCategoryConversionTests
 
         converter = Substitute.For<ICompressedPhenotypeConverter>();
         haplotypeFrequencyService = Substitute.For<IHaplotypeFrequencyService>();
-        // No frequency stubbed: every survivor is unrepresented (0), one answer per survivor asked for.
-        haplotypeFrequencyService.GetFrequenciesForHla(default, default, default).ReturnsForAnyArgs(call =>
-            System.Threading.Tasks.Task.FromResult(new decimal[call.ArgAt<System.Collections.Generic.IReadOnlyList<Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.LociInfo<string>>>(1).Count]));
+        // No frequency stubbed: every survivor is unrepresented (0).
+        haplotypeFrequencyService.ReturnsUnrepresentedForEveryHaplotype();
 
         smallGA1 = fixture.Create<string>();
         smallGA2 = fixture.Create<string>();
