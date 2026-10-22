@@ -27,6 +27,19 @@ Only the *public interface* of ATLAS is versioned in code. In practice, this mea
 
 All the above projects are versioned in-step with the public API.
 
+### How the version is set
+
+`version.json` holds the version. The `<VersionPrefix>` of every project above must have the same value.
+
+* **Release candidates (`rc/x.y.0`):** when an `rc/` branch is created, the workflow `post_release_candidate_branch_creation.yml` bumps the minor version on `master`, in `version.json` and in every `<VersionPrefix>`. For example, creating `rc/4.1.0` moves `master` from 4.1.0 to 4.2.0. So `master` always has the version of the next release candidate.
+  * The workflow pushes to `master` as the `release-cascade-bot` GitHub App, because the `master` ruleset accepts no direct pushes from anyone else.
+  * If the workflow fails, it opens a GitHub issue and assigns it to the person who created the branch. To fix it, run the workflow again by hand (Actions > Post Release Candidate Branch Creation > Run workflow, with `dry_run` unchecked), or bump the version on `master` in a pull request.
+  * To test the workflow without changing `master`, run it by hand with `dry_run` checked (the default). It shows the bump commit, but does not push it.
+* **Hotfixes (`hotfix/x.y.z`):** no workflow sets the version. The first fix PR into a new hotfix branch sets the patch version by hand, in `version.json` and in every `<VersionPrefix>`, and adds a changelog entry under that version.
+* **Feature and fix PRs:** do not change the version. Add changelog entries under the current version of the target branch.
+
+When a hotfix or rc branch is merged down into a later branch (see [Cascade Merge Release Branches](.github/workflows/cascade_merge_release_branches.yml)), the version lines conflict. Keep the version of the target branch.
+
 ## Releases
 
 Atlas has no central host, so it is expected that any registry running a copy of the Atlas application will manage their own release pipeline.

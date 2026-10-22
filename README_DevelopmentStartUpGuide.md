@@ -37,6 +37,13 @@ How to run functions via Swagger using Visual Studio:
   - Refer to [Support README](README_Support.md) for more info.
 - For messages to be successfully sent out, `NotificationsServiceBus:ConnectionString` will need be overridden in the project being run.
 
+## Distributed Cache (optional)
+- The apps run without a distributed cache. When `DistributedCache:ConnectionString` is empty, every read of the cache misses.
+- To use a local Redis, start one in a container: `docker run -d --name atlas-redis -p 6379:6379 redis:7.4` (Azure Managed Redis runs Redis 7.4).
+  - Set `DistributedCache:ConnectionString` to `localhost:6379`: in `local.settings.json` for a Functions app, and in user secrets for the two workers.
+  - Keep `DistributedCache:ManagedIdentityClientId` empty. It is for Azure Managed Redis, which accepts only Microsoft Entra ID sign-in.
+- To remove the container: `docker rm -f atlas-redis`.
+
 ## Running A Search
 Follow these steps to get to a state in which you can run Searches against a database of donors.
 The details of why these steps are necessary and what they are doing, is detailed in the rest of the core README.

@@ -231,18 +231,6 @@ public class DonorUpdateProcessorTests
     }
 
     [Test]
-    public async Task ProcessDonorUpdates_ProcessesMessageBatch_WithPrefetchCountGreaterThanBatchSize()
-    {
-        refreshHistory.GetActiveDatabase().Returns(DatabaseA);
-
-        await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
-
-        await messageProcessorServiceForA.Received(1).ProcessAllMessagesInBatches_Async(
-            Arg.Any<Func<IEnumerable<DeserializedMessage<SearchableDonorUpdate>>, Task>>(),
-            BatchSize);
-    }
-
-    [Test]
     public async Task ProcessDeadLetterDifferentialDonorUpdates_DonorExists_ShouldBeAvailableForSearch()
     {
         var initialPublishedDateTime = DateTimeOffset.UtcNow.AddSeconds(-1);

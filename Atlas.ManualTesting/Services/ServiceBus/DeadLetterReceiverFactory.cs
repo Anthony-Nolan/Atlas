@@ -16,12 +16,9 @@ namespace Atlas.ManualTesting.Services.ServiceBus
             this.client = client;
         }
 
-        public IMessageReceiver GetMessageReceiver(string topicName, string subscriptionName, int? prefetchCount = null)
+        public IMessageReceiver GetMessageReceiver(string topicName, string subscriptionName)
         {
             var options = new ServiceBusReceiverOptions { SubQueue = SubQueue.DeadLetter };
-
-            if (prefetchCount is not null)
-                options.PrefetchCount = prefetchCount.Value;
 
             var receiver = new MessageReceiver(client.CreateReceiver(topicName, subscriptionName, options));
 

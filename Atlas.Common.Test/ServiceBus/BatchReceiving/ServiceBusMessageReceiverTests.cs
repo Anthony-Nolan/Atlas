@@ -24,9 +24,9 @@ namespace Atlas.Common.Test.ServiceBus.BatchReceiving
             messageReceiverFactory = Substitute.For<IMessageReceiverFactory>();
             messageReceiver = Substitute.For<IMessageReceiver>();
 
-            messageReceiverFactory.GetMessageReceiver(TopicName, SubscriptionName, 6).Returns(messageReceiver);
+            messageReceiverFactory.GetMessageReceiver(TopicName, SubscriptionName).Returns(messageReceiver);
 
-            serviceBusMessageReceiver = new ServiceBusMessageReceiver<string>(messageReceiverFactory, TopicName, SubscriptionName, 6);
+            serviceBusMessageReceiver = new ServiceBusMessageReceiver<string>(messageReceiverFactory, TopicName, SubscriptionName);
         }
 
         [Test]
@@ -37,17 +37,6 @@ namespace Atlas.Common.Test.ServiceBus.BatchReceiving
             await serviceBusMessageReceiver.ReceiveMessageBatchAsync(batchSize);
 
             await messageReceiver.Received().ReceiveMessagesAsync(batchSize);
-        }
-
-        [Test]
-        public async Task ReceiveMessageBatchAsync_SetsPrefetchCount()
-        {
-            const int batchSize = 10;
-            const int prefetchCount = 123;
-
-            var receiver = new ServiceBusMessageReceiver<string>(messageReceiverFactory, TopicName, SubscriptionName, prefetchCount);
-
-            messageReceiverFactory.Received().GetMessageReceiver(TopicName, SubscriptionName, prefetchCount);
         }
 
         [Test]

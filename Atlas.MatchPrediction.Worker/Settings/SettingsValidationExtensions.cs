@@ -1,4 +1,5 @@
 ﻿using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Caching;
 using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
@@ -14,6 +15,7 @@ internal static class SettingsValidationExtensions
     {
         services.AddOptions<ApplicationInsightsSettings>(configuration, "ApplicationInsights");
         services.AddValidatedOptions<AzureStorageSettings, AzureStorageSettingsValidator>(configuration, "AzureStorage");
+        services.AddOptions<DistributedCacheSettings>(configuration, "DistributedCache");
         services.AddValidatedOptions<HlaMetadataDictionarySettings, HlaMetadataDictionarySettingsValidator>(configuration, "HlaMetadataDictionary");
         services.AddOptions<HaplotypeFrequencySetCacheSettings>(configuration, "HaplotypeFrequencySetCache");
         services.AddOptions<GenotypeImputationSettings>(configuration, "GenotypeImputation");
