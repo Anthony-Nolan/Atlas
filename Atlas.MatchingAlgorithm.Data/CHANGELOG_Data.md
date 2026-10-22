@@ -52,6 +52,14 @@ Staging, truncated when the run completes. The donors of each group: four rows p
 
 * `GroupId`, `DonorId` - the clustered primary key
 
+### Donors that are unambiguous at small g group
+
+The precomputation stores no genotype set, and no `DonorSubjectGenotypeSets` row, for a donor and `AllowedLociKey` at
+which the donor's typing is unambiguous at small g group (ATL-478). No schema change. In
+`DonorGenotypePrecomputationGroups`, such a group has `SubjectGenotypeSetValueId` = 0 and no `FailureMessage`: it is
+done, not failed, and no value id is 0. Rows stored before this change stay until the next data refresh wipes the
+tables, and search still reads them.
+
 ## 4.0.1
 - Covering columns added to two indexes on the `Donors` table, by migration `20260826104901_Add_Covering_Columns_to_Donors_Indexes`:
   - `IX_Donors_DonorType_RegistryCode` now includes `DonorId`.

@@ -158,6 +158,22 @@ When search finds a usable stored set for a donor, it decodes that set and uses 
 imputation, truncation or the P group conversion for that donor (ATL-221). The patient's set is stored and reused too,
 once per search (ATL-426, see [Precomputed patient genotype set](#precomputed-patient-genotype-set-search)).
 
+### Donors that are not precomputed
+A donor whose typing is **unambiguous at small g group** for a locus combination gets no stored set for that
+combination (ATL-478). Unambiguous means one small g group at both positions of every locus of the combination. Its
+genotype set is then the one certain genotype, which live imputation builds without reading the haplotype frequency
+set: it is about as quick as reading a stored row. Not storing these sets removes most of the rows that the
+pre-computation writes. On DEV they were about 60 % of the donor rows, but only about 3 % of the stored bytes.
+
+- The rule is `IGenotypeSetService.IsUnambiguousAtSmallGGroup`, the same test that imputation uses to skip the
+  frequency set (`CompressedPhenotypeExpander`). The Data Refresh stage, the donor import and search all use it, so
+  they cannot disagree. It needs the typing and the HLA Metadata Dictionary only.
+- It is per locus combination: a donor can be unambiguous for `{A,B,DRB1}` and ambiguous for a combination with C or
+  DQB1.
+- Still stored: an unrepresented typing, and an ambiguous typing that imputes to one genotype. Both need the frequency
+  set when computed live.
+- In search, such a donor has the outcome `NotStoredUnambiguous` (below), not `NoRow`, and its set is not stored back.
+
 ### Switching it on and off
 The kill-switch is a mode setting:
 - `Atlas.Functions` (sequential Durable path): `MatchPrediction:Precompute:Mode`.
@@ -198,6 +214,7 @@ metric names of the logging event below.
 |---|---|---|
 | `Precomputed` | donor | A stored set for the search's typing, allowed loci and frequency set was decoded and used. |
 | `NoRow` | donor | No stored set for any of the donor's ids. For example: the donor was added or updated before pre-computation existed, or recently; or pre-computation failed for the donor during donor import. |
+| `NotStoredUnambiguous` | donor | No stored set, by design: the donor's typing is unambiguous at small g group for the search's loci (see [Donors that are not precomputed](#donors-that-are-not-precomputed)). Computed live without the frequency set, and not stored back. Checked only for a donor with no row. |
 | `StaleFrequencySet` | donor | A stored set for the search's typing exists, but it was computed with a different haplotype frequency set from the one the search now uses (for example, a new frequency set was imported). Neither its payload nor its "unrepresented" flag is used. |
 | `TypingChanged` | donor | The only stored sets were computed from a different typing: a donor import changed the donor after matching read it. |
 | `DecodeFailed` | donor | A stored set exists but could not be decoded. |
@@ -211,6 +228,8 @@ metric names of the logging event below.
 When a donor has `NoRow` or `StaleFrequencySet`, search stores the set it has just computed, so the next search can use
 it. The stored set is the same as the pre-computation would store: the same genotype set service, frequency set,
 nomenclature version and key. Nothing is stored for the other outcomes:
+- `NotStoredUnambiguous`: such a set is not precomputed, by design. If the check itself fails, the donor counts as
+  `NoRow`, and its set may be stored: correct data, only not needed.
 - `TypingChanged`: the donor's current typing is not the one computed here.
 - `DecodeFailed`: the bad row has the same key as the live set, so a store would find it and change nothing. The next
   Data Refresh, which rebuilds the tables, repairs it.
@@ -388,6 +407,7 @@ can also check the stored rows of LIVE. It cannot be used with `Save`, because a
 |---|---|
 | `Error` | The live computation failed, or the stored row could not be read. `Error` gives the text. |
 | `NoStoredRow` | No row is stored. |
+| `NotStoredUnambiguous` | No row is stored, by design: the typing is unambiguous at small g group for the combination, so the pre-computation does not store it (see [Donors that are not precomputed](#donors-that-are-not-precomputed)). Each computed set also gives `IsUnambiguousAtSmallGGroup`. A row that is stored anyway, for example by `Save`, is compared as usual. |
 | `TypingChanged` | Donors only. The stored row was computed from another typing (`StoredHlaTypingKey`) than the donor's typing now (`HlaTypingKey`). Search does not use the row. |
 | `StaleFrequencySet` | Donors only. The stored row has another frequency set (`StoredHaplotypeFrequencySetId`) than the set that search would use now (`SearchHaplotypeFrequencySetId`). Search computes the donor live. |
 | `DecodeFailed` | The stored data cannot be decoded. `DecodeError` gives the text. |

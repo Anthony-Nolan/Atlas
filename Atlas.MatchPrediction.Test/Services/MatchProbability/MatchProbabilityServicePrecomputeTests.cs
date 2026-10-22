@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ using Atlas.MatchPrediction.Test.TestHelpers.Builders;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
 using AwesomeAssertions;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 
@@ -34,6 +36,7 @@ internal class MatchProbabilityServicePrecomputeTests
     private const int DonorId = 1;
 
     private IGenotypeMatcher genotypeMatcher;
+    private IGenotypeSetService genotypeSetService;
     private IMatchProbabilityService matchProbabilityService;
     private SubjectGenotypeSet patientGenotypeSet;
     private SubjectGenotypeSet liveDonorGenotypeSet;
@@ -42,6 +45,7 @@ internal class MatchProbabilityServicePrecomputeTests
     public void SetUp()
     {
         genotypeMatcher = Substitute.For<IGenotypeMatcher>();
+        genotypeSetService = Substitute.For<IGenotypeSetService>();
         var haplotypeFrequencyService = Substitute.For<IHaplotypeFrequencyService>();
         var calculator = Substitute.For<IMatchProbabilityCalculator>();
 
@@ -49,6 +53,7 @@ internal class MatchProbabilityServicePrecomputeTests
             calculator,
             haplotypeFrequencyService,
             genotypeMatcher,
+            genotypeSetService,
             Substitute.For<IMatchPredictionLogger<MatchProbabilityLoggingContext>>(),
             new MatchProbabilityLoggingContext());
 
@@ -171,6 +176,63 @@ internal class MatchProbabilityServicePrecomputeTests
         var decoded = SubjectGenotypeSetPayload.Decode(toStore.SubjectGenotypeSetData);
         decoded.Genotypes.Should().HaveCount(liveDonorGenotypeSet.Genotypes.Count);
         decoded.SumOfLikelihoods.Should().Be(liveDonorGenotypeSet.SumOfLikelihoods);
+    }
+
+    [Test]
+    public async Task CalculateMatchProbability_WithNoRow_ForAnUnambiguousDonor_ComputesLiveAndStoresNothing()
+    {
+        // ATL-478: such a donor has no row by design, so it is neither a miss nor stored back.
+        var input = Input();
+        genotypeSetService.IsUnambiguousAtSmallGGroup(default, default).ReturnsForAnyArgs(true);
+        var context = EnabledContext(new Dictionary<int, PrecomputedDonorGenotypeSetRow>());
+
+        var result = await matchProbabilityService.CalculateMatchProbability(input, patientGenotypeSet, context);
+
+        result.GenotypeSetSource.Should().Be(DonorGenotypeSetSource.NotStoredUnambiguous);
+        result.GenotypeSetToStore.Should().BeNull();
+        await genotypeMatcher.Received(1).MatchPatientDonorGenotypes(Arg.Is<GenotypeMatcherInput>(x => x.DonorGenotypeSet == null));
+    }
+
+    [Test]
+    public async Task CalculateMatchProbability_WithNoRow_ChecksTheDonorTypingWithTheDonorFrequencySetAndTheSearchLoci()
+    {
+        var input = Input();
+        var context = EnabledContext(new Dictionary<int, PrecomputedDonorGenotypeSetRow>());
+
+        await matchProbabilityService.CalculateMatchProbability(input, patientGenotypeSet, context);
+
+        await genotypeSetService.Received(1).IsUnambiguousAtSmallGGroup(
+            Arg.Is<SubjectData>(donor =>
+                donor.HlaTyping.Equals(input.Donor.DonorHla.ToPhenotypeInfo())
+                && donor.SubjectFrequencySet.FrequencySet.Id == DonorFrequencySetId),
+            Arg.Is<MatchPredictionParameters>(parameters =>
+                parameters.MatchingAlgorithmHlaNomenclatureVersion == input.MatchingAlgorithmHlaNomenclatureVersion));
+    }
+
+    [Test]
+    public async Task CalculateMatchProbability_WithNoRow_WhenTheUnambiguityCheckFails_TreatsTheDonorAsAMiss()
+    {
+        // The check only decides the label and the store back: it must not fail the donor.
+        genotypeSetService.IsUnambiguousAtSmallGGroup(default, default).ThrowsAsyncForAnyArgs(new InvalidOperationException());
+        var context = EnabledContext(new Dictionary<int, PrecomputedDonorGenotypeSetRow>());
+
+        var result = await matchProbabilityService.CalculateMatchProbability(Input(), patientGenotypeSet, context);
+
+        result.GenotypeSetSource.Should().Be(DonorGenotypeSetSource.NoRow);
+        result.GenotypeSetToStore.Should().NotBeNull();
+    }
+
+    [Test]
+    public async Task CalculateMatchProbability_WithAStoredRow_DoesNotCheckTheDonorTyping()
+    {
+        var context = EnabledContext(new Dictionary<int, PrecomputedDonorGenotypeSetRow>
+        {
+            { DonorId, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, false, SubjectGenotypeSetPayload.Encode(SetWithGenotypes(1, 1m)), true) }
+        });
+
+        await matchProbabilityService.CalculateMatchProbability(Input(), patientGenotypeSet, context);
+
+        await genotypeSetService.DidNotReceiveWithAnyArgs().IsUnambiguousAtSmallGGroup(default, default);
     }
 
     [Test]

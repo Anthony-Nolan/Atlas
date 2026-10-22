@@ -387,6 +387,10 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
                                                               WHERE g.{nameof(Group.RunId)} = @RunId
                                                               """;
 
+    /// <summary>
+    /// The groups with a stored value. A group whose value is not stored by design (<see cref="Outcome.NotStoredValueId"/>,
+    /// which is 0, ATL-478) gives its donors no rows. The 0 is written out: a constant string cannot interpolate an int.
+    /// </summary>
     private const string SelectDonorAssignmentsSql = $"""
                                                       SELECT
                                                           gd.{nameof(GroupDonor.DonorId)},
@@ -397,6 +401,7 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
                                                       WHERE gd.{nameof(GroupDonor.GroupId)} BETWEEN @FirstGroupId AND @LastGroupId
                                                         AND g.{nameof(Group.RunId)} = @RunId
                                                         AND g.{nameof(Group.SubjectGenotypeSetValueId)} IS NOT NULL
+                                                        AND g.{nameof(Group.SubjectGenotypeSetValueId)} <> 0
                                                       """;
 
     /// <summary>

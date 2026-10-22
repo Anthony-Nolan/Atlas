@@ -235,6 +235,11 @@ again. Each donor gets one row in `DonorSubjectGenotypeSets` for each of the fou
 Each row points to a row in `SubjectGenotypeSetValues`. Donors that need the same value share one value row. Both tables
 are in the transient database.
 
+A donor gets no row for a combination at which its typing is **unambiguous at small g group** (one small g group at
+both positions of every locus of the combination, ATL-478). Search computes such a set live without the haplotype
+frequency set, as quickly as it reads a row, so storing it would only add rows. See
+[Donors that are not precomputed](README_MatchPredictionAlgorithm.md#donors-that-are-not-precomputed).
+
 Stage 65 (`DonorGenotypePrecomputation`) runs after the index recreation (stage 60) and before the scale-down of the
 database (stage 70). So the database is still at the refresh size while the stage runs. The stage writes only to the
 dormant database: the database that the refresh fills.
@@ -250,8 +255,10 @@ dormant database: the database that the refresh fills.
    message holds only ids. The worker reads the batch from the database.
 3. **Compute.** The precomputation workers (`Atlas.MatchingAlgorithm.PrecomputeWorker`) read the
    `precomputation-worker` subscription. For each group of a batch, a worker imputes the genotype set of the
-   representative donor, with the haplotype frequency set of the registry and ethnicity of the group. Then it stores
-   the values, writes the donor rows, and records the result of the batch. For each message, the worker reads the
+   representative donor, with the haplotype frequency set of the registry and ethnicity of the group. First it checks
+   whether the typing is unambiguous at small g group for the group's combination. Such a group is recorded as done
+   with no value (`SubjectGenotypeSetValueId` = 0), and its donors get no rows. Then the worker stores the other
+   values, writes the donor rows, and records the result of the batch. For each message, the worker reads the
    refresh record that the message names. When the record is open, the worker writes to the database of the record.
    When the record is closed, the worker skips the message.
 4. **Timers.** Functions of the Data Refresh app move the batches and the run. They act only on a running run of an
@@ -268,8 +275,9 @@ dormant database: the database that the refresh fills.
    batch finishes for `StallAlertMinutes`, the stage sends one high-priority stall alert. It can send another alert only
    after a batch finishes again. A poll that fails with a temporary database error does not stop the stage: it reads
    the run again at the next poll. When the polls fail for `StallAlertMinutes`, the stage fails.
-6. **Report.** When the run is complete, the stage counts the failed donors. A failed donor has no stored genotype set
-   for one or more `AllowedLociKey` values.
+6. **Report.** When the run is complete, the stage counts the failed donors. A failed donor is in a group that failed
+   for one or more `AllowedLociKey` values. A group that is unambiguous at small g group has no stored set, but it has
+   not failed.
    - At or below `MaxFailedDonorFraction` of all donors: if donors failed, the stage sends one medium-priority alert.
      Then it removes its staging data (the groups and their donors), and the stage is complete.
    - Above `MaxFailedDonorFraction`: the stage is not complete. It keeps the run and its staging data, and the data

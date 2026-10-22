@@ -1,5 +1,6 @@
 using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
@@ -75,6 +76,51 @@ internal class TypingCategoryConversionTests
     }
 
     [Test]
+    public async Task IsUnambiguousAtSmallGGroup_WithOneGroupAtEachAllowedPosition_IsTrue_AndReadsNoFrequencySet()
+    {
+        // ATL-478 does not precompute these sets: the expansion short circuit above computes them without the set.
+        converter.StubGroups(Groups(smallGAtA: [smallGA1]));
+
+        var isUnambiguous = await sut.IsUnambiguousAtSmallGGroup(Input());
+
+        isUnambiguous.Should().BeTrue();
+        await haplotypeFrequencyService.DidNotReceiveWithAnyArgs().GetAllHaplotypeFrequencies(default);
+        await converter.Received(1).ConvertPhenotype(Arg.Any<CompressedPhenotypeExpanderInput>(), HaplotypeTypingCategory.SmallGGroup);
+        await converter.DidNotReceive().ConvertPhenotype(Arg.Any<CompressedPhenotypeExpanderInput>(), HaplotypeTypingCategory.GGroup);
+    }
+
+    [Test]
+    public async Task IsUnambiguousAtSmallGGroup_WithTwoGroupsAtAnAllowedPosition_IsFalse()
+    {
+        converter.StubGroups(Groups(smallGAtA: [smallGA1, smallGA2]));
+
+        var isUnambiguous = await sut.IsUnambiguousAtSmallGGroup(Input());
+
+        isUnambiguous.Should().BeFalse();
+        await haplotypeFrequencyService.DidNotReceiveWithAnyArgs().GetAllHaplotypeFrequencies(default);
+    }
+
+    [TestCase(1, true)]
+    [TestCase(2, false)]
+    public async Task IsUnambiguousAtSmallGGroup_AgreesWithTheExpansionShortCircuit(int groupsAtA, bool expected)
+    {
+        // The two must never disagree: a set left out of the precomputation must be the one that is cheap live.
+        string[] groups = groupsAtA == 1 ? [smallGA1] : [smallGA1, smallGA2];
+        converter.StubGroups(Groups(smallGAtA: groups));
+        haplotypeFrequencyService.GetAllHaplotypeFrequencies(FrequencySetId).Returns(Pool(
+            (smallGA1, HaplotypeTypingCategory.SmallGGroup),
+            (smallGA2, HaplotypeTypingCategory.SmallGGroup)));
+
+        var isUnambiguous = await sut.IsUnambiguousAtSmallGGroup(Input());
+        await Expand();
+        var expansionReadTheSet = haplotypeFrequencyService.ReceivedCalls()
+            .Any(call => call.GetMethodInfo().Name == nameof(IHaplotypeFrequencyService.GetAllHaplotypeFrequencies));
+
+        isUnambiguous.Should().Be(expected);
+        expansionReadTheSet.Should().Be(!expected);
+    }
+
+    [Test]
     public async Task ExpandCompressedPhenotype_WhenTheSetHoldsSmallGGroupOnly_DoesNotConvertTheOtherTwoCategories()
     {
         // The shape of every one of the 216 frequency sets we hold, on the expanding path this time:
@@ -138,14 +184,16 @@ internal class TypingCategoryConversionTests
     /// </summary>
     private async Task<ExpandedGenotypes> Expand()
     {
-        return await sut.ExpandCompressedPhenotype(new CompressedPhenotypeExpanderInput
-        {
-            Phenotype = new PhenotypeInfo<string>(),
-            HfSetId = FrequencySetId,
-            HfSetHlaNomenclatureVersion = fixture.Create<string>(),
-            MatchPredictionParameters = new MatchPredictionParameters(new HashSet<Locus> { Locus.A, Locus.B })
-        });
+        return await sut.ExpandCompressedPhenotype(Input());
     }
+
+    private CompressedPhenotypeExpanderInput Input() => new()
+    {
+        Phenotype = new PhenotypeInfo<string>(),
+        HfSetId = FrequencySetId,
+        HfSetHlaNomenclatureVersion = fixture.Create<string>(),
+        MatchPredictionParameters = new MatchPredictionParameters(new HashSet<Locus> { Locus.A, Locus.B })
+    };
 
     /// <summary>
     /// The subject's groups at A, per category, with one shared group at B. PGroup is left null throughout: a category

@@ -37,6 +37,9 @@ public class SubjectGenotypeSetPrecomputeServiceTests
     /// <summary>The values that the substituted value service fails: by the frequency set of their donor, and their combination.</summary>
     private Dictionary<(HaplotypeFrequencySet, AllowedLociKey), Exception> failures;
 
+    /// <summary>The values that the substituted value service finds unambiguous, so it does not store them (ATL-478).</summary>
+    private HashSet<(HaplotypeFrequencySet, AllowedLociKey)> unambiguous;
+
     private ISubjectGenotypeSetValueService valueService;
     private ISubjectGenotypeSetRepository repository;
     private IStaticallyChosenDatabaseRepositoryFactory repositoryFactory;
@@ -52,6 +55,7 @@ public class SubjectGenotypeSetPrecomputeServiceTests
         nextValueId = fixture.Create<int>();
         givenIds = [];
         failures = new Dictionary<(HaplotypeFrequencySet, AllowedLociKey), Exception>();
+        unambiguous = [];
 
         valueService = Substitute.For<ISubjectGenotypeSetValueService>();
         // The requests are null only when a test sets up the substitute again: that call is not a request.
@@ -121,6 +125,36 @@ public class SubjectGenotypeSetPrecomputeServiceTests
         WrittenAssignments().Select(assignment => assignment.DonorId).Distinct()
             .Should().BeEquivalentTo(new[] { subjects[0].DonorId, subjects[2].DonorId });
         WrittenAssignments().Should().HaveCount(2 * AllowedLociKeyExtensions.All.Count);
+    }
+
+    [Test]
+    public async Task Precompute_ForADonorWithUnambiguousValues_WritesTheRowsOfItsOtherValues_AndDoesNotThrow()
+    {
+        // ATL-478: a value that is unambiguous at small g group is not stored, by design, so the donor has no row for it.
+        var subjects = NewSubjects(2);
+        unambiguous.Add((subjects[0].FrequencySet, AllowedLociKey.ABDrb1));
+        unambiguous.Add((subjects[0].FrequencySet, AllowedLociKey.ABCDrb1));
+
+        var act = () => precomputeService.Precompute(subjects, hlaNomenclatureVersion, database);
+
+        await act.Should().NotThrowAsync();
+        WrittenAssignments().Where(assignment => assignment.DonorId == subjects[0].DonorId)
+            .Select(assignment => assignment.AllowedLociKey)
+            .Should().BeEquivalentTo(new[] { AllowedLociKey.ABDrb1Dqb1, AllowedLociKey.ABCDrb1Dqb1 });
+        WrittenAssignments().Count(assignment => assignment.DonorId == subjects[1].DonorId).Should().Be(AllowedLociKeyExtensions.All.Count);
+    }
+
+    [Test]
+    public async Task Precompute_ForADonorWithAnUnambiguousValueAndAFailedValue_WritesNoRowsForIt_AndThrows()
+    {
+        var subjects = NewSubjects(1);
+        unambiguous.Add((subjects[0].FrequencySet, AllowedLociKey.ABDrb1));
+        FailTheValue(subjects[0], AllowedLociKey.ABCDrb1, new InvalidOperationException(fixture.Create<string>()));
+
+        var act = () => precomputeService.Precompute(subjects, hlaNomenclatureVersion, database);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        WrittenAssignments().Should().BeEmpty();
     }
 
     [Test]
@@ -196,6 +230,11 @@ public class SubjectGenotypeSetPrecomputeServiceTests
         if (failures.TryGetValue((request.FrequencySet, request.AllowedLociKey), out var failure))
         {
             return new SubjectGenotypeSetValueOutcome(null, new SubjectGenotypeSetValueFailure(PrecomputeErrorKind.Unknown, failure));
+        }
+
+        if (unambiguous.Contains((request.FrequencySet, request.AllowedLociKey)))
+        {
+            return new SubjectGenotypeSetValueOutcome(null, null, IsUnambiguous: true);
         }
 
         var valueId = nextValueId++;

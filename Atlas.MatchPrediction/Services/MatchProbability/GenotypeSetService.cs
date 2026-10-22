@@ -20,6 +20,19 @@ public interface IGenotypeSetService
 {
     Task<SubjectGenotypeSet> GetGenotypeSet(SubjectData subjectData, MatchPredictionParameters parameters);
 
+    /// <summary>
+    /// True when the subject's typing has exactly one small g group at both positions of every allowed locus. Its
+    /// genotype set is then the one certain genotype, which <see cref="GetGenotypeSet"/> builds without the haplotype
+    /// frequency set, so it is cheap to compute live.
+    /// </summary>
+    /// <remarks>
+    /// The rule of which genotype sets are not precomputed (ATL-478). The data refresh, the donor import and search all
+    /// ask it here, and it is the same test that imputation uses to skip the frequency set, so they cannot disagree.
+    /// The typing is prepared as for <see cref="GetGenotypeSet"/>. It reads the HLA Metadata Dictionary, not the
+    /// frequency set: the set gives only the nomenclature version that the typing is converted at.
+    /// </remarks>
+    Task<bool> IsUnambiguousAtSmallGGroup(SubjectData subjectData, MatchPredictionParameters parameters);
+
     Task<SubjectGenotypeSet> GetPatientGenotypeSet(SingleDonorMatchProbabilityInput input);
 
     /// <summary>
@@ -86,7 +99,47 @@ internal class GenotypeSetService(
         return await BuildGenotypeSet(subjectData, parameters);
     }
 
+    public async Task<bool> IsUnambiguousAtSmallGGroup(SubjectData subjectData, MatchPredictionParameters parameters)
+    {
+        return await genotypeImputer.IsUnambiguousAtSmallGGroup(new ImputationInput
+        {
+            SubjectData = PrepareSubjectData(subjectData, parameters),
+            MatchPredictionParameters = parameters
+        });
+    }
+
     private async Task<SubjectGenotypeSet> BuildGenotypeSet(SubjectData subjectData, MatchPredictionParameters parameters)
+    {
+        var preparedSubjectData = PrepareSubjectData(subjectData, parameters);
+
+        var imputedGenotypes = await genotypeImputer.Impute(new ImputationInput
+            {
+                SubjectData = preparedSubjectData,
+                MatchPredictionParameters = parameters
+            }
+        );
+
+        if (imputedGenotypes.Genotypes.IsNullOrEmpty())
+        {
+            return new SubjectGenotypeSet(true, new List<GenotypeAtDesiredResolutions>(), 0m);
+        }
+
+        var convertedGenotypes = await genotypeConverter.ConvertGenotypesForMatchCalculation(new GenotypeConverterInput
+            {
+                CompressedPhenotype = preparedSubjectData.HlaTyping,
+                AllowedLoci = parameters.AllowedLoci,
+                Genotypes = imputedGenotypes.Genotypes,
+                HfSetHlaNomenclatureVersion = preparedSubjectData.SubjectFrequencySet.FrequencySet.HlaNomenclatureVersion,
+                MatchingAlgorithmHlaNomenclatureVersion = parameters.MatchingAlgorithmHlaNomenclatureVersion,
+                SubjectLogDescription = preparedSubjectData.SubjectFrequencySet.SubjectLogDescription
+            }
+        );
+
+        return new SubjectGenotypeSet(false, convertedGenotypes, imputedGenotypes.SumOfLikelihoods);
+    }
+
+    /// <summary>The typing with the replacements of the matching nomenclature version applied.</summary>
+    private static SubjectData PrepareSubjectData(SubjectData subjectData, MatchPredictionParameters parameters)
     {
         int? matchingAlgorithmHlaNomenclatureVersion = null;
         if (parameters.MatchingAlgorithmHlaNomenclatureVersion != null)
@@ -129,29 +182,6 @@ internal class GenotypeSetService(
             );
         }
 
-        var imputedGenotypes = await genotypeImputer.Impute(new ImputationInput
-            {
-                SubjectData = preparedSubjectData,
-                MatchPredictionParameters = parameters
-            }
-        );
-
-        if (imputedGenotypes.Genotypes.IsNullOrEmpty())
-        {
-            return new SubjectGenotypeSet(true, new List<GenotypeAtDesiredResolutions>(), 0m);
-        }
-
-        var convertedGenotypes = await genotypeConverter.ConvertGenotypesForMatchCalculation(new GenotypeConverterInput
-            {
-                CompressedPhenotype = preparedSubjectData.HlaTyping,
-                AllowedLoci = parameters.AllowedLoci,
-                Genotypes = imputedGenotypes.Genotypes,
-                HfSetHlaNomenclatureVersion = preparedSubjectData.SubjectFrequencySet.FrequencySet.HlaNomenclatureVersion,
-                MatchingAlgorithmHlaNomenclatureVersion = parameters.MatchingAlgorithmHlaNomenclatureVersion,
-                SubjectLogDescription = preparedSubjectData.SubjectFrequencySet.SubjectLogDescription
-            }
-        );
-
-        return new SubjectGenotypeSet(false, convertedGenotypes, imputedGenotypes.SumOfLikelihoods);
+        return preparedSubjectData;
     }
 }
