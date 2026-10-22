@@ -52,6 +52,14 @@ Staging, truncated when the run completes. The donors of each group: four rows p
 
 * `GroupId`, `DonorId` - the clustered primary key
 
+### Primary keys of SubjectGenotypeSetValues and DonorSubjectGenotypeSets
+
+`OPTIMIZE_FOR_SEQUENTIAL_KEY = ON` is set on `PK_SubjectGenotypeSetValues` and `PK_DonorSubjectGenotypeSets`, by
+migration `20261022111646_Optimize_For_Sequential_Key_On_Genotype_Set_Primary_Keys` (ATL-472). Both keys are identity
+columns, so the precomputation workers all insert on the last page of each table. The option keeps the insert rate up
+under that contention. It changes only metadata (no index rebuild), so it is quick even on a full table. Run the
+migration on both transient databases.
+
 ## 4.0.1
 - Covering columns added to two indexes on the `Donors` table, by migration `20260826104901_Add_Covering_Columns_to_Donors_Indexes`:
   - `IX_Donors_DonorType_RegistryCode` now includes `DonorId`.
