@@ -41,6 +41,17 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         /// </returns>
         // ReSharper disable once ParameterTypeCanBeEnumerable.Global
         Task<decimal> GetFrequencyForHla(int setId, HfSetHaplotypeNames hla, ISet<Locus> excludedLoci);
+
+        /// <summary>
+        /// <see cref="GetFrequencyForHla"/> for many haplotypes of one set: the same answer for each, in the same order,
+        /// from one fetch of the set from the cache.
+        /// </summary>
+        /// <remarks>
+        /// For a subject's survivors, which can number in the hundreds. Asking <see cref="GetFrequencyForHla"/> for each
+        /// fetched the set from the cache once per survivor, each time through the cache's lock, and a set pushed out of
+        /// the cache in the meantime was loaded again mid-subject (ATL-476).
+        /// </remarks>
+        Task<decimal[]> GetFrequenciesForHla(int setId, IReadOnlyList<HfSetHaplotypeNames> hlas, ISet<Locus> excludedLoci);
     }
 
     internal class HaplotypeFrequencyLookupService : IHaplotypeFrequencyLookupService
@@ -111,7 +122,26 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         public async Task<decimal> GetFrequencyForHla(int setId, HfSetHaplotypeNames hla, ISet<Locus> excludedLoci)
         {
             var entry = await HaplotypeFrequencyCache.GetAllHaplotypeFrequencies(setId);
+            return FrequencyFromEntry(entry, hla, excludedLoci, excludedLoci.Any());
+        }
 
+        /// <inheritdoc />
+        public async Task<decimal[]> GetFrequenciesForHla(int setId, IReadOnlyList<HfSetHaplotypeNames> hlas, ISet<Locus> excludedLoci)
+        {
+            var entry = await HaplotypeFrequencyCache.GetAllHaplotypeFrequencies(setId);
+            var anyExcludedLoci = excludedLoci.Any();
+            var frequencies = new decimal[hlas.Count];
+
+            for (var i = 0; i < hlas.Count; i++)
+            {
+                frequencies[i] = FrequencyFromEntry(entry, hlas[i], excludedLoci, anyExcludedLoci);
+            }
+
+            return frequencies;
+        }
+
+        private decimal FrequencyFromEntry(FrequencySetCacheEntry entry, HfSetHaplotypeNames hla, ISet<Locus> excludedLoci, bool anyExcludedLoci)
+        {
             // The interner resolves a key when every allele is known to the set individually - but that does NOT
             // guarantee the *combination* is a stored haplotype (e.g. two haplotypes sharing alleles produce
             // resolvable cross-combinations that were never imported). So we must still probe the dictionary
@@ -125,12 +155,13 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
             // If no loci are excluded, there is nothing to calculate - the haplotype is just unrepresented.
             // We do not want to add all unrepresented haplotypes to the cache - this drastically reduces algorithm speed, increases memory, and has no benefit
-            if (!excludedLoci.Any())
+            if (!anyExcludedLoci)
             {
                 return 0;
             }
 
-            return await HaplotypeFrequencyCache.GetConsolidatedFrequency(setId, hla, excludedLoci);
+            // From the entry already in hand, so a caller resolving many haplotypes fetches the set once.
+            return HaplotypeFrequencyCache.GetConsolidatedFrequency(entry, hla, excludedLoci);
         }
     }
 }

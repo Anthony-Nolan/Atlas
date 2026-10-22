@@ -35,6 +35,9 @@ internal class GenotypeSetService(
     IHaplotypeFrequencyLookupService haplotypeFrequencyService)
     : IGenotypeSetService
 {
+    /// <summary>One instance for every call: see <c>MatchProbabilityService.InputValidator</c> (ATL-476).</summary>
+    private static readonly MatchProbabilityNonDonorValidator NonDonorValidator = new();
+
     private static readonly IReadOnlyDictionary<int, Dictionary<(Locus, string), string>> LocusValueReplacementMapping =
         new Dictionary<int, Dictionary<(Locus, string), string>>
         {
@@ -49,7 +52,7 @@ internal class GenotypeSetService(
 
     public async Task<SubjectGenotypeSet> GetPatientGenotypeSet(SingleDonorMatchProbabilityInput input)
     {
-        await new MatchProbabilityNonDonorValidator().ValidateAndThrowAsync(input);
+        await NonDonorValidator.ValidateAndThrowAsync(input);
 
         var patientFrequencySet = await haplotypeFrequencyService.GetSingleHaplotypeFrequencySet(
             input.PatientFrequencySetMetadata ?? new FrequencySetMetadata()
@@ -60,7 +63,7 @@ internal class GenotypeSetService(
 
     public async Task<SubjectGenotypeSet> GetPatientGenotypeSet(SingleDonorMatchProbabilityInput input, HaplotypeFrequencySet patientFrequencySet)
     {
-        await new MatchProbabilityNonDonorValidator().ValidateAndThrowAsync(input);
+        await NonDonorValidator.ValidateAndThrowAsync(input);
 
         return await BuildPatientGenotypeSet(input, patientFrequencySet);
     }

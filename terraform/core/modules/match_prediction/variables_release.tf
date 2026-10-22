@@ -49,6 +49,14 @@ variable "MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS" {
   type = number
 }
 
+variable "MATCH_PREDICTION_WORKER_MAX_CACHED_FREQUENCY_SETS" {
+  type = number
+}
+
+variable "MATCH_PREDICTION_WORKER_SET_CACHE_EXPIRY_MINUTES" {
+  type = number
+}
+
 variable "MATCH_PREDICTION_WORKER_PREFETCH_COUNT" {
   type = number
 }

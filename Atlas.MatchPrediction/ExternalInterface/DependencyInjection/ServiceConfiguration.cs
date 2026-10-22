@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
+using Atlas.MatchPrediction.Services.CacheWarming;
 using Atlas.MatchPrediction.Services.CompressedPhenotypeExpansion;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
@@ -274,6 +275,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
         {
             services.AddScoped<IMatchPredictionAlgorithm, MatchPredictionAlgorithm>();
             services.AddScoped<IParallelMatchPredictionAlgorithm, ParallelMatchPredictionAlgorithm>();
+            services.AddScoped<IMatchPredictionCacheWarmer, MatchPredictionCacheWarmer>();
             services.AddScoped<IDonorInputBatcher, DonorInputBatcher>();
 
             services.AddScoped<IFrequencySetImporter, FrequencySetImporter>();

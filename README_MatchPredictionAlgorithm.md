@@ -461,6 +461,39 @@ The Worker also connects to the matching algorithm's databases, to read and stor
 (the persistent database, which holds the data refresh history) and `ConnectionStrings:MatchingTransientASql` /
 `ConnectionStrings:MatchingTransientBSql` (the two transient databases).
 
+### Cache warm-up for live imputation (ATL-476)
+
+Live imputation looks up HLA Metadata Dictionary data in Table Storage. It is cached in memory, but a cold cache answers
+each lookup with a single-row Table Storage read. A new worker replica starts cold, and the dictionary tables expire
+from the cache once a day. In one DEV test, this meant about 240k single-row reads on the small g group tables alone.
+
+So each search batch warms the dictionary tables match prediction reads before its patient and donors run
+(`IMatchPredictionCacheWarmer`, on both the durable and the parallel path; `IHlaMetadataCacheControl.PreWarmMatchPredictionCaches`:
+allele names, allele groups, small g groups, and the G group and small g group to P group lookups). It warms the
+nomenclature version of each haplotype frequency set the batch's patient and donors use, and the search's matching
+version. So a process loads only the versions it needs.
+
+The scoring table is not warmed. Match prediction reads it only to find the G group of a null allele in a typing, and to
+convert a typing to G or P groups for a frequency set that holds haplotypes at those groups. With small g group
+frequency sets, only subjects with a null allele read it, and most processes never do. The first such lookup is a
+single-row read that starts a load of the whole table in the background, as for any table that is not warmed. If
+frequency sets at G or P group are imported, every subject reads the scoring table, and it should be added to the
+warm-up.
+
+MACs are not warmed. A DEV test warmed all of them (1.36 million): it took 74-100 s on each new replica, raised worker
+memory by about 1.6 GB towards the 4 GiB limit, and made live imputation no faster. A MAC is looked up when it is first
+seen, and then kept for the life of the process (`MacStore`).
+
+After the first batch of a process the warm-up costs a few cache reads. A batch that has a stored genotype set for the patient
+and for every donor skips it (`DonorGenotypeSetBatchContext.MayComputeLive`), because it imputes nothing live. The
+warm-up is best effort: if it fails, a warning is logged (`Match prediction cache warm-up failed`) and lookups fall back
+to single-row reads, as before. A warm-up that takes 1 s or more sends the event `Match prediction caches warmed`, with
+`WarmUpMs` and the versions it warmed.
+
+The MAC table client is one per process (`IMacTableClientProvider`), and the table is checked once. Before ATL-476,
+the scoped `MacRepository` checked the table in its constructor, without `await`, so the parallel path (one scope per
+donor) made one blocking Table Storage call per donor.
+
 ### `HaplotypeFrequencySetCache.AwaitConsolidatedFrequencyWarm`
 
 Loading a haplotype frequency set also runs a missing-loci pre-consolidation, which is three passes over the whole set
@@ -498,4 +531,22 @@ Both are ops-tunable via config without a code change. Start conservative and ob
 `Get All Frequencies from HF set - from SQL database` timed log line — a higher-than-expected rate of that line firing
 means more distinct sets are active within `SetCacheExpiryMinutes` than `MaxCachedFrequencySets` allows, so sets are
 churning out of the cache before they'd naturally expire.
+
+**The match prediction worker has its own values: 30 sets, for 1,440 minutes** (Terraform
+`MATCH_PREDICTION_WORKER_MAX_CACHED_FREQUENCY_SETS` / `MATCH_PREDICTION_WORKER_SET_CACHE_EXPIRY_MINUTES`; the other hosts
+keep 10 sets and 60 minutes). A search load touches many sets: on DEV, 40 searches used about 80, and with 10 cached each
+replica loaded each set about 3 times. Live imputation then spent 98 % of its time getting frequency data, and the
+reloads drove frequent gen 2 garbage collections (ATL-476). The GC heap stayed under 1.6 GB of its 3 GB limit (75 % of
+the 4 GiB container), which is the room the larger cache uses. Watch the memory of the `match-pred-ca` container app
+(the `WorkingSetBytes` metric in Azure Monitor) before raising it further. Note that `Get All Frequencies from HF set - from SQL database` is a verbose trace and is
+sampled in the worker; the consolidation trace logged with each load (`Calculating consolidated frequencies ...`) is
+the one to count, weighted by `itemCount`.
+
+Two code changes make each set load go further (ATL-476):
+
+* `DonorInputBatcher` orders a search's donor inputs by frequency set metadata (registry, then ethnicity code) before
+  it cuts them into batches, so a batch spans as few sets as possible and its donors run set by set.
+* `CompressedPhenotypeExpander` asks for all of a donor's survivor frequencies in one call
+  (`IHaplotypeFrequencyLookupService.GetFrequenciesForHla`), so the set is fetched from the cache once per donor rather
+  than once per survivor.
 

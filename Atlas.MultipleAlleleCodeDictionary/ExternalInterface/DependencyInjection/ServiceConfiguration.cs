@@ -106,6 +106,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjecti
 
         private static void RegisterSharedServices(this IServiceCollection services)
         {
+            // A singleton, so the MAC table client is built and the table checked once per process, not once per scope.
+            services.TryAddSingleton<IMacTableClientProvider, MacTableClientProvider>();
             services.AddScoped<IMacRepository, MacRepository>();
         }
     }

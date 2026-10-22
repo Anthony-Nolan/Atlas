@@ -502,14 +502,20 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     }
 
     /// <summary>
-    /// One frequency per survivor, through the unchanged <see cref="IHaplotypeFrequencyLookupService.GetFrequencyForHla"/>.
+    /// One frequency per survivor, through <see cref="IHaplotypeFrequencyLookupService.GetFrequenciesForHla"/>: the
+    /// answer <see cref="IHaplotypeFrequencyLookupService.GetFrequencyForHla"/> gives for each survivor, from one fetch of
+    /// the set.
     ///
     /// <para>
-    /// Calling the same method with the same arguments is the point: it keeps the
+    /// Asking the lookup service, rather than carrying a value off the pool, is the point: it keeps the
     /// direct → consolidated-warm → consolidated-cold cascade, and with it the fact that on any key with excluded loci
     /// a survivor's frequency is the <b>sum</b> over the stored haplotypes it collapsed - not any individual stored
-    /// frequency. That is the majority of a set's rows, and the reason this memoises the lookup rather than
-    /// reimplementing it or carrying a value off the pool.
+    /// frequency. That is the majority of a set's rows.
+    /// </para>
+    ///
+    /// <para>
+    /// One call for all the survivors, not one per survivor: each call fetches the set from the cache, through its
+    /// lock, and a set pushed out in between was loaded again mid-donor (ATL-476).
     /// </para>
     ///
     /// <para>
@@ -524,15 +530,13 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
         List<LociInfo<HlaAtKnownTypingCategory>> survivors,
         ISet<Locus> excludedLoci)
     {
-        var frequencies = new decimal[survivors.Count];
-
+        var survivorNames = new HfSetHaplotypeNames[survivors.Count];
         for (var i = 0; i < survivors.Count; i++)
         {
-            frequencies[i] = await haplotypeFrequencyService.GetFrequencyForHla(
-                hfSetId, survivors[i].Map(hla => hla?.Hla), excludedLoci);
+            survivorNames[i] = survivors[i].Map(hla => hla?.Hla);
         }
 
-        return frequencies;
+        return await haplotypeFrequencyService.GetFrequenciesForHla(hfSetId, survivorNames, excludedLoci);
     }
 
     /// <summary>
@@ -586,7 +590,7 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     /// <para>
     /// <b>Ids stop here.</b> They mean nothing outside <c>entry.Interner</c>, and a later fetch of the same set id can
     /// return a different entry with a different id space, so survivors are resolved back to names before they leave
-    /// this method - which is also the form <c>GetFrequencyForHla</c> needs, since it re-enters the cache.
+    /// this method - which is also the form <c>GetFrequenciesForHla</c> needs, since it re-enters the cache.
     /// </para>
     /// </summary>
     private static IEnumerable<LociInfo<HlaAtKnownTypingCategory>> GetHaplotypesForAllowedLoci(

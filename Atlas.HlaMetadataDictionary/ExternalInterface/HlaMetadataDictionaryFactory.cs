@@ -57,6 +57,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
         //For CacheControl
         private readonly IAlleleNamesMetadataRepository alleleNamesRepository;
+        private readonly IAlleleGroupsMetadataRepository alleleGroupsRepository;
         private readonly IHlaMatchingMetadataRepository matchingMetadataRepository;
         private readonly IHlaScoringMetadataRepository scoringMetadataRepository;
         private readonly IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository;
@@ -87,6 +88,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
             //For CacheControl
             IAlleleNamesMetadataRepository alleleNamesRepository,
+            IAlleleGroupsMetadataRepository alleleGroupsRepository,
             IHlaMatchingMetadataRepository matchingMetadataRepository,
             IHlaScoringMetadataRepository scoringMetadataRepository,
             IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository,
@@ -116,6 +118,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
             //For CacheControl
             this.alleleNamesRepository = alleleNamesRepository;
+            this.alleleGroupsRepository = alleleGroupsRepository;
             this.matchingMetadataRepository = matchingMetadataRepository;
             this.scoringMetadataRepository = scoringMetadataRepository;
             this.dpb1TceGroupsMetadataRepository = dpb1TceGroupsMetadataRepository;
@@ -190,6 +193,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             return new HlaMetadataCacheControl(
                 activeHlaNomenclatureVersion,
                 alleleNamesRepository,
+                alleleGroupsRepository,
                 matchingMetadataRepository,
                 scoringMetadataRepository,
                 dpb1TceGroupsMetadataRepository,
