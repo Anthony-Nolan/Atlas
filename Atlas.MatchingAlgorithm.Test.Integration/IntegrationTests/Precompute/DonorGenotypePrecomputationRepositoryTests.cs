@@ -369,6 +369,24 @@ public class DonorGenotypePrecomputationRepositoryTests
     }
 
     [Test]
+    public async Task NotStoredGroup_IsDone_IsNotComputedAgain_AndGivesItsDonorsNoRows()
+    {
+        // ATL-478: a group whose typing is unambiguous at small g group has no value by design.
+        var run = await InsertRun();
+        var donor = await InsertDonor();
+        var group = await InsertGroup(run.Id, 1, donor.DonorId);
+        await InsertGroupDonors(group.Id, 2);
+
+        await repository.RecordGroupOutcomes(run.Id, [Outcome.NotStored(group.Id)]);
+
+        var stored = (await StoredGroups())[group.Id];
+        stored.SubjectGenotypeSetValueId.Should().Be(Outcome.NotStoredValueId);
+        stored.FailureMessage.Should().BeNull();
+        (await repository.GetGroupsToCompute(run.Id, 1, 1)).Should().BeEmpty();
+        (await repository.GetDonorAssignments(run.Id, 1, 1)).Should().BeEmpty();
+    }
+
+    [Test]
     public async Task TryMarkBatchResultsReceived_ByTheLeaseOwner_CompletesTheBatchAndClearsItsLastFailure()
     {
         var run = await InsertRun();

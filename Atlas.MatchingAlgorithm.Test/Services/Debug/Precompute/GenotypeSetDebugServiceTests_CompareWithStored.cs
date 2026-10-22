@@ -91,6 +91,37 @@ internal partial class GenotypeSetDebugServiceTests
     }
 
     [Test]
+    public async Task CompareWithStored_ForAnUnambiguousTypingWithNoStoredRow_GivesNotStoredUnambiguous()
+    {
+        // ATL-478: the pre-computation does not store such a set, so no row is the expected state, not a miss.
+        GivenTheLiveSet();
+        genotypeSetService.IsUnambiguousAtSmallGGroup(default, default).ReturnsForAnyArgs(true);
+
+        var result = await service.Compute(new GenotypeSetDebugRequest { HlaTyping = Typing(), CompareWithStored = true });
+
+        ParityChecks(result).Should().HaveCount(4).And.OnlyContain(check => check.Result == ParityResult.NotStoredUnambiguous);
+        result.Subjects.Single().GenotypeSets.Should().OnlyContain(set => set.IsUnambiguousAtSmallGGroup);
+    }
+
+    [Test]
+    public async Task CompareWithStored_ForAnUnambiguousTypingWithAStoredRow_StillComparesIt()
+    {
+        // A row stored before ATL-478, or by the debug save, is read by search, so it is compared as any other row.
+        var live = GivenTheLiveSet();
+        GivenStoredTypingRow(live);
+        genotypeSetService.IsUnambiguousAtSmallGGroup(default, default).ReturnsForAnyArgs(true);
+
+        var result = await service.Compute(new GenotypeSetDebugRequest
+        {
+            HlaTyping = Typing(),
+            AllowedLociKeys = [AllowedLociKey.ABDrb1],
+            CompareWithStored = true
+        });
+
+        ParityChecks(result).Should().ContainSingle().Which.Result.Should().Be(ParityResult.Match);
+    }
+
+    [Test]
     public async Task CompareWithStored_ForADonorWithNoLinkRows_GivesNoStoredRow()
     {
         var donor = NewDonor();
@@ -479,6 +510,7 @@ internal partial class GenotypeSetDebugServiceTests
             { ParityResult.StaleFrequencySet, 0 },
             { ParityResult.TypingChanged, 0 },
             { ParityResult.NoStoredRow, 4 },
+            { ParityResult.NotStoredUnambiguous, 0 },
             { ParityResult.DecodeFailed, 0 },
             { ParityResult.Error, 0 }
         });

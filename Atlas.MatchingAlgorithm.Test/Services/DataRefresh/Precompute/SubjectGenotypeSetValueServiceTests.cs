@@ -256,7 +256,8 @@ public class SubjectGenotypeSetValueServiceTests
         var computationsAtEachStore = new List<int>();
         repository
             .When(r => r.GetOrCreateValueIds(Arg.Any<IReadOnlyCollection<SubjectGenotypeSetValueToStore>>()))
-            .Do(_ => computationsAtEachStore.Add(genotypeSetService.ReceivedCalls().Count()));
+            .Do(_ => computationsAtEachStore.Add(genotypeSetService.ReceivedCalls()
+                .Count(call => call.GetMethodInfo().Name == nameof(IGenotypeSetService.GetGenotypeSet))));
 
         await valueService.GetOrComputeValueIds(requests, hlaNomenclatureVersion, database);
 
@@ -314,6 +315,93 @@ public class SubjectGenotypeSetValueServiceTests
         repositoryFactory.DidNotReceiveWithAnyArgs().GetSubjectGenotypeSetRepositoryForDatabase(default);
         await genotypeSetService.DidNotReceiveWithAnyArgs().GetGenotypeSet(default, default);
     }
+
+    [Test]
+    public async Task GetOrComputeValueIds_ForAnUnambiguousTyping_GivesItNoValue_AndNeitherReadsNorComputesIt()
+    {
+        // ATL-478: search computes such a set live as quickly as it reads a row, so it is not stored.
+        var request = NewRequest();
+        GivenTheUnambiguityCheckOf(request).Returns(true);
+
+        var results = await valueService.GetOrComputeValueIds([request], hlaNomenclatureVersion, database);
+
+        results.StoppedBy.Should().BeNull();
+        results.Outcomes.Single().Should().Be(new SubjectGenotypeSetValueOutcome(null, null, IsUnambiguous: true));
+        await genotypeSetService.DidNotReceiveWithAnyArgs().GetGenotypeSet(default, default);
+        await repository.Received().GetExistingValueIds(Arg.Is<IReadOnlyCollection<SubjectGenotypeSetKey>>(keys => keys.Count == 0));
+        await repository.DidNotReceiveWithAnyArgs().GetOrCreateValueIds(default);
+    }
+
+    [Test]
+    public async Task GetOrComputeValueIds_WithUnambiguousAndAmbiguousTypings_ComputesAndStoresOnlyTheAmbiguousOnes()
+    {
+        var requests = NewRequests(3);
+        GivenTheUnambiguityCheckOf(requests[1]).Returns(true);
+
+        var results = await valueService.GetOrComputeValueIds(requests, hlaNomenclatureVersion, database);
+
+        results.Outcomes[0].ValueId.Should().NotBeNull();
+        results.Outcomes[1].IsUnambiguous.Should().BeTrue();
+        results.Outcomes[1].ValueId.Should().BeNull();
+        results.Outcomes[2].ValueId.Should().NotBeNull();
+        await genotypeSetService.Received(2).GetGenotypeSet(Arg.Any<SubjectData>(), Arg.Any<MatchPredictionParameters>());
+        await genotypeSetService.DidNotReceive().GetGenotypeSet(
+            Arg.Is<SubjectData>(subject => subject.HlaTyping.Equals(requests[1].HlaTyping)), Arg.Any<MatchPredictionParameters>());
+    }
+
+    [Test]
+    public async Task GetOrComputeValueIds_ChecksEachKeyOnce_WithTheTypingAndLociOfTheRequest()
+    {
+        var request = NewRequest();
+
+        await valueService.GetOrComputeValueIds([request, request], hlaNomenclatureVersion, database);
+
+        await genotypeSetService.Received(1).IsUnambiguousAtSmallGGroup(
+            Arg.Is<SubjectData>(subject =>
+                subject.HlaTyping.Equals(request.HlaTyping) && subject.SubjectFrequencySet.FrequencySet == request.FrequencySet),
+            Arg.Is<MatchPredictionParameters>(parameters =>
+                parameters.AllowedLoci.SetEquals(request.AllowedLociKey.ToLoci())
+                && parameters.MatchingAlgorithmHlaNomenclatureVersion == hlaNomenclatureVersion));
+    }
+
+    [Test]
+    public async Task GetOrComputeValueIds_WhenTheUnambiguityCheckFailsPermanently_FailsOnlyItsValue_AndGoesOn()
+    {
+        // The computation would fail on the same typing.
+        var requests = NewRequests(2);
+        var failure = new HlaMetadataDictionaryException(fixture.Create<string>(), fixture.Create<string>(), fixture.Create<string>());
+        GivenTheUnambiguityCheckOf(requests[0]).ThrowsAsync(failure);
+
+        var results = await valueService.GetOrComputeValueIds(requests, hlaNomenclatureVersion, database);
+
+        results.StoppedBy.Should().BeNull();
+        results.Outcomes[0].Should().Be(
+            new SubjectGenotypeSetValueOutcome(null, new SubjectGenotypeSetValueFailure(PrecomputeErrorKind.KnownPermanent, failure)));
+        results.Outcomes[1].ValueId.Should().NotBeNull();
+        await genotypeSetService.DidNotReceive().GetGenotypeSet(
+            Arg.Is<SubjectData>(subject => subject.HlaTyping.Equals(requests[0].HlaTyping)), Arg.Any<MatchPredictionParameters>());
+    }
+
+    [Test]
+    public async Task GetOrComputeValueIds_AtAKnownTemporaryErrorOfTheUnambiguityCheck_StopsBeforeItReadsOrComputes()
+    {
+        var requests = NewRequests(2);
+        var failure = new TimeoutException(fixture.Create<string>());
+        GivenTheUnambiguityCheckOf(requests[0]).ThrowsAsync(failure);
+
+        var results = await valueService.GetOrComputeValueIds(requests, hlaNomenclatureVersion, database);
+
+        results.StoppedBy.Should().BeSameAs(failure);
+        results.Outcomes[0].Failure.Should().Be(new SubjectGenotypeSetValueFailure(PrecomputeErrorKind.KnownTemporary, failure));
+        results.Outcomes[1].Should().Be(new SubjectGenotypeSetValueOutcome(null, null));
+        await repository.DidNotReceiveWithAnyArgs().GetExistingValueIds(default);
+        await genotypeSetService.DidNotReceiveWithAnyArgs().GetGenotypeSet(default, default);
+    }
+
+    private Task<bool> GivenTheUnambiguityCheckOf(SubjectGenotypeSetValueRequest request) =>
+        genotypeSetService.IsUnambiguousAtSmallGGroup(
+            Arg.Is<SubjectData>(subject => subject.HlaTyping.Equals(request.HlaTyping)),
+            Arg.Any<MatchPredictionParameters>());
 
     /// <summary>The computation of the request, to set up: its subject has the typing of the request.</summary>
     private Task<SubjectGenotypeSet> GivenTheComputationOf(SubjectGenotypeSetValueRequest request) =>

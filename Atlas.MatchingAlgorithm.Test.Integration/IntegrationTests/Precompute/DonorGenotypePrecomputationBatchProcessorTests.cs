@@ -195,7 +195,10 @@ public class DonorGenotypePrecomputationBatchProcessorTests
     private int ImputationCountOf(Donor donor)
     {
         var typing = donor.ToDonorInfo().HlaNames;
-        return genotypeSetService.ReceivedCalls().Count(call => ((SubjectData)call.GetArguments()[0]).HlaTyping.Equals(typing));
+        // The imputations only, not the unambiguity checks that come before them (ATL-478).
+        return genotypeSetService.ReceivedCalls().Count(call =>
+            call.GetMethodInfo().Name == nameof(IGenotypeSetService.GetGenotypeSet)
+            && ((SubjectData)call.GetArguments()[0]).HlaTyping.Equals(typing));
     }
 
     /// <summary>The imputation of the typing of the donor: the typing that the group reads from <c>Donors</c>.</summary>

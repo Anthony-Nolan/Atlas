@@ -267,6 +267,21 @@ public class DonorGenotypePrecomputationBatchProcessorTests
     }
 
     [Test]
+    public async Task ProcessBatch_ForAGroupWithAnUnambiguousTyping_RecordsItAsNotStored_AndTheBatchSucceeds()
+    {
+        // ATL-478: its value is not stored by design. The group is done, not failed, and gives its donors no rows.
+        var groups = GivenGroups(3);
+        GivenTheValueOf(groups[1], new SubjectGenotypeSetValueOutcome(null, null, IsUnambiguous: true));
+
+        var result = await processor.ProcessBatch(request, database, false);
+
+        result.Should().Be(BatchResult.ResultsReceived);
+        RecordedOutcomes().Should().ContainSingle(outcome => outcome.GroupId == groups[1].GroupId)
+            .Which.Should().Be(Outcome.NotStored(groups[1].GroupId));
+        await repository.Received(1).TryMarkBatchResultsReceived(claimedBatch.BatchId, Arg.Any<Guid>(), 0);
+    }
+
+    [Test]
     public async Task ProcessBatch_ForAGroupWithNoRepresentativeDonor_FailsTheGroup_AndDoesNotComputeIt()
     {
         var group = NewGroup(NewPair()) with { HlaTyping = null };

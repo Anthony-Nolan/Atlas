@@ -34,8 +34,10 @@ public class DonorGenotypePrecomputationGroup
     public int DonorCount { get; set; }
 
     /// <summary>
-    /// The value of the group, after a worker stored it. Null before that, and while the group has failed. A batch that
-    /// runs again skips the groups that have a value.
+    /// The value of the group, after a worker stored it. Null before that, and while the group has failed. 0
+    /// (<c>DonorGenotypePrecomputationGroupOutcome.NotStoredValueId</c>) when the value is not stored by design: the
+    /// typing is unambiguous at small g group (ATL-478), and the donors of the group get no rows. A batch that runs again
+    /// skips the groups that have a value, 0 included.
     /// </summary>
     public int? SubjectGenotypeSetValueId { get; set; }
 

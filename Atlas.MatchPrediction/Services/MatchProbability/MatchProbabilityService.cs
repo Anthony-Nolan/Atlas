@@ -50,6 +50,7 @@ internal class MatchProbabilityService : IMatchProbabilityService
     private static readonly MatchProbabilityInputValidator InputValidator = new();
 
     private readonly IGenotypeMatcher genotypeMatcher;
+    private readonly IGenotypeSetService genotypeSetService;
     private readonly IMatchProbabilityCalculator matchProbabilityCalculator;
     private readonly IHaplotypeFrequencyService haplotypeFrequencyService;
     private readonly IAtlasLogger logger;
@@ -61,6 +62,7 @@ internal class MatchProbabilityService : IMatchProbabilityService
         IMatchProbabilityCalculator matchProbabilityCalculator,
         IHaplotypeFrequencyService haplotypeFrequencyService,
         IGenotypeMatcher genotypeMatcher,
+        IGenotypeSetService genotypeSetService,
         // ReSharper disable once SuggestBaseTypeForParameterInConstructor
         IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
         MatchProbabilityLoggingContext matchProbabilityLoggingContext)
@@ -68,6 +70,7 @@ internal class MatchProbabilityService : IMatchProbabilityService
         this.matchProbabilityCalculator = matchProbabilityCalculator;
         this.haplotypeFrequencyService = haplotypeFrequencyService;
         this.genotypeMatcher = genotypeMatcher;
+        this.genotypeSetService = genotypeSetService;
         this.logger = logger;
         this.matchProbabilityLoggingContext = matchProbabilityLoggingContext;
     }
@@ -100,14 +103,22 @@ internal class MatchProbabilityService : IMatchProbabilityService
                 out precomputedDonorGenotypeSet);
         }
 
+        var matchPredictionParameters =
+            new MatchPredictionParameters(allowedLoci, singleDonorMatchProbabilityInput.MatchingAlgorithmHlaNomenclatureVersion);
+
+        if (genotypeSetSource == DonorGenotypeSetSource.NoRow
+            && await IsUnambiguousAtSmallGGroup(new SubjectData(donorHla, frequencySets.Donor), matchPredictionParameters))
+        {
+            genotypeSetSource = DonorGenotypeSetSource.NotStoredUnambiguous;
+        }
+
         var matcherResult = await genotypeMatcher.MatchPatientDonorGenotypes(new GenotypeMatcherInput
             {
                 PatientData = new SubjectData(singleDonorMatchProbabilityInput.PatientHla.ToPhenotypeInfo(), frequencySets.Patient),
                 DonorData = new SubjectData(donorHla, frequencySets.Donor),
                 PatientGenotypeSet = patientGenotypeSet,
                 DonorGenotypeSet = precomputedDonorGenotypeSet,
-                MatchPredictionParameters =
-                    new MatchPredictionParameters(allowedLoci, singleDonorMatchProbabilityInput.MatchingAlgorithmHlaNomenclatureVersion)
+                MatchPredictionParameters = matchPredictionParameters
             }
         );
 
@@ -136,8 +147,29 @@ internal class MatchProbabilityService : IMatchProbabilityService
     }
 
     /// <summary>
+    /// A donor with no row whose typing is unambiguous at small g group has no row by design (ATL-478), not by a miss.
+    /// </summary>
+    /// <remarks>
+    /// The same rule as the precomputation, so a search never stores a set that the data refresh or the donor import
+    /// left out. Asked only for a donor with no row. A failed check counts as ambiguous: the donor is then computed
+    /// live as before, and its set may be stored back, which is correct data, only not needed.
+    /// </remarks>
+    private async Task<bool> IsUnambiguousAtSmallGGroup(SubjectData donorData, MatchPredictionParameters parameters)
+    {
+        try
+        {
+            return await genotypeSetService.IsUnambiguousAtSmallGGroup(donorData, parameters);
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
     /// A live set is stored only when the batch can store, and only for a donor that a stored row could have covered
-    /// but did not: no row, or a row for another frequency set.
+    /// but did not: no row, or a row for another frequency set. Not for <see cref="DonorGenotypeSetSource.NotStoredUnambiguous"/>,
+    /// which has no row by design.
     /// </summary>
     /// <remarks>
     /// Not for <see cref="DonorGenotypeSetSource.DecodeFailed"/>: the bad row has the same key as the live set, so a

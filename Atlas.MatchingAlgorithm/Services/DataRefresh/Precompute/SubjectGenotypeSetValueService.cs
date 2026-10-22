@@ -9,6 +9,7 @@ using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Models.Precompute;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
+using Atlas.MatchingAlgorithm.Data.Repositories.Precompute;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Models;
@@ -36,18 +37,25 @@ public sealed record SubjectGenotypeSetValueFailure(PrecomputeErrorKind Kind, Ex
 /// <summary>What happened to one request.</summary>
 /// <param name="ValueId">The id of the stored value, found or computed. Null when there is none.</param>
 /// <param name="Failure">
-/// Why the value could not be computed. Null when it was computed, and when it was not attempted: the work stopped
-/// before it, or its chunk could not be stored.
+/// Why the value could not be computed. Null when it was computed, when it is not stored by design, and when it was not
+/// attempted: the work stopped before it, or its chunk could not be stored.
 /// </param>
-public sealed record SubjectGenotypeSetValueOutcome(int? ValueId, SubjectGenotypeSetValueFailure? Failure)
+/// <param name="IsUnambiguous">
+/// True when the typing is unambiguous at small g group for the request's allowed loci. Such a value is not stored, by
+/// design: search computes it live without the haplotype frequency set, as quickly as it reads a row (ATL-478). It has
+/// no id and no failure, and the donor gets no row for it.
+/// </param>
+public sealed record SubjectGenotypeSetValueOutcome(int? ValueId, SubjectGenotypeSetValueFailure? Failure, bool IsUnambiguous = false)
 {
     internal static readonly SubjectGenotypeSetValueOutcome NotAttempted = new(null, null);
+
+    internal static readonly SubjectGenotypeSetValueOutcome Unambiguous = new(null, null, true);
 }
 
 /// <summary>The outcome of each request, in the order of the requests.</summary>
 /// <param name="StoppedBy">
-/// The error that stopped the work, or null. A known temporary error of a computation stops it, and so does any error of
-/// the database. The requests after it were not attempted.
+/// The error that stopped the work, or null. A known temporary error of a computation or of the unambiguity check stops
+/// it, and so does any error of the database. The requests after it were not attempted.
 /// </param>
 public sealed record SubjectGenotypeSetValueResults(IReadOnlyList<SubjectGenotypeSetValueOutcome> Outcomes, Exception? StoppedBy);
 
@@ -71,6 +79,12 @@ public interface ISubjectGenotypeSetValueService
     ///
     /// <para>
     /// Requests with the same key share one computation, and one outcome.
+    /// </para>
+    ///
+    /// <para>
+    /// <b>A typing that is unambiguous at small g group is not stored</b>: its outcome is
+    /// <see cref="SubjectGenotypeSetValueOutcome.IsUnambiguous"/> (ATL-478). It is checked first, so such a value is
+    /// neither computed nor looked up.
     /// </para>
     /// </remarks>
     /// <param name="requests">The values to find or compute. The order is the order of the computations.</param>
@@ -127,33 +141,20 @@ public class SubjectGenotypeSetValueService : ISubjectGenotypeSetValueService
 
         var ids = new Dictionary<SubjectGenotypeSetKey, int>();
         var failures = new Dictionary<SubjectGenotypeSetKey, SubjectGenotypeSetValueFailure>();
+        var unambiguous = new HashSet<SubjectGenotypeSetKey>();
         Exception? stoppedBy = null;
 
         try
         {
-            // A read, not a guarantee: GetOrCreateValueIds checks again under a lock. This only saves the imputations of
-            // the values that an earlier batch stored.
-            foreach (var (key, id) in await repository.GetExistingValueIds(keyedRequests.Select(request => request.Key).Distinct().ToList()))
+            stoppedBy = await FindUnambiguous(keyedRequests, matchingAlgorithmHlaNomenclatureVersion, unambiguous, failures);
+            if (stoppedBy == null)
             {
-                ids[key] = id;
-            }
-
-            var toCompute = keyedRequests.Where(request => !ids.ContainsKey(request.Key)).DistinctBy(request => request.Key).ToList();
-            foreach (var chunk in toCompute.Chunk(ValueChunkSize))
-            {
-                var (values, computationStoppedBy) = await Compute(chunk, matchingAlgorithmHlaNomenclatureVersion, failures);
-                stoppedBy = computationStoppedBy;
-
-                // Also when the computation stopped: the values that it computed are done.
-                foreach (var (key, id) in await repository.GetOrCreateValueIds(values))
-                {
-                    ids[key] = id;
-                }
-
-                if (stoppedBy != null)
-                {
-                    break;
-                }
+                stoppedBy = await GetOrCompute(
+                    keyedRequests.Where(request => !unambiguous.Contains(request.Key) && !failures.ContainsKey(request.Key)).ToList(),
+                    repository,
+                    matchingAlgorithmHlaNomenclatureVersion,
+                    ids,
+                    failures);
             }
         }
         catch (Exception exception)
@@ -165,12 +166,89 @@ public class SubjectGenotypeSetValueService : ISubjectGenotypeSetValueService
         var outcomes = keyedRequests
             .Select(request => ids.TryGetValue(request.Key, out var id)
                 ? new SubjectGenotypeSetValueOutcome(id, null)
-                : failures.TryGetValue(request.Key, out var failure)
-                    ? new SubjectGenotypeSetValueOutcome(null, failure)
-                    : SubjectGenotypeSetValueOutcome.NotAttempted)
+                : unambiguous.Contains(request.Key)
+                    ? SubjectGenotypeSetValueOutcome.Unambiguous
+                    : failures.TryGetValue(request.Key, out var failure)
+                        ? new SubjectGenotypeSetValueOutcome(null, failure)
+                        : SubjectGenotypeSetValueOutcome.NotAttempted)
             .ToList();
 
         return new SubjectGenotypeSetValueResults(outcomes, stoppedBy);
+    }
+
+    /// <summary>
+    /// Finds the stored values of the requests, and computes and stores the others, a chunk at a time.
+    /// </summary>
+    /// <returns>The known temporary error that stopped the computations, or null.</returns>
+    private async Task<Exception?> GetOrCompute(
+        IReadOnlyCollection<KeyedRequest> keyedRequests,
+        ISubjectGenotypeSetRepository repository,
+        string matchingAlgorithmHlaNomenclatureVersion,
+        IDictionary<SubjectGenotypeSetKey, int> ids,
+        IDictionary<SubjectGenotypeSetKey, SubjectGenotypeSetValueFailure> failures)
+    {
+        // A read, not a guarantee: GetOrCreateValueIds checks again under a lock. This only saves the imputations of
+        // the values that an earlier batch stored.
+        foreach (var (key, id) in await repository.GetExistingValueIds(keyedRequests.Select(request => request.Key).Distinct().ToList()))
+        {
+            ids[key] = id;
+        }
+
+        var toCompute = keyedRequests.Where(request => !ids.ContainsKey(request.Key)).DistinctBy(request => request.Key).ToList();
+        foreach (var chunk in toCompute.Chunk(ValueChunkSize))
+        {
+            var (values, stoppedBy) = await Compute(chunk, matchingAlgorithmHlaNomenclatureVersion, failures);
+
+            // Also when the computation stopped: the values that it computed are done.
+            foreach (var (key, id) in await repository.GetOrCreateValueIds(values))
+            {
+                ids[key] = id;
+            }
+
+            if (stoppedBy != null)
+            {
+                return stoppedBy;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Finds the keys whose typing is unambiguous at small g group, once per key, and stops at the first known temporary
+    /// error, as <see cref="Compute(IReadOnlyCollection{KeyedRequest}, string, IDictionary{SubjectGenotypeSetKey, SubjectGenotypeSetValueFailure})"/>
+    /// does. A check that fails is the failure of its value: the computation would fail on the same typing.
+    /// </summary>
+    /// <returns>The known temporary error that stopped the checks, or null.</returns>
+    private async Task<Exception?> FindUnambiguous(
+        IEnumerable<KeyedRequest> keyedRequests,
+        string matchingAlgorithmHlaNomenclatureVersion,
+        ISet<SubjectGenotypeSetKey> unambiguous,
+        IDictionary<SubjectGenotypeSetKey, SubjectGenotypeSetValueFailure> failures)
+    {
+        foreach (var (key, request) in keyedRequests.DistinctBy(request => request.Key))
+        {
+            try
+            {
+                var (subjectData, parameters) = ImputationInputOf(request, matchingAlgorithmHlaNomenclatureVersion);
+                if (await genotypeSetService.IsUnambiguousAtSmallGGroup(subjectData, parameters))
+                {
+                    unambiguous.Add(key);
+                }
+            }
+            catch (Exception exception)
+            {
+                var kind = PrecomputeErrorClassifier.Classify(exception);
+                failures[key] = new SubjectGenotypeSetValueFailure(kind, exception);
+
+                if (kind == PrecomputeErrorKind.KnownTemporary)
+                {
+                    return exception;
+                }
+            }
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -213,11 +291,7 @@ public class SubjectGenotypeSetValueService : ISubjectGenotypeSetValueService
         SubjectGenotypeSetValueRequest request,
         string matchingAlgorithmHlaNomenclatureVersion)
     {
-        var subjectData = new SubjectData(request.HlaTyping, new SubjectFrequencySet(request.FrequencySet, request.SubjectLogDescription));
-
-        // A copy of the locus set rather than the shared one behind AllowedLociKey.ToLoci(): MatchPredictionParameters
-        // exposes it as a mutable ISet.
-        var parameters = new MatchPredictionParameters(request.AllowedLociKey.ToLoci().ToHashSet(), matchingAlgorithmHlaNomenclatureVersion);
+        var (subjectData, parameters) = ImputationInputOf(request, matchingAlgorithmHlaNomenclatureVersion);
 
         var genotypeSet = await genotypeSetService.GetGenotypeSet(subjectData, parameters);
 
@@ -227,6 +301,19 @@ public class SubjectGenotypeSetValueService : ISubjectGenotypeSetValueService
             key,
             genotypeSet.IsUnrepresented,
             genotypeSet.IsUnrepresented ? null : SubjectGenotypeSetPayload.Encode(genotypeSet));
+    }
+
+    private static (SubjectData SubjectData, MatchPredictionParameters Parameters) ImputationInputOf(
+        SubjectGenotypeSetValueRequest request,
+        string matchingAlgorithmHlaNomenclatureVersion)
+    {
+        var subjectData = new SubjectData(request.HlaTyping, new SubjectFrequencySet(request.FrequencySet, request.SubjectLogDescription));
+
+        // A copy of the locus set rather than the shared one behind AllowedLociKey.ToLoci(): MatchPredictionParameters
+        // exposes it as a mutable ISet.
+        var parameters = new MatchPredictionParameters(request.AllowedLociKey.ToLoci().ToHashSet(), matchingAlgorithmHlaNomenclatureVersion);
+
+        return (subjectData, parameters);
     }
 
     /// <summary>
