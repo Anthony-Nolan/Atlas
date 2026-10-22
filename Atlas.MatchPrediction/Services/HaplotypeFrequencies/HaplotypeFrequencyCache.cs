@@ -55,6 +55,12 @@ public interface IHaplotypeFrequencyCache
     /// so the first caller is not blocked on the significantly slower full pre-consolidation.
     /// </summary>
     Task<decimal> GetConsolidatedFrequency(int setId, HfSetHaplotypeNames hla, ISet<Locus> excludedLoci);
+
+    /// <summary>
+    /// <see cref="GetConsolidatedFrequency(int, HfSetHaplotypeNames, ISet{Locus})"/> for an entry the caller already
+    /// holds, so a caller resolving many frequencies fetches the set once.
+    /// </summary>
+    decimal GetConsolidatedFrequency(FrequencySetCacheEntry entry, HfSetHaplotypeNames hla, ISet<Locus> excludedLoci);
 }
 
 internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
@@ -167,7 +173,12 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
     public async Task<decimal> GetConsolidatedFrequency(int setId, HfSetHaplotypeNames hla, ISet<Locus> excludedLoci)
     {
         var entry = await GetAllHaplotypeFrequencies(setId);
+        return GetConsolidatedFrequency(entry, hla, excludedLoci);
+    }
 
+    /// <inheritdoc />
+    public decimal GetConsolidatedFrequency(FrequencySetCacheEntry entry, HfSetHaplotypeNames hla, ISet<Locus> excludedLoci)
+    {
         // The whole collection has finished warming: read the value straight from it.
         if (entry.ConsolidatedFrequencies != null)
         {

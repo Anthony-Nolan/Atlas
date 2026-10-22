@@ -41,6 +41,18 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         /// </returns>
         // ReSharper disable once ParameterTypeCanBeEnumerable.Global
         Task<decimal> GetFrequencyForHla(int setId, HfSetHaplotypeNames hla, ISet<Locus> excludedLoci);
+
+        /// <summary>
+        /// <see cref="GetFrequencyForHla"/> for many haplotypes of one set: the same answer for each, in the same order,
+        /// from one fetch of the set from the cache.
+        /// </summary>
+        /// <remarks>
+        /// For a subject's survivors, which can number in the hundreds. Asking <see cref="GetFrequencyForHla"/> for each
+        /// fetched the set from the cache once per survivor, each time through the cache's lock, and a set pushed out of
+        /// the cache in the meantime was loaded again mid-subject (ATL-476).
+        /// </remarks>
+        // ReSharper disable once ParameterTypeCanBeEnumerable.Global
+        Task<decimal[]> GetFrequenciesForHla(int setId, IReadOnlyList<HfSetHaplotypeNames> hlas, ISet<Locus> excludedLoci);
     }
 
     internal class HaplotypeFrequencyLookupService : IHaplotypeFrequencyLookupService
@@ -131,6 +143,33 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             }
 
             return await HaplotypeFrequencyCache.GetConsolidatedFrequency(setId, hla, excludedLoci);
+        }
+
+        /// <inheritdoc />
+        public async Task<decimal[]> GetFrequenciesForHla(int setId, IReadOnlyList<HfSetHaplotypeNames> hlas, ISet<Locus> excludedLoci)
+        {
+            var entry = await HaplotypeFrequencyCache.GetAllHaplotypeFrequencies(setId);
+            var anyExcludedLoci = excludedLoci.Any();
+            var frequencies = new decimal[hlas.Count];
+
+            for (var i = 0; i < hlas.Count; i++)
+            {
+                var hla = hlas[i];
+
+                // As GetFrequencyForHla: probe the dictionary, because a key that resolves is not necessarily a stored haplotype.
+                if (entry.Interner.TryResolve(a: hla.A, b: hla.B, c: hla.C, dqb1: hla.Dqb1, drb1: hla.Drb1, out var resolvedHaplotypeKey)
+                    && entry.SetFrequencies.TryGetValue(resolvedHaplotypeKey, out var haplotypeFrequency))
+                {
+                    frequencies[i] = haplotypeFrequency.Frequency;
+                }
+                else
+                {
+                    // Unrepresented: 0 with no excluded loci, else the consolidated frequency - from the same entry.
+                    frequencies[i] = anyExcludedLoci ? HaplotypeFrequencyCache.GetConsolidatedFrequency(entry, hla, excludedLoci) : 0;
+                }
+            }
+
+            return frequencies;
         }
     }
 }

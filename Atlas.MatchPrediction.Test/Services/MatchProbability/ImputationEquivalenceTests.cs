@@ -38,8 +38,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability;
 /// excluded loci - the majority of a set's rows - a survivor is nulled at those loci
 /// (<c>CompressedPhenotypeExpander</c>, the <c>allowedLoci.Contains(l) ? hla : null</c> map) and therefore stands for
 /// a <i>group</i> of stored haplotypes whose frequencies are summed. That test fails for any implementation that
-/// carries an individual frequency instead of asking
-/// <see cref="IHaplotypeFrequencyLookupService.GetFrequencyForHla"/>.
+/// carries an individual frequency instead of asking the lookup service for it
+/// (<see cref="IHaplotypeFrequencyLookupService.GetFrequenciesForHla"/>, one call per subject).
 /// </para>
 /// </summary>
 [TestFixture]
@@ -73,10 +73,10 @@ internal class ImputationEquivalenceTests
         frequencies = new Dictionary<LociInfo<string>, decimal>();
         excludedLociAsked = [];
 
-        haplotypeFrequencyService.GetFrequencyForHla(default, default, default).ReturnsForAnyArgs(call =>
+        haplotypeFrequencyService.GetFrequenciesForHla(default, default, default).ReturnsForAnyArgs(call =>
         {
             excludedLociAsked.Add(call.ArgAt<ISet<Locus>>(2));
-            return Task.FromResult(frequencies.GetValueOrDefault(call.ArgAt<LociInfo<string>>(1)));
+            return Task.FromResult(call.ArgAt<IReadOnlyList<LociInfo<string>>>(1).Select(hla => frequencies.GetValueOrDefault(hla)).ToArray());
         });
     }
 
@@ -124,9 +124,10 @@ internal class ImputationEquivalenceTests
 
         // Two survivors produce three genotypes. A frequency depends only on (set, haplotype, excluded loci), so two
         // answers cover every genotype - asking per genotype would be six lookups here, and grows with the square of
-        // the survivor count rather than with it.
-        await haplotypeFrequencyService.Received(2).GetFrequencyForHla(
-            FrequencySetId, Arg.Any<LociInfo<string>>(), Arg.Any<ISet<Locus>>());
+        // the survivor count rather than with it. And they are asked for in one call, so the set is fetched once.
+        await haplotypeFrequencyService.Received(1).GetFrequenciesForHla(
+            FrequencySetId, Arg.Is<IReadOnlyList<LociInfo<string>>>(hlas => hlas.Count == 2), Arg.Any<ISet<Locus>>());
+        await haplotypeFrequencyService.DidNotReceiveWithAnyArgs().GetFrequencyForHla(default, default, default);
     }
 
     // ---- The consolidated path: the case a per-haplotype stored frequency would get wrong ----------------------
@@ -184,7 +185,7 @@ internal class ImputationEquivalenceTests
             [Genotype(a: ("a1", "a1"), b: ("b1", "b1"), c: ("c1", "c1"), dqb1: ("q1", "q1"), drb1: ("r1", "r1"))] = 1m
         });
 
-        await haplotypeFrequencyService.DidNotReceiveWithAnyArgs().GetFrequencyForHla(default, default, default);
+        await haplotypeFrequencyService.DidNotReceiveWithAnyArgs().GetFrequenciesForHla(default, default, default);
         await haplotypeFrequencyService.DidNotReceiveWithAnyArgs().GetAllHaplotypeFrequencies(default);
     }
 

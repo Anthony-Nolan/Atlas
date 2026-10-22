@@ -2,6 +2,7 @@ using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.Notifications;
@@ -198,6 +199,72 @@ internal class HaplotypeFrequencyServiceTests
 
         result.Should().Be(0.55m);
         await haplotypeFrequencyCache.Received(1).GetConsolidatedFrequency(setId, hla, Arg.Any<ISet<Locus>>());
+    }
+
+    [Test]
+    public async Task GetFrequenciesForHla_GivesEachHaplotypeTheAnswerOfGetFrequencyForHla_InOrder()
+    {
+        const int setId = 1;
+        var entry = BuildEntry(
+            ("a1", "b1", "c1", "q1", "r1", 0.1m),
+            ("a2", "b2", "c2", "q2", "r2", 0.2m));
+        haplotypeFrequencyCache.GetAllHaplotypeFrequencies(setId).Returns(entry);
+        haplotypeFrequencyCache.GetConsolidatedFrequency(entry, Arg.Any<HfSetHaplotypeNames>(), Arg.Any<ISet<Locus>>()).Returns(0.55m);
+        haplotypeFrequencyCache.GetConsolidatedFrequency(setId, Arg.Any<HfSetHaplotypeNames>(), Arg.Any<ISet<Locus>>()).Returns(0.55m);
+        var hlas = new List<HfSetHaplotypeNames>
+        {
+            new(valueA: "a2", valueB: "b2", valueC: "c2", valueDqb1: "q2", valueDrb1: "r2"),
+            // Unknown allele, and a cross-combination of known alleles: both unrepresented.
+            new(valueA: "zzz", valueB: "b1", valueC: "c1", valueDqb1: "q1", valueDrb1: "r1"),
+            new(valueA: "a1", valueB: "b2", valueC: "c1", valueDqb1: "q1", valueDrb1: "r1"),
+            new(valueA: "a1", valueB: "b1", valueC: "c1", valueDqb1: "q1", valueDrb1: "r1"),
+        };
+
+        foreach (var excludedLoci in new[] { new HashSet<Locus>(), new HashSet<Locus> { Locus.C } })
+        {
+            var batch = await sut.GetFrequenciesForHla(setId, hlas, excludedLoci);
+
+            var oneByOne = new List<decimal>();
+            foreach (var hla in hlas)
+            {
+                oneByOne.Add(await sut.GetFrequencyForHla(setId, hla, excludedLoci));
+            }
+
+            batch.Should().Equal(oneByOne);
+        }
+    }
+
+    [Test]
+    public async Task GetFrequenciesForHla_FetchesTheSetOnce_AndConsolidatesFromThatEntry()
+    {
+        const int setId = 1;
+        var entry = BuildEntry(("a", "b", "c", "q", "r", 0.3m));
+        haplotypeFrequencyCache.GetAllHaplotypeFrequencies(setId).Returns(entry);
+        haplotypeFrequencyCache.GetConsolidatedFrequency(entry, Arg.Any<HfSetHaplotypeNames>(), Arg.Any<ISet<Locus>>()).Returns(0.99m);
+        var hlas = Enumerable.Range(0, 50)
+            .Select(i => new HfSetHaplotypeNames(valueA: i == 0 ? "a" : $"unknown-{i}", valueB: "b", valueC: "c", valueDqb1: "q", valueDrb1: "r"))
+            .ToList();
+
+        var result = await sut.GetFrequenciesForHla(setId, hlas, new HashSet<Locus> { Locus.C });
+
+        result.Should().HaveCount(50);
+        result[0].Should().Be(0.3m);
+        result.Skip(1).Should().AllSatisfy(f => f.Should().Be(0.99m));
+        await haplotypeFrequencyCache.Received(1).GetAllHaplotypeFrequencies(setId);
+        haplotypeFrequencyCache.Received(49).GetConsolidatedFrequency(entry, Arg.Any<HfSetHaplotypeNames>(), Arg.Any<ISet<Locus>>());
+        await haplotypeFrequencyCache.DidNotReceive()
+            .GetConsolidatedFrequency(Arg.Any<int>(), Arg.Any<HfSetHaplotypeNames>(), Arg.Any<ISet<Locus>>());
+    }
+
+    [Test]
+    public async Task GetFrequenciesForHla_WithNoHaplotypes_ReturnsNoFrequencies()
+    {
+        const int setId = 1;
+        haplotypeFrequencyCache.GetAllHaplotypeFrequencies(setId).Returns(BuildEntry(("a", "b", "c", "q", "r", 0.3m)));
+
+        var result = await sut.GetFrequenciesForHla(setId, new List<HfSetHaplotypeNames>(), new HashSet<Locus>());
+
+        result.Should().BeEmpty();
     }
 
     private static FrequencySetCacheEntry BuildEntry(

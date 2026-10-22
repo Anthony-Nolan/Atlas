@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
+using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.ExternalInterface;
@@ -97,5 +99,42 @@ internal class DonorInputBatcherTests
         );
 
         batches.Count().Should().Be(expectedNumberOfBatches);
+    }
+
+    [Test]
+    public void BatchDonors_PutsDonorsWithTheSameFrequencySetMetadataTogether()
+    {
+        // Interleaved, as matching results come: two registries, each with two ethnicities.
+        var donors = Enumerable.Range(1, 12)
+            .Select(i => DonorInputBuilder.Default
+                .WithDonorIds(i)
+                .WithHla(new PhenotypeInfo<string>($"hla-{i}"))
+                .WithMetadata(FrequencySetMetadataBuilder.New.ForRegistry(i % 2 == 0 ? "reg-b" : "reg-a").ForEthnicity(i % 3 == 0 ? "eth-1" : "eth-2").Build())
+                .Build())
+            .ToList();
+
+        var batches = donorInputBatcher.BatchDonorInputs(MatchProbabilityRequestInputBuilder.Default.Build(), donors, 2).ToList();
+
+        var metadataInOrder = batches.SelectMany(b => b.Donors).Select(d => (d.DonorFrequencySetMetadata.RegistryCode, d.DonorFrequencySetMetadata.EthnicityCode)).ToList();
+        metadataInOrder.Select(m => m.RegistryCode + "/" + m.EthnicityCode).Should().BeInAscendingOrder(StringComparer.Ordinal);
+        // The metadata pairs hold 2, 4, 2 and 4 donors here, so with batches of 2 each batch spans exactly one pair.
+        batches.Should().AllSatisfy(b => b.Donors.Select(d => (d.DonorFrequencySetMetadata.RegistryCode, d.DonorFrequencySetMetadata.EthnicityCode)).Distinct().Should().HaveCount(1));
+        batches.SelectMany(b => b.Donors).SelectMany(d => d.DonorIds).Should().BeEquivalentTo(Enumerable.Range(1, 12));
+    }
+
+    [Test]
+    public void BatchDonors_WithNoFrequencySetMetadata_KeepsTheDonors()
+    {
+        var donors = new List<DonorInput>
+        {
+            DonorInputBuilder.Default.WithDonorIds(1).WithHla(new PhenotypeInfo<string>("hla-1"))
+                .WithMetadata(FrequencySetMetadataBuilder.New.ForRegistry("reg").Build()).Build(),
+            DonorInputBuilder.Default.WithDonorIds(2).WithHla(new PhenotypeInfo<string>("hla-2")).With(d => d.DonorFrequencySetMetadata, (FrequencySetMetadata)null).Build(),
+        };
+
+        var batch = donorInputBatcher.BatchDonorInputs(MatchProbabilityRequestInputBuilder.Default.Build(), donors, 10).Single();
+
+        batch.Donors.SelectMany(d => d.DonorIds).Should().BeEquivalentTo(new[] { 1, 2 });
+        batch.Donors.First().DonorIds.Should().Equal(2);
     }
 }

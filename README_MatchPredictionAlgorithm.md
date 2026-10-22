@@ -524,3 +524,21 @@ Both are ops-tunable via config without a code change. Start conservative and ob
 means more distinct sets are active within `SetCacheExpiryMinutes` than `MaxCachedFrequencySets` allows, so sets are
 churning out of the cache before they'd naturally expire.
 
+**The match prediction worker has its own values: 30 sets, for 1,440 minutes** (Terraform
+`MATCH_PREDICTION_WORKER_MAX_CACHED_FREQUENCY_SETS` / `MATCH_PREDICTION_WORKER_SET_CACHE_EXPIRY_MINUTES`; the other hosts
+keep 10 sets and 60 minutes). A search load touches many sets: on DEV, 40 searches used about 80, and with 10 cached each
+replica loaded each set about 3 times. Live imputation then spent 98 % of its time getting frequency data, and the
+reloads drove frequent gen 2 garbage collections (ATL-476). The GC heap stayed under 1.6 GB of its 3 GB limit (75 % of
+the 4 GiB container), which is the room the larger cache uses. Watch `GcHeapMB` in the `Match prediction worker runtime`
+event before raising it further. Note that `Get All Frequencies from HF set - from SQL database` is a verbose trace and is
+sampled in the worker; the consolidation trace logged with each load (`Calculating consolidated frequencies ...`) is
+the one to count, weighted by `itemCount`.
+
+Two code changes make each set load go further (ATL-476):
+
+* `DonorInputBatcher` orders a search's donor inputs by frequency set metadata (registry, then ethnicity code) before
+  it cuts them into batches, so a batch spans as few sets as possible and its donors run set by set.
+* `CompressedPhenotypeExpander` asks for all of a donor's survivor frequencies in one call
+  (`IHaplotypeFrequencyLookupService.GetFrequenciesForHla`), so the set is fetched from the cache once per donor rather
+  than once per survivor.
+
