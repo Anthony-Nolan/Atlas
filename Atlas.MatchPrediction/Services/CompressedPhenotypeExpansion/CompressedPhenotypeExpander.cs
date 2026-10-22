@@ -8,6 +8,7 @@ using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models;
+using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 
 // Aliases, not wrapper types, and the difference is the point. This file is where three of the several meanings of
@@ -214,10 +215,14 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     {
         var allowedLoci = input.MatchPredictionParameters.AllowedLoci;
 
-        var groupsPerPosition = new DataByResolution<PossibleGroupsPerPosition>
+        DataByResolution<PossibleGroupsPerPosition> groupsPerPosition;
+        using (LiveImputationStageTimings.Time(LiveImputationStage.PhenotypeConversion))
         {
-            SmallGGroup = await converter.ConvertPhenotype(input, HaplotypeTypingCategory.SmallGGroup)
-        };
+            groupsPerPosition = new DataByResolution<PossibleGroupsPerPosition>
+            {
+                SmallGGroup = await converter.ConvertPhenotype(input, HaplotypeTypingCategory.SmallGGroup)
+            };
+        }
 
         if (IsUnambiguousAtAllowedLoci(allowedLoci, groupsPerPosition))
         {
@@ -225,18 +230,30 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
             return BuildSingleSmallGGenotype(groupsPerPosition);
         }
 
-        var (pool, interner, alleleIndex) = await FetchHaplotypesGroupedByTypingCategory(input.HfSetId);
+        DataByResolution<HaplotypeKey[]> pool;
+        HaplotypeInterner interner;
+        DataByResolution<LociInfo<int[][]>> alleleIndex;
+        using (LiveImputationStageTimings.Time(LiveImputationStage.FrequencySetFetch))
+        {
+            (pool, interner, alleleIndex) = await FetchHaplotypesGroupedByTypingCategory(input.HfSetId);
+        }
 
         // SmallGGroup is already converted whether the set holds it or not, because the short circuit above needed it.
         // The other two are converted only if some pooled haplotype is typed at that category.
         if (pool.GGroup.Length > 0)
         {
-            groupsPerPosition.GGroup = await converter.ConvertPhenotype(input, HaplotypeTypingCategory.GGroup);
+            using (LiveImputationStageTimings.Time(LiveImputationStage.PhenotypeConversion))
+            {
+                groupsPerPosition.GGroup = await converter.ConvertPhenotype(input, HaplotypeTypingCategory.GGroup);
+            }
         }
 
         if (pool.PGroup.Length > 0)
         {
-            groupsPerPosition.PGroup = await converter.ConvertPhenotype(input, HaplotypeTypingCategory.PGroup);
+            using (LiveImputationStageTimings.Time(LiveImputationStage.PhenotypeConversion))
+            {
+                groupsPerPosition.PGroup = await converter.ConvertPhenotype(input, HaplotypeTypingCategory.PGroup);
+            }
         }
 
         return await ExpandToPotentialDiplotypes(input.HfSetId, allowedLoci, groupsPerPosition, pool, interner, alleleIndex);
@@ -313,8 +330,13 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
         HaplotypeInterner interner,
         DataByResolution<LociInfo<int[][]>> alleleIndex)
     {
-        var haplotypes = GetHaplotypesForAllowedLoci(pool, interner, allowedLoci, groupsPerPosition, alleleIndex);
-        var haplotypeList = haplotypes.ToList();
+        List<LociInfo<HlaAtKnownTypingCategory>> haplotypeList;
+        using (LiveImputationStageTimings.Time(LiveImputationStage.SurvivorFiltering))
+        {
+            haplotypeList = GetHaplotypesForAllowedLoci(pool, interner, allowedLoci, groupsPerPosition, alleleIndex).ToList();
+        }
+
+        LiveImputationStageTimings.CountSurvivors(haplotypeList.Count);
 
         // Materialise the allowed loci once: iterating the ISet directly inside the per-diplotype loop would box an enumerator on every pair.
         var allowedLociArray = allowedLoci.ToArray();
@@ -326,7 +348,14 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
         var excludedLoci = LocusSettings.MatchPredictionLoci.Except(allowedLoci).ToHashSet();
 
         // One resolution per survivor.
-        var frequencies = await ResolveHaplotypeFrequencies(hfSetId, haplotypeList, excludedLoci);
+        decimal[] frequencies;
+        using (LiveImputationStageTimings.Time(LiveImputationStage.FrequencyResolution))
+        {
+            frequencies = await ResolveHaplotypeFrequencies(hfSetId, haplotypeList, excludedLoci);
+        }
+
+        // Everything from here to the return is the pairing.
+        using var pairingTimer = LiveImputationStageTimings.Time(LiveImputationStage.Pairing);
 
         bool IsRepresentedInTargetPhenotype(HlaAtKnownTypingCategory hla, Locus locus, LocusPosition position)
         {

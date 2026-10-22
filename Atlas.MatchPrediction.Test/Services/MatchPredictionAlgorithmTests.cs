@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -36,6 +37,7 @@ namespace Atlas.MatchPrediction.Test.Services
         private IDonorGenotypeSetSourceResolver genotypeSetSourceResolver;
         private IDonorGenotypeSetBatchCompleter genotypeSetBatchCompleter;
         private IPatientGenotypeSetProvider patientGenotypeSetProvider;
+        private IGenotypeSetTimingEvents genotypeSetTimingEvents;
         private IMatchPredictionCacheWarmer cacheWarmer;
         private DonorGenotypeSetBatchContext batchContext;
         private IMatchPredictionAlgorithm matchPredictionAlgorithm;
@@ -51,6 +53,7 @@ namespace Atlas.MatchPrediction.Test.Services
             genotypeSetSourceResolver = Substitute.For<IDonorGenotypeSetSourceResolver>();
             genotypeSetBatchCompleter = Substitute.For<IDonorGenotypeSetBatchCompleter>();
             patientGenotypeSetProvider = Substitute.For<IPatientGenotypeSetProvider>();
+            genotypeSetTimingEvents = Substitute.For<IGenotypeSetTimingEvents>();
             cacheWarmer = Substitute.For<IMatchPredictionCacheWarmer>();
             matchPredictionAlgorithm = new MatchPredictionAlgorithm(
                 matchProbabilityService,
@@ -61,6 +64,7 @@ namespace Atlas.MatchPrediction.Test.Services
                 genotypeSetSourceResolver,
                 genotypeSetBatchCompleter,
                 patientGenotypeSetProvider,
+                genotypeSetTimingEvents,
                 cacheWarmer);
 
             batchContext = DonorGenotypeSetBatchContext.Disabled(UsePrecomputedGenotypeSetsSource.FeatureFlag, PrecomputedGenotypeSetMode.ForceLive, null);
@@ -186,6 +190,38 @@ namespace Atlas.MatchPrediction.Test.Services
         }
 
         [Test]
+        public async Task RunMatchPredictionAlgorithmBatch_SendsOneTimingEventWithEveryDonorAfterCompleting()
+        {
+            var calls = new List<string>();
+            genotypeSetBatchCompleter.WhenForAnyArgs(c => c.Complete(default, default, default, default)).Do(_ => calls.Add("complete"));
+            genotypeSetTimingEvents.WhenForAnyArgs(e => e.Send(default)).Do(_ => calls.Add("timings"));
+            var timing = new DonorGenotypeSetTiming(
+                TimeSpan.FromMilliseconds(0.1), TimeSpan.FromMilliseconds(2), null, TimeSpan.FromMilliseconds(0.5), TimeSpan.FromMilliseconds(4));
+            matchProbabilityService.CalculateMatchProbability(default, default, default).ReturnsForAnyArgs(
+                new MatchProbabilityResult(new MatchProbabilityResponse(null, new HashSet<Locus>()), 7, DonorGenotypeSetSource.NoRow, null, timing));
+            var input = new MultipleDonorMatchProbabilityInput(new IdentifiedMatchProbabilityRequest { SearchRequestId = "search-request-id" })
+            {
+                Donors = new List<DonorInput>
+                {
+                    DonorInputBuilder.Default.WithDonorIds(1).Build(),
+                    DonorInputBuilder.Default.WithDonorIds(2, 3).Build()
+                }
+            };
+
+            await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatch(input);
+
+            genotypeSetTimingEvents.Received(1).Send(Arg.Is<GenotypeSetBatchTimings>(t =>
+                t.Request == input
+                && t.BatchContext == batchContext
+                && t.MatchPredictionPath == "Durable"
+                && t.MaxDegreeOfParallelism == 1
+                && t.BatchId == null
+                && t.Donors.Count == 2
+                && t.Donors.All(d => d.Source == DonorGenotypeSetSource.NoRow && d.DonorGenotypeCount == 7 && d.Timing == timing)));
+            calls.Should().Equal("complete", "timings");
+        }
+
+        [Test]
         public async Task RunMatchPredictionAlgorithmBatch_WithNoDonors_GetsNoPatientSet()
         {
             var input = new MultipleDonorMatchProbabilityInput(new IdentifiedMatchProbabilityRequest()) { Donors = new List<DonorInput>() };
@@ -193,6 +229,7 @@ namespace Atlas.MatchPrediction.Test.Services
             await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatch(input);
 
             await patientGenotypeSetProvider.DidNotReceiveWithAnyArgs().Get(default, default);
+            genotypeSetTimingEvents.DidNotReceiveWithAnyArgs().Send(default);
         }
 
         /// <summary>

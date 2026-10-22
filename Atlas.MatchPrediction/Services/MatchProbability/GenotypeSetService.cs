@@ -3,6 +3,7 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.Common.Utils.Extensions;
+using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Models;
@@ -141,16 +142,20 @@ internal class GenotypeSetService(
             return new SubjectGenotypeSet(true, new List<GenotypeAtDesiredResolutions>(), 0m);
         }
 
-        var convertedGenotypes = await genotypeConverter.ConvertGenotypesForMatchCalculation(new GenotypeConverterInput
-            {
-                CompressedPhenotype = preparedSubjectData.HlaTyping,
-                AllowedLoci = parameters.AllowedLoci,
-                Genotypes = imputedGenotypes.Genotypes,
-                HfSetHlaNomenclatureVersion = preparedSubjectData.SubjectFrequencySet.FrequencySet.HlaNomenclatureVersion,
-                MatchingAlgorithmHlaNomenclatureVersion = parameters.MatchingAlgorithmHlaNomenclatureVersion,
-                SubjectLogDescription = preparedSubjectData.SubjectFrequencySet.SubjectLogDescription
-            }
-        );
+        ICollection<GenotypeAtDesiredResolutions> convertedGenotypes;
+        using (LiveImputationStageTimings.Time(LiveImputationStage.PGroupConversion))
+        {
+            convertedGenotypes = await genotypeConverter.ConvertGenotypesForMatchCalculation(new GenotypeConverterInput
+                {
+                    CompressedPhenotype = preparedSubjectData.HlaTyping,
+                    AllowedLoci = parameters.AllowedLoci,
+                    Genotypes = imputedGenotypes.Genotypes,
+                    HfSetHlaNomenclatureVersion = preparedSubjectData.SubjectFrequencySet.FrequencySet.HlaNomenclatureVersion,
+                    MatchingAlgorithmHlaNomenclatureVersion = parameters.MatchingAlgorithmHlaNomenclatureVersion,
+                    SubjectLogDescription = preparedSubjectData.SubjectFrequencySet.SubjectLogDescription
+                }
+            );
+        }
 
         return new SubjectGenotypeSet(false, convertedGenotypes, imputedGenotypes.SumOfLikelihoods);
     }

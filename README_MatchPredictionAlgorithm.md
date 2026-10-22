@@ -255,6 +255,61 @@ customEvents
     NoRow = sum(todouble(customMeasurements.NoRow) * itemCount)
 ```
 
+### Timing (ATL-474)
+Each donor batch also sends one event, `Genotype set timings`. It shows how long the genotype set step took with
+stored sets and with live imputation, so the two can be compared for the same searches. It is sent on both paths:
+`Durable` (one donor at a time) and `Parallel` (the match prediction worker).
+
+This event is never sampled: it is sent with its sampling percentage already set to 100, so no `itemCount` weighting
+is needed.
+
+- Properties: `SearchRequestId`, `MatchPredictionPath`, `BatchId` (parallel only), `ExcludedLoci`, `AllowedLociKey`,
+  `UsePrecomputedGenotypeSets`, `UsePrecomputedGenotypeSetsSource`, `PrecomputeMode`, `BatchFallbackReason`,
+  `MatchingAlgorithmDataRefreshRecordId`, `PatientGenotypeSetSource`.
+- Batch metrics:
+  - `BatchMs`: the whole batch.
+  - `WarmUpMs`: the MAC and dictionary cache warm-up (see "Cache warm-up for live imputation"); 0 when the batch skipped it.
+  - `ReadMs`, `ReadRowCount`, `ReadBytes`: the one SQL read of the stored rows.
+  - `PatientMs`, `PatientGenotypeCount`: the patient genotype set, stored or live.
+  - `CompleteMs`: storing live sets for reuse.
+  - `DonorCount`, `MaxDegreeOfParallelism`.
+- Donor metrics, as sums over the batch's donor inputs. A mean per donor is the sum divided by the count.
+  - `DonorTotalMs`: the whole match prediction of each donor.
+  - `LiveCount`, `LiveMs`, `LiveGenotypes`: donors imputed live.
+  - `PrecomputedCount`, `PrecomputedMs` (finding and decoding the stored set), `PrecomputedGenotypes`, `PrecomputedBytes`: donors that used a stored set.
+  - `LookupMs`: looking for a stored set, for all donors, including misses.
+  - `EncodeCount`, `EncodeMs`: encoding live sets to store them.
+  - The same live and precomputed sums by donor genotype count: `Live<B>Count`, `Live<B>Ms`, `Precomputed<B>Count`,
+    `Precomputed<B>Ms`, `Precomputed<B>Bytes`, where `<B>` is `G0to1`, `G2to10`, `G11to100`, `G101to500`,
+    `G501to1000` or `G1001Plus`.
+- Live imputation by stage, summed over the live donors (`LiveImputationStageTimings`): `Stage<S>Ms` for each stage -
+  `PhenotypeConversion` (dictionary and MAC lookups), `FrequencySetFetch` (getting the set's haplotypes, a SQL load when
+  the set is not cached), `SurvivorFiltering`, `FrequencyResolution`, `Pairing`, `Truncation` and `PGroupConversion` -
+  plus `StagedLiveCount`, `Survivors` (haplotypes left after filtering) and `ConsolidationFallbacks` (frequencies
+  calculated by a direct scan because the set's consolidated frequencies were still being built). Stage times are
+  wall-clock, so they include any wait for a thread, a lock or the garbage collector.
+
+On the parallel path, donors run at the same time, so the donor sums are more than `BatchMs`.
+
+The worker also sends `Match prediction worker runtime` every `MatchPredictionWorker:RuntimeTelemetryIntervalSeconds`
+(15 s by default; 0 turns it off), one event per replica, not sampled: `CpuPercent` (of all cores), `GcPausePercent`,
+`Gen0Collections`/`Gen1Collections`/`Gen2Collections`, `GcHeapMB`, `WorkingSetMB`, `GcMemoryLimitMB`,
+`AllocatedMBPerSecond`, `ThreadPoolThreads`, `ThreadPoolQueueLength`, `ThreadPoolCompletedPerSecond`,
+`LockContentionsPerSecond` and `InFlightBatches`, and the property `GcMode`. Use it with the stage times to tell apart
+garbage collection pauses, a starved thread pool and lock contention.
+
+```kusto
+customEvents
+| where name == "Genotype set timings"
+| where customDimensions.SearchRequestId == "<search request id>"
+| summarize
+    Batches = count(),
+    BatchMs = sum(todouble(customMeasurements.BatchMs)),
+    ReadMs = sum(todouble(customMeasurements.ReadMs)),
+    LiveMsPerDonor = sum(todouble(customMeasurements.LiveMs)) / sum(todouble(customMeasurements.LiveCount)),
+    PrecomputedMsPerDonor = sum(todouble(customMeasurements.PrecomputedMs)) / sum(todouble(customMeasurements.PrecomputedCount))
+```
+
 ## Precomputed patient genotype set (search)
 Without this, each match prediction batch imputes the patient again, so a search with N batches imputes the same patient
 N times. Instead, the patient's set is stored once per search, and each batch decodes it (ATL-426). It follows the same

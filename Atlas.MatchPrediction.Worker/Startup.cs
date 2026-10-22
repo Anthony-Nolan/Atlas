@@ -107,6 +107,9 @@ public static class Startup
             .AddCheck("self", () => HealthCheckResult.Healthy(), tags: ["live", "ready"]);
 
         services.AddHostedService<MatchPredictionWorker>();
+
+        // CPU, GC, thread pool and lock contention every few seconds, to find where live imputation waits (ATL-474).
+        services.AddHostedService<WorkerRuntimeTelemetry>();
     }
 
     private static void RegisterSettings(IServiceCollection services, IConfiguration configuration)

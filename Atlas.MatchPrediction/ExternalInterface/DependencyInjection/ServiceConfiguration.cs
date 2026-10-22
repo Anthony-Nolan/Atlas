@@ -304,6 +304,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
         {
             services.AddScoped<IDonorGenotypeSetSourceResolver, DonorGenotypeSetSourceResolver>();
             services.AddScoped<IDonorGenotypeSetBatchCompleter, DonorGenotypeSetBatchCompleter>();
+            services.AddSingleton<IGenotypeSetTimingEvents, GenotypeSetTimingEvents>();
             services.AddScoped<IPatientGenotypeSetProvider, PatientGenotypeSetProvider>();
             services.AddScoped<IPatientGenotypeSetWarmer, PatientGenotypeSetWarmer>();
             services.TryAddScoped<IPrecomputedDonorGenotypeSetReader, NoOpPrecomputedDonorGenotypeSetReader>();

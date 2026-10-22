@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
@@ -56,6 +57,7 @@ internal class DonorGenotypeSetSourceResolver : IDonorGenotypeSetSourceResolver
         }
 
         PrecomputedDonorGenotypeSetLookup lookup;
+        var readStopwatch = Stopwatch.StartNew();
         try
         {
             lookup = await reader.GetDonorGenotypeSets(
@@ -68,7 +70,7 @@ internal class DonorGenotypeSetSourceResolver : IDonorGenotypeSetSourceResolver
         }
 
         return DonorGenotypeSetBatchContext.Enabled(
-            source, settings.Mode, request.MatchingAlgorithmDataRefreshRecordId, lookup, request.PatientGenotypeSetKey);
+            source, settings.Mode, request.MatchingAlgorithmDataRefreshRecordId, lookup, request.PatientGenotypeSetKey, readStopwatch.Elapsed);
     }
 
     /// <summary>

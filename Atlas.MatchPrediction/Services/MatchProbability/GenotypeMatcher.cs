@@ -6,6 +6,7 @@ using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.MatchCalculation;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.MatchPrediction;
@@ -39,6 +40,15 @@ public class GenotypeMatcherResult
     /// or the one computed live. Lets the caller store a live set for reuse.
     /// </summary>
     public SubjectGenotypeSet DonorGenotypeSet { get; set; }
+
+    /// <summary>
+    /// How long the live donor imputation took; null when <see cref="GenotypeMatcherInput.DonorGenotypeSet"/> was
+    /// supplied. Logged per batch by <c>GenotypeSetTimingEvents</c> (ATL-474).
+    /// </summary>
+    public TimeSpan? DonorGenotypeSetComputeTime { get; set; }
+
+    /// <summary>Where the live donor imputation spent its time, by stage; null when it did not run (ATL-474).</summary>
+    public LiveImputationStageTimings DonorLiveImputationStages { get; set; }
 
     public class SubjectResult
     {
@@ -92,14 +102,25 @@ internal class GenotypeMatcher : IGenotypeMatcher
         ArgumentNullException.ThrowIfNull(input.MatchPredictionParameters);
 
         var patientGenotypeSet = input.PatientGenotypeSet;
-        var donorGenotypeSet = input.DonorGenotypeSet
-                               ?? await genotypeSetService.GetGenotypeSet(input.DonorData, input.MatchPredictionParameters);
+        var donorGenotypeSet = input.DonorGenotypeSet;
+        TimeSpan? donorGenotypeSetComputeTime = null;
+        LiveImputationStageTimings donorLiveImputationStages = null;
+        if (donorGenotypeSet == null)
+        {
+            using var stageCollection = LiveImputationStageTimings.Begin();
+            var computeStopwatch = Stopwatch.StartNew();
+            donorGenotypeSet = await genotypeSetService.GetGenotypeSet(input.DonorData, input.MatchPredictionParameters);
+            donorGenotypeSetComputeTime = computeStopwatch.Elapsed;
+            donorLiveImputationStages = stageCollection.Timings;
+        }
 
         if (patientGenotypeSet.IsUnrepresented || donorGenotypeSet.IsUnrepresented)
         {
             return new GenotypeMatcherResult
             {
                 DonorGenotypeSet = donorGenotypeSet,
+                DonorGenotypeSetComputeTime = donorGenotypeSetComputeTime,
+            DonorLiveImputationStages = donorLiveImputationStages,
                 PatientResult = new GenotypeMatcherResult.SubjectResult(
                     patientGenotypeSet.IsUnrepresented,
                     patientGenotypeSet.Genotypes.Count,
@@ -121,6 +142,8 @@ internal class GenotypeMatcher : IGenotypeMatcher
         return new GenotypeMatcherResult
         {
             DonorGenotypeSet = donorGenotypeSet,
+            DonorGenotypeSetComputeTime = donorGenotypeSetComputeTime,
+            DonorLiveImputationStages = donorLiveImputationStages,
 
             PatientResult = new GenotypeMatcherResult.SubjectResult(
                 false,

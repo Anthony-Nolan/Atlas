@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -32,6 +33,7 @@ internal class MatchProbabilityServicePrecomputeTests
     private const int OtherFrequencySetId = 789;
     private const int DataRefreshRecordId = 42;
     private const int DonorId = 1;
+    private static readonly TimeSpan LiveComputeTime = TimeSpan.FromMilliseconds(7);
 
     private IGenotypeMatcher genotypeMatcher;
     private IMatchProbabilityService matchProbabilityService;
@@ -64,13 +66,15 @@ internal class MatchProbabilityServicePrecomputeTests
         // Like the real matcher: uses the supplied donor set, or "computes" the live one.
         genotypeMatcher.MatchPatientDonorGenotypes(default).ReturnsForAnyArgs(call =>
         {
-            var donorSet = call.Arg<GenotypeMatcherInput>().DonorGenotypeSet ?? liveDonorGenotypeSet;
+            var suppliedSet = call.Arg<GenotypeMatcherInput>().DonorGenotypeSet;
+            var donorSet = suppliedSet ?? liveDonorGenotypeSet;
             return new GenotypeMatcherResult
             {
                 PatientResult = new GenotypeMatcherResult.SubjectResult(false, 1, 0.1m),
                 DonorResult = new GenotypeMatcherResult.SubjectResult(donorSet.IsUnrepresented, donorSet.Genotypes.Count, donorSet.SumOfLikelihoods),
                 GenotypeMatchDetails = new List<GenotypeMatchDetails>(),
-                DonorGenotypeSet = donorSet
+                DonorGenotypeSet = donorSet,
+                DonorGenotypeSetComputeTime = suppliedSet == null ? LiveComputeTime : null
             };
         });
 
@@ -297,6 +301,46 @@ internal class MatchProbabilityServicePrecomputeTests
         result.GenotypeSetSource.Should().Be(reason);
         result.GenotypeSetToStore.Should().BeNull();
         await genotypeMatcher.Received(1).MatchPatientDonorGenotypes(Arg.Is<GenotypeMatcherInput>(x => x.DonorGenotypeSet == null));
+    }
+
+    [Test]
+    public async Task CalculateMatchProbability_WithStoredRow_TimesTheLookupAndReportsTheStoredSize()
+    {
+        var payload = SubjectGenotypeSetPayload.Encode(SetWithGenotypes(2, 0.25m));
+        var context = EnabledContext(new Dictionary<int, PrecomputedDonorGenotypeSetRow>
+        {
+            { DonorId, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, false, payload, true) }
+        });
+
+        var result = await matchProbabilityService.CalculateMatchProbability(Input(), patientGenotypeSet, context);
+
+        result.Timing.LiveComputeTime.Should().BeNull();
+        result.Timing.StoredBytes.Should().Be(payload.Length);
+        result.Timing.LookupTime.Should().BeGreaterThan(TimeSpan.Zero);
+        result.Timing.EncodeTime.Should().Be(TimeSpan.Zero);
+        result.Timing.TotalTime.Should().BeGreaterThanOrEqualTo(result.Timing.LookupTime);
+    }
+
+    [Test]
+    public async Task CalculateMatchProbability_WithNoRow_ReportsTheLiveAndEncodeTimes()
+    {
+        var result = await matchProbabilityService.CalculateMatchProbability(Input(), patientGenotypeSet, EnabledContext([]));
+
+        result.Timing.LiveComputeTime.Should().Be(LiveComputeTime);
+        result.Timing.StoredBytes.Should().BeNull();
+        result.Timing.EncodeTime.Should().BeGreaterThan(TimeSpan.Zero);
+    }
+
+    [Test]
+    public async Task CalculateMatchProbability_WhenPrecomputeDisabled_ReportsOnlyTheLiveTime()
+    {
+        var context = DonorGenotypeSetBatchContext.Disabled(UsePrecomputedGenotypeSetsSource.Request, PrecomputedGenotypeSetMode.DefaultLive, DataRefreshRecordId);
+
+        var result = await matchProbabilityService.CalculateMatchProbability(Input(), patientGenotypeSet, context);
+
+        result.Timing.LiveComputeTime.Should().Be(LiveComputeTime);
+        result.Timing.StoredBytes.Should().BeNull();
+        result.Timing.EncodeTime.Should().Be(TimeSpan.Zero);
     }
 
     private static SingleDonorMatchProbabilityInput Input() => SingleDonorMatchProbabilityInputBuilder.Valid.WithDonorId(DonorId).Build();

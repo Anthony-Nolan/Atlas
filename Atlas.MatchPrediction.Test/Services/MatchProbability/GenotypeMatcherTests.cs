@@ -10,6 +10,7 @@ using AutoFixture;
 using AwesomeAssertions;
 using NSubstitute;
 using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -82,6 +83,42 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             var result = await genotypeMatcher.MatchPatientDonorGenotypes(BuildDefaultInput());
 
             result.DonorGenotypeSet.Should().BeSameAs(liveSet);
+            result.DonorGenotypeSetComputeTime.Should().NotBeNull();
+            result.DonorLiveImputationStages.Should().NotBeNull();
+        }
+
+        [Test]
+        public async Task MatchPatientDonorGenotypes_WhenDonorComputedLive_CollectsTheStagesTheImputationTimes()
+        {
+            var liveSet = new SubjectGenotypeSet(false, new List<GenotypeAtDesiredResolutions> { new GenotypeAtDesiredResolutionsBuilder().Default().Build() }, 0.4m);
+            genotypeSetService.GetGenotypeSet(default, default).ReturnsForAnyArgs(async _ =>
+            {
+                using (LiveImputationStageTimings.Time(LiveImputationStage.Pairing))
+                {
+                    await Task.Delay(20);
+                }
+
+                LiveImputationStageTimings.CountConsolidationFallback();
+                return liveSet;
+            });
+
+            var result = await genotypeMatcher.MatchPatientDonorGenotypes(BuildDefaultInput());
+
+            result.DonorLiveImputationStages.Get(LiveImputationStage.Pairing).Should().BeGreaterThanOrEqualTo(TimeSpan.FromMilliseconds(15));
+            result.DonorLiveImputationStages.Get(LiveImputationStage.Truncation).Should().Be(TimeSpan.Zero);
+            result.DonorLiveImputationStages.ConsolidationFallbacks.Should().Be(1);
+        }
+
+        [Test]
+        public async Task MatchPatientDonorGenotypes_WhenDonorGenotypeSetSupplied_ReportsNoComputeTime()
+        {
+            var input = BuildDefaultInput();
+            input.DonorGenotypeSet = new SubjectGenotypeSet(true, new List<GenotypeAtDesiredResolutions>(), 0m);
+
+            var result = await genotypeMatcher.MatchPatientDonorGenotypes(input);
+
+            result.DonorGenotypeSetComputeTime.Should().BeNull();
+            result.DonorLiveImputationStages.Should().BeNull();
         }
 
         [Test]

@@ -191,6 +191,7 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
         // "Pure in-memory" is not the same as cheap: this is a full linear scan of SetFrequencies with a RemoveLoci
         // allocation per entry, for every haplotype that lands here. Callers that resolve many frequencies for one
         // subject can therefore pay it many times over while the warm is still running.
+        LiveImputationStageTimings.CountConsolidationFallback();
         return frequencyConsolidator.ConsolidateFrequenciesForHaplotype(entry, hla, excludedLoci);
     }
 

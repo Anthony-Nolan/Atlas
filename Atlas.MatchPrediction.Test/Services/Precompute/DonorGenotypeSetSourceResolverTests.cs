@@ -87,6 +87,32 @@ internal class DonorGenotypeSetSourceResolverTests
         await reader.DidNotReceiveWithAnyArgs().GetDonorGenotypeSets(default, default, default, default);
         context.BatchFallbackReason.Should().Be(DonorGenotypeSetSource.PrecomputeDisabled);
         context.CanStore.Should().BeFalse();
+        context.ReadTime.Should().BeNull();
+    }
+
+    [Test]
+    public async Task Resolve_WhenRead_ReportsTheReadTimeRowsAndBytes()
+    {
+        settings.Mode = PrecomputedGenotypeSetMode.DefaultPrecomputed;
+        reader.GetDonorGenotypeSets(default, default, default, default).ReturnsForAnyArgs(async _ =>
+        {
+            await Task.Delay(20);
+            return new PrecomputedDonorGenotypeSetLookup(
+                "ABCDrb1Dqb1",
+                null,
+                new Dictionary<int, PrecomputedDonorGenotypeSetRow>
+                {
+                    { 1, new PrecomputedDonorGenotypeSetRow(7, false, new byte[100], true) },
+                    { 2, new PrecomputedDonorGenotypeSetRow(7, true, null, true) },
+                },
+                new PrecomputedPatientGenotypeSetRow(false, new byte[30]));
+        });
+
+        var context = await resolver.Resolve(Request(null), Donors);
+
+        context.ReadTime.Should().BeGreaterThanOrEqualTo(TimeSpan.FromMilliseconds(15));
+        context.ReadRowCount.Should().Be(2);
+        context.ReadBytes.Should().Be(130);
     }
 
     [Test]

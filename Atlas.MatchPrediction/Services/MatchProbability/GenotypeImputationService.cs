@@ -73,8 +73,11 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
             // The names come back from the expansion, index-aligned with the pairs, so truncation derives none of its
             // own.
-            return ExpandedGenotypeTruncater.TruncateGenotypes(
-                genotypeLikelihoods, expanded, settings.MaximumExpandedGenotypesPerInput);
+            using (LiveImputationStageTimings.Time(LiveImputationStage.Truncation))
+            {
+                return ExpandedGenotypeTruncater.TruncateGenotypes(
+                    genotypeLikelihoods, expanded, settings.MaximumExpandedGenotypesPerInput);
+            }
         }
 
         private async Task<ExpandedGenotypes> ExpandToGenotypes(ImputationInput input)

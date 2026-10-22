@@ -12,6 +12,7 @@ using Atlas.MatchPrediction.Services.Precompute;
 using Atlas.MatchPrediction.Validators;
 using FluentValidation;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
@@ -79,6 +80,7 @@ internal class MatchProbabilityService : IMatchProbabilityService
     {
         ArgumentNullException.ThrowIfNull(patientGenotypeSet);
 
+        var totalStopwatch = Stopwatch.StartNew();
         await InputValidator.ValidateAndThrowAsync(singleDonorMatchProbabilityInput);
 
         matchProbabilityLoggingContext.Initialise(singleDonorMatchProbabilityInput);
@@ -92,12 +94,18 @@ internal class MatchProbabilityService : IMatchProbabilityService
         // never used (StaleFrequencySet): not its payload, and not its IsUnrepresented flag.
         var genotypeSetSource = DonorGenotypeSetSource.PrecomputeDisabled;
         SubjectGenotypeSet precomputedDonorGenotypeSet = null;
+        var lookupTime = TimeSpan.Zero;
+        int? storedBytes = null;
         if (batchContext != null)
         {
+            var lookupStopwatch = Stopwatch.StartNew();
             genotypeSetSource = batchContext.TryGetPrecomputedGenotypeSet(
                 singleDonorMatchProbabilityInput.Donor.DonorIds,
                 donorFrequencySetId,
-                out precomputedDonorGenotypeSet);
+                out precomputedDonorGenotypeSet,
+                out var usedRowBytes);
+            lookupTime = lookupStopwatch.Elapsed;
+            storedBytes = genotypeSetSource == DonorGenotypeSetSource.Precomputed ? usedRowBytes : null;
         }
 
         var matcherResult = await genotypeMatcher.MatchPatientDonorGenotypes(new GenotypeMatcherInput
@@ -111,9 +119,14 @@ internal class MatchProbabilityService : IMatchProbabilityService
             }
         );
 
+        var encodeStopwatch = Stopwatch.StartNew();
         var genotypeSetToStore = ShouldStore(genotypeSetSource, batchContext)
             ? ToStore(singleDonorMatchProbabilityInput.Donor, donorHla, donorFrequencySetId, matcherResult.DonorGenotypeSet)
             : null;
+        var encodeTime = genotypeSetToStore != null ? encodeStopwatch.Elapsed : TimeSpan.Zero;
+
+        DonorGenotypeSetTiming Timing() =>
+            new(lookupTime, matcherResult.DonorGenotypeSetComputeTime, storedBytes, encodeTime, totalStopwatch.Elapsed, matcherResult.DonorLiveImputationStages);
 
         // Capture the donor genotype count (0 when unrepresented), so it is read before the guard below.
         var donorGenotypeCount = matcherResult.DonorResult.GenotypeCount;
@@ -128,11 +141,12 @@ internal class MatchProbabilityService : IMatchProbabilityService
                 PatientHaplotypeFrequencySet = frequencySets.Patient.FrequencySet.ToClientHaplotypeFrequencySet()
             };
 
-            return new MatchProbabilityResult(unrepresentedResponse, donorGenotypeCount, genotypeSetSource, genotypeSetToStore);
+            return new MatchProbabilityResult(unrepresentedResponse, donorGenotypeCount, genotypeSetSource, genotypeSetToStore, Timing());
         }
 
+        // The match details are lazy and enumerated here, so the total is taken after this.
         var response = CalculateMatchProbabilityFromMatcherResult(matcherResult, allowedLoci, frequencySets);
-        return new MatchProbabilityResult(response, donorGenotypeCount, genotypeSetSource, genotypeSetToStore);
+        return new MatchProbabilityResult(response, donorGenotypeCount, genotypeSetSource, genotypeSetToStore, Timing());
     }
 
     /// <summary>
