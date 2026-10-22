@@ -334,6 +334,12 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
     /// <summary>
     /// A left join: a representative donor that is missing fails its own group, not the batch. The two DPB1 columns come
     /// too, although no <see cref="AllowedLociKey"/> includes the locus, so that the typing is the whole typing of the donor.
+    ///
+    /// <para>
+    /// <c>MAXDOP 1</c>: the read is one batch of groups, a range seek on the groups and one donor seek each. Without the
+    /// hint, SQL Server can run it in parallel at the database's MAXDOP, and the extra threads take CPU that the
+    /// stage's writes need (ATL-472).
+    /// </para>
     /// </summary>
     private const string SelectGroupsToComputeSql = $"""
                                                      SELECT
@@ -355,6 +361,7 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
                                                        AND g.{nameof(Group.Id)} BETWEEN @FirstGroupId AND @LastGroupId
                                                        AND g.{nameof(Group.SubjectGenotypeSetValueId)} IS NULL
                                                      ORDER BY g.{nameof(Group.Id)}
+                                                     OPTION (MAXDOP 1)
                                                      """;
 
     /// <summary>
