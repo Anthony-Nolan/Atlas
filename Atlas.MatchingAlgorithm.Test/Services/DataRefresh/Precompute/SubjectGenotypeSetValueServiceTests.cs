@@ -256,7 +256,8 @@ public class SubjectGenotypeSetValueServiceTests
         var computationsAtEachStore = new List<int>();
         repository
             .When(r => r.GetOrCreateValueIds(Arg.Any<IReadOnlyCollection<SubjectGenotypeSetValueToStore>>()))
-            .Do(_ => computationsAtEachStore.Add(genotypeSetService.ReceivedCalls().Count(call => call.GetMethodInfo().Name == nameof(IGenotypeSetService.GetGenotypeSet))));
+            .Do(_ => computationsAtEachStore.Add(genotypeSetService.ReceivedCalls()
+                .Count(call => call.GetMethodInfo().Name == nameof(IGenotypeSetService.GetGenotypeSet))));
 
         await valueService.GetOrComputeValueIds(requests, hlaNomenclatureVersion, database);
 
@@ -315,7 +316,6 @@ public class SubjectGenotypeSetValueServiceTests
         await genotypeSetService.DidNotReceiveWithAnyArgs().GetGenotypeSet(default, default);
     }
 
-    /// <summary>The computation of the request, to set up: its subject has the typing of the request.</summary>
     [Test]
     public async Task GetOrComputeValueIds_ForAnUnambiguousTyping_GivesItNoValue_AndNeitherReadsNorComputesIt()
     {
@@ -375,7 +375,8 @@ public class SubjectGenotypeSetValueServiceTests
         var results = await valueService.GetOrComputeValueIds(requests, hlaNomenclatureVersion, database);
 
         results.StoppedBy.Should().BeNull();
-        results.Outcomes[0].Should().Be(new SubjectGenotypeSetValueOutcome(null, new SubjectGenotypeSetValueFailure(PrecomputeErrorKind.KnownPermanent, failure)));
+        results.Outcomes[0].Should().Be(
+            new SubjectGenotypeSetValueOutcome(null, new SubjectGenotypeSetValueFailure(PrecomputeErrorKind.KnownPermanent, failure)));
         results.Outcomes[1].ValueId.Should().NotBeNull();
         await genotypeSetService.DidNotReceive().GetGenotypeSet(
             Arg.Is<SubjectData>(subject => subject.HlaTyping.Equals(requests[0].HlaTyping)), Arg.Any<MatchPredictionParameters>());
@@ -402,6 +403,7 @@ public class SubjectGenotypeSetValueServiceTests
             Arg.Is<SubjectData>(subject => subject.HlaTyping.Equals(request.HlaTyping)),
             Arg.Any<MatchPredictionParameters>());
 
+    /// <summary>The computation of the request, to set up: its subject has the typing of the request.</summary>
     private Task<SubjectGenotypeSet> GivenTheComputationOf(SubjectGenotypeSetValueRequest request) =>
         genotypeSetService.GetGenotypeSet(
             Arg.Is<SubjectData>(subject => subject.HlaTyping.Equals(request.HlaTyping)),

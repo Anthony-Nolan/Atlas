@@ -54,8 +54,8 @@ public sealed record SubjectGenotypeSetValueOutcome(int? ValueId, SubjectGenotyp
 
 /// <summary>The outcome of each request, in the order of the requests.</summary>
 /// <param name="StoppedBy">
-/// The error that stopped the work, or null. A known temporary error of a computation stops it, and so does any error of
-/// the database. The requests after it were not attempted.
+/// The error that stopped the work, or null. A known temporary error of a computation or of the unambiguity check stops
+/// it, and so does any error of the database. The requests after it were not attempted.
 /// </param>
 public sealed record SubjectGenotypeSetValueResults(IReadOnlyList<SubjectGenotypeSetValueOutcome> Outcomes, Exception? StoppedBy);
 

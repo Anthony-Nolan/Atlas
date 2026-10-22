@@ -249,7 +249,7 @@ internal class DonorGenotypePrecomputationStage : IDonorGenotypePrecomputationSt
         var result = await repository.BuildRun(run.Id, cancellationToken);
         logger.LogInformation(
             LoggingPrefix + " Run {RunId} of data refresh record {DataRefreshRecordId} ({TargetDatabase}) is built: {RunStatus}. " +
-            "{DonorCount} donors, {GroupCount} groups, {BatchCount} batches, {DonorAssignmentCount} donor rows. Steps: {BuildSteps}",
+            "{DonorCount} donors, {GroupCount} groups, {BatchCount} batches, {DonorAssignmentCount} group-donor rows. Steps: {BuildSteps}",
             run.Id, refreshRecord.Id, database, result.Status, result.TotalDonorCount, result.TotalGroupCount, result.TotalBatchCount,
             result.TotalDonorAssignmentCount, DescribeSteps(result.Steps));
 

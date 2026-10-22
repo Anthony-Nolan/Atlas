@@ -162,8 +162,9 @@ once per search (ATL-426, see [Precomputed patient genotype set](#precomputed-pa
 A donor whose typing is **unambiguous at small g group** for a locus combination gets no stored set for that
 combination (ATL-478). Unambiguous means one small g group at both positions of every locus of the combination. Its
 genotype set is then the one certain genotype, which live imputation builds without reading the haplotype frequency
-set: it is about as quick as reading a stored row. Not storing these sets removes most of the rows that the
-pre-computation writes. On DEV they were about 60 % of the donor rows, but only about 3 % of the stored bytes.
+set: it is about as quick as reading a stored row. Not storing these sets removes many of the rows that the
+pre-computation writes: on DEV, up to about 60 % of the donor rows, but only about 3 % of the stored bytes. The 60 % is
+the share of rows with a 1-genotype set, which also includes ambiguous typings that are still stored.
 
 - The rule is `IGenotypeSetService.IsUnambiguousAtSmallGGroup`, the same test that imputation uses to skip the
   frequency set (`CompressedPhenotypeExpander`). The Data Refresh stage, the donor import and search all use it, so
@@ -271,7 +272,8 @@ customEvents
     Batches = sum(itemCount),
     DonorCount = sum(todouble(customMeasurements.DonorCount) * itemCount),
     PrecomputedCount = sum(todouble(customMeasurements.PrecomputedCount) * itemCount),
-    NoRow = sum(todouble(customMeasurements.NoRow) * itemCount)
+    NoRow = sum(todouble(customMeasurements.NoRow) * itemCount),
+    NotStoredUnambiguous = sum(todouble(customMeasurements.NotStoredUnambiguous) * itemCount)
 ```
 
 ## Precomputed patient genotype set (search)

@@ -222,7 +222,7 @@ For each donor, we expand all hla into corresponding p-groups, and store a relat
 ### Donor Genotype Precomputation (Data Refresh stage 65)
 
 The data refresh stores the imputed genotype set of each donor, so that a search does not have to impute the donor
-again. Each donor gets one row in `DonorSubjectGenotypeSets` for each of the four combinations of loci
+again. Each donor gets at most one row in `DonorSubjectGenotypeSets` for each of the four combinations of loci
 (`AllowedLociKey`):
 
 | `AllowedLociKey` | Loci |

@@ -162,7 +162,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var withoutC = await genotypeSetService.IsUnambiguousAtSmallGGroup(
                 subject, new MatchPredictionParameters(new HashSet<Locus> { Locus.A, Locus.B, Locus.Drb1 }, MatchingAlgorithmHlaNomenclatureVersion));
             var withC = await genotypeSetService.IsUnambiguousAtSmallGGroup(
-                subject, new MatchPredictionParameters(new HashSet<Locus> { Locus.A, Locus.B, Locus.C, Locus.Drb1 }, MatchingAlgorithmHlaNomenclatureVersion));
+                subject,
+                new MatchPredictionParameters(new HashSet<Locus> { Locus.A, Locus.B, Locus.C, Locus.Drb1 }, MatchingAlgorithmHlaNomenclatureVersion));
 
             withoutC.Should().BeTrue();
             withC.Should().BeFalse();
@@ -175,7 +176,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             return (
                 new SubjectData(typing, new SubjectFrequencySet(frequencySet, "donor")),
-                new MatchPredictionParameters(new HashSet<Locus> { Locus.A, Locus.B, Locus.C, Locus.Dqb1, Locus.Drb1 }, MatchingAlgorithmHlaNomenclatureVersion));
+                new MatchPredictionParameters(
+                    new HashSet<Locus> { Locus.A, Locus.B, Locus.C, Locus.Dqb1, Locus.Drb1 },
+                    MatchingAlgorithmHlaNomenclatureVersion));
         }
 
         private static async Task ImportHaplotypeFrequencies()

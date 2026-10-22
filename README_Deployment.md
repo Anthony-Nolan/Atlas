@@ -379,8 +379,11 @@ does steps 2 to 4.
    - If the "Data refresh paused" alert comes, the failed donors are above the threshold. The refresh waits for your
      decision. See [the paused data refresh](README_Support.md#the-paused-data-refresh) in the Support README.
 6. **Check the result.** The `notifications` topic reports the successful refresh, and the refresh record has a value in
-   `DonorGenotypePrecomputationCompleted`. Each donor has four rows in `DonorSubjectGenotypeSets`, except the failed
-   donors (see the last query of the [SQL for support](README_Support.md#sql-for-support)).
+   `DonorGenotypePrecomputationCompleted`. For the failed donors, read the completion log of stage 65 ("is complete
+   with no failure", or "is complete with failures" with the count), or the failure alert. Do not count the rows of
+   `DonorSubjectGenotypeSets`: a donor has no row, by design, for each combination of loci at which its typing is
+   unambiguous at small g group (ATL-478), so many donors have fewer than four rows. To check single donors, use
+   `CompareWithStored` (see [the Support README](README_Support.md#sql-for-support)).
 7. **Turn searches back on**, if you stopped them in step 2.
 
 If the refresh fails, the active database does not change. Find the cause in the alerts, then request a new data

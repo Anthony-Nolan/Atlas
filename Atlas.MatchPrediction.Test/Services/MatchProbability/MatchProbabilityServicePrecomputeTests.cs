@@ -225,9 +225,10 @@ internal class MatchProbabilityServicePrecomputeTests
     [Test]
     public async Task CalculateMatchProbability_WithAStoredRow_DoesNotCheckTheDonorTyping()
     {
+        var payload = SubjectGenotypeSetPayload.Encode(SetWithGenotypes(1, 1m));
         var context = EnabledContext(new Dictionary<int, PrecomputedDonorGenotypeSetRow>
         {
-            { DonorId, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, false, SubjectGenotypeSetPayload.Encode(SetWithGenotypes(1, 1m)), true) }
+            { DonorId, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, false, payload, true) }
         });
 
         await matchProbabilityService.CalculateMatchProbability(Input(), patientGenotypeSet, context);
