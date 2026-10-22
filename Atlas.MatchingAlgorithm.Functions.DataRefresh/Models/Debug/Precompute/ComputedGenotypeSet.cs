@@ -21,6 +21,12 @@ internal class ComputedGenotypeSet
     /// <summary>Not given when the set could not be computed.</summary>
     public bool? IsUnrepresented { get; set; }
 
+    /// <summary>
+    /// True when the typing is unambiguous at small g group for the combination: the pre-computation does not store such
+    /// a set (ATL-478). Not given when the set could not be computed.
+    /// </summary>
+    public bool? IsUnambiguousAtSmallGGroup { get; set; }
+
     /// <summary>Not given when the set could not be computed.</summary>
     public int? GenotypeCount { get; set; }
 
@@ -52,6 +58,7 @@ internal class ComputedGenotypeSet
             HlaTypingKey = item.HlaTypingKey,
             HaplotypeFrequencySet = ComputedFrequencySet.From(item.HaplotypeFrequencySet),
             IsUnrepresented = computed ? item.IsUnrepresented : null,
+            IsUnambiguousAtSmallGGroup = computed ? item.IsUnambiguousAtSmallGGroup : null,
             GenotypeCount = computed ? item.GenotypeCount : null,
             SumOfLikelihoods = computed ? item.SumOfLikelihoods : null,
             PayloadSizeBytes = item.PayloadSizeBytes,

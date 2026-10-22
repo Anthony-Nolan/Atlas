@@ -401,13 +401,15 @@ CROSS JOIN FailedDonors fd
 WHERE r.Id = <run id>
 ```
 
-```sql
--- After the stage: the donors that have no stored set for one or more of the four combinations of loci. This reads
--- every donor, so it can take some minutes on a full donor set.
-SELECT d.DonorId
-FROM Donors d
-WHERE (SELECT COUNT(*) FROM DonorSubjectGenotypeSets s WHERE s.DonorId = d.DonorId) < 4
-```
+After the stage, the staging tables are truncated, so no table shows which donors failed. Use the count in the
+completion log of the stage, or in the failure alert. Do not look for donors with fewer than four rows in
+`DonorSubjectGenotypeSets`: a donor has no row, by design, for each combination of loci at which its typing is
+unambiguous at small g group (ATL-478). A donor that is unambiguous at all five loci is unambiguous at every
+combination, so it has no rows at all. SQL cannot tell these donors from failed ones, because the rule needs the HLA
+Metadata Dictionary. To check single donors, call the debug endpoint `POST debug/precompute/genotypeSets/compute` of
+the Data Refresh app with their `ExternalDonorCodes` and `CompareWithStored`: a donor with no row by design gets
+`NotStoredUnambiguous`, and a missing row gets `NoStoredRow` (see
+[the Match Prediction README](README_MatchPredictionAlgorithm.md#parity-check-comparewithstored)).
 
 #### A lost message
 

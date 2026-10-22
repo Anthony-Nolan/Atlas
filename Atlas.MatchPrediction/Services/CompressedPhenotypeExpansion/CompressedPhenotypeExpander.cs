@@ -61,6 +61,17 @@ internal interface ICompressedPhenotypeExpander
     /// Does not consider phase - so the results cannot necessarily be considered Diplotypes.
     /// </summary>
     public Task<ExpandedGenotypes> ExpandCompressedPhenotype(CompressedPhenotypeExpanderInput input);
+
+    /// <summary>
+    /// True when the phenotype has exactly one small g group at both positions of every allowed locus: the case in which
+    /// <see cref="ExpandCompressedPhenotype"/> returns the one certain genotype without reading the haplotype frequency
+    /// set. The same test as that method's, so the two cannot disagree.
+    /// </summary>
+    /// <remarks>
+    /// Such a set is cheap to compute live, so it is not precomputed (ATL-478). Costs one small g conversion of the
+    /// phenotype: HLA Metadata Dictionary lookups, and no frequency set.
+    /// </remarks>
+    public Task<bool> IsUnambiguousAtSmallGGroup(CompressedPhenotypeExpanderInput input);
 }
 
 /// <summary>
@@ -240,6 +251,17 @@ internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
         }
 
         return await ExpandToPotentialDiplotypes(input.HfSetId, allowedLoci, groupsPerPosition, pool, interner, alleleIndex);
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> IsUnambiguousAtSmallGGroup(CompressedPhenotypeExpanderInput input)
+    {
+        var groupsPerPosition = new DataByResolution<PossibleGroupsPerPosition>
+        {
+            SmallGGroup = await converter.ConvertPhenotype(input, HaplotypeTypingCategory.SmallGGroup)
+        };
+
+        return IsUnambiguousAtAllowedLoci(input.MatchPredictionParameters.AllowedLoci, groupsPerPosition);
     }
 
     private static ExpandedGenotypes BuildSingleSmallGGenotype(DataByResolution<PossibleGroupsPerPosition> groupsPerPosition)

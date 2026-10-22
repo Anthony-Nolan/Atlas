@@ -22,6 +22,13 @@ public enum DonorGenotypeSetSource
     NoRow,
 
     /// <summary>
+    /// None of the donor's ids has a stored row, by design: the donor's typing is unambiguous at small g group for the
+    /// search's allowed loci, so its one genotype is computed live without the haplotype frequency set, which is as
+    /// quick as reading a row. Such sets are not precomputed, and never stored back (ATL-478).
+    /// </summary>
+    NotStoredUnambiguous,
+
+    /// <summary>
     /// A stored row exists for the donor's typing, but it was computed with a different haplotype frequency set from
     /// the one search now uses.
     /// </summary>

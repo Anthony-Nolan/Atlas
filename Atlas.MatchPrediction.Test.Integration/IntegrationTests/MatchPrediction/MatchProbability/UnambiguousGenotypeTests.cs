@@ -1,11 +1,15 @@
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
+using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
+using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
 using AwesomeAssertions;
@@ -120,6 +124,63 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             matchProbability.MatchProbabilities.TwoMismatchProbability.Percentage.Should().Be(0);
         }
         
+        [Test]
+        public async Task IsUnambiguousAtSmallGGroup_ForUnambiguousAlleles_IsTrue_AndTheSetIsTheOneGenotype_EvenWhenUnrepresented()
+        {
+            // ATL-478: such a set is not precomputed, because live imputation builds it without the frequency set.
+            var (subject, parameters) = await GlobalSubject(unambiguousUnrepresentedGenotype);
+            var genotypeSetService = DependencyInjection.DependencyInjection.Provider.GetService<IGenotypeSetService>();
+
+            var isUnambiguous = await genotypeSetService.IsUnambiguousAtSmallGGroup(subject, parameters);
+            var genotypeSet = await genotypeSetService.GetGenotypeSet(subject, parameters);
+
+            isUnambiguous.Should().BeTrue();
+            genotypeSet.IsUnrepresented.Should().BeFalse();
+            genotypeSet.Genotypes.Should().ContainSingle();
+        }
+
+        [Test]
+        public async Task IsUnambiguousAtSmallGGroup_ForAnXxCode_IsFalse()
+        {
+            var typing = new PhenotypeInfoBuilder<string>(unambiguousUnrepresentedGenotype).WithDataAt(Locus.A, LocusPosition.One, "01:XX").Build();
+            var (subject, parameters) = await GlobalSubject(typing);
+            var genotypeSetService = DependencyInjection.DependencyInjection.Provider.GetService<IGenotypeSetService>();
+
+            var isUnambiguous = await genotypeSetService.IsUnambiguousAtSmallGGroup(subject, parameters);
+
+            isUnambiguous.Should().BeFalse();
+        }
+
+        [Test]
+        public async Task IsUnambiguousAtSmallGGroup_ReadsOnlyTheAllowedLoci()
+        {
+            // The rule is per locus combination: an XX code at C does not count when C is not allowed.
+            var typing = new PhenotypeInfoBuilder<string>(unambiguousUnrepresentedGenotype).WithDataAt(Locus.C, LocusPosition.One, "04:XX").Build();
+            var (subject, _) = await GlobalSubject(typing);
+            var genotypeSetService = DependencyInjection.DependencyInjection.Provider.GetService<IGenotypeSetService>();
+
+            var withoutC = await genotypeSetService.IsUnambiguousAtSmallGGroup(
+                subject, new MatchPredictionParameters(new HashSet<Locus> { Locus.A, Locus.B, Locus.Drb1 }, MatchingAlgorithmHlaNomenclatureVersion));
+            var withC = await genotypeSetService.IsUnambiguousAtSmallGGroup(
+                subject,
+                new MatchPredictionParameters(new HashSet<Locus> { Locus.A, Locus.B, Locus.C, Locus.Drb1 }, MatchingAlgorithmHlaNomenclatureVersion));
+
+            withoutC.Should().BeTrue();
+            withC.Should().BeFalse();
+        }
+
+        private async Task<(SubjectData Subject, MatchPredictionParameters Parameters)> GlobalSubject(PhenotypeInfo<string> typing)
+        {
+            var frequencySetService = DependencyInjection.DependencyInjection.Provider.GetService<IHaplotypeFrequencyService>();
+            var frequencySet = await frequencySetService.GetSingleHaplotypeFrequencySet(GlobalHfSetMetadata);
+
+            return (
+                new SubjectData(typing, new SubjectFrequencySet(frequencySet, "donor")),
+                new MatchPredictionParameters(
+                    new HashSet<Locus> { Locus.A, Locus.B, Locus.C, Locus.Dqb1, Locus.Drb1 },
+                    MatchingAlgorithmHlaNomenclatureVersion));
+        }
+
         private static async Task ImportHaplotypeFrequencies()
         {
             var importer = DependencyInjection.DependencyInjection.Provider.GetService<IHaplotypeFrequencyService>();

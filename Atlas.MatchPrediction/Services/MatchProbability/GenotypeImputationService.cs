@@ -25,6 +25,13 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         /// <returns>A set of the most likely genotypes, truncated from the full set of possible genotypes.
         /// <see cref="ExpandedGenotypeTruncater"/> for more info on set truncation.</returns>
         Task<ImputedGenotypes> Impute(ImputationInput input);
+
+        /// <summary>
+        /// True when <see cref="Impute"/> would find exactly one genotype without the haplotype frequency set: the typing
+        /// has one small g group at both positions of every allowed locus. See
+        /// <c>ICompressedPhenotypeExpander.IsUnambiguousAtSmallGGroup</c>.
+        /// </summary>
+        Task<bool> IsUnambiguousAtSmallGGroup(ImputationInput input);
     }
 
     internal class GenotypeImputationService : IGenotypeImputationService
@@ -77,22 +84,29 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 genotypeLikelihoods, expanded, settings.MaximumExpandedGenotypesPerInput);
         }
 
+        /// <inheritdoc />
+        public Task<bool> IsUnambiguousAtSmallGGroup(ImputationInput input) =>
+            compressedPhenotypeExpander.IsUnambiguousAtSmallGGroup(ExpanderInputOf(input));
+
         private async Task<ExpandedGenotypes> ExpandToGenotypes(ImputationInput input)
         {
             using (logger.RunTimed($"{LoggingPrefix}Expand {input.SubjectData.SubjectFrequencySet.SubjectLogDescription} phenotype", LogLevel.Verbose))
             {
-                var frequencySet = input.SubjectData.SubjectFrequencySet.FrequencySet;
-
-                var expanderInput = new CompressedPhenotypeExpanderInput
-                {
-                    Phenotype = input.SubjectData.HlaTyping,
-                    HfSetId = frequencySet.Id,
-                    HfSetHlaNomenclatureVersion = frequencySet.HlaNomenclatureVersion,
-                    MatchPredictionParameters = input.MatchPredictionParameters
-                };
-
-                return await compressedPhenotypeExpander.ExpandCompressedPhenotype(expanderInput);
+                return await compressedPhenotypeExpander.ExpandCompressedPhenotype(ExpanderInputOf(input));
             }
+        }
+
+        private static CompressedPhenotypeExpanderInput ExpanderInputOf(ImputationInput input)
+        {
+            var frequencySet = input.SubjectData.SubjectFrequencySet.FrequencySet;
+
+            return new CompressedPhenotypeExpanderInput
+            {
+                Phenotype = input.SubjectData.HlaTyping,
+                HfSetId = frequencySet.Id,
+                HfSetHlaNomenclatureVersion = frequencySet.HlaNomenclatureVersion,
+                MatchPredictionParameters = input.MatchPredictionParameters
+            };
         }
 
     }

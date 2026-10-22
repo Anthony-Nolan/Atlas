@@ -50,6 +50,7 @@ public class MatchProbabilityServiceTests
             matchProbabilityCalculator,
             haplotypeFrequencyService,
             genotypeMatcher,
+            Substitute.For<IGenotypeSetService>(),
             logger,
             matchProbabilityLoggingContext);
 

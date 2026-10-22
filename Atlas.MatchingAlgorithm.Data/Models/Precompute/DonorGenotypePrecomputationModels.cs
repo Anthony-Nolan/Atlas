@@ -48,12 +48,23 @@ public sealed record DonorGenotypePrecomputationGroupToCompute(
     PhenotypeInfo<string?>? HlaTyping);
 
 /// <summary>
-/// What a worker found for one group: a stored value, or a failure. Exactly one of the two is set.
+/// What a worker found for one group: a stored value, a value not stored by design, or a failure. Exactly one of
+/// <see cref="SubjectGenotypeSetValueId"/> and <see cref="FailureMessage"/> is set.
 /// </summary>
 public sealed record DonorGenotypePrecomputationGroupOutcome(int GroupId, int? SubjectGenotypeSetValueId, string? FailureMessage)
 {
+    /// <summary>
+    /// The value id of a group whose typing is unambiguous at small g group: its value is not stored, by design
+    /// (ATL-478), and its donors get no rows. Not null, so the group counts as done, not failed, and is not computed
+    /// again; and not an id, because the value ids are an identity that starts at 1.
+    /// </summary>
+    public const int NotStoredValueId = 0;
+
     public static DonorGenotypePrecomputationGroupOutcome Stored(int groupId, int subjectGenotypeSetValueId) =>
         new(groupId, subjectGenotypeSetValueId, null);
+
+    public static DonorGenotypePrecomputationGroupOutcome NotStored(int groupId) =>
+        new(groupId, NotStoredValueId, null);
 
     public static DonorGenotypePrecomputationGroupOutcome Failed(int groupId, string failureMessage) =>
         new(groupId, null, failureMessage);
