@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
@@ -62,6 +63,7 @@ internal class DonorGenotypeSetSourceResolver : IDonorGenotypeSetSourceResolver
         }
 
         PrecomputedDonorGenotypeSetLookup lookup;
+        var readStopwatch = Stopwatch.StartNew();
         try
         {
             // A stored set's key holds its frequency set, so the set must be chosen before the read.
@@ -76,7 +78,7 @@ internal class DonorGenotypeSetSourceResolver : IDonorGenotypeSetSourceResolver
         }
 
         return DonorGenotypeSetBatchContext.Enabled(
-            source, settings.Mode, request.MatchingAlgorithmDataRefreshRecordId, lookup, request.PatientGenotypeSetKey);
+            source, settings.Mode, request.MatchingAlgorithmDataRefreshRecordId, lookup, request.PatientGenotypeSetKey, readStopwatch.Elapsed);
     }
 
     /// <summary>
