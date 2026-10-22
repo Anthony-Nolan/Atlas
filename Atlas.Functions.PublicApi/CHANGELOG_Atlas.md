@@ -51,6 +51,14 @@ Feature flags permit greater control over the release of new features (see this 
   * Terraform deletes the old subscription and creates the new one. Messages in the old subscription, and in its dead-letter queue, are lost. Deploy when no data refresh is in progress, and with an empty dead-letter queue.
   * For local development, add a `data-refresh` subscription to the `data-refresh-requests` topic of your own Service Bus namespace.
 
+#### Match Prediction
+* E: Faster live imputation in match prediction, when donor genotype sets are not read from the pre-computed tables. In a DEV test of 40 searches, the live genotype set time went from about 1,000 ms to about 240 ms per donor.
+  * Donor inputs are batched by haplotype frequency set (registry and ethnicity), so each batch needs fewer frequency sets.
+  * The match prediction worker keeps more frequency sets in its cache, for longer. New Terraform variables `MATCH_PREDICTION_WORKER_MAX_CACHED_FREQUENCY_SETS` (default `30`) and `MATCH_PREDICTION_WORKER_SET_CACHE_EXPIRY_MINUTES` (default `1440`) set them for the worker container only. The match prediction functions app is not changed.
+  * The haplotype frequencies of a donor's genotypes are read from the cache in one call per donor, not one call per haplotype.
+  * The HLA metadata lookups that imputation uses are loaded in one go at the start of a batch that may impute live, instead of one row at a time.
+  * The Multiple Allele Code table is checked once per process, not once per donor.
+
 ### 4.0.1
 * BF: A data refresh to HLA nomenclature version 3660 no longer fails while it recreates the HLA Metadata Dictionary. Batch inserts into Azure Table Storage now also have a size limit, not only a limit of 50 rows. Before, a batch of large rows (such as the serology to alleles lookup) could exceed the 4 MiB limit of a table batch, and the storage service rejected it (`413 RequestBodyTooLarge`). This change also applies to the import of the Multiple Allele Code Dictionary, which uses the same batch insert.
 * BF: Faster matching searches. The two indexes on the `Donors` table of the matching algorithm databases that the donor join uses now have covering columns: `IX_Donors_DonorType_RegistryCode` includes `DonorId`, and `IX_DonorId` includes `DonorType` and `RegistryCode`. Before, SQL Server had to read the table for every candidate donor, and searches could time out. See [the data changelog](/Atlas.MatchingAlgorithm.Data/CHANGELOG_Data.md#401) for the migration.
