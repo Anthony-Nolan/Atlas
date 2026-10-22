@@ -52,6 +52,8 @@ internal class PoolFilterAlleleIdTests
 
         converter = Substitute.For<ICompressedPhenotypeConverter>();
         haplotypeFrequencyService = Substitute.For<IHaplotypeFrequencyService>();
+        // No frequency stubbed: every survivor is unrepresented (0).
+        haplotypeFrequencyService.ReturnsUnrepresentedForEveryHaplotype();
 
         a1 = fixture.Create<string>();
         a2 = fixture.Create<string>();

@@ -66,6 +66,8 @@ internal class PairRepresentationMaskTests
 
         converter = Substitute.For<ICompressedPhenotypeConverter>();
         haplotypeFrequencyService = Substitute.For<IHaplotypeFrequencyService>();
+        // No frequency stubbed: every survivor is unrepresented (0).
+        haplotypeFrequencyService.ReturnsUnrepresentedForEveryHaplotype();
 
         aAlleles = fixture.CreateMany<string>(3).ToArray();
         bAlleles = fixture.CreateMany<string>(3).ToArray();

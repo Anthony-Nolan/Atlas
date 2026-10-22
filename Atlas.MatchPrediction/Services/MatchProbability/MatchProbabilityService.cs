@@ -43,6 +43,12 @@ public interface IMatchProbabilityService
 
 internal class MatchProbabilityService : IMatchProbabilityService
 {
+    /// <summary>
+    /// One instance for every donor: building a FluentValidation validator tree is far more expensive than running it,
+    /// and a built validator is thread-safe. The data refresh removed the same per-donor cost in ATL-276 (ATL-476).
+    /// </summary>
+    private static readonly MatchProbabilityInputValidator InputValidator = new();
+
     private readonly IGenotypeMatcher genotypeMatcher;
     private readonly IMatchProbabilityCalculator matchProbabilityCalculator;
     private readonly IHaplotypeFrequencyService haplotypeFrequencyService;
@@ -73,7 +79,7 @@ internal class MatchProbabilityService : IMatchProbabilityService
     {
         ArgumentNullException.ThrowIfNull(patientGenotypeSet);
 
-        await new MatchProbabilityInputValidator().ValidateAndThrowAsync(singleDonorMatchProbabilityInput);
+        await InputValidator.ValidateAndThrowAsync(singleDonorMatchProbabilityInput);
 
         matchProbabilityLoggingContext.Initialise(singleDonorMatchProbabilityInput);
 

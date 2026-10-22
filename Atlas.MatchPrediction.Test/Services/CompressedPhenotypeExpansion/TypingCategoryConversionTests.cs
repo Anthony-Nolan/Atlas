@@ -49,6 +49,8 @@ internal class TypingCategoryConversionTests
 
         converter = Substitute.For<ICompressedPhenotypeConverter>();
         haplotypeFrequencyService = Substitute.For<IHaplotypeFrequencyService>();
+        // No frequency stubbed: every survivor is unrepresented (0).
+        haplotypeFrequencyService.ReturnsUnrepresentedForEveryHaplotype();
 
         smallGA1 = fixture.Create<string>();
         smallGA2 = fixture.Create<string>();
