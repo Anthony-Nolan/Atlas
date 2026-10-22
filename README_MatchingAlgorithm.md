@@ -361,9 +361,11 @@ session limits of the transient database at the refresh size.
 
 A batch spends most of its time waiting on the database, not computing, so more batches per replica speed the stage up
 until the database is busy. On DEV (43.9 M donors, 139,570 batches, 10 replicas, a P4 refresh database), 1 batch per
-replica gave about 114 batches per minute (about 22 hours for the stage). 3 gave about 190 (about 13 hours), with the
-database CPU and log write at about 80%. So at 3, the refresh database is the limit: a faster stage needs a larger
-`MATCHING_DATA_REFRESH_DB_SIZE_REFRESH`, not more workers.
+replica gave about 114 batches per minute (about 20 hours for the stage). 3 gave about 190 (about 12 hours), with about
+the same memory per replica (about 1.6 GiB with 1, about 1.7 GiB with 3, of 4 GiB), and the database CPU and log write
+went from about 35% to about 80%. So at 3, a P4 refresh database is the limit: a faster stage there needs a larger
+`MATCHING_DATA_REFRESH_DB_SIZE_REFRESH`, not more workers. A larger refresh database (for example P6) may have room for
+more: raise `MaxConcurrentCalls` only while the database CPU and log write stay below about 80%.
 
 The worker also reads the `HaplotypeFrequencySetCache:*` settings. Set `AwaitConsolidatedFrequencyWarm` to `true` (see
 [the Match Prediction README](README_MatchPredictionAlgorithm.md#haplotypefrequencysetcacheawaitconsolidatedfrequencywarm)),
