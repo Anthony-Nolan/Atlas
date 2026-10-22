@@ -396,7 +396,7 @@ internal class ImputationEquivalenceTests
 
     private void ArrangeSet(HaplotypeInterner interner, Dictionary<HaplotypeKey, HaplotypeFrequencyValue> stored)
     {
-        // Interned exactly as HaplotypeFrequencyCache.BuildEntryFromDatabase does, so the expander's ReverseLookup
+        // Interned exactly as FrequencySetCacheEntry.Build does, so the expander's ReverseLookup
         // round trip over the cached pool is the real one.
         var entry = new FrequencySetCacheEntry
         {

@@ -33,7 +33,7 @@ resource "azurerm_windows_function_app" "atlas_match_prediction_function" {
     "HlaMetadataDictionary:AzureStorageConnectionString"                          = var.key_vault.secret_refs["azure-storage-connection-string"]
     "HlaMetadataDictionary:SearchRelatedMetadata:CacheSlidingExpirationInSeconds" = var.SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC
     "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes"                      = var.ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES
-    "HaplotypeFrequencySetCache:MaxCachedFrequencySets"                           = var.MAX_CACHED_FREQUENCY_SETS
+    "HaplotypeFrequencySetCache:MaxCachedFrequencySetMegabytes"                   = var.MAX_CACHED_FREQUENCY_SET_MEGABYTES
     "HaplotypeFrequencySetCache:SetCacheExpiryMinutes"                            = var.SET_CACHE_EXPIRY_MINUTES
 
     "GenotypeImputation:MaximumExpandedGenotypesPerInput" = var.MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT

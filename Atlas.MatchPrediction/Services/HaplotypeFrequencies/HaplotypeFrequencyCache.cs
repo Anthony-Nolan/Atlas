@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -9,6 +9,7 @@ using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Caching;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchPrediction.ApplicationInsights;
+using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using LazyCache;
@@ -51,9 +52,9 @@ public interface IHaplotypeFrequencyCache
     Task<bool> RefreshActiveHaplotypeFrequencySets();
 
     /// <summary>
-    /// Returns the cached entry for the set, loading it from the database on first access. Loading also runs the
-    /// (slower) missing-loci pre-consolidation, which populates <see cref="FrequencySetCacheEntry.ConsolidatedFrequencies"/>
-    /// on the same entry.
+    /// Returns the cached entry for the set, loading it on first access: from the distributed cache, which all processes
+    /// share, or else from the database. Loading also runs the (slower) missing-loci pre-consolidation, which populates
+    /// <see cref="FrequencySetCacheEntry.ConsolidatedFrequencies"/> on the same entry.
     ///
     /// <para>
     /// Whether this method <b>waits</b> for that is
@@ -97,6 +98,25 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
     internal static readonly TimeSpan ActiveHaplotypeFrequencySetsDistributedCacheTimeToLive = TimeSpan.FromHours(24);
 
     internal static string AllFrequenciesCacheKey(int setId) => $"hf-set-{setId}";
+
+    /// <summary>
+    /// The cache name of the frequency sets in the distributed cache. Change the version when the format of
+    /// <see cref="FrequencySetPayload"/> changes: during a deployment, the old and the new code read the same cache.
+    /// </summary>
+    internal const string FrequencySetDistributedCacheName = "hf-set-v1";
+
+    /// <summary>
+    /// How long the distributed cache keeps a frequency set. The value under a key never changes, so this only frees the
+    /// memory of the sets that are no longer used.
+    /// </summary>
+    internal static readonly TimeSpan FrequencySetDistributedCacheTimeToLive = TimeSpan.FromDays(30);
+
+    /// <summary>
+    /// The key of a set in the distributed cache. It has the import time of the set as well as its id: set ids are SQL
+    /// identity values, so after a restore, a copy or a rebuild of the database, one id can name a different set.
+    /// </summary>
+    internal static DistributedCacheKey FrequencySetDistributedCacheKey(Data.Models.HaplotypeFrequencySet set) =>
+        new(FrequencySetDistributedCacheName, $"{set.Id}:{set.DateTimeAdded.UtcTicks}");
 
     private readonly IAppCache cache;
     private readonly IDistributedCacheProvider distributedCache;
@@ -175,14 +195,25 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
     /// <inheritdoc />
     public async Task<FrequencySetCacheEntry> GetAllHaplotypeFrequencies(int setId)
     {
-        // Before the cache is even asked to store anything: marks setId most-recently-used, evicting the least-
-        // recently-used tracked set first if admitting a not-yet-tracked setId would exceed MaxCachedFrequencySets.
+        // Marks setId most-recently-used. A load evicts the least-recently-used sets when it records the size of the set.
         // See FrequencySetResidencyTracker's doc comment for why eviction has to be driven explicitly like this.
         residencyTracker.RecordAccess(setId);
 
-        return await cache.GetOrAddAsync(AllFrequenciesCacheKey(setId), async () =>
+        // GetOrAddAsync runs one factory at a time for the key, and concurrent callers wait for it. So when the distributed
+        // cache misses or cannot be reached, this process reads each set from the database once at a time, not once for
+        // each caller.
+        return await cache.GetOrAddAsync(AllFrequenciesCacheKey(setId), async cacheEntry =>
             {
-                var entry = await BuildEntryFromDatabase(setId);
+                var entry = await LoadEntry(setId);
+
+                var admission = residencyTracker.RecordSize(setId, entry.EstimatedSizeInBytes);
+
+                // Fires for every removal reason - expiry, or an explicit Remove, including the tracker's own onEvict →
+                // cache.Remove call. In that last case this is a harmless no-op, since the tracker already removed setId
+                // from its own bookkeeping before calling onEvict. Without this, an expiry would leave the tracker still
+                // counting setId as resident - see FrequencySetResidencyTracker.Forget's doc comment. Registered here,
+                // not in the options, so that it carries the admission of this entry.
+                cacheEntry.RegisterPostEvictionCallback((_, _, _, _) => residencyTracker.Forget(setId, admission));
 
                 // The same entry instance is what gets warmed either way, so the pre-consolidation populates exactly
                 // the object future callers will read. Exactly one writer in both modes - the branch decides only
@@ -207,16 +238,7 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
 
                 return entry;
             },
-            new MemoryCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(cacheSettings.SetCacheExpiryMinutes)
-            }.RegisterPostEvictionCallback((_, _, _, _) =>
-                // Fires for every removal reason - TTL expiry, or an explicit Remove, including the tracker's own
-                // onEvict → cache.Remove call below. In that last case this is a harmless no-op, since the tracker
-                // already removed setId from its own bookkeeping before calling onEvict. Without this, a TTL expiry
-                // would leave the tracker still counting setId as resident, occupying a slot for an entry the cache
-                // no longer holds - see FrequencySetResidencyTracker.Forget's doc comment.
-                residencyTracker.Forget(setId))
+            SetLocalEntryOptions()
         );
     }
 
@@ -264,35 +286,98 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
         AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(cacheSettings.ActiveSetCacheExpiryMinutes)
     };
 
-    private async Task<FrequencySetCacheEntry> BuildEntryFromDatabase(int setId)
+    /// <summary>
+    /// A sliding expiry, not an absolute one: a set that is in use stays loaded, and a set with no use for the expiry
+    /// goes. The residency tracker evicts the least-recently-used sets before that, when the memory limit needs it.
+    /// </summary>
+    private MemoryCacheEntryOptions SetLocalEntryOptions() => new()
+    {
+        SlidingExpiration = TimeSpan.FromMinutes(cacheSettings.SetCacheExpiryMinutes)
+    };
+
+    /// <summary>
+    /// Loads a set from the distributed cache, or else from the database. A set from the database is then stored in the
+    /// distributed cache if it is active.
+    /// </summary>
+    private async Task<FrequencySetCacheEntry> LoadEntry(int setId)
+    {
+        // One primary-key read: the key of the set in the distributed cache has its import time.
+        var set = await frequencySetRepository.GetSet(setId);
+        if (set == null)
+        {
+            // There are no rows to read either: the database read gives the empty entry, as it did before the
+            // distributed cache.
+            return (await LoadEntryFromDatabase(setId)).Entry;
+        }
+
+        var distributedCacheKey = FrequencySetDistributedCacheKey(set);
+        var storedEntry = await LoadEntryFromDistributedCache(setId, distributedCacheKey);
+        if (storedEntry != null)
+        {
+            return storedEntry;
+        }
+
+        var (rows, entry) = await LoadEntryFromDatabase(setId);
+
+        // Only an active set. An inactive set can be the set of an import that still runs, with only part of its rows:
+        // stored, that part would reach every process that uses the set after its activation.
+        if (set.Active)
+        {
+            await StoreInDistributedCache(setId, distributedCacheKey, rows);
+        }
+
+        return entry;
+    }
+
+    /// <returns>The entry of the set in the distributed cache, or null on a miss.</returns>
+    private async Task<FrequencySetCacheEntry> LoadEntryFromDistributedCache(int setId, DistributedCacheKey key)
+    {
+        var payload = await distributedCache.GetChunkedAsync(key);
+        if (payload == null)
+        {
+            return null;
+        }
+
+        // The time of the reads from Redis is in the metrics of the distributed cache.
+        using (logger.RunTimed("Get All Frequencies from HF set - from the distributed cache", LogLevel.Verbose))
+        {
+            List<LightweightHaplotypeFrequencyRecord> rows;
+            try
+            {
+                rows = FrequencySetPayload.Decode(setId, payload);
+            }
+            catch (InvalidDataException exception)
+            {
+                // A miss: the set is read from the database, and stored again.
+                logger.SendTrace($"HF set {setId} in the distributed cache cannot be decoded, so it is read from the database: {exception.Message}", LogLevel.Warn);
+                return null;
+            }
+
+            return FrequencySetCacheEntry.Build(rows);
+        }
+    }
+
+    private async Task<(List<LightweightHaplotypeFrequencyRecord> Rows, FrequencySetCacheEntry Entry)> LoadEntryFromDatabase(int setId)
     {
         using (logger.RunTimed("Get All Frequencies from HF set - from SQL database", LogLevel.Verbose))
         {
-            var allFrequencies = await frequencyRepository.GetAllHaplotypeFrequencies(setId);
-            var haplotypeInterner = new HaplotypeInterner();
-            var resultDictionary = new Dictionary<HaplotypeKey, HaplotypeFrequencyValue>();
-            foreach (var frequency in allFrequencies)
-            {
-                var haplotypeKey = haplotypeInterner.Intern(a: frequency.A, b: frequency.B, c: frequency.C, dqb1: frequency.DQB1, drb1: frequency.DRB1);
-                var haplotypeFrequencyValue = new HaplotypeFrequencyValue(frequency.Frequency, frequency.TypingCategory);
-                resultDictionary.Add(haplotypeKey, haplotypeFrequencyValue);
-            }
-
-            var entry = new FrequencySetCacheEntry
-            {
-                SetFrequencies = resultDictionary.ToFrozenDictionary(),
-                Interner = haplotypeInterner
-            };
-
-            // Project the pool - and the allele index derived from it - here, on the one thread that builds the set,
-            // rather than leaving the first donor to touch this set to pay for it. Inside the timed region because
-            // both are part of the cost of making a set usable, and before the entry escapes, so no reader can race
-            // the first access.
-            _ = entry.ProjectedPool;
-            _ = entry.AlleleIndex;
-
-            return entry;
+            var rows = await frequencyRepository.GetAllHaplotypeFrequencies(setId);
+            return (rows, FrequencySetCacheEntry.Build(rows));
         }
+    }
+
+    private async Task StoreInDistributedCache(int setId, DistributedCacheKey key, IReadOnlyList<LightweightHaplotypeFrequencyRecord> rows)
+    {
+        var payload = FrequencySetPayload.Encode(setId, rows);
+
+        // A set that is not stored is no fault here: the provider logged why, and the next process that misses the set
+        // reads the database again.
+        var stored = await distributedCache.SetChunkedAsync(key, payload, FrequencySetDistributedCacheTimeToLive);
+
+        logger.SendTrace(
+            $"HF set {setId} for the distributed cache: {rows.Count} rows, {payload.Length} bytes in {ChunkedDistributedCacheExtensions.ChunkCount(payload.Length)} chunks."
+          + (stored ? "" : " Not stored."),
+            LogLevel.Info);
     }
 
     private decimal ReadConsolidatedFrequency(FrequencySetCacheEntry entry, HfSetHaplotypeNames hla, ISet<Locus> excludedLoci)

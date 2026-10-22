@@ -51,7 +51,7 @@
     "DistributedCache:ManagedIdentityClientId": "",
     "GenotypeImputation:MaximumExpandedGenotypesPerInput": 2000,
     "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes": 1,
-    "HaplotypeFrequencySetCache:MaxCachedFrequencySets": 10,
+    "HaplotypeFrequencySetCache:MaxCachedFrequencySetMegabytes": 768,
     "HaplotypeFrequencySetCache:SetCacheExpiryMinutes": 60,
     "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl": "https://raw.githubusercontent.com/ANHIG/IMGTHLA/",

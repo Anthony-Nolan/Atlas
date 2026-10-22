@@ -1,11 +1,10 @@
 using System;
-using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Text;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Models;
+using Atlas.MatchPrediction.Utils;
 
 namespace Atlas.MatchPrediction.Services.Precompute;
 
@@ -450,16 +449,13 @@ public static class SubjectGenotypeSetPayload
 
     #region Envelope
 
-    /// <summary>
-    /// Two prefix bytes, a 10-byte gzip header and an 8-byte gzip trailer. Anything shorter cannot be a payload, and
-    /// checking it up front is what lets <see cref="VerifyDeclaredBodyLength"/> read the trailer without a bounds test.
-    /// </summary>
-    private const int MinimumPayloadSize = 2 + 10 + 8;
+    private const int PrefixSize = 2;
 
     /// <summary>
-    /// Gzip's ISIZE field: the uncompressed length modulo 2^32, in the last four bytes of the member.
+    /// Two prefix bytes and the smallest gzip member. Anything shorter cannot be a payload, and checking it up front is
+    /// what lets <see cref="GzipPayloadBody.Read"/> read the gzip trailer without a bounds test.
     /// </summary>
-    private const int UncompressedLengthFieldSize = 4;
+    private const int MinimumPayloadSize = PrefixSize + GzipPayloadBody.MinimumSize;
 
     /// <summary>
     /// Puts the two prefix bytes in front of a gzipped <paramref name="body"/>.
@@ -474,11 +470,7 @@ public static class SubjectGenotypeSetPayload
         using var output = new MemoryStream(body.Length / 2);
         output.WriteByte(SubjectGenotypeSetPayloadFormat.ContainerMarker);
         output.WriteByte(SubjectGenotypeSetPayloadFormat.ContainerVersion);
-
-        using (var gzip = new GZipStream(output, SubjectGenotypeSetPayloadFormat.Compression, leaveOpen: true))
-        {
-            gzip.Write(body, 0, body.Length);
-        }
+        GzipPayloadBody.Write(output, body, SubjectGenotypeSetPayloadFormat.Compression);
 
         return output.ToArray();
     }
@@ -509,57 +501,7 @@ public static class SubjectGenotypeSetPayload
               + $"{SubjectGenotypeSetPayloadFormat.ContainerVersion}.");
         }
 
-        byte[] body;
-        try
-        {
-            using var input = new MemoryStream(payload, 2, payload.Length - 2, writable: false);
-            using var gzip = new GZipStream(input, CompressionMode.Decompress);
-            using var decompressed = new MemoryStream(payload.Length * 4);
-            gzip.CopyTo(decompressed);
-            body = decompressed.ToArray();
-        }
-        catch (InvalidDataException)
-        {
-            // Already the contract's exception - gzip raises this for a bad header and for a CRC mismatch, which is
-            // how a single flipped byte anywhere in the compressed region is caught.
-            throw;
-        }
-        catch (Exception exception)
-        {
-            throw new InvalidDataException("Payload's gzip stream could not be read.", exception);
-        }
-
-        VerifyDeclaredBodyLength(payload, body.Length);
-
-        return body;
-    }
-
-    /// <summary>
-    /// Checks the decompressed length against gzip's ISIZE field.
-    ///
-    /// <para>
-    /// <b>Measured, not assumed.</b> zlib verifies the CRC32 + ISIZE trailer only when it is THERE. A payload cut at
-    /// exactly the trailer boundary decompresses with no complaint at all - verified against .NET 10, where dropping
-    /// the last 8 or 9 bytes of a payload produced no exception. So the trailer alone detects a flipped byte but not
-    /// a truncation, and the four bytes read here are what close that gap. Everything after this point trusts the
-    /// body's own length, so the check belongs before the body is parsed, not inside it.
-    /// </para>
-    ///
-    /// <para>
-    /// This assumes a single gzip member, which is all <see cref="Wrap"/> ever writes. A concatenated multi-member
-    /// blob would declare only its last member's length and be rejected here - correctly, since it is not a payload.
-    /// </para>
-    /// </summary>
-    private static void VerifyDeclaredBodyLength(byte[] payload, int bodyLength)
-    {
-        var declared = BinaryPrimitives.ReadUInt32LittleEndian(payload.AsSpan(payload.Length - UncompressedLengthFieldSize));
-
-        if (declared != (uint)bodyLength)
-        {
-            throw new InvalidDataException(
-                $"Gzip trailer declares an uncompressed length of {declared:N0} bytes but {bodyLength:N0} were read; "
-              + "the payload is truncated or was not written by this encoder.");
-        }
+        return GzipPayloadBody.Read(payload, PrefixSize);
     }
 
     #endregion

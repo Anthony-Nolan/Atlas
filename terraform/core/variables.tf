@@ -279,16 +279,16 @@ variable "MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES" {
   description = "Absolute cache TTL, in minutes, for the active HaplotypeFrequencySets lookup in each app process. It is also how long an imported set can take to reach every process."
 }
 
-variable "MATCH_PREDICTION_MAX_CACHED_FREQUENCY_SETS" {
+variable "MATCH_PREDICTION_MAX_CACHED_FREQUENCY_SET_MEGABYTES" {
   type        = number
-  default     = 10
-  description = "Maximum number of distinct haplotype frequency sets allowed to stay resident at once in the match prediction service's per-set cache, evicting least-recently-used sets beyond this limit."
+  default     = 768
+  description = "Memory limit, in MiB, of the match prediction service's per-set cache of haplotype frequency sets in each app process, estimated from the number of haplotypes of each set. Beyond this limit, the least-recently-used sets are evicted."
 }
 
 variable "MATCH_PREDICTION_SET_CACHE_EXPIRY_MINUTES" {
   type        = number
   default     = 60
-  description = "Absolute cache TTL, in minutes, for a cached haplotype frequency set's full per-haplotype frequency collection used by the match prediction service."
+  description = "Sliding cache TTL, in minutes, for a cached haplotype frequency set's full per-haplotype frequency collection used by the match prediction service: a set not used for this time is removed from the process."
 }
 
 variable "MATCH_PREDICTION_DOWNLOAD_BATCH_SIZE" {
@@ -326,16 +326,16 @@ variable "MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS" {
   description = "Maximum number of service bus messages the match prediction worker's ServiceBusProcessor handles concurrently. Aligned with match prediction request parallelism."
 }
 
-variable "MATCH_PREDICTION_WORKER_MAX_CACHED_FREQUENCY_SETS" {
+variable "MATCH_PREDICTION_WORKER_MAX_CACHED_FREQUENCY_SET_MEGABYTES" {
   type        = number
-  default     = 30
-  description = "Maximum number of haplotype frequency sets the match prediction worker keeps in memory at once (least recently used evicted). Larger than MATCH_PREDICTION_MAX_CACHED_FREQUENCY_SETS because a search load touches many sets, and with 10 each replica loaded the same sets again and again (ATL-476). Check the memory of the match prediction container app (WorkingSetBytes) when changing it."
+  default     = 768
+  description = "Memory limit, in MiB, of the haplotype frequency sets the match prediction worker keeps in memory at once, estimated from the number of haplotypes of each set (least recently used evicted). Separate from MATCH_PREDICTION_MAX_CACHED_FREQUENCY_SET_MEGABYTES because a search load touches many sets, and with a limit of 10 sets each replica loaded the same sets again and again (ATL-476). 768 MiB holds about 32 sets of the average size. Check the memory of the match prediction container app (WorkingSetBytes) when changing it."
 }
 
 variable "MATCH_PREDICTION_WORKER_SET_CACHE_EXPIRY_MINUTES" {
   type        = number
   default     = 1440
-  description = "Absolute cache TTL, in minutes, for a haplotype frequency set in the match prediction worker. A day: sets change only on import, and the active set lookup (MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES) picks up a new set. The other hosts, including the precompute worker, use MATCH_PREDICTION_SET_CACHE_EXPIRY_MINUTES."
+  description = "Sliding cache TTL, in minutes, for a haplotype frequency set in the match prediction worker: a set not used for this time is removed. A day: sets change only on import, and the active set lookup (MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES) picks up a new set. The other hosts, including the precompute worker, use MATCH_PREDICTION_SET_CACHE_EXPIRY_MINUTES."
 }
 
 variable "MATCH_PREDICTION_WORKER_PREFETCH_COUNT" {
