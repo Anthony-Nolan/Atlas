@@ -349,7 +349,7 @@ Precomputation worker (`PrecomputeWorker:*`):
 
 | Setting | Default | Description |
 |---|---|---|
-| `MaxConcurrentCalls` | 1 | The batches that one replica processes at the same time. |
+| `MaxConcurrentCalls` | 1 | The batches that one replica processes at the same time. Terraform sets 3 (`MATCHING_PRECOMPUTE_WORKER_MAX_CONCURRENT_CALLS`). |
 | `PrefetchCount` | 0 | The messages that one replica fetches before it needs them. |
 | `BatchLeaseMinutes` | 60 | How long the claim of a batch holds. After that, a timer can mark the batch as abandoned. |
 | `MaxAutoLockRenewalMinutes` | 60 | How long the worker renews the lock of a message. |
@@ -358,6 +358,12 @@ Precomputation worker (`PrecomputeWorker:*`):
 A batch must finish within `BatchLeaseMinutes` and `MaxAutoLockRenewalMinutes`. If it does not, another worker can
 compute the batch again. `MaxConcurrentCalls` multiplied by the maximum replica count must stay below the worker and
 session limits of the transient database at the refresh size.
+
+A batch spends most of its time waiting on the database, not computing, so more batches per replica speed the stage up
+until the database is busy. On DEV (43.9 M donors, 139,570 batches, 10 replicas, a P4 refresh database), 1 batch per
+replica gave about 114 batches per minute (about 22 hours for the stage). 3 gave about 190 (about 13 hours), with the
+database CPU and log write at about 80%. So at 3, the refresh database is the limit: a faster stage needs a larger
+`MATCHING_DATA_REFRESH_DB_SIZE_REFRESH`, not more workers.
 
 The worker also reads the `HaplotypeFrequencySetCache:*` settings. Set `AwaitConsolidatedFrequencyWarm` to `true` (see
 [the Match Prediction README](README_MatchPredictionAlgorithm.md#haplotypefrequencysetcacheawaitconsolidatedfrequencywarm)),
