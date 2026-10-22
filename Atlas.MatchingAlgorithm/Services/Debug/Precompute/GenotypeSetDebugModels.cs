@@ -132,6 +132,12 @@ public sealed record GenotypeSetDebugItem
 
     public bool IsUnrepresented { get; init; }
 
+    /// <summary>
+    /// True when the typing is unambiguous at small g group for the combination: the pre-computation does not store
+    /// such a set (ATL-478).
+    /// </summary>
+    public bool IsUnambiguousAtSmallGGroup { get; init; }
+
     public int GenotypeCount { get; init; }
 
     public decimal SumOfLikelihoods { get; init; }

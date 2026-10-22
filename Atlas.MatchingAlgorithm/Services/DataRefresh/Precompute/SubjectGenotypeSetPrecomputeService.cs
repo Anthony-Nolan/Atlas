@@ -33,10 +33,11 @@ public interface ISubjectGenotypeSetPrecomputeService
     /// </para>
     ///
     /// <para>
-    /// <b>All four rows of a donor, or none.</b> A donor gets its rows only when all four of its values are stored. When
-    /// a value cannot be computed, the other donors still get their rows, and then the error is thrown. So the caller
-    /// knows that some donors have no rows, and it can try them again: a value that is stored is found, and is not
-    /// computed again.
+    /// <b>All the rows of a donor, or none.</b> A donor gets its rows only when each of its four values is stored, or is
+    /// not stored by design because the typing is unambiguous at small g group for that combination (ATL-478): such a
+    /// value gets no row. When a value cannot be computed, the other donors still get their rows, and then the error is
+    /// thrown. So the caller knows that some donors have no rows, and it can try them again: a value that is stored is
+    /// found, and is not computed again.
     /// </para>
     /// </remarks>
     /// <param name="subjects">The donors to precompute.</param>
@@ -113,10 +114,11 @@ public class SubjectGenotypeSetPrecomputeService : ISubjectGenotypeSetPrecompute
 
         // One outcome per request, in the order of the requests: the four values of the first donor, then the next four.
         var assignments = requests
-            .Zip(results.Outcomes, (request, outcome) => (request.Subject.DonorId, request.AllowedLociKey, outcome.ValueId))
+            .Zip(results.Outcomes, (request, outcome) => (request.Subject.DonorId, request.AllowedLociKey, outcome.ValueId, outcome.IsUnambiguous))
             .Chunk(AllowedLociKeyExtensions.All.Count)
-            .Where(donorValues => donorValues.All(value => value.ValueId != null))
+            .Where(donorValues => donorValues.All(value => value.ValueId != null || value.IsUnambiguous))
             .SelectMany(donorValues => donorValues)
+            .Where(value => value.ValueId != null)
             .Select(value => new DonorSubjectGenotypeSetAssignment(value.DonorId, value.AllowedLociKey, value.ValueId.Value))
             .ToList();
 
@@ -137,7 +139,7 @@ public class SubjectGenotypeSetPrecomputeService : ISubjectGenotypeSetPrecompute
     /// </remarks>
     private static void ThrowIfAnyValueIsMissing(SubjectGenotypeSetValueResults results)
     {
-        var missingValueCount = results.Outcomes.Count(outcome => outcome.ValueId == null);
+        var missingValueCount = results.Outcomes.Count(outcome => outcome.ValueId == null && !outcome.IsUnambiguous);
         if (missingValueCount == 0)
         {
             return;

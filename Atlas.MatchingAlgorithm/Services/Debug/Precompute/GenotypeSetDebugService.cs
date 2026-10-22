@@ -337,6 +337,7 @@ internal class GenotypeSetDebugService : IGenotypeSetDebugService
             var parameters = new MatchPredictionParameters(allowedLociKey.ToLoci().ToHashSet(), hlaNomenclatureVersion);
 
             var genotypeSet = await genotypeSetService.GetGenotypeSet(subjectData, parameters);
+            var isUnambiguous = await genotypeSetService.IsUnambiguousAtSmallGGroup(subjectData, parameters);
 
             return new Computation(
                 genotypeSet.IsUnrepresented,
@@ -344,7 +345,8 @@ internal class GenotypeSetDebugService : IGenotypeSetDebugService
                 genotypeSet.SumOfLikelihoods,
                 genotypeSet.IsUnrepresented ? null : SubjectGenotypeSetPayload.Encode(genotypeSet),
                 keepGenotypes ? genotypeSet.Genotypes?.ToList() ?? [] : null,
-                null);
+                null,
+                isUnambiguous);
         }
         catch (Exception exception)
         {
@@ -516,7 +518,11 @@ internal class GenotypeSetDebugService : IGenotypeSetDebugService
 
         if (stored == null)
         {
-            return new GenotypeSetParityCheck { Result = ParityResult.NoStoredRow, SearchHaplotypeFrequencySetId = searchFrequencySetId };
+            return new GenotypeSetParityCheck
+            {
+                Result = item.Computation.IsUnambiguousAtSmallGGroup ? ParityResult.NotStoredUnambiguous : ParityResult.NoStoredRow,
+                SearchHaplotypeFrequencySetId = searchFrequencySetId
+            };
         }
 
         // A typing's row is read by the key of its live set, so these can differ only for a donor.
@@ -616,13 +622,15 @@ internal class GenotypeSetDebugService : IGenotypeSetDebugService
     /// <param name="Payload">The encoded set; null when the set is unrepresented, as for the pre-computation.</param>
     /// <param name="Genotypes">Kept only when the request includes the genotypes, or compares with the stored rows.</param>
     /// <param name="Error">Why the set could not be computed; null when it was computed.</param>
+    /// <param name="IsUnambiguousAtSmallGGroup">The pre-computation does not store such a set (ATL-478).</param>
     private sealed record Computation(
         bool IsUnrepresented,
         int GenotypeCount,
         decimal SumOfLikelihoods,
         byte[]? Payload,
         IReadOnlyCollection<GenotypeAtDesiredResolutions>? Genotypes,
-        string? Error)
+        string? Error,
+        bool IsUnambiguousAtSmallGGroup = false)
     {
         /// <summary>The set as the engine gave it, for the parity check, which keeps the genotypes.</summary>
         public SubjectGenotypeSet ToGenotypeSet() => new(IsUnrepresented, Genotypes!.ToList(), SumOfLikelihoods);
@@ -653,6 +661,7 @@ internal class GenotypeSetDebugService : IGenotypeSetDebugService
             HlaTypingKey = Key.HlaTypingKey,
             HaplotypeFrequencySet = FrequencySet,
             IsUnrepresented = Computation.IsUnrepresented,
+            IsUnambiguousAtSmallGGroup = Computation.IsUnambiguousAtSmallGGroup,
             GenotypeCount = Computation.GenotypeCount,
             SumOfLikelihoods = Computation.SumOfLikelihoods,
             PayloadSizeBytes = Computation.Payload?.Length,

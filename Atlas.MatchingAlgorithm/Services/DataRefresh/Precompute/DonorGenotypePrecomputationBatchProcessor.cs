@@ -212,6 +212,10 @@ public class DonorGenotypePrecomputationBatchProcessor : IDonorGenotypePrecomput
             {
                 work.Outcomes.Add(Outcome.Stored(group.GroupId, outcome.ValueId.Value));
             }
+            else if (outcome.IsUnambiguous)
+            {
+                work.Outcomes.Add(Outcome.NotStored(group.GroupId));
+            }
             else if (outcome.Failure is { Kind: PrecomputeErrorKind.KnownPermanent } permanentFailure)
             {
                 work.Outcomes.Add(Outcome.Failed(group.GroupId, permanentFailure.Exception.Message));

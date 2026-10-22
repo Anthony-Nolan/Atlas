@@ -11,8 +11,9 @@ internal class ParityCheck
 {
     /// <summary>
     /// <c>Match</c>, <c>Mismatch</c>, <c>StaleFrequencySet</c>, <c>TypingChanged</c>, <c>NoStoredRow</c>,
-    /// <c>DecodeFailed</c> or <c>Error</c>. When more than one applies, the first in the order that search checks a row:
-    /// <c>Error</c>, <c>NoStoredRow</c>, <c>TypingChanged</c>, <c>StaleFrequencySet</c>, <c>DecodeFailed</c>, then
+    /// <c>NotStoredUnambiguous</c> (no row by design, ATL-478), <c>DecodeFailed</c> or <c>Error</c>. When more than one
+    /// applies, the first in the order that search checks a row: <c>Error</c>, <c>NoStoredRow</c> or
+    /// <c>NotStoredUnambiguous</c>, <c>TypingChanged</c>, <c>StaleFrequencySet</c>, <c>DecodeFailed</c>, then
     /// <c>Mismatch</c> or <c>Match</c>.
     /// </summary>
     [JsonConverter(typeof(StringEnumConverter))]

@@ -5,8 +5,8 @@ namespace Atlas.MatchingAlgorithm.Services.Debug.Precompute;
 /// </summary>
 /// <remarks>
 /// When more than one result applies, the check gives the first in the order that search checks a stored row:
-/// <see cref="Error"/>, <see cref="NoStoredRow"/>, <see cref="TypingChanged"/>, <see cref="StaleFrequencySet"/>,
-/// <see cref="DecodeFailed"/>, then <see cref="Mismatch"/> or <see cref="Match"/>.
+/// <see cref="Error"/>, <see cref="NoStoredRow"/> or <see cref="NotStoredUnambiguous"/>, <see cref="TypingChanged"/>,
+/// <see cref="StaleFrequencySet"/>, <see cref="DecodeFailed"/>, then <see cref="Mismatch"/> or <see cref="Match"/>.
 /// </remarks>
 public enum ParityResult
 {
@@ -33,6 +33,12 @@ public enum ParityResult
     /// live set, which includes the frequency set, so a row of an older set is not found.
     /// </summary>
     NoStoredRow,
+
+    /// <summary>
+    /// No row is stored, by design: the typing is unambiguous at small g group for the combination, so its one genotype
+    /// is computed live without the frequency set, and the pre-computation does not store it (ATL-478).
+    /// </summary>
+    NotStoredUnambiguous,
 
     /// <summary>The stored data cannot be decoded, so search computes the subject live.</summary>
     DecodeFailed,
