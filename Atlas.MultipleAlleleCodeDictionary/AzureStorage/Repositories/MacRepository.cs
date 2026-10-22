@@ -10,7 +10,6 @@ using Atlas.MultipleAlleleCodeDictionary.Services;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Azure;
 using Azure.Data.Tables;
-using Polly;
 
 namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
 {
@@ -151,25 +150,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
         /// </remarks>
         public async Task TruncateMacTable()
         {
-            await DeleteAndRecreateTable();
-        }
-
-        private async Task DeleteAndRecreateTable()
-        {
-            var table = await tableProvider.GetTable();
-            await table.DeleteAsync();
-
-
-            // According documentation, delete doesn't wait until the deletion is finalised before continuing.
-            // So we have to wait for it ourselves.
-            var twoMinuteRetryPolicy = Policy
-                .Handle<RequestFailedException>(ex =>
-                    ex.Status == 409 && 
-                    ex.ErrorCode  == "TableBeingDeleted"
-                )
-                .WaitAndRetryAsync(120, _ => TimeSpan.FromSeconds(1));
-
-            await twoMinuteRetryPolicy.ExecuteAsync(async () => await table.CreateIfNotExistsAsync());
+            // On the provider, so the process-wide "table exists" check is reset with the delete.
+            await tableProvider.DeleteAndRecreateTable();
         }
 
         /// <remarks>

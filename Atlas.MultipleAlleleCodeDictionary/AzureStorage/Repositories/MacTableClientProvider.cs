@@ -1,7 +1,10 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
+using Azure;
 using Azure.Data.Tables;
+using Polly;
 
 namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
 
@@ -21,6 +24,12 @@ internal interface IMacTableClientProvider
     /// the table. A failed check is not remembered, so the next call tries again.
     /// </summary>
     Task<TableClient> GetTable();
+
+    /// <summary>
+    /// Deletes the MAC table and creates it again. The table is treated as missing from the delete until the create
+    /// succeeds, so a failed create is retried by the next <see cref="GetTable"/>, not hidden by an earlier check.
+    /// </summary>
+    Task DeleteAndRecreateTable();
 }
 
 /// <inheritdoc />
@@ -55,6 +64,33 @@ internal sealed class MacTableClientProvider : IMacTableClientProvider
             }
 
             return table;
+        }
+        finally
+        {
+            createGate.Release();
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task DeleteAndRecreateTable()
+    {
+        await createGate.WaitAsync();
+        try
+        {
+            tableExists = false;
+            await table.DeleteAsync();
+
+            // According documentation, delete doesn't wait until the deletion is finalised before continuing.
+            // So we have to wait for it ourselves.
+            var twoMinuteRetryPolicy = Policy
+                .Handle<RequestFailedException>(ex =>
+                    ex.Status == 409 &&
+                    ex.ErrorCode == "TableBeingDeleted"
+                )
+                .WaitAndRetryAsync(120, _ => TimeSpan.FromSeconds(1));
+
+            await twoMinuteRetryPolicy.ExecuteAsync(async () => await table.CreateIfNotExistsAsync());
+            tableExists = true;
         }
         finally
         {
