@@ -5,7 +5,7 @@ namespace Atlas.Common.ServiceBus
 {
     public interface IMessageReceiverFactory
     {
-        IMessageReceiver GetMessageReceiver(string topicName, string subscriptionName, int? prefetchCount = null);
+        IMessageReceiver GetMessageReceiver(string topicName, string subscriptionName);
     }
 
     public class MessageReceiverFactory : IMessageReceiverFactory
@@ -18,34 +18,23 @@ namespace Atlas.Common.ServiceBus
             this.client = client;
         }
 
-        public IMessageReceiver GetMessageReceiver(string topicName, string subscriptionName, int? prefetchCount = null)
+        public IMessageReceiver GetMessageReceiver(string topicName, string subscriptionName)
         {
-            var cacheKey = CacheKey(topicName, subscriptionName, prefetchCount);
+            var cacheKey = CacheKey(topicName, subscriptionName);
 
             if (MessageReceivers.TryGetValue(cacheKey, out var messageReceiver))
             {
                 return messageReceiver;
             }
 
-            messageReceiver = new MessageReceiver(CreateReceiver(topicName, subscriptionName, prefetchCount));
+            messageReceiver = new MessageReceiver(client.CreateReceiver(topicName, subscriptionName));
             MessageReceivers.GetOrAdd(cacheKey, messageReceiver);
             return messageReceiver;
         }
 
-        private ServiceBusReceiver CreateReceiver(string topicName, string subscriptionName, int? prefetchCount) 
+        private static string CacheKey(string topic, string subscription)
         {
-            if (prefetchCount is null)
-                return client.CreateReceiver(topicName, subscriptionName);
-
-            var options = new ServiceBusReceiverOptions { PrefetchCount = prefetchCount.Value };
-            return client.CreateReceiver(topicName, subscriptionName, options);
-        }
-
-        private static string CacheKey(string topic, string subscription, int? prefetchCount)
-        {
-            return prefetchCount is null
-                ? $"topic-{topic}-subscription-{subscription}"
-                : $"topic-{topic}-subscription-{subscription}-withPrefetch-{prefetchCount}";
+            return $"topic-{topic}-subscription-{subscription}";
         }
     }
 }

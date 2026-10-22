@@ -439,7 +439,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 var donorManagementSettings = fetchDonorManagementSettings(sp);
                 var factory = sp.GetRequiredKeyedService<IMessageReceiverFactory>(serviceKey);
                 var messageReceiver = new ServiceBusMessageReceiver<SearchableDonorUpdate>(
-                    factory, donorManagementSettings.Topic, donorManagementSettings.SubscriptionForDbA, donorManagementSettings.BatchSize * 2);
+                    factory, donorManagementSettings.Topic, donorManagementSettings.SubscriptionForDbA);
                 return new DonorUpdateMessageProcessor(messageReceiver);
             });
 
@@ -449,7 +449,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 var donorManagementSettings = fetchDonorManagementSettings(sp);
                 var factory = sp.GetRequiredKeyedService<IMessageReceiverFactory>(serviceKey);
                 var messageReceiver = new ServiceBusMessageReceiver<SearchableDonorUpdate>(
-                    factory, donorManagementSettings.Topic, donorManagementSettings.SubscriptionForDbB, donorManagementSettings.BatchSize * 2);
+                    factory, donorManagementSettings.Topic, donorManagementSettings.SubscriptionForDbB);
                 return new DonorUpdateMessageProcessor(messageReceiver);
             });
 
