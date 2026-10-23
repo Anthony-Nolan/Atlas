@@ -8,32 +8,40 @@ namespace Atlas.MatchPrediction.ExternalInterface.Settings
         /// How long each process keeps the active haplotype frequency sets, before it reads them again from the distributed
         /// cache (or from the database, when there is no distributed cache). So it is also how long an imported set can take
         /// to reach every process. An absolute expiry, not a sliding one.
+        ///
+        /// <para>
+        /// It is also how often each process checks the row of each haplotype frequency set that it holds and uses: a set
+        /// that a restore or a copy of the database replaced reaches the process in the same time.
+        /// </para>
         /// </summary>
         [Range(1, int.MaxValue)]
         public int ActiveSetCacheExpiryMinutes { get; set; }
 
         /// <summary>
-        /// The maximum number of distinct haplotype frequency sets (<c>FrequencySetCacheEntry</c>) allowed to stay
-        /// resident in <c>HaplotypeFrequencyCache</c>'s dedicated cache at once. Each set counts as one unit
-        /// regardless of its own row count. Bounds the process-wide memory this cache can consume, which is
-        /// otherwise unbounded: every distinct set (registry/ethnicity) touched within
-        /// <see cref="SetCacheExpiryMinutes"/> would otherwise stay fully resident.
+        /// The memory, in MiB, that the haplotype frequency sets (<c>FrequencySetCacheEntry</c>) in
+        /// <c>HaplotypeFrequencyCache</c>'s dedicated cache can use at once in each process: an estimate from the
+        /// number of haplotypes of each set, with its consolidated frequencies. Bounds the process-wide memory this
+        /// cache can consume, which is otherwise unbounded: every distinct set (registry/ethnicity) used within
+        /// <see cref="SetCacheExpiryMinutes"/> would otherwise stay fully resident. A limit in bytes, not in sets: the
+        /// sets differ in size by about a hundred times.
         ///
         /// <para>
-        /// Enforced as a true least-recently-used eviction, by <c>FrequencySetResidencyTracker</c>: once this limit
-        /// is reached, admitting a new distinct set evicts the least-recently-used tracked set to make room for it,
-        /// so the fresh set is always the one kept. This is driven explicitly rather than left to
-        /// <c>Microsoft.Extensions.Caching.Memory.MemoryCache</c>'s own <c>SizeLimit</c>, because that mechanism does
-        /// not evict on overflow - verified empirically, it rejects the new insert outright instead, which would
-        /// starve the newest set of caching rather than displacing the oldest one.
+        /// Enforced as a true least-recently-used eviction, by <c>FrequencySetResidencyTracker</c>: when a loaded set
+        /// takes the total over this limit, the least-recently-used other sets are evicted until it fits, so the fresh
+        /// set is always the one kept. A set that is larger than the whole limit stays, alone. This is driven
+        /// explicitly rather than left to <c>Microsoft.Extensions.Caching.Memory.MemoryCache</c>'s own
+        /// <c>SizeLimit</c>, because that mechanism does not evict on overflow - verified empirically, it rejects the
+        /// new insert outright instead, which would starve the newest set of caching rather than displacing the oldest
+        /// one.
         /// </para>
         /// </summary>
         [Range(1, int.MaxValue)]
-        public int MaxCachedFrequencySets { get; set; }
+        public int MaxCachedFrequencySetMegabytes { get; set; }
 
         /// <summary>
-        /// Dedicated absolute expiry for a cached haplotype frequency set (<c>FrequencySetCacheEntry</c>), replacing
-        /// what was previously an incidental ~24h default inherited from the shared persistent cache.
+        /// Dedicated sliding expiry for a cached haplotype frequency set (<c>FrequencySetCacheEntry</c>): a set that is
+        /// not used for this time is removed from the cache of the process. A set in use stays, until
+        /// <see cref="MaxCachedFrequencySetMegabytes"/> evicts it.
         /// </summary>
         [Range(1, int.MaxValue)]
         public int SetCacheExpiryMinutes { get; set; }

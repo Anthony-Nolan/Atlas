@@ -382,9 +382,11 @@ went from about 35% to about 80%. So at 3, a P4 refresh database is the limit: a
 more: raise `MaxConcurrentCalls` only while the database CPU and log write stay below about 80%.
 
 The worker also reads the `HaplotypeFrequencySetCache:*` settings. Set `AwaitConsolidatedFrequencyWarm` to `true` (see
-[the Match Prediction README](README_MatchPredictionAlgorithm.md#haplotypefrequencysetcacheawaitconsolidatedfrequencywarm)),
-and set a long `SetCacheExpiryMinutes` (the worker `appsettings.json` uses 1440). The workers move through the
-registries and ethnicities together, so a short expiry makes a worker load a large set again while it still uses it.
+[the Match Prediction README](README_MatchPredictionAlgorithm.md#haplotypefrequencysetcacheawaitconsolidatedfrequencywarm)).
+The workers move through the registries and ethnicities together. The expiry of a set (`SetCacheExpiryMinutes`) is
+sliding, so a worker does not load a large set again while it still uses it: `MaxCachedFrequencySetMegabytes` decides
+how many sets stay loaded. A worker reads a set from the distributed cache when another process has read it from SQL
+(see [the frequency set cache](README_MatchPredictionAlgorithm.md#the-frequency-set-cache)).
 
 ### Matching Implementation
 

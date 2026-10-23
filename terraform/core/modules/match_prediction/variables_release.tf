@@ -25,7 +25,7 @@ variable "ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES" {
   type = number
 }
 
-variable "MAX_CACHED_FREQUENCY_SETS" {
+variable "MAX_CACHED_FREQUENCY_SET_MEGABYTES" {
   type = number
 }
 
@@ -49,7 +49,7 @@ variable "MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS" {
   type = number
 }
 
-variable "MATCH_PREDICTION_WORKER_MAX_CACHED_FREQUENCY_SETS" {
+variable "MATCH_PREDICTION_WORKER_MAX_CACHED_FREQUENCY_SET_MEGABYTES" {
   type = number
 }
 

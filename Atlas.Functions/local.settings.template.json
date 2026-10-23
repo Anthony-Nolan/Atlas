@@ -65,7 +65,7 @@
     "Matching:MessagingServiceBus:SearchResultsTopic": "matching-results-ready",
 
     "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes": 1,
-    "HaplotypeFrequencySetCache:MaxCachedFrequencySets": 10,
+    "HaplotypeFrequencySetCache:MaxCachedFrequencySetMegabytes": 768,
     "HaplotypeFrequencySetCache:SetCacheExpiryMinutes": 60,
 
     "MatchPrediction:GenotypeImputation:MaximumExpandedGenotypesPerInput": 2000,

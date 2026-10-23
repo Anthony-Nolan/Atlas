@@ -1,106 +1,220 @@
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 
 /// <summary>
-/// Tracks which haplotype frequency set ids are currently resident in <see cref="HaplotypeFrequencyCache"/>'s
-/// dedicated cache, in least-recently-used order, and evicts the least-recently-used set to make room whenever a
-/// not-yet-tracked set would otherwise push residency over <c>capacity</c>.
+/// Tracks which haplotype frequency sets are currently resident in <see cref="HaplotypeFrequencyCache"/>'s dedicated
+/// cache, with the estimated memory and the import time of each, and in least-recently-used order. When a loaded set takes
+/// the total over the capacity in bytes, it evicts the least-recently-used other sets until the total fits.
+///
+/// <para>
+/// A limit in bytes, not in sets: the sets differ in size by about a hundred times, so a number of sets does not limit
+/// the memory of the cache.
+/// </para>
 ///
 /// <para>
 /// This exists because <c>Microsoft.Extensions.Caching.Memory.MemoryCache</c>'s own <c>SizeLimit</c> does not evict
 /// an existing entry to admit a new one once the limit is reached - verified empirically, it rejects the new insert
 /// outright instead, so the newest set would simply never get cached rather than displacing the oldest one. Eviction
-/// of the correct (least-recently-used) entry has to be driven explicitly, from here, one call before the cache is
-/// even asked to store anything.
+/// of the correct (least-recently-used) entry has to be driven explicitly, from here.
 /// </para>
 /// </summary>
 internal interface IFrequencySetResidencyTracker
 {
     /// <summary>
-    /// Records that <paramref name="setId"/> was just accessed: marks it most-recently-used if already tracked, or
-    /// admits it - evicting the least-recently-used tracked set first, if at capacity - if not.
+    /// Records that <paramref name="setId"/> was just accessed: marks it most-recently-used, and starts to track it if it
+    /// is not tracked yet. A set counts against the capacity only from <see cref="RecordSize"/>, so this evicts nothing.
     ///
     /// <para>
     /// Called on every <see cref="HaplotypeFrequencyCache.GetAllHaplotypeFrequencies"/> invocation, which is a hot
     /// path (once per surviving pooled haplotype during genotype expansion, potentially millions of times across a
-    /// search) - so this has to stay lock-free for the common "already tracked" case.
+    /// search) - so this has to stay lock-free.
     /// </para>
     /// </summary>
     void RecordAccess(int setId);
 
     /// <summary>
-    /// Stops tracking <paramref name="setId"/> without evicting anything, i.e. without calling the eviction callback
-    /// passed to the constructor. For when the cache entry has already gone away for a reason this tracker didn't
-    /// drive itself (TTL expiry, or an explicit removal elsewhere) - keeps residency in sync with what the cache
-    /// actually holds, rather than continuing to count a phantom slot against <c>capacity</c>. A no-op if
-    /// <paramref name="setId"/> isn't tracked (including because this tracker's own eviction already removed it).
+    /// Records that <paramref name="setId"/> starts to load. Its earlier entry, if it had one, has left the cache, but the
+    /// <see cref="Forget"/> of that entry can still wait on the thread pool. So this frees the bytes of the earlier entry
+    /// now: until <see cref="RecordSize"/>, the set holds no bytes, so it is not an eviction candidate while it loads, and
+    /// the late <see cref="Forget"/> finds another admission and does nothing.
     /// </summary>
-    void Forget(int setId);
+    void RecordLoadStart(int setId);
+
+    /// <summary>
+    /// Records that <paramref name="setId"/> was loaded into the cache, with an estimated memory of
+    /// <paramref name="sizeInBytes"/>, from the set with <paramref name="importTime"/> (null when the set has no row), and
+    /// evicts the least-recently-used other sets until the total fits the capacity. A set that is larger than the whole
+    /// capacity stays, alone: so it is not loaded again on each access.
+    /// </summary>
+    /// <returns>
+    /// The admission of this entry of the set. Give it to <see cref="Forget"/> when the entry goes, so that a late call
+    /// for this entry cannot forget the entry that replaced it.
+    /// </returns>
+    long RecordSize(int setId, long sizeInBytes, DateTimeOffset? importTime);
+
+    /// <summary>
+    /// Evicts <paramref name="setId"/> when its loaded entry was built from a set with another import time than
+    /// <paramref name="importTime"/>, the import time of the set in the database now (null when the set has no row): set
+    /// ids are SQL identity values, so after a restore or a copy of the database, one id can name another set, or no set.
+    /// A set that is loading, or that is not tracked, is not evicted: its load reads the current row.
+    /// </summary>
+    /// <returns>Whether the set was evicted.</returns>
+    bool EvictIfReplaced(int setId, DateTimeOffset? importTime);
+
+    /// <summary>
+    /// Stops tracking <paramref name="setId"/>, and frees its bytes, without evicting anything, i.e. without calling the
+    /// eviction callback passed to the constructor. For when the cache entry has already gone away for a reason this
+    /// tracker didn't drive itself (TTL expiry, or an explicit removal elsewhere) - keeps residency in sync with what the
+    /// cache actually holds, rather than continuing to count a phantom set against the capacity.
+    ///
+    /// <para>
+    /// A no-op unless <paramref name="admission"/> is the latest admission of the set. The cache calls this from a
+    /// post-eviction callback, on the thread pool, and by then the set can be loaded again: the call must then leave the
+    /// new entry tracked. Also a no-op if this tracker's own eviction already removed the set.
+    /// </para>
+    /// </summary>
+    void Forget(int setId, long admission);
 }
 
 internal sealed class FrequencySetResidencyTracker : IFrequencySetResidencyTracker
 {
-    private readonly int capacity;
+    private readonly long capacityInBytes;
     private readonly Action<int> onEvict;
+    private readonly ILogger<FrequencySetResidencyTracker> logger;
 
-    // Only taken around the (rare) eviction scan below, never around RecordAccess's common "already tracked" path.
-    private readonly object evictionLock = new();
+    // Taken by all but RecordAccess. It guards the sizes, the admissions, the import times and the total.
+    private readonly object sizeLock = new();
 
-    private readonly ConcurrentDictionary<int, long> lastAccessTickBySetId = new();
+    private readonly ConcurrentDictionary<int, TrackedSet> trackedSets = new();
     private long tickCounter;
+    private long admissionCounter;
+    private long totalSizeInBytes;
 
-    public FrequencySetResidencyTracker(int capacity, Action<int> onEvict)
+    public FrequencySetResidencyTracker(long capacityInBytes, Action<int> onEvict, ILogger<FrequencySetResidencyTracker> logger)
     {
-        this.capacity = capacity;
+        this.capacityInBytes = capacityInBytes;
         this.onEvict = onEvict;
+        this.logger = logger;
     }
 
     public void RecordAccess(int setId)
     {
         var tick = Interlocked.Increment(ref tickCounter);
-        lastAccessTickBySetId.AddOrUpdate(setId, tick, (_, _) => tick);
-
-        if (lastAccessTickBySetId.Count <= capacity)
-        {
-            return;
-        }
-
-        EvictDownToCapacity();
+        trackedSets.GetOrAdd(setId, static _ => new TrackedSet()).MarkAccessed(tick);
     }
 
-    public void Forget(int setId) => lastAccessTickBySetId.TryRemove(setId, out _);
-
-    private void EvictDownToCapacity()
+    public void RecordLoadStart(int setId)
     {
-        lock (evictionLock)
+        lock (sizeLock)
         {
-            while (lastAccessTickBySetId.Count > capacity)
+            if (trackedSets.TryGetValue(setId, out var trackedSet))
             {
-                var leastRecentlyUsedSetId = FindLeastRecentlyUsedSetId();
+                totalSizeInBytes -= trackedSet.SizeInBytes;
+                trackedSet.SizeInBytes = 0;
+                trackedSet.Admission = 0;
+                trackedSet.ImportTime = null;
+            }
+        }
+    }
 
-                if (leastRecentlyUsedSetId == null || !lastAccessTickBySetId.TryRemove(leastRecentlyUsedSetId.Value, out _))
-                {
-                    // Someone else already removed it (e.g. via Forget) between the scan and the removal - the
-                    // count will reflect that on the next loop check, nothing further to do for this iteration.
-                    continue;
-                }
+    public long RecordSize(int setId, long sizeInBytes, DateTimeOffset? importTime)
+    {
+        lock (sizeLock)
+        {
+            // GetOrAdd, not a lookup: Forget can have removed the set while it loaded.
+            var trackedSet = trackedSets.GetOrAdd(setId, static _ => new TrackedSet());
+            totalSizeInBytes += sizeInBytes - trackedSet.SizeInBytes;
+            trackedSet.SizeInBytes = sizeInBytes;
+            trackedSet.Admission = ++admissionCounter;
+            trackedSet.ImportTime = importTime;
 
+            // Its callers have waited for the load, and use it now: it must not be the next set to go.
+            trackedSet.MarkAccessed(Interlocked.Increment(ref tickCounter));
+
+            EvictLeastRecentlyUsedSetsOtherThan(setId);
+
+            if (totalSizeInBytes > capacityInBytes)
+            {
+                logger.LogWarning(
+                    "Haplotype frequency set {SetId} needs an estimated {SetSizeInBytes} bytes, more than the whole capacity of the frequency set cache: {CapacityInBytes} bytes. It stays in the cache alone. Increase HaplotypeFrequencySetCache:MaxCachedFrequencySetMegabytes.",
+                    setId,
+                    sizeInBytes,
+                    capacityInBytes);
+            }
+
+            return trackedSet.Admission;
+        }
+    }
+
+    public void Forget(int setId, long admission)
+    {
+        lock (sizeLock)
+        {
+            if (trackedSets.TryGetValue(setId, out var trackedSet)
+                && trackedSet.Admission == admission
+                && trackedSets.TryRemove(setId, out _))
+            {
+                totalSizeInBytes -= trackedSet.SizeInBytes;
+            }
+        }
+    }
+
+    public bool EvictIfReplaced(int setId, DateTimeOffset? importTime)
+    {
+        lock (sizeLock)
+        {
+            // The admission, not the size, tells a loaded entry: the entry of a set with no rows holds no bytes.
+            if (!trackedSets.TryGetValue(setId, out var trackedSet)
+                || trackedSet.Admission == 0
+                || trackedSet.ImportTime == importTime
+                || !trackedSets.TryRemove(setId, out _))
+            {
+                return false;
+            }
+
+            totalSizeInBytes -= trackedSet.SizeInBytes;
+            onEvict(setId);
+            return true;
+        }
+    }
+
+    private void EvictLeastRecentlyUsedSetsOtherThan(int recordedSetId)
+    {
+        while (totalSizeInBytes > capacityInBytes)
+        {
+            var leastRecentlyUsedSetId = FindLeastRecentlyUsedLoadedSetOtherThan(recordedSetId);
+
+            if (leastRecentlyUsedSetId == null)
+            {
+                // Only the recorded set holds bytes.
+                return;
+            }
+
+            if (trackedSets.TryRemove(leastRecentlyUsedSetId.Value, out var evictedSet))
+            {
+                totalSizeInBytes -= evictedSet.SizeInBytes;
                 onEvict(leastRecentlyUsedSetId.Value);
             }
         }
     }
 
-    private int? FindLeastRecentlyUsedSetId()
+    /// <summary>
+    /// Only a set with a recorded size: a set that is still loading holds no bytes yet, and its removal from the cache
+    /// would only make its callers load it again.
+    /// </summary>
+    private int? FindLeastRecentlyUsedLoadedSetOtherThan(int recordedSetId)
     {
         int? leastRecentlyUsedSetId = null;
         var oldestTick = long.MaxValue;
 
-        foreach (var (setId, tick) in lastAccessTickBySetId)
+        foreach (var (setId, trackedSet) in trackedSets)
         {
-            if (tick < oldestTick)
+            var tick = trackedSet.LastAccessTick;
+            if (setId != recordedSetId && trackedSet.SizeInBytes > 0 && tick < oldestTick)
             {
                 oldestTick = tick;
                 leastRecentlyUsedSetId = setId;
@@ -108,5 +222,24 @@ internal sealed class FrequencySetResidencyTracker : IFrequencySetResidencyTrack
         }
 
         return leastRecentlyUsedSetId;
+    }
+
+    private sealed class TrackedSet
+    {
+        private long lastAccessTick;
+
+        /// <summary>Written without the lock, by <see cref="RecordAccess"/>.</summary>
+        public long LastAccessTick => Volatile.Read(ref lastAccessTick);
+
+        /// <summary>Under the lock only. Zero until the set is loaded.</summary>
+        public long SizeInBytes { get; set; }
+
+        /// <summary>Under the lock only. Zero until the set is loaded: no call to <see cref="Forget"/> has it.</summary>
+        public long Admission { get; set; }
+
+        /// <summary>Under the lock only. The import time of the set that the loaded entry was built from.</summary>
+        public DateTimeOffset? ImportTime { get; set; }
+
+        public void MarkAccessed(long tick) => Volatile.Write(ref lastAccessTick, tick);
     }
 }

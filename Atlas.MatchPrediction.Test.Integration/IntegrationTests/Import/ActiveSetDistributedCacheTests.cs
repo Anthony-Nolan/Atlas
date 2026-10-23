@@ -95,7 +95,7 @@ internal class ActiveSetDistributedCacheTests
             Options.Create(new HaplotypeFrequencySetCacheSettings
             {
                 ActiveSetCacheExpiryMinutes = ActiveSetCacheExpiryMinutes,
-                MaxCachedFrequencySets = 1,
+                MaxCachedFrequencySetMegabytes = 1,
                 SetCacheExpiryMinutes = 1
             }));
 

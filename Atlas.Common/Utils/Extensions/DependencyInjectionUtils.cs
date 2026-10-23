@@ -42,6 +42,22 @@ namespace Atlas.Common.Utils.Extensions
         }
 
         /// <summary>
+        /// <see cref="RegisterAsOptions{T}"/>, and checks the data annotations of the settings object, such as <c>[Range]</c>,
+        /// when the host starts. So an app with a setting that is missing or out of range does not start, rather than run
+        /// with the default value of that setting.
+        /// <br/>
+        /// This method should ONLY be used in a raw entry-point project, as <see cref="RegisterAsOptions{T}"/>.
+        /// </summary>
+        /// <typeparam name="T">Settings Object to be populated</typeparam>
+        /// <param name="services">IServiceCollection</param>
+        /// <param name="sectionName">Settings key from which to read the Settings</param>
+        public static void RegisterAsValidatedOptions<T>(this IServiceCollection services, string sectionName) where T : class
+        {
+            services.RegisterAsOptions<T>(sectionName);
+            services.AddOptions<T>().ValidateDataAnnotations().ValidateOnStart();
+        }
+
+        /// <summary>
         /// Uses Microsoft DI & IConfiguration frameworks to register a settings object as available to be depended upon by other classes in the same project.
         /// Note that this is expected to be used primarily in a set with <see cref="RegisterAsOptions{T}"/> and <see cref="MakeSettingsAvailableForUse{T}"/>
         /// <br/>

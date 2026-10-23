@@ -11,6 +11,10 @@ namespace Atlas.MatchPrediction.Data.Repositories
     {
         Task<HaplotypeFrequencySet> GetActiveSet(string registry, string ethnicity);
         Task<IReadOnlyCollection<HaplotypeFrequencySet>> GetAllActiveSets();
+
+        /// <summary>The set with the given id, active or not; null when there is none.</summary>
+        Task<HaplotypeFrequencySet> GetSet(int setId);
+
         Task<HaplotypeFrequencySet> AddSet(HaplotypeFrequencySet set);
         Task ActivateSet(int setId);
     }
@@ -48,6 +52,17 @@ namespace Atlas.MatchPrediction.Data.Repositories
                     .Where(set => set.Active)
                     .AsNoTracking()
                     .ToListAsync();
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<HaplotypeFrequencySet> GetSet(int setId)
+        {
+            await using (var context = NewContext())
+            {
+                return await context.HaplotypeFrequencySets
+                    .AsNoTracking()
+                    .SingleOrDefaultAsync(set => set.Id == setId);
             }
         }
 
