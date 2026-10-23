@@ -55,6 +55,11 @@ Feature flags permit greater control over the release of new features (see this 
   * After you deploy this version, call the new endpoint on the Match Prediction functions app, `POST /api/BackfillHaplotypeFrequencySetContentHashes`, once: it writes the content hash of the sets of older imports, in the background, and a call shows the progress (see [README_Support](/README_Support.md#content-hashes-of-the-frequency-sets)). Until then, these sets work as before, each with an entry of its own.
   * Do not change the frequencies of a set with SQL: import a new file instead (see [README_Support](/README_Support.md#content-hashes-of-the-frequency-sets)).
 
+#### Distributed Cache
+* E: Terraform now creates the distributed cache: an Azure Managed Redis per environment, `an-<ENV>-atlas-redis`, and configures the six apps that use it. They sign in with Microsoft Entra ID as `<ENV>-atlas-id-functions`; access keys are disabled. See [Distributed cache](/README_Deployment.md#distributed-cache-azure-managed-redis).
+  * This is a new paid resource: by default `Balanced_B1` without high availability. Two new Terraform variables size it: `DISTRIBUTED_CACHE_SKU_NAME` (default `Balanced_B1`) and `DISTRIBUTED_CACHE_HIGH_AVAILABILITY_ENABLED` (default `false`).
+  * In a production environment, set `DISTRIBUTED_CACHE_HIGH_AVAILABILITY_ENABLED` to `true` before you deploy this version. Changing it later recreates the cache.
+
 ### 4.1.0
 
 #### Debug

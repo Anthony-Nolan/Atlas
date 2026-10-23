@@ -119,6 +119,14 @@ resource "azurerm_container_app" "atlas_precompute_worker" {
         value = tostring(var.MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT)
       }
       env {
+        name  = "DistributedCache__ConnectionString"
+        value = var.distributed_cache.connection_string
+      }
+      env {
+        name  = "DistributedCache__ManagedIdentityClientId"
+        value = var.distributed_cache.managed_identity_client_id
+      }
+      env {
         name  = "HaplotypeFrequencySetCache__ActiveSetCacheExpiryMinutes"
         value = tostring(var.MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES)
       }

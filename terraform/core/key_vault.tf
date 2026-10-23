@@ -27,8 +27,8 @@ resource "azurerm_key_vault" "atlas" {
   }
 }
 
-// Identity shared by all function apps, used solely to resolve their @Microsoft.KeyVault app settings.
-// Deliberately separate from azurerm_user_assigned_identity.aca_identity, which exists for ACR pull and
+// Identity shared by all function apps, used to resolve their @Microsoft.KeyVault app settings and to sign in to the
+// distributed cache (see distributed_cache.tf). Deliberately separate from azurerm_user_assigned_identity.aca_identity, which exists for ACR pull and
 // Service Bus data-plane receive on the match prediction container app and should not gain secret-read rights.
 resource "azurerm_user_assigned_identity" "function_apps_identity" {
   name                = lower("${local.environment}-ATLAS-ID-FUNCTIONS")

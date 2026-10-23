@@ -21,6 +21,13 @@ variable "azure_storage" {
   })
 }
 
+variable "distributed_cache" {
+  type = object({
+    connection_string          = string
+    managed_identity_client_id = string
+  })
+}
+
 variable "servicebus_namespace" {
   type = object({
     id   = string

@@ -101,6 +101,9 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "Matching:MessagingServiceBus:SearchRequestsTopic" = module.matching_algorithm.service_bus.matching_requests_topic.name
     "Matching:MessagingServiceBus:SearchResultsTopic"  = module.matching_algorithm.service_bus.matching_results_topic.name
 
+    "DistributedCache:ConnectionString"        = local.distributed_cache_handoff.connection_string
+    "DistributedCache:ManagedIdentityClientId" = local.distributed_cache_handoff.managed_identity_client_id
+
     "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes"    = var.MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES
     "HaplotypeFrequencySetCache:MaxCachedFrequencySetMegabytes" = var.MATCH_PREDICTION_MAX_CACHED_FREQUENCY_SET_MEGABYTES
     "HaplotypeFrequencySetCache:SetCacheExpiryMinutes"          = var.MATCH_PREDICTION_SET_CACHE_EXPIRY_MINUTES

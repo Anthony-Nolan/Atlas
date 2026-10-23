@@ -23,6 +23,13 @@ variable "application_insights" {
   })
 }
 
+variable "distributed_cache" {
+  type = object({
+    connection_string          = string
+    managed_identity_client_id = string
+  })
+}
+
 variable "donor_import_sql_database" {
   type = object({
     name = string
