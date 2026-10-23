@@ -276,7 +276,7 @@ variable "MATCH_PREDICTION_DATABASE_USERNAME" {
 variable "MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES" {
   type        = number
   default     = 1
-  description = "Absolute cache TTL, in minutes, for the active HaplotypeFrequencySets lookup in each app process. It is also how long an imported set can take to reach every process."
+  description = "Absolute cache TTL, in minutes, for the active HaplotypeFrequencySets lookup in each app process. It is also how long an imported set can take to reach every process, and how often each process checks the row of each frequency set that it uses, to load again a set that a restore or a copy of the database replaced."
 }
 
 variable "MATCH_PREDICTION_MAX_CACHED_FREQUENCY_SET_MEGABYTES" {
@@ -328,8 +328,8 @@ variable "MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS" {
 
 variable "MATCH_PREDICTION_WORKER_MAX_CACHED_FREQUENCY_SET_MEGABYTES" {
   type        = number
-  default     = 768
-  description = "Memory limit, in MiB, of the haplotype frequency sets the match prediction worker keeps in memory at once, estimated from the number of haplotypes of each set (least recently used evicted). Separate from MATCH_PREDICTION_MAX_CACHED_FREQUENCY_SET_MEGABYTES because a search load touches many sets, and with a limit of 10 sets each replica loaded the same sets again and again (ATL-476). 768 MiB holds about 32 sets of the average size. Check the memory of the match prediction container app (WorkingSetBytes) when changing it."
+  default     = 832
+  description = "Memory limit, in MiB, of the haplotype frequency sets the match prediction worker keeps in memory at once, estimated from the number of haplotypes of each set (least recently used evicted). Separate from MATCH_PREDICTION_MAX_CACHED_FREQUENCY_SET_MEGABYTES because a search load touches many sets, and with a limit of 10 sets each replica loaded the same sets again and again (ATL-476). 832 MiB holds the 30 sets that each worker replica used most in a DEV search load (at most 805 MiB), and about 35 sets of the average size. Check the memory of the match prediction container app (WorkingSetBytes) when changing it."
 }
 
 variable "MATCH_PREDICTION_WORKER_SET_CACHE_EXPIRY_MINUTES" {

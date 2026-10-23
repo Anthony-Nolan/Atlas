@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
@@ -42,10 +43,10 @@ internal class FrequencySetResidencyTrackerTests
 
     /// <summary>As the cache does: an access, then the size of the set once it is loaded.</summary>
     /// <returns>The admission of the set.</returns>
-    private long Load(int setId, long sizeInBytes)
+    private long Load(int setId, long sizeInBytes, DateTimeOffset? importTime = null)
     {
         sut.RecordAccess(setId);
-        return sut.RecordSize(setId, sizeInBytes);
+        return sut.RecordSize(setId, sizeInBytes, importTime);
     }
 
     [Test]
@@ -169,6 +170,37 @@ internal class FrequencySetResidencyTrackerTests
     }
 
     [Test]
+    public void RecordLoadStart_OfALoadedSet_FreesItsBytes()
+    {
+        BuildSut(capacityInBytes: 2 * setSize);
+        Load(setA, setSize);
+        Load(setB, setSize);
+
+        // A expired, and loads again before the Forget of its earlier entry ran.
+        sut.RecordLoadStart(setA);
+        Load(setC, setSize);
+
+        evictedSetIds.Should().BeEmpty();
+    }
+
+    [Test]
+    public void RecordSize_DoesNotEvictASetThatIsLoadingAgain()
+    {
+        BuildSut(capacityInBytes: 2 * setSize);
+        Load(setA, setSize);
+        Load(setB, setSize);
+
+        // A loads again, and B is used after that: A is the least recently used set, but the entry of A in the cache is
+        // the one that loads, and no callback could forget its bytes.
+        sut.RecordAccess(setA);
+        sut.RecordLoadStart(setA);
+        sut.RecordAccess(setB);
+        Load(setC, 2 * setSize);
+
+        evictedSetIds.Should().Equal(setB);
+    }
+
+    [Test]
     public void Forget_ANotTrackedSet_IsANoOp()
     {
         BuildSut(capacityInBytes: 2 * setSize);
@@ -220,5 +252,83 @@ internal class FrequencySetResidencyTrackerTests
         Load(setC, setSize);
 
         evictedSetIds.Should().Equal(setA, setB);
+    }
+
+    [Test]
+    public void EvictIfReplaced_WithTheImportTimeOfTheLoadedEntry_EvictsNothing()
+    {
+        BuildSut(capacityInBytes: 2 * setSize);
+        var importTime = fixture.Create<DateTimeOffset>();
+        Load(setA, setSize, importTime);
+
+        var evicted = sut.EvictIfReplaced(setA, importTime);
+
+        evicted.Should().BeFalse();
+        evictedSetIds.Should().BeEmpty();
+    }
+
+    [Test]
+    public void EvictIfReplaced_WithAnotherImportTime_EvictsTheSet_AndFreesItsBytes()
+    {
+        BuildSut(capacityInBytes: 2 * setSize);
+        Load(setA, setSize, fixture.Create<DateTimeOffset>());
+        Load(setB, setSize);
+
+        var evicted = sut.EvictIfReplaced(setA, fixture.Create<DateTimeOffset>());
+        Load(setC, setSize);
+
+        evicted.Should().BeTrue();
+        // C takes the bytes of A: B stays.
+        evictedSetIds.Should().Equal(setA);
+    }
+
+    [Test]
+    public void EvictIfReplaced_WhenTheSetHasNoRow_EvictsTheSet()
+    {
+        BuildSut(capacityInBytes: 2 * setSize);
+        Load(setA, setSize, fixture.Create<DateTimeOffset>());
+
+        var evicted = sut.EvictIfReplaced(setA, null);
+
+        evicted.Should().BeTrue();
+        evictedSetIds.Should().Equal(setA);
+    }
+
+    [Test]
+    public void EvictIfReplaced_OfASetLoadedWithNoRow_WhenTheRowExists_EvictsTheSet()
+    {
+        BuildSut(capacityInBytes: 2 * setSize);
+        // A set with no row, and so no import time, has no frequencies either: its entry holds no bytes.
+        Load(setA, 0);
+
+        var evicted = sut.EvictIfReplaced(setA, fixture.Create<DateTimeOffset>());
+
+        evicted.Should().BeTrue();
+        evictedSetIds.Should().Equal(setA);
+    }
+
+    [Test]
+    public void EvictIfReplaced_OfASetThatIsLoading_EvictsNothing()
+    {
+        BuildSut(capacityInBytes: 2 * setSize);
+        Load(setA, setSize, fixture.Create<DateTimeOffset>());
+
+        // A loads again: that load reads the current row.
+        sut.RecordLoadStart(setA);
+        var evicted = sut.EvictIfReplaced(setA, fixture.Create<DateTimeOffset>());
+
+        evicted.Should().BeFalse();
+        evictedSetIds.Should().BeEmpty();
+    }
+
+    [Test]
+    public void EvictIfReplaced_OfASetThatIsNotTracked_EvictsNothing()
+    {
+        BuildSut(capacityInBytes: 2 * setSize);
+
+        var evicted = sut.EvictIfReplaced(setA, fixture.Create<DateTimeOffset>());
+
+        evicted.Should().BeFalse();
+        evictedSetIds.Should().BeEmpty();
     }
 }

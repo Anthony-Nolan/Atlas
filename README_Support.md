@@ -61,7 +61,8 @@ A restore or a copy of the match prediction database (for example, a copy of LIV
 `POST /api/RefreshActiveHaplotypeFrequencySetCache` on the match prediction functions app (see [Rolling back an upload](#rolling-back-an-upload)).
 Without the call, apps can use the list of active sets of the old database, from the distributed cache, for up to 24 hours. Set ids are SQL identity values,
 so an id in that list can belong to a different set in the new database. The frequency sets themselves need no step: their keys in the distributed cache
-have the import time of each set (see [the frequency set cache](README_MatchPredictionAlgorithm.md#the-frequency-set-cache)).
+have the import time of each set, and each app checks the import time of each set that it uses once a minute, and loads a replaced set again (see
+[the frequency set cache](README_MatchPredictionAlgorithm.md#the-frequency-set-cache)).
 
 ### Alert: the new active sets are not confirmed in the distributed cache
 

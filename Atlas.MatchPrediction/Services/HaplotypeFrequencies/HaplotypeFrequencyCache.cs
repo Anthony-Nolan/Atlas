@@ -57,6 +57,12 @@ public interface IHaplotypeFrequencyCache
     /// <see cref="FrequencySetCacheEntry.ConsolidatedFrequencies"/> on the same entry.
     ///
     /// <para>
+    /// While the set is in use, this process checks its row in the database each
+    /// <c>HaplotypeFrequencySetCacheSettings.ActiveSetCacheExpiryMinutes</c>, and loads the set again when the row has
+    /// another import time, or no longer exists: after a restore or a copy of the database, a set id can name another set.
+    /// </para>
+    ///
+    /// <para>
     /// Whether this method <b>waits</b> for that is
     /// <c>HaplotypeFrequencySetCacheSettings.AwaitConsolidatedFrequencyWarm</c>. False - the default - returns as soon
     /// as the set is loaded and lets the pre-consolidation finish in the background, so a caller arriving during the
@@ -98,6 +104,9 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
     internal static readonly TimeSpan ActiveHaplotypeFrequencySetsDistributedCacheTimeToLive = TimeSpan.FromHours(24);
 
     internal static string AllFrequenciesCacheKey(int setId) => $"hf-set-{setId}";
+
+    /// <summary>The local key of the last check of a set against its row in the database: see <see cref="IsReplaced"/>.</summary>
+    internal static string SetCheckCacheKey(int setId) => $"hf-set-checked-{setId}";
 
     /// <summary>
     /// The cache name of the frequency sets in the distributed cache. Change the version when the format of
@@ -199,14 +208,32 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
         // See FrequencySetResidencyTracker's doc comment for why eviction has to be driven explicitly like this.
         residencyTracker.RecordAccess(setId);
 
+        var entry = await GetOrLoadEntry(setId);
+
+        // The check evicted the entry: its set id names another set in the database now, or no set. Load that.
+        if (await IsReplaced(setId))
+        {
+            entry = await GetOrLoadEntry(setId);
+        }
+
+        return entry;
+    }
+
+    private async Task<FrequencySetCacheEntry> GetOrLoadEntry(int setId)
+    {
         // GetOrAddAsync runs one factory at a time for the key, and concurrent callers wait for it. So when the distributed
         // cache misses or cannot be reached, this process reads each set from the database once at a time, not once for
         // each caller.
         return await cache.GetOrAddAsync(AllFrequenciesCacheKey(setId), async cacheEntry =>
             {
-                var entry = await LoadEntry(setId);
+                // An earlier entry of the set has left the cache, but its post-eviction callback can still wait on the
+                // thread pool. Until RecordSize, the set holds no bytes, so the tracker cannot evict this entry while it
+                // loads. It must not: no callback is registered on this entry yet, so its bytes would stay counted.
+                residencyTracker.RecordLoadStart(setId);
 
-                var admission = residencyTracker.RecordSize(setId, entry.EstimatedSizeInBytes);
+                var (entry, importTime) = await LoadEntry(setId);
+
+                var admission = residencyTracker.RecordSize(setId, entry.EstimatedSizeInBytes, importTime);
 
                 // Fires for every removal reason - expiry, or an explicit Remove, including the tracker's own onEvict →
                 // cache.Remove call. In that last case this is a harmless no-op, since the tracker already removed setId
@@ -214,6 +241,9 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
                 // counting setId as resident - see FrequencySetResidencyTracker.Forget's doc comment. Registered here,
                 // not in the options, so that it carries the admission of this entry.
                 cacheEntry.RegisterPostEvictionCallback((_, _, _, _) => residencyTracker.Forget(setId, admission));
+
+                // The load has just read the row of the set: the next check of the set is due an interval from now.
+                cache.Add(SetCheckCacheKey(setId), false, SetCheckLocalEntryOptions());
 
                 // The same entry instance is what gets warmed either way, so the pre-consolidation populates exactly
                 // the object future callers will read. Exactly one writer in both modes - the branch decides only
@@ -239,6 +269,48 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
                 return entry;
             },
             SetLocalEntryOptions()
+        );
+    }
+
+    /// <summary>
+    /// Checks the loaded set against its row in the database, once each <c>ActiveSetCacheExpiryMinutes</c> while the set is
+    /// in use, and evicts it when the row has another import time, or no longer exists. Set ids are SQL identity values:
+    /// after a restore or a copy of the database, the id of a loaded set can name another set. A set in use does not
+    /// expire, so without the check, this process would use the old frequencies until it restarts.
+    /// </summary>
+    /// <returns>Whether the check evicted the set, so that the caller loads it again.</returns>
+    private async Task<bool> IsReplaced(int setId)
+    {
+        // One factory at a time for the key, as for the entry: so one caller evicts the set, not each caller, and no later
+        // caller can evict the entry that replaces it.
+        return await cache.GetOrAddAsync(SetCheckCacheKey(setId), async () =>
+            {
+                DateTimeOffset? importTime;
+                try
+                {
+                    importTime = (await frequencySetRepository.GetSet(setId))?.DateTimeAdded;
+                }
+                catch (Exception exception)
+                {
+                    // A loaded set needs no database, so a fault here does not fail the caller: the set stays in use, and
+                    // the next check is due an interval from now.
+                    logger.SendTrace(
+                        $"HF set {setId} could not be checked against its row in the database, so this process keeps it until the next check: {exception.Message}",
+                        LogLevel.Warn);
+                    return false;
+                }
+
+                // The tracker compares it with the import time of the loaded entry. It does not evict a set that is loading:
+                // that load reads the current row.
+                if (!residencyTracker.EvictIfReplaced(setId, importTime))
+                {
+                    return false;
+                }
+
+                logger.SendTrace($"HF set {setId} has another import time in the database, or no row, so this process loads it again.");
+                return true;
+            },
+            SetCheckLocalEntryOptions()
         );
     }
 
@@ -296,25 +368,42 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
     };
 
     /// <summary>
+    /// An absolute expiry of <c>ActiveSetCacheExpiryMinutes</c>, as for the active sets: so a set that a restore or a copy
+    /// of the database replaced reaches this process in the same time as the list of active sets that names it.
+    /// </summary>
+    private MemoryCacheEntryOptions SetCheckLocalEntryOptions() => new()
+    {
+        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(cacheSettings.ActiveSetCacheExpiryMinutes)
+    };
+
+    /// <summary>
     /// Loads a set from the distributed cache, or else from the database. A set from the database is then stored in the
     /// distributed cache if it is active.
     /// </summary>
-    private async Task<FrequencySetCacheEntry> LoadEntry(int setId)
+    /// <returns>The entry, and the import time of its set: null when the set has no row.</returns>
+    private async Task<(FrequencySetCacheEntry Entry, DateTimeOffset? ImportTime)> LoadEntry(int setId)
     {
-        // One primary-key read: the key of the set in the distributed cache has its import time.
+        // One primary-key read: the import time of the set is part of its key in the distributed cache, and the check of
+        // the set compares it later.
         var set = await frequencySetRepository.GetSet(setId);
         if (set == null)
         {
             // There are no rows to read either: the database read gives the empty entry, as it did before the
             // distributed cache.
-            return (await LoadEntryFromDatabase(setId)).Entry;
+            return ((await LoadEntryFromDatabase(setId)).Entry, null);
+        }
+
+        if (!distributedCache.IsEnabled)
+        {
+            // No Redis is configured: there is nothing to read from it, and nothing to encode for it.
+            return ((await LoadEntryFromDatabase(setId)).Entry, set.DateTimeAdded);
         }
 
         var distributedCacheKey = FrequencySetDistributedCacheKey(set);
         var storedEntry = await LoadEntryFromDistributedCache(setId, distributedCacheKey);
         if (storedEntry != null)
         {
-            return storedEntry;
+            return (storedEntry, set.DateTimeAdded);
         }
 
         var (rows, entry) = await LoadEntryFromDatabase(setId);
@@ -326,7 +415,7 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
             await StoreInDistributedCache(setId, distributedCacheKey, rows);
         }
 
-        return entry;
+        return (entry, set.DateTimeAdded);
     }
 
     /// <returns>The entry of the set in the distributed cache, or null on a miss.</returns>

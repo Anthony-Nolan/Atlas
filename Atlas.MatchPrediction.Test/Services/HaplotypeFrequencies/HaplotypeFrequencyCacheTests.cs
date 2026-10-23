@@ -36,6 +36,9 @@ internal class HaplotypeFrequencyCacheTests
     private const int SetCacheExpiryMinutes = 60;
     private static readonly TimeSpan SetLocalEntryLifetime = TimeSpan.FromMinutes(SetCacheExpiryMinutes);
 
+    /// <summary>How often a set in use is checked against its row: the expiry of the active sets.</summary>
+    private static readonly TimeSpan SetCheckInterval = ActiveSetLocalEntryLifetime;
+
     /// <summary>The estimated memory of a set of one row: the byte limit of the eviction tests is a number of these.</summary>
     private const long OneRowSetSize = FrequencySetCacheEntry.EstimatedBytesPerHaplotype;
 
@@ -527,12 +530,7 @@ internal class HaplotypeFrequencyCacheTests
         frequencyRepository.GetAllHaplotypeFrequencies(set.Id).Returns(NewRows(set.Id, 1), rowsOfTheRestoredSet);
         await instanceA.GetAllHaplotypeFrequencies(set.Id);
 
-        var restoredSet = fixture.Build<Data.Models.HaplotypeFrequencySet>()
-            .With(x => x.Id, set.Id)
-            .With(x => x.Active, true)
-            .With(x => x.DateTimeAdded, set.DateTimeAdded + TimeSpan.FromMinutes(fixture.Create<int>()))
-            .Create();
-        frequencySetRepository.GetSet(set.Id).Returns(restoredSet);
+        frequencySetRepository.GetSet(set.Id).Returns(ReplacingSet(set));
         var entryOfB = await instanceB.GetAllHaplotypeFrequencies(set.Id);
 
         var row = rowsOfTheRestoredSet.Single();
@@ -586,6 +584,129 @@ internal class HaplotypeFrequencyCacheTests
         await Task.WhenAll(calls);
 
         await frequencyRepository.Received(1).GetAllHaplotypeFrequencies(set.Id);
+    }
+
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_WithNoDistributedCache_ReadsTheDatabase_AndDoesNotUseTheDistributedCache()
+    {
+        var distributedCache = Substitute.For<IDistributedCacheProvider>();
+        distributedCache.IsEnabled.Returns(false);
+        var instance = BuildInstance(distributedCache);
+        var set = NewSet();
+        var rows = NewRows(set.Id, fixture.Create<int>());
+        frequencyRepository.GetAllHaplotypeFrequencies(set.Id).Returns(rows);
+
+        var entry = await instance.GetAllHaplotypeFrequencies(set.Id);
+
+        entry.SetFrequencies.Should().HaveCount(rows.Count);
+        await distributedCache.DidNotReceiveWithAnyArgs().GetAsync(default);
+        await distributedCache.DidNotReceiveWithAnyArgs().SetAsync(default, default, default, default);
+    }
+
+    // ---- The check of a loaded set against its row -----------------------------------------------------------------
+
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_WithinTheCheckInterval_DoesNotReadTheSetRowAgain()
+    {
+        var set = NewSet();
+        frequencyRepository.GetAllHaplotypeFrequencies(set.Id).Returns(NewRows(set.Id, 1));
+
+        await sut.GetAllHaplotypeFrequencies(set.Id);
+        MoveClockTo(SetCheckInterval - ClockMargin);
+        await sut.GetAllHaplotypeFrequencies(set.Id);
+
+        // The read of the load only.
+        await frequencySetRepository.Received(1).GetSet(set.Id);
+    }
+
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_AfterTheCheckInterval_KeepsASetThatIsUnchanged()
+    {
+        var set = NewSet();
+        frequencyRepository.GetAllHaplotypeFrequencies(set.Id).Returns(NewRows(set.Id, 1));
+
+        await sut.GetAllHaplotypeFrequencies(set.Id);
+        MoveClockTo(SetCheckInterval + ClockMargin);
+        await sut.GetAllHaplotypeFrequencies(set.Id);
+
+        // The read of the load, and the read of the check.
+        await frequencySetRepository.Received(2).GetSet(set.Id);
+        await frequencyRepository.Received(1).GetAllHaplotypeFrequencies(set.Id);
+    }
+
+    /// <summary>
+    /// Set ids are SQL identity values: after a restore or a copy of the database, the id of a set that a process holds can
+    /// name another set. A set in use does not expire, so only the check replaces it.
+    /// </summary>
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_AfterTheCheckInterval_LoadsASetThatTheDatabaseReplaced()
+    {
+        var set = NewSet();
+        var rowsOfTheNewSet = NewRows(set.Id, 1);
+        frequencyRepository.GetAllHaplotypeFrequencies(set.Id).Returns(NewRows(set.Id, 1), rowsOfTheNewSet);
+        await sut.GetAllHaplotypeFrequencies(set.Id);
+
+        frequencySetRepository.GetSet(set.Id).Returns(ReplacingSet(set));
+        MoveClockTo(SetCheckInterval + ClockMargin);
+        var entry = await sut.GetAllHaplotypeFrequencies(set.Id);
+
+        var row = rowsOfTheNewSet.Single();
+        entry.SetFrequencies.Should().ContainSingle();
+        entry.Interner.TryResolve(row.A, row.B, row.C, row.DQB1, row.DRB1, out _).Should().BeTrue();
+    }
+
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_AfterTheCheckInterval_LoadsAgainASetWhoseRowIsGone()
+    {
+        var set = NewSet();
+        frequencyRepository.GetAllHaplotypeFrequencies(set.Id).Returns(NewRows(set.Id, 1), NewRows(set.Id, 0));
+        await sut.GetAllHaplotypeFrequencies(set.Id);
+
+        frequencySetRepository.GetSet(set.Id).Returns((Data.Models.HaplotypeFrequencySet)null);
+        MoveClockTo(SetCheckInterval + ClockMargin);
+        var entry = await sut.GetAllHaplotypeFrequencies(set.Id);
+
+        entry.SetFrequencies.Should().BeEmpty();
+    }
+
+    /// <summary>A loaded set needs no database: a fault of the check does not fail the caller.</summary>
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_WhenTheCheckCannotReadTheSetRow_KeepsTheSet_AndLogsAWarning()
+    {
+        var set = NewSet();
+        var rows = NewRows(set.Id, fixture.Create<int>());
+        frequencyRepository.GetAllHaplotypeFrequencies(set.Id).Returns(rows);
+        await sut.GetAllHaplotypeFrequencies(set.Id);
+
+        frequencySetRepository.GetSet(set.Id).ThrowsAsync(new InvalidOperationException(fixture.Create<string>()));
+        MoveClockTo(SetCheckInterval + ClockMargin);
+        var entry = await sut.GetAllHaplotypeFrequencies(set.Id);
+
+        entry.SetFrequencies.Should().HaveCount(rows.Count);
+        await frequencyRepository.Received(1).GetAllHaplotypeFrequencies(set.Id);
+        logger.Received(1).SendTrace(Arg.Is<string>(message => message.Contains("could not be checked")), LogLevel.Warn);
+    }
+
+    /// <summary>One caller evicts the replaced set, and the others wait for the one load of the new set.</summary>
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_ConcurrentCallsAfterTheCheckInterval_ReadTheSetRowOnce_AndLoadTheReplacedSetOnce()
+    {
+        var set = NewSet();
+        frequencyRepository.GetAllHaplotypeFrequencies(set.Id).Returns(NewRows(set.Id, 1), NewRows(set.Id, 1));
+        await sut.GetAllHaplotypeFrequencies(set.Id);
+
+        var newSet = ReplacingSet(set);
+        var rowReadOfTheCheck = new TaskCompletionSource<Data.Models.HaplotypeFrequencySet>();
+        frequencySetRepository.GetSet(set.Id).Returns(rowReadOfTheCheck.Task, Task.FromResult(newSet));
+        MoveClockTo(SetCheckInterval + ClockMargin);
+
+        var calls = Enumerable.Range(0, 10).Select(_ => sut.GetAllHaplotypeFrequencies(set.Id)).ToList();
+        rowReadOfTheCheck.SetResult(newSet);
+        await Task.WhenAll(calls);
+
+        // The read of the first load, the read of the check, and the read of the load of the new set.
+        await frequencySetRepository.Received(3).GetSet(set.Id);
+        await frequencyRepository.Received(2).GetAllHaplotypeFrequencies(set.Id);
     }
 
     [Test]
@@ -790,6 +911,7 @@ internal class HaplotypeFrequencyCacheTests
     private static IDistributedCacheProvider UnreachableDistributedCache()
     {
         var distributedCache = Substitute.For<IDistributedCacheProvider>();
+        distributedCache.IsEnabled.Returns(true);
         distributedCache.GetAsync(default).ReturnsForAnyArgs((byte[])null);
         distributedCache.SetAsync(default, null, TimeSpan.Zero).ReturnsForAnyArgs(false);
         return distributedCache;
@@ -799,6 +921,7 @@ internal class HaplotypeFrequencyCacheTests
     private static IDistributedCacheProvider DistributedCacheThatAcceptsEachWrite()
     {
         var distributedCache = Substitute.For<IDistributedCacheProvider>();
+        distributedCache.IsEnabled.Returns(true);
         distributedCache.GetAsync(default).ReturnsForAnyArgs((byte[])null);
         distributedCache.SetAsync(default, null, TimeSpan.Zero).ReturnsForAnyArgs(true);
         return distributedCache;
@@ -811,6 +934,17 @@ internal class HaplotypeFrequencyCacheTests
         frequencySetRepository.GetSet(set.Id).Returns(set);
         return set;
     }
+
+    /// <summary>
+    /// The set that the id of <paramref name="set"/> names after a restore or a copy of the database: another set, with
+    /// another import time.
+    /// </summary>
+    private Data.Models.HaplotypeFrequencySet ReplacingSet(Data.Models.HaplotypeFrequencySet set) =>
+        fixture.Build<Data.Models.HaplotypeFrequencySet>()
+            .With(x => x.Id, set.Id)
+            .With(x => x.Active, true)
+            .With(x => x.DateTimeAdded, set.DateTimeAdded + TimeSpan.FromMinutes(fixture.Create<int>()))
+            .Create();
 
     private List<LightweightHaplotypeFrequencyRecord> NewRows(int setId, int rowCount) =>
         fixture.Build<LightweightHaplotypeFrequencyRecord>().With(x => x.SetId, setId).CreateMany(rowCount).ToList();

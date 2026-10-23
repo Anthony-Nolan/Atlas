@@ -1,9 +1,11 @@
 using System.Reflection;
+using Atlas.MatchPrediction.ExternalInterface.Settings;
 using AwesomeAssertions;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 
@@ -40,6 +42,10 @@ internal class FunctionAppDependencyInjectionTests
             new FunctionApp("SearchTracking", global::Atlas.SearchTracking.Functions.Startup.Configure),
         }.Select(app => new TestCaseData(app).SetName($"{{m}}({app.Name})"));
     }
+
+    /// <summary>The apps that load haplotype frequency sets.</summary>
+    private static IEnumerable<TestCaseData> FrequencySetApps() =>
+        FunctionApps().Where(testCase => testCase.Arguments[0] is FunctionApp { Name: "Functions" or "MatchPrediction" or "DataRefresh" or "DonorManagement" });
 
     [TestCaseSource(nameof(FunctionApps))]
     public void ServiceProvider_IsValid(FunctionApp app)
@@ -97,14 +103,46 @@ internal class FunctionAppDependencyInjectionTests
         failures.Should().BeEmpty();
     }
 
-    private static IHost BuildHost(FunctionApp app) => BuildHost(app, out _);
+    /// <summary>
+    /// The host runs the <see cref="IStartupValidator"/> when it starts, before any function: options registered with
+    /// <c>ValidateOnStart</c> stop the app there.
+    /// </summary>
+    [TestCaseSource(nameof(FunctionApps))]
+    public void StartupValidation_WithTheTemplateSettings_Passes(FunctionApp app)
+    {
+        using var host = BuildHost(app);
 
-    private static IHost BuildHost(FunctionApp app, out IServiceCollection services)
+        var validate = () => host.Services.GetService<IStartupValidator>()?.Validate();
+
+        validate.Should().NotThrow();
+    }
+
+    /// <summary>
+    /// An older <c>local.settings.json</c> has <c>MaxCachedFrequencySets</c>, which the memory limit replaced: without a
+    /// check, the limit would be 0, and each process would keep one set at a time.
+    /// </summary>
+    [TestCaseSource(nameof(FrequencySetApps))]
+    public void StartupValidation_WithoutTheFrequencySetMemoryLimit_Fails(FunctionApp app)
+    {
+        using var host = BuildHost(app, settings => settings.Remove("HaplotypeFrequencySetCache:MaxCachedFrequencySetMegabytes"));
+
+        var validate = () => host.Services.GetRequiredService<IStartupValidator>().Validate();
+
+        validate.Should().Throw<OptionsValidationException>()
+            .Which.OptionsType.Should().Be<HaplotypeFrequencySetCacheSettings>();
+    }
+
+    private static IHost BuildHost(FunctionApp app, Action<Dictionary<string, string?>>? changeSettings = null) =>
+        BuildHost(app, out _, changeSettings);
+
+    private static IHost BuildHost(FunctionApp app, out IServiceCollection services, Action<Dictionary<string, string?>>? changeSettings = null)
     {
         IServiceCollection? registered = null;
+        var settings = TemplateSettings(app);
+        changeSettings?.Invoke(settings);
 
         var host = new HostBuilder()
-            .ConfigureAppConfiguration(builder => builder.AddInMemoryCollection(TemplateSettings(app)))
+            .ConfigureAppConfiguration(builder => builder.AddInMemoryCollection(settings))
             .ConfigureFunctionsWebApplication(_ => { })
             .ConfigureServices(collection =>
             {

@@ -201,11 +201,19 @@ the allele index and the consolidated frequencies of the set. The set is kept in
 **A load.** A process that does not hold a set reads its row in `HaplotypeFrequencySets`, then the distributed cache.
 On a miss, it reads the frequencies from SQL, and then writes the set to the distributed cache. So the first process
 that uses a new set writes it: the import does not. Only an active set is written: an inactive set can be the set of an
-import that still runs, with only part of its rows.
+import that still runs, with only part of its rows. When no Redis is configured, the process reads the frequencies from
+SQL at once, and does not encode the set.
 
-**The stored set.** The key is `hf-set-v1:{set id}:{import time, in ticks}`. The import time is in the key because set
-ids are SQL identity values: after a restore, a copy or a rebuild of the database, an id can name another set. So a
-restore needs no step for the sets (the list of active sets does: see [The active set cache](#the-active-set-cache)).
+**A replaced set.** While a process uses a set, it checks the row of the set in `HaplotypeFrequencySets` once each
+`HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes` (1 minute). When the row has another import time, or there is
+no row, the process removes the set and loads it again: set ids are SQL identity values, so after a restore, a copy or a
+rebuild of the database, an id can name another set. So a restore needs no step for the sets (the list of active sets
+does: see [The active set cache](#the-active-set-cache)), and each process uses a replaced set within the same minute as
+the list of active sets that names it. When the check cannot read the row, the process keeps the set, logs a warning,
+and checks again a minute later.
+
+**The stored set.** The key is `hf-set-v1:{set id}:{import time, in ticks}`. The import time is in the key for the same
+reason: after a restore, a copy or a rebuild of the database, an id can name another set.
 The value holds the rows of the set in the order that SQL gave them, so a set from the distributed cache builds the same
 entry as a set from SQL: the order is part of the output (see [Invariants](#invariants)). The value is compressed, and
 is stored in chunks of 96 KiB under a small manifest, because Microsoft's guidance for Azure Managed Redis is to keep each
@@ -230,6 +238,8 @@ distributed cache gives the SQL reads that each scale-out gave before it.
   `Get All Frequencies from HF set - from the distributed cache` (the decode and the build), at the verbose level.
 - Each write to the distributed cache logs the set id, the rows, the bytes and the chunks, and `Not stored.` when the
   cache did not store the set.
+- A set that the check removes logs its id: `HF set {id} has another import time in the database, or no row, so this
+  process loads it again.` A check that cannot read the row logs a warning.
 - The `DistributedCache.*` metrics: the cache name `hf-set-v1` counts the reads of whole sets (its hit ratio is the hit
   ratio of the sets), and `hf-set-v1-chunks` the reads of chunks.
 
@@ -641,12 +651,14 @@ Both are ops-tunable via config without a code change. Observe via the two `Get 
 lines — a higher-than-expected rate of them means more distinct sets are in use than `MaxCachedFrequencySetMegabytes`
 holds, so sets are churning out of the cache.
 
-**The match prediction worker has its own values: 768 MiB, and a sliding expiry of 1,440 minutes** (Terraform
+**The match prediction worker has its own values: 832 MiB, and a sliding expiry of 1,440 minutes** (Terraform
 `MATCH_PREDICTION_WORKER_MAX_CACHED_FREQUENCY_SET_MEGABYTES` / `MATCH_PREDICTION_WORKER_SET_CACHE_EXPIRY_MINUTES`; the
 other hosts keep 768 MiB and 60 minutes). A search load touches many sets: on DEV, 40 searches used about 80, and with
 10 cached each replica loaded each set about 3 times. Live imputation then spent 98 % of its time getting frequency
 data, and the reloads drove frequent gen 2 garbage collections (ATL-476). So ATL-476 gave the worker 30 sets, when the
-limit was a number of sets: 768 MiB holds about 32 sets of the average size. The GC heap stayed under 1.6 GB of its 3 GB
+limit was a number of sets. In a DEV search load (324 worker replicas, October 2026), the 30 sets that a replica loaded
+most took at most 805 MiB at 280 bytes for each haplotype, and 618 MiB for the median replica: 832 MiB holds them for
+each replica. It holds about 35 sets of the average size, but 11 of the largest size. The GC heap stayed under 1.6 GB of its 3 GB
 limit (75 % of the 4 GiB container), which is the room the larger cache uses. Watch the memory of the `match-pred-ca`
 container app (the `WorkingSetBytes` metric in Azure Monitor) before raising it further. Note that the two `Get All Frequencies from HF set` timed logs are verbose traces and are
 sampled in the worker; the consolidation trace logged with each load (`Calculating consolidated frequencies ...`) is

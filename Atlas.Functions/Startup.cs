@@ -115,7 +115,7 @@ namespace Atlas.Functions
 
             // Match Prediction Algorithm
             services.RegisterAsOptions<MatchPrediction.ExternalInterface.Settings.AzureStorageSettings>("MatchPrediction:AzureStorage");
-            services.RegisterAsOptions<MatchPrediction.ExternalInterface.Settings.HaplotypeFrequencySetCacheSettings>("HaplotypeFrequencySetCache");
+            services.RegisterAsValidatedOptions<MatchPrediction.ExternalInterface.Settings.HaplotypeFrequencySetCacheSettings>("HaplotypeFrequencySetCache");
             services.RegisterAsOptions<MatchPrediction.ExternalInterface.Settings.GenotypeImputationSettings>("MatchPrediction:GenotypeImputation");
             services.RegisterAsOptions<MatchPrediction.ExternalInterface.Settings.PrecomputedGenotypeSetSettings>("MatchPrediction:Precompute");
         }

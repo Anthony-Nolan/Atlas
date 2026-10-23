@@ -31,7 +31,8 @@ namespace Atlas.Common.Test.Caching
         {
             using var serviceProvider = ServicesWith(new DistributedCacheSettings { ConnectionString = connectionString }).BuildServiceProvider();
 
-            serviceProvider.GetRequiredService<IDistributedCacheProvider>().Should().BeOfType<DisabledDistributedCacheProvider>();
+            serviceProvider.GetRequiredService<IDistributedCacheProvider>().Should().BeOfType<DisabledDistributedCacheProvider>()
+                .Which.IsEnabled.Should().BeFalse();
         }
 
         [Test]
@@ -39,7 +40,8 @@ namespace Atlas.Common.Test.Caching
         {
             await using var serviceProvider = ServicesWith(UnreachableRedis()).BuildServiceProvider();
 
-            serviceProvider.GetRequiredService<IDistributedCacheProvider>().Should().BeOfType<DistributedCacheProvider>();
+            serviceProvider.GetRequiredService<IDistributedCacheProvider>().Should().BeOfType<DistributedCacheProvider>()
+                .Which.IsEnabled.Should().BeTrue();
         }
 
         [Test]
