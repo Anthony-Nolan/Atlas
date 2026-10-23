@@ -114,6 +114,7 @@ module "matching_algorithm" {
   application_insights          = azurerm_application_insights.atlas
   azure_app_configuration       = azurerm_app_configuration.atlas_app_configuration
   azure_storage                 = azurerm_storage_account.azure_storage
+  distributed_cache             = local.distributed_cache_handoff
   donor_import_sql_database     = azurerm_mssql_database.atlas-database-shared
   elastic_app_service_plan      = azurerm_service_plan.atlas-elastic-plan
   key_vault                     = local.key_vault_module_handoff
@@ -234,6 +235,7 @@ module "match_prediction" {
   application_insights    = azurerm_application_insights.atlas
   app_service_plan        = azurerm_service_plan.atlas-elastic-plan
   azure_storage           = azurerm_storage_account.azure_storage
+  distributed_cache       = local.distributed_cache_handoff
   key_vault               = local.key_vault_module_handoff
   servicebus_namespace    = azurerm_servicebus_namespace.general
   shared_function_storage = azurerm_storage_account.function_storage

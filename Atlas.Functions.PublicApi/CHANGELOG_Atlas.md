@@ -42,6 +42,11 @@ Feature flags permit greater control over the release of new features (see this 
 * E: New endpoint on the Match Prediction functions app (`<ENV>-ATLAS-MATCH-PREDICTION-FUNCTION`): `POST /api/RefreshActiveHaplotypeFrequencySetCache`. It writes the active sets from SQL to the distributed cache. Call it after a change of the active sets with SQL (see [Rolling back an upload](/README_Support.md#rolling-back-an-upload)), and after a restore or a copy of the match prediction database (see [README_Support](/README_Support.md#after-a-restore-or-a-copy-of-the-match-prediction-database)).
   * If the distributed cache is configured when you deploy this version, and a set is imported during the deployment, call this endpoint after the deployment. The apps of the old version do not write the distributed cache.
 
+#### Distributed Cache
+* E: Terraform now creates the distributed cache: an Azure Managed Redis per environment, `an-<ENV>-atlas-redis`, and configures the six apps that use it. They sign in with Microsoft Entra ID as `<ENV>-atlas-id-functions`; access keys are disabled. See [Distributed cache](/README_Deployment.md#distributed-cache-azure-managed-redis).
+  * This is a new paid resource: by default `Balanced_B1` without high availability. Two new Terraform variables size it: `DISTRIBUTED_CACHE_SKU_NAME` (default `Balanced_B1`) and `DISTRIBUTED_CACHE_HIGH_AVAILABILITY_ENABLED` (default `false`).
+  * In a production environment, set `DISTRIBUTED_CACHE_HIGH_AVAILABILITY_ENABLED` to `true` before you deploy this version. Changing it later recreates the cache.
+
 ### 4.1.0
 
 #### Debug

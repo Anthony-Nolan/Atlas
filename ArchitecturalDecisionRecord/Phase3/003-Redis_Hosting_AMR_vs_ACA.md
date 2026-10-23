@@ -335,8 +335,8 @@ confirm via the pricing calculator, as those meters are not exposed in the regio
 ### 5. Implementation readiness
 
 The Terraform work is smaller than ATL-214 assumes, and its open spike can be closed now. The pinned provider, `hashicorp/azurerm` `= 4.74.0` per
-`terraform/core/versions.tf`, already ships `azurerm_managed_redis`, which supersedes the deprecated `azurerm_redis_enterprise_cluster` /
-`azurerm_redis_enterprise_database` pair and takes AMR's SKU names directly (`Balanced_B0` … `Balanced_B1000`, `MemoryOptimized_*`, `ComputeOptimized_*`,
+`terraform/core/versions.tf` (since upgraded to `5.9.0`, which still has it), already ships `azurerm_managed_redis`, which supersedes the deprecated
+`azurerm_redis_enterprise_cluster` / `azurerm_redis_enterprise_database` pair and takes AMR's SKU names directly (`Balanced_B0` … `Balanced_B1000`, `MemoryOptimized_*`, `ComputeOptimized_*`,
 `FlashOptimized_*`). No provider upgrade is needed. Relevant arguments, with the defaults that matter:
 
 - `sku_name` — e.g. `"Balanced_B1"`.
@@ -375,7 +375,7 @@ endpoint from it; the work is not wasted, and it is not a prerequisite.
 
 ### Provisioning
 
-1. Resource: `azurerm_managed_redis` in `terraform/core`, on the pinned `azurerm 4.74.0` provider. No provider upgrade required.
+1. Resource: `azurerm_managed_redis` in `terraform/core`, on the pinned `azurerm` provider (`5.9.0` when ATL-214 provisioned it). No provider upgrade required.
 2. SKU: `Balanced`, not `MemoryOptimized` or `ComputeOptimized`. The profile is a small number of large values read at low frequency: there is no
    throughput case for Compute Optimized, and Memory Optimized starts at 12 GB (~£133/month HA), far more memory than needed. `Balanced` starts at 0.5 GB
    and covers the whole range Atlas will plausibly want.
@@ -389,8 +389,13 @@ endpoint from it; the work is not wasted, and it is not a prerequisite.
    - Revisit the size on measured `Used Memory` once HMD data is actually resident; the 200–500 MB figure is an estimate, and memory size and
      performance tier are both in-place scale operations. Note that `high_availability_enabled` is *not* an in-place change, it forces recreation, so
      the HA choice must be right per environment at creation time.
+   - As provisioned by ATL-214: LIVE `Balanced_B1` with HA (the interim size above), LIVE-WMDA `Balanced_B3` with HA, and DEV, UAT and UAT-WMDA
+     `Balanced_B1` without HA. Each environment sets them with the release variables `DISTRIBUTED_CACHE_SKU_NAME` and
+     `DISTRIBUTED_CACHE_HIGH_AVAILABILITY_ENABLED`.
 3. Authentication: Microsoft Entra ID via managed identity. Leave `access_keys_authentication_enabled` at its `false` default and grant access with
    `azurerm_managed_redis_access_policy_assignment`. No connection-string secret in `local.settings.template.json` or the container app's `secret` blocks.
+   ATL-214 grants the access policy to the existing `<env>-atlas-id-functions` identity, which every host that uses the cache already carries for its
+   Key Vault references, rather than to a new identity.
 4. Transport: leave `client_protocol` at `"Encrypted"`.
 5. Clustering: leave `clustering_policy` at `"OSSCluster"`. `StackExchange.Redis` needs no special configuration for it.
 6. Persistence: none. Every cached value is reconstructible from SQL or Table Storage, and the design already requires graceful degradation to the

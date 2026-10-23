@@ -57,6 +57,9 @@ locals {
     "DataRefresh:WatchdogCronSchedule"                                                      = var.DATA_REFRESH_WATCHDOG_CRON_SCHEDULE
     "DataRefresh:WatchdogGraceDurationMinutes"                                              = var.DATA_REFRESH_WATCHDOG_GRACE_DURATION_MINUTES
 
+    "DistributedCache:ConnectionString"        = var.distributed_cache.connection_string
+    "DistributedCache:ManagedIdentityClientId" = var.distributed_cache.managed_identity_client_id
+
     "Debug:AllowPrecomputeWrites" = var.DEBUG_ALLOW_PRECOMPUTE_WRITES
 
     "HlaMetadataDictionary:AzureStorageConnectionString"                          = var.key_vault.secret_refs["azure-storage-connection-string"]

@@ -55,7 +55,10 @@ Infrastructure:
 
 ## Storage
 
-The service uses two storage methods for different data, SQL and Azure Cloud Tables.
+The service uses two storage methods for different data, SQL and Azure Cloud Tables. It also has a distributed cache,
+an Azure Managed Redis per environment, which holds copies of data from them that several apps share (see
+[ADR 003](/ArchitecturalDecisionRecord/Phase3/003-Redis_Hosting_AMR_vs_ACA.md)). Every value in it can be rebuilt from its
+source, and the apps work without it.
 
 ### SQL
   - The service makes use of Entity Framework (EFCore) Code-First migrations.

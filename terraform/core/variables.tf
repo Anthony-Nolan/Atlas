@@ -87,6 +87,23 @@ variable "DATABASE_SHARED_SKU_SIZE" {
   description = "Appropriate values determined by DATABASE_SHARED_EDITION. Defaults to 'Standard', where only standard sku sizes are appropriate e.g. S0, S2, S3. Updating to 'GeneralPurpose' instead allows VCore/Serverless tiers, e.g. GP_S_Gen5_2"
 }
 
+variable "DISTRIBUTED_CACHE_HIGH_AVAILABILITY_ENABLED" {
+  type        = bool
+  default     = false
+  description = "Whether the Azure Managed Redis of the distributed cache has high availability (a replica and an SLA). Enable it in production. Note that changing this recreates the instance, losing its contents, so set it before the instance is first created."
+}
+
+variable "DISTRIBUTED_CACHE_SKU_NAME" {
+  type        = string
+  default     = "Balanced_B1"
+  description = "SKU of the Azure Managed Redis of the distributed cache. Only the Balanced tier is appropriate, e.g. Balanced_B1 (1 GB), Balanced_B3 (3 GB). Scaling up is an in-place operation."
+
+  validation {
+    condition     = startswith(var.DISTRIBUTED_CACHE_SKU_NAME, "Balanced_B")
+    error_message = "DISTRIBUTED_CACHE_SKU_NAME must be a Balanced tier SKU, e.g. Balanced_B1."
+  }
+}
+
 variable "DONOR_DATABASE_PASSWORD" {
   type = string
 }

@@ -108,7 +108,8 @@ Secrets shared by more than one Atlas component are held in an Azure Key Vault, 
 across all of Azure, not just this tenant, and `<environment>-atlas-kv` alone collided with an unrelated tenant's
 vault. The function apps read them through
 `@Microsoft.KeyVault(...)` app settings, authenticating with a shared user-assigned identity
-(`<environment>-atlas-id-functions`) that is granted **Key Vault Secrets User** on the vault.
+(`<environment>-atlas-id-functions`) that is granted **Key Vault Secrets User** on the vault. The same identity signs in
+to the [distributed cache](#distributed-cache-azure-managed-redis).
 
 The vault uses Azure RBAC rather than access policies, which means nobody - including the principal that created the
 vault - has data-plane access unless it has been granted. Terraform grants itself **Key Vault Secrets Officer** so that
@@ -146,6 +147,22 @@ Rotating a hand-seeded secret is a matter of running the command above again. Th
 references for up to 24 hours, so restart the function apps if the new value is needed immediately. Secrets that
 Terraform manages are rotated by the next apply, which updates the app setting to the new secret version and restarts
 the app automatically.
+
+### Distributed cache (Azure Managed Redis)
+
+Each environment has its own Azure Managed Redis, `an-<environment>-atlas-redis`, for the distributed cache. Cache keys
+carry no environment prefix, so environments must never share one. Terraform creates it and sets
+`DistributedCache:ConnectionString` (host and port, no secret) and `DistributedCache:ManagedIdentityClientId` on the six
+apps that use the cache. The apps sign in with Microsoft Entra ID, as `<environment>-atlas-id-functions`, which has an
+access policy on the cache. Access keys are disabled. The cache is reached over its public endpoint with TLS, as Atlas
+has no VNet; see [ADR 003](/ArchitecturalDecisionRecord/Phase3/003-Redis_Hosting_AMR_vs_ACA.md#network-posture--phased-deliberately).
+Connection and sign-in events go to the `REDConnectionEvents` table of the environment's Log Analytics workspace.
+
+Size it with two release variables: `DISTRIBUTED_CACHE_SKU_NAME` (default `Balanced_B1`) and
+`DISTRIBUTED_CACHE_HIGH_AVAILABILITY_ENABLED` (default `false`). Changing the SKU is an in-place scale. **Changing high
+availability recreates the instance**, so for a production environment set `DISTRIBUTED_CACHE_HIGH_AVAILABILITY_ENABLED`
+to `true` *before* the first release that creates the cache. A recreated cache starts empty; the apps then read from
+SQL and refill it.
 
 ### Manual Azure Configuration (Post-terraform)
 

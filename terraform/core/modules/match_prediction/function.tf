@@ -30,6 +30,9 @@ resource "azurerm_windows_function_app" "atlas_match_prediction_function" {
     "AzureStorage:ConnectionString"                    = var.key_vault.secret_refs["azure-storage-connection-string"]
     "AzureStorage:MatchPredictionResultsBlobContainer" = azurerm_storage_container.match_prediction_results_container.name
 
+    "DistributedCache:ConnectionString"        = var.distributed_cache.connection_string
+    "DistributedCache:ManagedIdentityClientId" = var.distributed_cache.managed_identity_client_id
+
     "HlaMetadataDictionary:AzureStorageConnectionString"                          = var.key_vault.secret_refs["azure-storage-connection-string"]
     "HlaMetadataDictionary:SearchRelatedMetadata:CacheSlidingExpirationInSeconds" = var.SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC
     "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes"                      = var.ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES

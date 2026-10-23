@@ -6,6 +6,9 @@ locals {
 
     "AzureStorage:ConnectionString" = var.key_vault.secret_refs["azure-storage-connection-string"]
 
+    "DistributedCache:ConnectionString"        = var.distributed_cache.connection_string
+    "DistributedCache:ManagedIdentityClientId" = var.distributed_cache.managed_identity_client_id
+
     "HlaMetadataDictionary:AzureStorageConnectionString" = var.key_vault.secret_refs["azure-storage-connection-string"],
 
     "MacDictionary:AzureStorageConnectionString" = var.key_vault.secret_refs["azure-storage-connection-string"]
