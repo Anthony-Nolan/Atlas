@@ -15,6 +15,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Repositories;
+using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
@@ -176,7 +177,8 @@ namespace Atlas.Functions
                     settings.ParallelMatchPredictionRequestsTopic,
                     settings.SendRetryCount,
                     settings.SendRetryCooldownSeconds,
-                    logger);
+                    logger,
+                    MatchPredictionMessageProperties.ForParallelBatchRequest);
             });
 
         services.AddSingleton(sp => AutoMapperConfig.CreateMapper(
