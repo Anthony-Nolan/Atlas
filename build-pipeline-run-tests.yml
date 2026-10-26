@@ -84,6 +84,7 @@ steps:
       displayName: 'Wait for Azurite'
   - ${{ if parameters.serviceBusEmulator }}:
     # Started after SQL Server accepts queries. The emulator reads that server through the host port and will not retry for long.
+    # SQL_WAIT_INTERVAL is a fixed sleep before the emulator first connects to SQL, not a timeout, so it is 0: SQL is already up.
     - bash: |
         config="$(Agent.TempDirectory)/service-bus-emulator-config.json"
         cat > "$config" <<'JSON'
@@ -127,7 +128,7 @@ steps:
           -e SQL_SERVER=host.docker.internal:1433 \
           -e MSSQL_SA_PASSWORD="$SQL_SA_PASSWORD" \
           -e ACCEPT_EULA=Y \
-          -e SQL_WAIT_INTERVAL=60 \
+          -e SQL_WAIT_INTERVAL=0 \
           -e EMULATOR_HTTP_PORT=5300 \
           -v "$config:/ServiceBus_Emulator/ConfigFiles/Config.json" \
           mcr.microsoft.com/azure-messaging/servicebus-emulator:2.0.1

@@ -28,8 +28,9 @@ namespace Atlas.Common.Test.Integration.ServiceBus
         // Long enough that no lock expires while a test waits, so a message can only come back by being released.
         private static readonly TimeSpan LockDuration = TimeSpan.FromMinutes(5);
         private static readonly TimeSpan ReceiveWait = TimeSpan.FromSeconds(10);
-        // The emulator's runtime properties do not show which messages a link holds, so the test gives prefetch a moment instead.
-        private static readonly TimeSpan PrefetchWait = TimeSpan.FromSeconds(1);
+        // How long another receiver must get nothing for the messages to count as held by a link. The emulator shows no
+        // lock state otherwise: its peek and runtime properties do not tell locked messages from available ones.
+        private static readonly TimeSpan HeldCheckWait = TimeSpan.FromSeconds(3);
 
         private ServiceBusAdministrationClient admin;
         private ServiceBusClient client;
@@ -100,7 +101,8 @@ namespace Atlas.Common.Test.Integration.ServiceBus
         /// Without prefetch a link holds no messages between receives: the broker can still send it messages for the credit
         /// left over after a receive, but the client releases each one at once, because no receive is waiting for it.
         /// So the processor here prefetches: the messages it has not processed are locked on its link, and only closing
-        /// that link gives them back to the subscription.
+        /// that link gives them back to the subscription. Before the processor is disposed, the test checks that another
+        /// receiver cannot get them, so the messages the next receiver gets afterwards were released, not just late.
         /// </summary>
         [TestCase(true)]
         [TestCase(false)]
@@ -123,18 +125,25 @@ namespace Atlas.Common.Test.Integration.ServiceBus
                 },
                 batchSize: 1);
             processed.Should().Equal("m0");
-            // Otherwise the next receiver could get a message that the processor's link has not prefetched yet.
-            await Task.Delay(PrefetchWait);
-
-            if (disposeProcessor)
-            {
-                await processor.DisposeAsync();
-            }
+            var processorDisposed = false;
 
             try
             {
+                // Closed before the processor, so no credit is left on its link to take the released messages.
+                await using (var heldCheckReceiver = client.CreateReceiver(topic, Subscription))
+                {
+                    var notHeld = await ReceiveUpTo(heldCheckReceiver, 2, HeldCheckWait);
+                    notHeld.Should().BeEmpty("m1 and m2 should be locked on the processor's link before it is disposed");
+                }
+
+                if (disposeProcessor)
+                {
+                    await processor.DisposeAsync();
+                    processorDisposed = true;
+                }
+
                 await using var nextReceiver = client.CreateReceiver(topic, Subscription);
-                var received = await ReceiveUpTo(nextReceiver, 2);
+                var received = await ReceiveUpTo(nextReceiver, 2, ReceiveWait);
 
                 if (disposeProcessor)
                 {
@@ -149,17 +158,53 @@ namespace Atlas.Common.Test.Integration.ServiceBus
             }
             finally
             {
-                if (!disposeProcessor)
+                if (!processorDisposed)
                 {
                     await processor.DisposeAsync();
                 }
             }
         }
 
-        private static async Task<List<ServiceBusReceivedMessage>> ReceiveUpTo(ServiceBusReceiver receiver, int count)
+        /// <summary>
+        /// The ATL-482 scenario, with the production factory: in the QueuedDonorUpdateProcessing stage the Data Refresh app
+        /// received once, the receive returned before the batch was full and left link credit, and the receiver stayed open
+        /// for the life of the process. The broker sends that link the messages that arrive later, but the client
+        /// releases them at once, because no receive is waiting. If an SDK upgrade made the link keep them instead, they would
+        /// stay locked until the lock expires, as with prefetch, and this test would fail.
+        /// </summary>
+        [Test]
+        public async Task ProcessAllMessagesInBatches_WithoutPrefetch_LeavesLaterMessagesFreeForOtherReceivers()
+        {
+            await using var sender = client.CreateSender(topic);
+            await sender.SendMessageAsync(new ServiceBusMessage("\"m0\""));
+
+            await using var processor = new MessageProcessor<string>(
+                new ServiceBusMessageReceiver<string>(new MessageReceiverFactory(client), topic, Subscription));
+            var processed = new List<string>();
+            await processor.ProcessAllMessagesInBatches_Async(
+                batch =>
+                {
+                    processed.AddRange(batch.Select(m => m.DeserializedBody));
+                    return Task.CompletedTask;
+                },
+                batchSize: 10);
+            processed.Should().Equal("m0");
+
+            await sender.SendMessageAsync(new ServiceBusMessage("\"m1\""));
+            await sender.SendMessageAsync(new ServiceBusMessage("\"m2\""));
+
+            await using var nextReceiver = client.CreateReceiver(topic, Subscription);
+            var received = await ReceiveUpTo(nextReceiver, 2, ReceiveWait);
+
+            received.Select(m => m.Body.ToString()).Should().BeEquivalentTo("\"m1\"", "\"m2\"");
+            // Released, never locked or abandoned.
+            received.Should().OnlyContain(m => m.DeliveryCount == 1);
+        }
+
+        private static async Task<List<ServiceBusReceivedMessage>> ReceiveUpTo(ServiceBusReceiver receiver, int count, TimeSpan wait)
         {
             var received = new List<ServiceBusReceivedMessage>();
-            var deadline = DateTime.UtcNow + ReceiveWait;
+            var deadline = DateTime.UtcNow + wait;
 
             while (received.Count < count)
             {
