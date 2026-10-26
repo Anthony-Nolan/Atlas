@@ -214,7 +214,7 @@ internal class TypingCategoryConversionTests
 
     /// <summary>
     /// A set of haplotypes, each with its own typing category, interned exactly as
-    /// <c>HaplotypeFrequencyCache.BuildEntryFromDatabase</c> interns them - so the categories reaching
+    /// <c>FrequencySetCacheEntry.Build</c> interns them - so the categories reaching
     /// <c>FrequencySetCacheEntry.ProjectedPool</c> are the real thing rather than a hand-built projection.
     /// </summary>
     private FrequencySetCacheEntry Pool(params (string AtA, HaplotypeTypingCategory Category)[] haplotypes)

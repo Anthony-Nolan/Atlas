@@ -49,7 +49,7 @@ namespace Atlas.MatchPrediction.Functions
             services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
             services.RegisterAsOptions<DistributedCacheSettings>("DistributedCache");
             services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
-            services.RegisterAsOptions<HaplotypeFrequencySetCacheSettings>("HaplotypeFrequencySetCache");
+            services.RegisterAsValidatedOptions<HaplotypeFrequencySetCacheSettings>("HaplotypeFrequencySetCache");
             services.RegisterAsOptions<GenotypeImputationSettings>("GenotypeImputation");
             services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
             services.RegisterAsOptions<MatchPredictionRequestsSettings>("MatchPredictionRequests");

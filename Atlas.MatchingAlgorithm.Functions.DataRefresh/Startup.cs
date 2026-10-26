@@ -77,7 +77,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DataRefresh
             services.RegisterAsOptions<DonorGenotypePrecomputationSettings>("DataRefresh:Precompute");
             services.RegisterAsOptions<DonorManagementSettings>("DataRefresh:DonorManagement");
             services.RegisterAsOptions<GenotypeImputationSettings>("GenotypeImputation");
-            services.RegisterAsOptions<HaplotypeFrequencySetCacheSettings>("HaplotypeFrequencySetCache");
+            services.RegisterAsValidatedOptions<HaplotypeFrequencySetCacheSettings>("HaplotypeFrequencySetCache");
             services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
             services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
             services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");

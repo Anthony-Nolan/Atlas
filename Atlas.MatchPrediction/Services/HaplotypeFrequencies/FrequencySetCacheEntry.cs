@@ -16,9 +16,52 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 /// </summary>
 public sealed class FrequencySetCacheEntry
 {
+    /// <summary>
+    /// An estimate of the memory of an entry for each haplotype of its set: the frozen dictionary, the projected pool,
+    /// the allele index, and the consolidated frequencies that the warm adds later. It is above the measured memory of
+    /// each large set, so a limit on the memory of the cache keeps less, not more.
+    /// </summary>
+    internal const int EstimatedBytesPerHaplotype = 280;
+
     public required FrozenDictionary<HaplotypeKey, HaplotypeFrequencyValue> SetFrequencies { get; init; }
 
     public required HaplotypeInterner Interner { get; init; }
+
+    /// <summary>
+    /// An estimate of the memory of this entry, with its consolidated frequencies: see <see cref="EstimatedBytesPerHaplotype"/>.
+    /// </summary>
+    internal long EstimatedSizeInBytes => (long)SetFrequencies.Count * EstimatedBytesPerHaplotype;
+
+    /// <summary>
+    /// Builds the entry of a set from its rows, in their order. The order sets the interner ids, the order of
+    /// <see cref="SetFrequencies"/>, and so the order of <see cref="ProjectedPool"/>: so the rows that SQL gave, and the
+    /// same rows from the distributed cache, build the same entry.
+    /// </summary>
+    internal static FrequencySetCacheEntry Build(IReadOnlyList<LightweightHaplotypeFrequencyRecord> rows)
+    {
+        var haplotypeInterner = new HaplotypeInterner();
+        var resultDictionary = new Dictionary<HaplotypeKey, HaplotypeFrequencyValue>();
+        foreach (var frequency in rows)
+        {
+            var haplotypeKey = haplotypeInterner.Intern(a: frequency.A, b: frequency.B, c: frequency.C, dqb1: frequency.DQB1, drb1: frequency.DRB1);
+            var haplotypeFrequencyValue = new HaplotypeFrequencyValue(frequency.Frequency, frequency.TypingCategory);
+            resultDictionary.Add(haplotypeKey, haplotypeFrequencyValue);
+        }
+
+        var entry = new FrequencySetCacheEntry
+        {
+            SetFrequencies = resultDictionary.ToFrozenDictionary(),
+            Interner = haplotypeInterner
+        };
+
+        // Project the pool - and the allele index derived from it - here, on the one thread that builds the set,
+        // rather than leaving the first donor to touch this set to pay for it. Both are part of the cost of making a
+        // set usable, and they are built before the entry escapes, so no reader can race the first access.
+        _ = entry.ProjectedPool;
+        _ = entry.AlleleIndex;
+
+        return entry;
+    }
 
     // Null until the background pre-consolidation completes. Keyed by the same Interner as SetFrequencies, so
     // lookups are guaranteed consistent. Callers fall back to a direct calculation while this is null.
@@ -32,8 +75,8 @@ public sealed class FrequencySetCacheEntry
         set => consolidatedFrequencies = value;
     }
 
-    // In production this is built eagerly by HaplotypeFrequencyCache.BuildEntryFromDatabase, before the entry escapes
-    // its cache.GetOrAddAsync, so nothing races the first access. That is where the guarantee lives - the volatile and
+    // In production this is built eagerly by Build, before the entry escapes HaplotypeFrequencyCache's GetOrAddAsync,
+    // so nothing races the first access. That is where the guarantee lives - the volatile and
     // the ??= below only keep this correct for any other caller, such as a test constructing an entry directly.
     // volatile: a reference write has release semantics, so the collection is fully built before any thread can
     // observe it. ??= rather than a lock: the read-test-write is not atomic, so two threads racing the first access
@@ -80,7 +123,7 @@ public sealed class FrequencySetCacheEntry
     /// Groups the frozen dictionary's own keys by typing category, preserving its enumeration order.
     ///
     /// <para>
-    /// It is tempting to build this straight from the SQL rows in <c>BuildEntryFromDatabase</c>'s existing loop, which
+    /// It is tempting to build this straight from the rows in <see cref="Build"/>'s existing loop, which
     /// would skip this pass altogether. Do not. <b>The pool's order sets the survivor order, which sets the pairing
     /// order, which sets the genotype set's insertion order - and insertion order is the tie-break
     /// <c>ExpandedGenotypeTruncater.MostLikelyFirst</c> applies when likelihoods are equal.</b> Which genotypes a
@@ -105,9 +148,8 @@ public sealed class FrequencySetCacheEntry
         };
     }
 
-    // Same eventual-consistency reasoning as projectedPool above: built eagerly in production by
-    // HaplotypeFrequencyCache.BuildEntryFromDatabase, so the volatile/??= pair only matters for a caller that
-    // constructs an entry directly, such as a test.
+    // Same eventual-consistency reasoning as projectedPool above: built eagerly in production by Build, so the
+    // volatile/??= pair only matters for a caller that constructs an entry directly, such as a test.
     private volatile DataByResolution<LociInfo<int[][]>> alleleIndex;
 
     /// <summary>

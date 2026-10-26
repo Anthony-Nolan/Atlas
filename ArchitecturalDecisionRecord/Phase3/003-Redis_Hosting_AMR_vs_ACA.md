@@ -70,7 +70,7 @@ This matters more than any other factor, so it is stated up front. The L2 consum
 |---|---|---|---|
 | HLA Metadata Dictionary table repositories (9 classes) | ATL-196 | **Must** | Matching Algorithm Functions, Repeat Search Functions, Match Prediction — **Elastic Premium plan, outside the ACA environment** |
 | `HaplotypeFrequencyCache` active-set lookup | ATL-194 | Must (correctness fix) | Match Prediction Worker (**inside the ACA environment**) and `Atlas.Functions` |
-| Per-set haplotype frequency version markers | ATL-195 | Should / limited | Match Prediction Worker (**inside the ACA environment**) |
+| Haplotype frequency sets (each whole set, compressed) | ATL-195 | Should / limited | Match Prediction Worker and precompute worker (**ACA**), and `Atlas.Functions`, Match Prediction, Donor Management and Data Refresh — **Elastic Premium plan** |
 | Imputed / converted genotype sets (candidate, not yet ticketed) | — | Could | Match Prediction Worker and `Atlas.Functions` |
 | Matching `ScoringCache` (candidate, not yet ticketed; not listed in v2) | — | Not yet scoped | Matching Algorithm Functions, Repeat Search — **Elastic Premium plan, outside the ACA environment** |
 | MAC Dictionary `MacCacheService` | ATL-197 | **Not needed in L2** | (out of scope per v2) |
@@ -91,7 +91,7 @@ deliberately conservative (biased high) so the SKU choice is not invalidated by 
 |---|---|---|---|---|---|---|---|
 | **HMD metadata tables (ATL-196)** | **Must** | 9 repository classes × 1 table each, per nomenclature version | Whole serialised table per key | **200–500 MB per nomenclature version** | Cold start and post-refresh only — L1 serves steady state | Written once by the first instance to build each table | **Immutable per version**; 12 h L2 TTL, invalidated only after a successful Data Refresh |
 | Active HF set lookup (ATL-194) | Must (correctness fix) | 1 key — a `(RegistryCode, EthnicityCode) → HaplotypeFrequencySet` map | Small serialised collection | < 100 KB | Every Match Prediction request, behind a short L1 TTL | Invalidated on HF set import (rare) | Rare, explicit invalidation |
-| HF set version markers (ATL-195) | Should / limited | 1 per HF set — tens | Integer / version string | < 10 KB total | Cheap check before trusting the local copy | Incremented on import | Rare |
+| HF sets (ATL-195) | Should / limited | 1 per active HF set — about 210, each a manifest and chunks of 96 KiB | The rows of the set, in columns, gzip | **105.8 MB measured** for the 208 active sets of a copy of WMDA LIVE: 1,195 chunks, the largest set 1,224 KiB | Once per set per process, on a local miss (cold start, scale-out, local eviction) | Written by the first process that reads the set from SQL; 30-day TTL | Immutable per key (set id and import time) |
 | Imputed / converted genotype sets (candidate) | Could | One per `(donor, AllowedLociKey, HF set version, nomenclature version)` | Moderate object | Grows with searched-donor population — open-ended | Read once per replica per donor within a burst | Write-on-compute | Immutable per key |
 | `ScoringCache` (candidate, not in v2) | Not yet scoped | Very high — one key per `(locus, donor HLA, patient HLA, nomenclature version)` | `MatchGrade` / `MatchConfidence` / `bool?` — a few bytes behind a ~60–80 byte key | Open-ended | Extremely high op rate, tiny values | Write-on-compute | Deterministic and immutable per nomenclature version |
 | MAC dictionary | **Not needed in L2** | — | — | — (~567,000 codes stay local) | — | — | — |
@@ -308,7 +308,7 @@ Comparison at the sizing this workload actually calls for:
 | **AMR `Balanced_B3`, HA — recommended for production** | **~40** | ~2.4 GB | **Yes**, ≥2 nodes, zone-distributed | **Yes** | Patched, Entra auth, 15,000 connections, reachable by every consumer with no new networking |
 | AMR `Balanced_B5`, HA | ~96 | ~4.8 GB | Yes | Yes | The step up if the HMD estimate proves low |
 | AMR `Balanced_B10`, HA | ~195 | ~9.6 GB | Yes | Yes | 12 GB; `MemoryOptimized_M10` is the same 12 GB for ~133 with fewer vCPUs |
-| AMR `Balanced_B1`, HA | ~20 | ~0.8 GB | Yes | Yes | Enough only while the cache holds control-plane data (ATL-194/195) |
+| AMR `Balanced_B1`, HA | ~20 | ~0.8 GB | Yes | Yes | Enough only while the cache holds the ATL-194 and ATL-195 data (~106 MB measured), not the HMD tables |
 | AMR `Balanced_B1`, non-HA (dev/uat) | ~10 | ~0.8 GB | No | No | Non-production only |
 | Redis on ACA, 2 vCPU / 4 GiB | ~105 (47–163) | ~3–3.5 GB | **No** | **No** | Flushed on every restart and maintenance event; needs VNet + environment work first |
 | Redis on ACA, 4 vCPU / 8 GiB | ~210 (95–326) | ~7 GB | **No** | **No** | Requires a workload profiles environment |
@@ -384,8 +384,9 @@ endpoint from it; the work is not wasted, and it is not a prerequisite.
      per-version estimate. Its 15,000-connection limit is far above the low hundreds this fleet will open.
    - Non-production (dev, uat): `Balanced_B1` with `high_availability_enabled = false`. ~£10/month. Non-HA is appropriate here given those instances
      carry no SLA and may lose data during maintenance, and dev/uat need not hold a full production-scale HMD dataset.
-   - If ATL-194 ships before ATL-196, `Balanced_B1` with HA (~£20/month) is sufficient for production in the interim, since the cache then holds only
-     sub-megabyte control-plane data. Scale up to B3 before ATL-196 goes live.
+   - If ATL-194 and ATL-195 ship before ATL-196, `Balanced_B1` with HA (~£20/month) is sufficient for production in the interim. The cache then holds
+     the active-set lookup and the HF sets: 105.8 MB measured for the 208 active sets of a copy of WMDA LIVE (1,195 chunks), and the replaced sets
+     until their 30-day TTL. Scale up to B3 before ATL-196 goes live.
    - Revisit the size on measured `Used Memory` once HMD data is actually resident; the 200–500 MB figure is an estimate, and memory size and
      performance tier are both in-place scale operations. Note that `high_availability_enabled` is *not* an in-place change, it forces recreation, so
      the HA choice must be right per environment at creation time.
@@ -473,7 +474,7 @@ endpoint from it; the work is not wasted, and it is not a prerequisite.
 | A new paid Azure resource requires cost sign-off before provisioning | **Medium** | Figures above are from the Azure Retail Prices API for uksouth; the production line item is ~£40/month (`Balanced_B3`, HA) and ~£10/month per non-production environment (`Balanced_B1`, non-HA). ATL-214 already carries the sign-off acceptance criterion |
 | The 200–500 MB HMD-per-version estimate is unmeasured, so `Balanced_B3` could prove under- or over-sized | **Medium** | Memory size is an in-place scale operation in both directions (with documented restrictions on scaling down), so this is recoverable. Instrument `Used Memory` from the first ATL-196 deployment and right-size before HMD goes live in production |
 | `eviction_policy` left at the `VolatileLRU` default causes write failures on a full cache under versioned keys | **Medium** | Set `AllKeysLRU` explicitly in Terraform and assert it in the review of ATL-214's PR |
-| A cold or unavailable L2 during a 50-replica burst produces a fallback storm against SQL/Table Storage | **Medium** | Bounded-concurrency or single-flight guard on the fallback path (design decision D3), in each consumer: ATL-190's `IDistributedCacheProvider` does not coordinate fills. ATL-194 uses single flight in each process. Each later consumer records its own guard |
+| A cold or unavailable L2 during a 50-replica burst produces a fallback storm against SQL/Table Storage | **Medium** | Bounded-concurrency or single-flight guard on the fallback path (design decision D3), in each consumer: ATL-190's `IDistributedCacheProvider` does not coordinate fills. ATL-194 and ATL-195 use single flight in each process. Each later consumer records its own guard |
 | Failover or maintenance produces a 10–15 s window of transient faults | **Low** | Cache-aside with retry and circuit-breaker on the client; a miss is a slow read, not a failed search. Scheduled maintenance windows (preview) can further constrain when this happens |
 | Non-HA dev/uat instances can lose data during maintenance and carry no SLA | **Low** | Accepted deliberately for non-production; production runs HA. Note that `high_availability_enabled` cannot be toggled in place — it forces recreation — so the per-environment choice must be made at creation |
 | Integration tests need a Redis, and the repo has no local Redis provision | **Low** | Already flagged on ATL-194. A container-based Redis for local/CI integration testing is a legitimate and unrelated use of a Redis container — this ADR rejects self-hosting for the *production cache tier*, not for test fixtures |

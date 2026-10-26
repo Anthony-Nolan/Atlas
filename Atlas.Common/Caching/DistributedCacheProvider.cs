@@ -32,6 +32,12 @@ namespace Atlas.Common.Caching
     /// </remarks>
     public interface IDistributedCacheProvider
     {
+        /// <summary>
+        /// <c>false</c> when no Redis is configured: every read then misses, and nothing is stored. So a caller can skip the
+        /// work that only a stored value needs, such as encoding it.
+        /// </summary>
+        bool IsEnabled { get; }
+
         /// <returns>
         /// The value stored under <paramref name="key"/>, or <c>null</c> on a miss - which includes a read that could not
         /// reach the cache.
@@ -89,6 +95,9 @@ namespace Atlas.Common.Caching
             this.timeProvider = timeProvider;
             pipeline = BuildPipeline();
         }
+
+        /// <inheritdoc />
+        public bool IsEnabled => true;
 
         /// <inheritdoc />
         public async Task<byte[]> GetAsync(DistributedCacheKey key, CancellationToken cancellationToken = default)
@@ -243,6 +252,9 @@ namespace Atlas.Common.Caching
         {
             logger.LogInformation("No distributed cache is configured. Every read misses, and nothing is stored.");
         }
+
+        /// <inheritdoc />
+        public bool IsEnabled => false;
 
         /// <inheritdoc />
         public Task<byte[]> GetAsync(DistributedCacheKey key, CancellationToken cancellationToken = default)

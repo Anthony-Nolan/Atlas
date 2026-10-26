@@ -254,11 +254,13 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             // grow unboundedly across scopes - exactly the bug this fix exists to close.
             services.TryAddSingleton<IFrequencySetResidencyTracker>(sp =>
             {
+                const long bytesPerMegabyte = 1024 * 1024;
                 var cacheSettings = sp.GetRequiredService<IOptions<HaplotypeFrequencySetCacheSettings>>().Value;
                 var cacheProvider = sp.GetRequiredService<IHaplotypeFrequencySetCacheProvider>();
                 return new FrequencySetResidencyTracker(
-                    cacheSettings.MaxCachedFrequencySets,
-                    evictedSetId => cacheProvider.Cache.Remove(HaplotypeFrequencyCache.AllFrequenciesCacheKey(evictedSetId))
+                    cacheSettings.MaxCachedFrequencySetMegabytes * bytesPerMegabyte,
+                    evictedSetId => cacheProvider.Cache.Remove(HaplotypeFrequencyCache.AllFrequenciesCacheKey(evictedSetId)),
+                    sp.GetRequiredService<ILogger<FrequencySetResidencyTracker>>()
                 );
             });
 

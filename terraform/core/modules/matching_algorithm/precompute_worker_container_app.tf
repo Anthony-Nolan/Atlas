@@ -123,8 +123,8 @@ resource "azurerm_container_app" "atlas_precompute_worker" {
         value = tostring(var.MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES)
       }
       env {
-        name  = "HaplotypeFrequencySetCache__MaxCachedFrequencySets"
-        value = tostring(var.MATCH_PREDICTION_MAX_CACHED_FREQUENCY_SETS)
+        name  = "HaplotypeFrequencySetCache__MaxCachedFrequencySetMegabytes"
+        value = tostring(var.MATCH_PREDICTION_MAX_CACHED_FREQUENCY_SET_MEGABYTES)
       }
       env {
         name  = "HaplotypeFrequencySetCache__SetCacheExpiryMinutes"

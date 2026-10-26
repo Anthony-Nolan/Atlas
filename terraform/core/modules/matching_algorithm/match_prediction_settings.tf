@@ -5,8 +5,8 @@ locals {
   match_prediction_func_app_settings = {
     "GenotypeImputation:MaximumExpandedGenotypesPerInput" = var.MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT
 
-    "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes" = var.MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES
-    "HaplotypeFrequencySetCache:MaxCachedFrequencySets"      = var.MATCH_PREDICTION_MAX_CACHED_FREQUENCY_SETS
-    "HaplotypeFrequencySetCache:SetCacheExpiryMinutes"       = var.MATCH_PREDICTION_SET_CACHE_EXPIRY_MINUTES
+    "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes"    = var.MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES
+    "HaplotypeFrequencySetCache:MaxCachedFrequencySetMegabytes" = var.MATCH_PREDICTION_MAX_CACHED_FREQUENCY_SET_MEGABYTES
+    "HaplotypeFrequencySetCache:SetCacheExpiryMinutes"          = var.MATCH_PREDICTION_SET_CACHE_EXPIRY_MINUTES
   }
 }
