@@ -257,8 +257,8 @@ A donor whose typing is **unambiguous at small g group** for a locus combination
 combination (ATL-478). Unambiguous means one small g group at both positions of every locus of the combination. Its
 genotype set is then the one certain genotype, which live imputation builds without reading the haplotype frequency
 set: it is about as quick as reading a stored row. Not storing these sets removes many of the rows that the
-pre-computation writes: on DEV, up to about 60 % of the donor rows, but only about 3 % of the stored bytes. The 60 % is
-the share of rows with a 1-genotype set, which also includes ambiguous typings that are still stored.
+pre-computation writes. In the first full DEV Data Refresh with this rule, about 23 % fewer rows were written to
+`DonorSubjectGenotypeSets`, about 17 % fewer to `SubjectGenotypeSetValues`, and the values took about 11 % less space.
 
 - The rule is `IGenotypeSetService.IsUnambiguousAtSmallGGroup`, the same test that imputation uses to skip the
   frequency set (`CompressedPhenotypeExpander`). The Data Refresh stage, the donor import and search all use it, so
