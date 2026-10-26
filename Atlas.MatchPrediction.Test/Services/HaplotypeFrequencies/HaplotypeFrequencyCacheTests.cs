@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,8 @@ using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Test.TestHelpers;
 using AutoFixture;
 using AwesomeAssertions;
+using LazyCache;
+using LazyCache.Providers;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -98,7 +101,8 @@ internal class HaplotypeFrequencyCacheTests
     private (HaplotypeFrequencyCache Sut, IHaplotypeFrequencySetCacheProvider CacheProvider) BuildSutWithCacheProvider(
         bool awaitConsolidatedFrequencyWarm = false,
         long cacheCapacityInBytes = long.MaxValue,
-        IDistributedCacheProvider distributedCache = null)
+        IDistributedCacheProvider distributedCache = null,
+        IAppCache appCache = null)
     {
         var cacheSettings = fixture.Build<HaplotypeFrequencySetCacheSettings>()
             .With(x => x.ActiveSetCacheExpiryMinutes, ActiveSetCacheExpiryMinutes)
@@ -107,7 +111,7 @@ internal class HaplotypeFrequencyCacheTests
             .Create();
 
         var cacheProvider = new HaplotypeFrequencySetCacheProvider(
-            AppCacheBuilder.NewCacheOver(new MemoryCache(new MemoryCacheOptions { Clock = clock })));
+            appCache ?? AppCacheBuilder.NewCacheOver(new MemoryCache(new MemoryCacheOptions { Clock = clock })));
         var residencyTracker = new FrequencySetResidencyTracker(
             cacheCapacityInBytes,
             evictedKey => cacheProvider.Cache.Remove(evictedKey),
@@ -903,6 +907,53 @@ internal class HaplotypeFrequencyCacheTests
         logger.Received(1).SendTrace(Arg.Is<string>(message => message.Contains("do not have the content hash")), LogLevel.Error);
     }
 
+    /// <summary>
+    /// E.g. after a change of the frequencies of three or more sets of one content with SQL. Each failed load quarantines a
+    /// set, so a caller that waits for the content goes on until a set whose rows have the hash loads it.
+    /// </summary>
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_WhenLoadsOfTheContentFailForThreeOtherSetsInARow_LoadsTheContent()
+    {
+        var rows = NewRows(0, fixture.Create<int>());
+        var set = NewSetWithContent(rows);
+        var instance = BuildInstanceWhoseLoadsFirstFail(HaplotypeFrequencyCache.ContentCacheKey(set.ContentHash), fixture.CreateMany<int>(3));
+
+        var entry = await instance.GetAllHaplotypeFrequencies(set.Id);
+
+        entry.ShouldBeTheSameEntryAs(FrequencySetCacheEntry.Build(rows));
+    }
+
+    /// <summary>The set itself fails the third load: it is quarantined then, and the call goes on with its own rows.</summary>
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_WhenTheSetFailsALoadOfTheContentAfterTwoOtherSets_UsesTheRowsOfTheSet()
+    {
+        var set = NewSetWithContent(NewRows(0, fixture.Create<int>()));
+        var rowsInTheDatabase = NewRows(set.Id, fixture.Create<int>());
+        frequencyRepository.GetAllHaplotypeFrequencies(set.Id).Returns(rowsInTheDatabase);
+        var instance = BuildInstanceWhoseLoadsFirstFail(HaplotypeFrequencyCache.ContentCacheKey(set.ContentHash), fixture.CreateMany<int>(2));
+
+        var entry = await instance.GetAllHaplotypeFrequencies(set.Id);
+
+        entry.ShouldBeTheSameEntryAs(FrequencySetCacheEntry.Build(rowsInTheDatabase));
+        logger.Received(1).SendTrace(Arg.Is<string>(message => message.Contains("do not have the content hash")), LogLevel.Error);
+    }
+
+    /// <summary>
+    /// A set fails a second load of one call only when its quarantine did not hold, or when a caller got its source just
+    /// before the quarantine. The call stops then, so that it does not read the database again and again.
+    /// </summary>
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_WhenOneSetFailsTwoLoadsOfTheContent_Throws()
+    {
+        var set = NewSetWithContent(NewRows(0, fixture.Create<int>()));
+        var otherSetId = fixture.Create<int>();
+        var instance = BuildInstanceWhoseLoadsFirstFail(HaplotypeFrequencyCache.ContentCacheKey(set.ContentHash), [otherSetId, otherSetId]);
+
+        var act = () => instance.GetAllHaplotypeFrequencies(set.Id);
+
+        await act.Should().ThrowAsync<FrequencySetContentMismatchException>();
+    }
+
     /// <summary>The check keeps the source of a set when it cannot read the row: for a quarantined set, its own source.</summary>
     [Test]
     public async Task GetAllHaplotypeFrequencies_ForAQuarantinedSet_WhenALaterCheckCannotReadTheRow_StillUsesTheRowsOfTheSet()
@@ -1185,6 +1236,28 @@ internal class HaplotypeFrequencyCacheTests
         distributedCache.GetAsync(default).ReturnsForAnyArgs((byte[])null);
         distributedCache.SetAsync(default, null, TimeSpan.Zero).ReturnsForAnyArgs(true);
         return distributedCache;
+    }
+
+    /// <summary>
+    /// The cache of one process, whose loads under <paramref name="key"/> first fail, one for each set of
+    /// <paramref name="setIdsOfTheFailedLoads"/>: as a load of a content fails for all its callers when the rows of the set
+    /// that loads it do not have the hash.
+    /// </summary>
+    private HaplotypeFrequencyCache BuildInstanceWhoseLoadsFirstFail(string key, IEnumerable<int> setIdsOfTheFailedLoads) =>
+        BuildSutWithCacheProvider(
+            appCache: new CacheWhoseLoadsFirstFail(new MemoryCache(new MemoryCacheOptions { Clock = clock }), key, setIdsOfTheFailedLoads)
+        ).Sut;
+
+    /// <summary>A local cache whose loads under one key first fail, each with the id of a set whose rows do not have the hash.</summary>
+    private sealed class CacheWhoseLoadsFirstFail(MemoryCache underlyingCache, string failingKey, IEnumerable<int> setIdsOfTheFailedLoads)
+        : CachingService(new MemoryCacheProvider(underlyingCache))
+    {
+        private readonly ConcurrentQueue<int> failedLoads = new(setIdsOfTheFailedLoads);
+
+        public override Task<T> GetOrAddAsync<T>(string key, Func<ICacheEntry, Task<T>> addItemFactory, MemoryCacheEntryOptions policy) =>
+            key == failingKey && failedLoads.TryDequeue(out var setId)
+                ? Task.FromException<T>(new FrequencySetContentMismatchException(setId))
+                : base.GetOrAddAsync(key, addItemFactory, policy);
     }
 
     /// <summary>

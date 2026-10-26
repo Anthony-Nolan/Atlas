@@ -142,12 +142,6 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
     private static string QuarantineCacheKey(int setId) => $"hf-set-mismatch-{setId}";
 
     /// <summary>
-    /// The attempts of a call to get its entry: a load that finds rows without their content hash fails all the callers
-    /// that wait for it, and each of them tries again with its own source. See <see cref="GetAllHaplotypeFrequencies"/>.
-    /// </summary>
-    private const int MaxLoadAttempts = 3;
-
-    /// <summary>
     /// How long the check of a set waits for the row of the set. All callers of the set wait for the check, but a loaded set
     /// needs no database: a check that takes longer stops, and the set stays in use until the next check. Without this
     /// limit, the retries of the database context and its connection timeout could hold the callers for minutes when SQL
@@ -267,7 +261,11 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
     /// <inheritdoc />
     public async Task<FrequencySetCacheEntry> GetAllHaplotypeFrequencies(int setId)
     {
-        for (var attempt = 1; ; attempt++)
+        // The sets whose rows failed a load that this call waited for. Created at the first failure only, as this is the
+        // hot path.
+        HashSet<int> setsThatFailedALoad = null;
+
+        while (true)
         {
             var source = await GetSource(setId);
 
@@ -279,11 +277,18 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
             {
                 return await GetOrLoadEntry(source);
             }
-            catch (FrequencySetContentMismatchException) when (attempt < MaxLoadAttempts)
+            catch (FrequencySetContentMismatchException exception)
             {
                 // The rows that a load read for the content do not have its hash, so no caller gets them, and the set with
-                // those rows now has a source of its own. With its source again, this caller loads its own rows if it is
-                // that set, or else the content, from the rows of its own set.
+                // those rows now has a source of its own, which is not checked. With its source again, this caller loads its
+                // own rows if it is that set, or else the content, from the rows of its own set. So the retries end: each
+                // failed load quarantines one more set. A set that fails a second load of this call was not kept in
+                // quarantine, or a caller had its source from just before the quarantine: this call then stops, and does
+                // not read the database again and again.
+                if (!(setsThatFailedALoad ??= []).Add(exception.SetId))
+                {
+                    throw;
+                }
             }
         }
     }
