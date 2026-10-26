@@ -152,7 +152,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
                 var logger = sp.GetService<IAtlasLogger>();
                 var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
                 return new MessageBatchPublisher<IdentifiedMatchPredictionRequest>(topicClientFactory, matchPredictionRequestsSettings.RequestsTopic,
-                    serviceBusSettings.SendRetryCount, serviceBusSettings.SendRetryCooldownSeconds, logger);
+                    serviceBusSettings.SendRetryCount, serviceBusSettings.SendRetryCooldownSeconds, logger, MatchPredictionMessageProperties.ForRequest);
             });
 
             // services for running a match prediction request
@@ -174,7 +174,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
                 var logger = sp.GetService<IAtlasLogger>();
                 var topicClientFactory = sp.GetRequiredKeyedService<ITopicClientFactory>(typeof(MessagingServiceBusSettings));
                 return new MessageBatchPublisher<MatchPredictionResultLocation>(topicClientFactory, matchPredictionRequestsSettings.ResultsTopic,
-                    serviceBusSettings.SendRetryCount, serviceBusSettings.SendRetryCooldownSeconds, logger);
+                    serviceBusSettings.SendRetryCount, serviceBusSettings.SendRetryCooldownSeconds, logger, MatchPredictionMessageProperties.ForResultLocation);
             });
         }
 
@@ -200,7 +200,8 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
                     requestsSettings.ParallelResultsTopic,
                     serviceBusSettings.SendRetryCount,
                     serviceBusSettings.SendRetryCooldownSeconds,
-                    logger);
+                    logger,
+                    MatchPredictionMessageProperties.ForParallelBatchResult);
             });
         }
 

@@ -77,6 +77,10 @@ Feature flags permit greater control over the release of new features (see this 
   * The haplotype frequencies of a donor's genotypes are read from the cache in one call per donor, not one call per haplotype.
   * The HLA metadata lookups that imputation uses are loaded in one go at the start of a batch that may impute live, instead of one row at a time. Only the nomenclature versions of the frequency sets the batch uses, and the matching version, are loaded.
   * The Multiple Allele Code table is checked once per process, not once per donor.
+* E: The messages on the match prediction Service Bus topics now carry their ids as application properties, so you can see the ids without reading the message body (for example, in Service Bus Explorer or in a dead-letter queue). The message bodies do not change. Properties without a value are not added.
+  * `match-prediction-requests` and `match-prediction-results`: `MatchPredictionRequestId` and `SearchRequestId`.
+  * `parallel-match-prediction-requests`: `SearchRequestId`.
+  * `parallel-match-prediction-results`: `SearchIdentifier`.
 
 ### 4.0.1
 * BF: A data refresh to HLA nomenclature version 3660 no longer fails while it recreates the HLA Metadata Dictionary. Batch inserts into Azure Table Storage now also have a size limit, not only a limit of 50 rows. Before, a batch of large rows (such as the serology to alleles lookup) could exceed the 4 MiB limit of a table batch, and the storage service rejected it (`413 RequestBodyTooLarge`). This change also applies to the import of the Multiple Allele Code Dictionary, which uses the same batch insert.

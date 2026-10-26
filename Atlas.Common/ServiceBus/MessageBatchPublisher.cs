@@ -1,5 +1,6 @@
 using Azure.Messaging.ServiceBus;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
@@ -17,13 +18,25 @@ namespace Atlas.Common.ServiceBus
         private readonly int sendRetryCount;
         private readonly int sendRetryCooldownSeconds;
         private readonly IAtlasLogger logger;
+        private readonly Func<T, IReadOnlyDictionary<string, object>> applicationPropertiesSelector;
 
-        public MessageBatchPublisher(ITopicClientFactory topicClientFactory, string topicName, int sendRetryCount, int sendRetryCooldownSeconds, IAtlasLogger logger)
+        /// <param name="applicationPropertiesSelector">
+        /// Optional. Selects the values to stamp as Service Bus <see cref="ServiceBusMessage.ApplicationProperties"/> on each message,
+        /// so they are visible without reading the body. See <see cref="ServiceBusMessageExtensions.AddApplicationProperties"/>.
+        /// </param>
+        public MessageBatchPublisher(
+            ITopicClientFactory topicClientFactory,
+            string topicName,
+            int sendRetryCount,
+            int sendRetryCooldownSeconds,
+            IAtlasLogger logger,
+            Func<T, IReadOnlyDictionary<string, object>> applicationPropertiesSelector = null)
         {
             this.topicClient = topicClientFactory.BuildTopicClient(topicName);
             this.sendRetryCount = sendRetryCount;
             this.sendRetryCooldownSeconds = sendRetryCooldownSeconds;
             this.logger = logger;
+            this.applicationPropertiesSelector = applicationPropertiesSelector;
         }
 
         public async Task BatchPublish(IEnumerable<T> contentToPublish)
@@ -33,7 +46,9 @@ namespace Atlas.Common.ServiceBus
             foreach (var content in contentToPublish)
             {
                 var json = JsonConvert.SerializeObject(content);
-                localQueue.Enqueue(new ServiceBusMessage(json));
+                var message = new ServiceBusMessage(json);
+                message.AddApplicationProperties(applicationPropertiesSelector?.Invoke(content));
+                localQueue.Enqueue(message);
             }
 
 
