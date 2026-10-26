@@ -114,5 +114,6 @@ internal class FrequencySetDistributedCacheTests
             Provider.GetRequiredService<IHaplotypeFrequencySetRepository>(),
             Provider.GetRequiredService<IFrequencyConsolidator>(),
             Provider.GetRequiredService<IMatchPredictionLogger<MatchProbabilityLoggingContext>>(),
-            Provider.GetRequiredService<IOptions<HaplotypeFrequencySetCacheSettings>>());
+            Provider.GetRequiredService<IOptions<HaplotypeFrequencySetCacheSettings>>(),
+            TimeProvider.System);
 }

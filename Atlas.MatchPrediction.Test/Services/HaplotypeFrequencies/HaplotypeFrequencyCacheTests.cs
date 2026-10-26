@@ -20,6 +20,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
@@ -54,6 +55,9 @@ internal class HaplotypeFrequencyCacheTests
     private DateTimeOffset now;
     private ISystemClock clock;
 
+    // The timers of the cache: the timeout of the check of a set.
+    private FakeTimeProvider timeProvider;
+
     private Fixture fixture;
 
     private HaplotypeFrequencyCache sut;
@@ -70,6 +74,7 @@ internal class HaplotypeFrequencyCacheTests
         now = DateTimeOffset.UtcNow;
         clock = Substitute.For<ISystemClock>();
         clock.UtcNow.Returns(_ => now);
+        timeProvider = new FakeTimeProvider();
 
         // Pinned rather than left to AutoFixture: AwaitConsolidatedFrequencyWarm decides whether the pre-consolidation
         // is on the critical path, so every test below would otherwise be exercising whichever mode the fixture picked.
@@ -117,7 +122,8 @@ internal class HaplotypeFrequencyCacheTests
             frequencySetRepository,
             frequencyConsolidator,
             logger,
-            Options.Create(cacheSettings)
+            Options.Create(cacheSettings),
+            timeProvider
         );
 
         return (sut, cacheProvider);
@@ -509,7 +515,7 @@ internal class HaplotypeFrequencyCacheTests
         var distributedCache = DistributedCacheThatAcceptsEachWrite();
         var instance = BuildInstance(distributedCache);
         var setId = fixture.Create<int>();
-        frequencySetRepository.GetSet(setId).Returns((Data.Models.HaplotypeFrequencySet)null);
+        frequencySetRepository.GetSet(setId, Arg.Any<CancellationToken>()).Returns((Data.Models.HaplotypeFrequencySet)null);
         frequencyRepository.GetAllHaplotypeFrequencies(setId).Returns(new List<LightweightHaplotypeFrequencyRecord>());
 
         var entry = await instance.GetAllHaplotypeFrequencies(setId);
@@ -530,7 +536,7 @@ internal class HaplotypeFrequencyCacheTests
         frequencyRepository.GetAllHaplotypeFrequencies(set.Id).Returns(NewRows(set.Id, 1), rowsOfTheRestoredSet);
         await instanceA.GetAllHaplotypeFrequencies(set.Id);
 
-        frequencySetRepository.GetSet(set.Id).Returns(ReplacingSet(set));
+        frequencySetRepository.GetSet(set.Id, Arg.Any<CancellationToken>()).Returns(ReplacingSet(set));
         var entryOfB = await instanceB.GetAllHaplotypeFrequencies(set.Id);
 
         var row = rowsOfTheRestoredSet.Single();
@@ -616,7 +622,7 @@ internal class HaplotypeFrequencyCacheTests
         await sut.GetAllHaplotypeFrequencies(set.Id);
 
         // The read of the load only.
-        await frequencySetRepository.Received(1).GetSet(set.Id);
+        await frequencySetRepository.Received(1).GetSet(set.Id, Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -630,7 +636,7 @@ internal class HaplotypeFrequencyCacheTests
         await sut.GetAllHaplotypeFrequencies(set.Id);
 
         // The read of the load, and the read of the check.
-        await frequencySetRepository.Received(2).GetSet(set.Id);
+        await frequencySetRepository.Received(2).GetSet(set.Id, Arg.Any<CancellationToken>());
         await frequencyRepository.Received(1).GetAllHaplotypeFrequencies(set.Id);
     }
 
@@ -646,7 +652,7 @@ internal class HaplotypeFrequencyCacheTests
         frequencyRepository.GetAllHaplotypeFrequencies(set.Id).Returns(NewRows(set.Id, 1), rowsOfTheNewSet);
         await sut.GetAllHaplotypeFrequencies(set.Id);
 
-        frequencySetRepository.GetSet(set.Id).Returns(ReplacingSet(set));
+        frequencySetRepository.GetSet(set.Id, Arg.Any<CancellationToken>()).Returns(ReplacingSet(set));
         MoveClockTo(SetCheckInterval + ClockMargin);
         var entry = await sut.GetAllHaplotypeFrequencies(set.Id);
 
@@ -662,7 +668,7 @@ internal class HaplotypeFrequencyCacheTests
         frequencyRepository.GetAllHaplotypeFrequencies(set.Id).Returns(NewRows(set.Id, 1), NewRows(set.Id, 0));
         await sut.GetAllHaplotypeFrequencies(set.Id);
 
-        frequencySetRepository.GetSet(set.Id).Returns((Data.Models.HaplotypeFrequencySet)null);
+        frequencySetRepository.GetSet(set.Id, Arg.Any<CancellationToken>()).Returns((Data.Models.HaplotypeFrequencySet)null);
         MoveClockTo(SetCheckInterval + ClockMargin);
         var entry = await sut.GetAllHaplotypeFrequencies(set.Id);
 
@@ -678,9 +684,42 @@ internal class HaplotypeFrequencyCacheTests
         frequencyRepository.GetAllHaplotypeFrequencies(set.Id).Returns(rows);
         await sut.GetAllHaplotypeFrequencies(set.Id);
 
-        frequencySetRepository.GetSet(set.Id).ThrowsAsync(new InvalidOperationException(fixture.Create<string>()));
+        frequencySetRepository.GetSet(set.Id, Arg.Any<CancellationToken>()).ThrowsAsync(new InvalidOperationException(fixture.Create<string>()));
         MoveClockTo(SetCheckInterval + ClockMargin);
         var entry = await sut.GetAllHaplotypeFrequencies(set.Id);
+
+        entry.SetFrequencies.Should().HaveCount(rows.Count);
+        await frequencyRepository.Received(1).GetAllHaplotypeFrequencies(set.Id);
+        logger.Received(1).SendTrace(Arg.Is<string>(message => message.Contains("could not be checked")), LogLevel.Warn);
+    }
+
+    /// <summary>
+    /// All callers of the set wait for the check: when SQL is slow or cannot be reached, the check stops at its timeout, not
+    /// at the end of the retries of the database context.
+    /// </summary>
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_WhenTheSetRowDoesNotComeInTime_KeepsTheSet_AndLogsAWarning()
+    {
+        var set = NewSet();
+        var rows = NewRows(set.Id, fixture.Create<int>());
+        frequencyRepository.GetAllHaplotypeFrequencies(set.Id).Returns(rows);
+        await sut.GetAllHaplotypeFrequencies(set.Id);
+
+        var rowReadOfTheCheck = new TaskCompletionSource();
+        frequencySetRepository.GetSet(set.Id, Arg.Any<CancellationToken>()).Returns(async callInfo =>
+        {
+            rowReadOfTheCheck.SetResult();
+            await Task.Delay(Timeout.InfiniteTimeSpan, callInfo.Arg<CancellationToken>());
+            return set;
+        });
+        MoveClockTo(SetCheckInterval + ClockMargin);
+
+        var call = sut.GetAllHaplotypeFrequencies(set.Id);
+        await rowReadOfTheCheck.Task;
+        timeProvider.Advance(HaplotypeFrequencyCache.SetCheckTimeout);
+
+        // In real time, so that a check with no timeout fails the test, and does not hang it.
+        var entry = await call.WaitAsync(ClockMargin);
 
         entry.SetFrequencies.Should().HaveCount(rows.Count);
         await frequencyRepository.Received(1).GetAllHaplotypeFrequencies(set.Id);
@@ -697,7 +736,7 @@ internal class HaplotypeFrequencyCacheTests
 
         var newSet = ReplacingSet(set);
         var rowReadOfTheCheck = new TaskCompletionSource<Data.Models.HaplotypeFrequencySet>();
-        frequencySetRepository.GetSet(set.Id).Returns(rowReadOfTheCheck.Task, Task.FromResult(newSet));
+        frequencySetRepository.GetSet(set.Id, Arg.Any<CancellationToken>()).Returns(rowReadOfTheCheck.Task, Task.FromResult(newSet));
         MoveClockTo(SetCheckInterval + ClockMargin);
 
         var calls = Enumerable.Range(0, 10).Select(_ => sut.GetAllHaplotypeFrequencies(set.Id)).ToList();
@@ -705,7 +744,7 @@ internal class HaplotypeFrequencyCacheTests
         await Task.WhenAll(calls);
 
         // The read of the first load, the read of the check, and the read of the load of the new set.
-        await frequencySetRepository.Received(3).GetSet(set.Id);
+        await frequencySetRepository.Received(3).GetSet(set.Id, Arg.Any<CancellationToken>());
         await frequencyRepository.Received(2).GetAllHaplotypeFrequencies(set.Id);
     }
 
@@ -931,7 +970,7 @@ internal class HaplotypeFrequencyCacheTests
     private Data.Models.HaplotypeFrequencySet NewSet(bool active = true)
     {
         var set = fixture.Build<Data.Models.HaplotypeFrequencySet>().With(x => x.Active, active).Create();
-        frequencySetRepository.GetSet(set.Id).Returns(set);
+        frequencySetRepository.GetSet(set.Id, Arg.Any<CancellationToken>()).Returns(set);
         return set;
     }
 

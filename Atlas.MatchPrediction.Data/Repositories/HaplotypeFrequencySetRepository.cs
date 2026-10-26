@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Models;
@@ -13,7 +14,9 @@ namespace Atlas.MatchPrediction.Data.Repositories
         Task<IReadOnlyCollection<HaplotypeFrequencySet>> GetAllActiveSets();
 
         /// <summary>The set with the given id, active or not; null when there is none.</summary>
-        Task<HaplotypeFrequencySet> GetSet(int setId);
+        /// <param name="setId">The id of the set.</param>
+        /// <param name="cancellationToken">Stops the read, also while it opens a connection or waits for a retry.</param>
+        Task<HaplotypeFrequencySet> GetSet(int setId, CancellationToken cancellationToken = default);
 
         Task<HaplotypeFrequencySet> AddSet(HaplotypeFrequencySet set);
         Task ActivateSet(int setId);
@@ -56,13 +59,13 @@ namespace Atlas.MatchPrediction.Data.Repositories
         }
 
         /// <inheritdoc />
-        public async Task<HaplotypeFrequencySet> GetSet(int setId)
+        public async Task<HaplotypeFrequencySet> GetSet(int setId, CancellationToken cancellationToken = default)
         {
             await using (var context = NewContext())
             {
                 return await context.HaplotypeFrequencySets
                     .AsNoTracking()
-                    .SingleOrDefaultAsync(set => set.Id == setId);
+                    .SingleOrDefaultAsync(set => set.Id == setId, cancellationToken);
             }
         }
 

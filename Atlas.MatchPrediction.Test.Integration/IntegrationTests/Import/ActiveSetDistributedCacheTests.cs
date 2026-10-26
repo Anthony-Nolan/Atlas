@@ -97,7 +97,8 @@ internal class ActiveSetDistributedCacheTests
                 ActiveSetCacheExpiryMinutes = ActiveSetCacheExpiryMinutes,
                 MaxCachedFrequencySetMegabytes = 1,
                 SetCacheExpiryMinutes = 1
-            }));
+            }),
+            TimeProvider.System);
 
     private static HaplotypeFrequencyService NewService(IHaplotypeFrequencyCache cache) =>
         new(

@@ -209,8 +209,9 @@ SQL at once, and does not encode the set.
 no row, the process removes the set and loads it again: set ids are SQL identity values, so after a restore, a copy or a
 rebuild of the database, an id can name another set. So a restore needs no step for the sets (the list of active sets
 does: see [The active set cache](#the-active-set-cache)), and each process uses a replaced set within the same minute as
-the list of active sets that names it. When the check cannot read the row, the process keeps the set, logs a warning,
-and checks again a minute later.
+the list of active sets that names it. The callers of the set wait for the check, so the check waits at most 5 seconds
+for the row. When the check cannot read the row in that time, the process keeps the set, logs a warning, and checks
+again a minute later.
 
 **The stored set.** The key is `hf-set-v1:{set id}:{import time, in ticks}`. The import time is in the key for the same
 reason: after a restore, a copy or a rebuild of the database, an id can name another set.

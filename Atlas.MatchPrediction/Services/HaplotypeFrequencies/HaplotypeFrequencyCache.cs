@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
@@ -109,6 +110,14 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
     internal static string SetCheckCacheKey(int setId) => $"hf-set-checked-{setId}";
 
     /// <summary>
+    /// How long the check of a set waits for the row of the set. All callers of the set wait for the check, but a loaded set
+    /// needs no database: a check that takes longer stops, and the set stays in use until the next check. Without this
+    /// limit, the retries of the database context and its connection timeout could hold the callers for minutes when SQL
+    /// is slow or cannot be reached.
+    /// </summary>
+    internal static readonly TimeSpan SetCheckTimeout = TimeSpan.FromSeconds(5);
+
+    /// <summary>
     /// The cache name of the frequency sets in the distributed cache. Change the version when the format of
     /// <see cref="FrequencySetPayload"/> changes: during a deployment, the old and the new code read the same cache.
     /// </summary>
@@ -135,6 +144,7 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
     private readonly IFrequencyConsolidator frequencyConsolidator;
     private readonly IAtlasLogger logger;
     private readonly HaplotypeFrequencySetCacheSettings cacheSettings;
+    private readonly TimeProvider timeProvider;
 
     public HaplotypeFrequencyCache(
         IHaplotypeFrequencySetCacheProvider cacheProvider,
@@ -144,7 +154,8 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
         IHaplotypeFrequencySetRepository frequencySetRepository,
         IFrequencyConsolidator frequencyConsolidator,
         IMatchPredictionLogger<MatchProbabilityLoggingContext> logger,
-        IOptions<HaplotypeFrequencySetCacheSettings> cacheSettings)
+        IOptions<HaplotypeFrequencySetCacheSettings> cacheSettings,
+        TimeProvider timeProvider)
     {
         cache = cacheProvider.Cache;
         this.distributedCache = distributedCache;
@@ -154,6 +165,7 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
         this.frequencyConsolidator = frequencyConsolidator;
         this.logger = logger;
         this.cacheSettings = cacheSettings.Value;
+        this.timeProvider = timeProvider;
     }
 
     /// <inheritdoc />
@@ -288,14 +300,16 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
                 DateTimeOffset? importTime;
                 try
                 {
-                    importTime = (await frequencySetRepository.GetSet(setId))?.DateTimeAdded;
+                    using var timeout = new CancellationTokenSource(SetCheckTimeout, timeProvider);
+                    importTime = (await frequencySetRepository.GetSet(setId, timeout.Token))?.DateTimeAdded;
                 }
                 catch (Exception exception)
                 {
-                    // A loaded set needs no database, so a fault here does not fail the caller: the set stays in use, and
-                    // the next check is due an interval from now.
+                    // A loaded set needs no database, so a fault or a timeout here does not fail the caller: the set stays
+                    // in use, and the next check is due an interval from now.
+                    var reason = exception is OperationCanceledException ? $"no answer in {SetCheckTimeout.TotalSeconds} s" : exception.Message;
                     logger.SendTrace(
-                        $"HF set {setId} could not be checked against its row in the database, so this process keeps it until the next check: {exception.Message}",
+                        $"HF set {setId} could not be checked against its row in the database, so this process keeps it until the next check: {reason}",
                         LogLevel.Warn);
                     return false;
                 }
