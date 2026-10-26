@@ -37,6 +37,9 @@ namespace Atlas.MatchPrediction.Functions
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<MatchPredictionRequestsSettings>());
 
+            // This app has the endpoint that starts the content hash backfill of the frequency sets.
+            services.RegisterHaplotypeFrequencySetContentHashBackfill();
+
             // This app caches HLA Metadata Dictionary data, so it has to be told when the dictionary is recreated.
             services.RegisterHlaMetadataDictionaryCacheInvalidation();
 

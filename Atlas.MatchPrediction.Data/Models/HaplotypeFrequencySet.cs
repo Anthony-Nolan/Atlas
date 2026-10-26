@@ -30,6 +30,15 @@ namespace Atlas.MatchPrediction.Data.Models
         public bool Active { get; set; }
         public string Name { get; set; }
         public DateTimeOffset DateTimeAdded { get; set; }
+
+        /// <summary>
+        /// The SHA-256 of the frequencies of the set, in the order of their ids, without the set id: sets with the same
+        /// hash have the same rows, and the caches keep one entry for all of them. The import writes it before it
+        /// activates the set. Null for a set of an older import, until the backfill
+        /// (<c>BackfillHaplotypeFrequencySetContentHashes</c>) writes it: such a set is cached by its own id.
+        /// </summary>
+        [Column(TypeName = "binary(32)")]
+        public byte[] ContentHash { get; set; }
     }
 
     internal static class HaplotypeFrequencySetModelBuilder

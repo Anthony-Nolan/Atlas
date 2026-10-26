@@ -105,6 +105,8 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 frequencySetTypingCategory,
                 importBehaviour);
 
+            await WriteContentHash(setIds);
+
             foreach (var setId in setIds)
             {
                 try
@@ -181,6 +183,24 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             foreach (var setId in setIds)
             {
                 await frequenciesRepository.AddHaplotypeFrequencies(setId, haplotypesToStore);
+            }
+        }
+
+        /// <summary>
+        /// Writes the content hash of the imported rows to all the sets of the import, before they are activated.
+        ///
+        /// <para>
+        /// It reads the rows back from SQL, as a load of a set does, so the hash describes what a load reads: SQL keeps
+        /// each frequency with 20 decimal places, and the rows in memory have the scale of the file. The rows of one set
+        /// are enough: all the sets of an import get the same rows, in the same order.
+        /// </para>
+        /// </summary>
+        private async Task WriteContentHash(IReadOnlyList<int> setIds)
+        {
+            using (logger.RunTimed("Calculate the content hash of the imported sets"))
+            {
+                var rows = await frequenciesRepository.GetAllHaplotypeFrequencies(setIds[0]);
+                await setRepository.SetContentHash(setIds, FrequencySetContentHash.Calculate(rows));
             }
         }
 

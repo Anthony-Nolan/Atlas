@@ -2,6 +2,7 @@
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
+using AutoFixture;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -15,7 +16,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
     [TestFixture]
     public class HaplotypeFrequenciesRepositoryTests
     {
+        private Fixture fixture;
         private IHaplotypeFrequenciesRepository repository;
+        private IHaplotypeFrequencySetRepository setRepository;
         private IHaplotypeFrequencyInspectionRepository inspectionRepository;
 
         [OneTimeSetUp]
@@ -24,8 +27,40 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
                 repository = DependencyInjection.DependencyInjection.Provider.GetService<IHaplotypeFrequenciesRepository>();
+                setRepository = DependencyInjection.DependencyInjection.Provider.GetService<IHaplotypeFrequencySetRepository>();
                 inspectionRepository = DependencyInjection.DependencyInjection.Provider.GetService<IHaplotypeFrequencyInspectionRepository>();
             });
+        }
+
+        [SetUp]
+        public void SetUp()
+        {
+            fixture = new Fixture();
+        }
+
+        /// <summary>
+        /// The order of the rows is the tie-break of truncation. The unique index on the names also covers the read, and
+        /// its order is the order of the names: so the rows go in, here, in the opposite order of their names.
+        /// </summary>
+        [Test]
+        public async Task GetAllHaplotypeFrequencies_ReturnsTheRowsInTheOrderOfTheirInsert_NotInTheOrderOfTheirNames()
+        {
+            var set = await setRepository.AddSet(new HaplotypeFrequencySet
+            {
+                RegistryCode = fixture.Create<string>(),
+                PopulationId = fixture.Create<int>(),
+                HlaNomenclatureVersion = fixture.Create<string>(),
+                Name = fixture.Create<string>(),
+                DateTimeAdded = DateTimeOffset.UtcNow
+            });
+            var frequencies = GenerateHaplotypeFrequencies(set.Id, 100);
+            frequencies.Reverse();
+            await repository.AddHaplotypeFrequencies(set.Id, frequencies);
+
+            var rows = await repository.GetAllHaplotypeFrequencies(set.Id);
+
+            rows.Select(row => (row.A, row.B, row.C, row.DQB1, row.DRB1))
+                .Should().Equal(frequencies.Select(frequency => (frequency.A, frequency.B, frequency.C, frequency.DQB1, frequency.DRB1)));
         }
 
         [Test]

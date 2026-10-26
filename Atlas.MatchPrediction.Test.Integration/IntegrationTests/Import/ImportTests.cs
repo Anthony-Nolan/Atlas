@@ -11,6 +11,7 @@ using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile;
+using AutoFixture;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -24,8 +25,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
     [TestFixture]
     public class ImportTests
     {
+        private Fixture fixture;
         private IHaplotypeFrequencyService service;
         private IHaplotypeFrequencySetRepository setRepository;
+        private IHaplotypeFrequenciesRepository frequenciesRepository;
         private IHaplotypeFrequencyInspectionRepository inspectionRepository;
         private INotificationSender notificationSender;
 
@@ -37,11 +40,19 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                 service = DependencyInjection.DependencyInjection.Provider.GetService<IHaplotypeFrequencyService>();
                 setRepository = DependencyInjection.DependencyInjection.Provider
                     .GetService<IHaplotypeFrequencySetRepository>();
+                frequenciesRepository = DependencyInjection.DependencyInjection.Provider
+                    .GetService<IHaplotypeFrequenciesRepository>();
                 inspectionRepository = DependencyInjection.DependencyInjection.Provider
                     .GetService<IHaplotypeFrequencyInspectionRepository>();
                 notificationSender =
                     DependencyInjection.DependencyInjection.Provider.GetService<INotificationSender>();
             });
+        }
+
+        [SetUp]
+        public void SetUp()
+        {
+            fixture = new Fixture();
         }
 
         [TearDown]
@@ -102,6 +113,30 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                     activeSetCount.Should().Be(1);
                 }
             }
+        }
+
+        /// <summary>The sets of one import have the same rows: so they have one content hash, and share one cache entry.</summary>
+        [Test]
+        public async Task Import_SetWithMultipleRegistriesAndEthnicityCodes_WritesTheContentHashOfItsRowsToEachSet()
+        {
+            // Codes of their own, so that these sets replace no set that another test uses.
+            var registryCodes = fixture.CreateMany<string>(2).ToArray();
+            var ethnicityCodes = fixture.CreateMany<string>(2).ToArray();
+
+            using var file = FrequencySetFileBuilder.New(registryCodes, ethnicityCodes).Build();
+            await service.ImportFrequencySet(file);
+
+            var sets = new List<HaplotypeFrequencySet>();
+            foreach (var registry in registryCodes)
+            {
+                foreach (var ethnicity in ethnicityCodes)
+                {
+                    sets.Add(await setRepository.GetActiveSet(registry, ethnicity));
+                }
+            }
+
+            var hashOfTheRows = FrequencySetContentHash.Calculate(await frequenciesRepository.GetAllHaplotypeFrequencies(sets[0].Id));
+            sets.Should().HaveCount(4).And.AllSatisfy(set => set.ContentHash.Should().Equal(hashOfTheRows));
         }
 
         [Test]

@@ -17,6 +17,9 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers
         Task<HaplotypeFrequency> GetFirstHaplotypeFrequency(int setId);
         Task<int> GetLatestSetId();
         Task<bool> HasHaplotypeFrequencies(int setId);
+
+        /// <summary>Makes the set as from an import before content hashes.</summary>
+        Task ClearContentHash(int setId);
     }
 
     internal class HaplotypeFrequencyInspectionRepository : IHaplotypeFrequencyInspectionRepository
@@ -85,6 +88,15 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers
             await using (var conn = new SqlConnection(connectionString))
             {
                 return await conn.QuerySingleOrDefaultAsync<int>(sql, new { setId }) == 1;
+            }
+        }
+
+        public async Task ClearContentHash(int setId)
+        {
+            var sql = $"UPDATE {HaplotypeFrequencySet.QualifiedTableName} SET {nameof(HaplotypeFrequencySet.ContentHash)} = NULL WHERE Id = @{nameof(setId)}";
+            await using (var conn = new SqlConnection(connectionString))
+            {
+                await conn.ExecuteAsync(sql, new { setId });
             }
         }
     }

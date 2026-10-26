@@ -12,6 +12,10 @@ namespace Atlas.MatchPrediction.Data.Repositories
     {
         Task AddHaplotypeFrequencies(int haplotypeFrequencySetId, IEnumerable<HaplotypeFrequency> haplotypeFrequencies);
 
+        /// <summary>
+        /// The frequencies of the set, in the order of their ids: the order of the import. The order is part of the
+        /// output of match prediction: it sets the tie-break of truncation (see <c>FrequencySetCacheEntry</c>).
+        /// </summary>
         Task<List<LightweightHaplotypeFrequencyRecord>> GetAllHaplotypeFrequencies(int setId);
 
         Task RemoveHaplotypeFrequencies(int setId);
@@ -107,6 +111,11 @@ namespace Atlas.MatchPrediction.Data.Repositories
         }
 
         /// <inheritdoc />
+        /// <remarks>
+        /// <c>ORDER BY Id</c> fixes the order: without it, a plan on another index, or a parallel plan, could give the rows in
+        /// another order. It costs no sort: the index on the set id also has the id in its key, as SQL Server adds the
+        /// clustered key to a non-unique index.
+        /// </remarks>
         public async Task<List<LightweightHaplotypeFrequencyRecord>> GetAllHaplotypeFrequencies(int setId)
         {
             var sql = @$"
@@ -119,7 +128,8 @@ SELECT {nameof(HaplotypeFrequency.A)},
 {nameof(HaplotypeFrequency.TypingCategory)},
 {HaplotypeFrequency.SetIdColumnName} AS {nameof(LightweightHaplotypeFrequencyRecord.SetId)}
 FROM {HaplotypeFrequency.QualifiedTableName}
-WHERE {HaplotypeFrequency.SetIdColumnName} = @setId";
+WHERE {HaplotypeFrequency.SetIdColumnName} = @setId
+ORDER BY {nameof(HaplotypeFrequency.Id)}";
 
             return await RetryConfig.AsyncRetryPolicy.ExecuteAsync(async () =>
             {

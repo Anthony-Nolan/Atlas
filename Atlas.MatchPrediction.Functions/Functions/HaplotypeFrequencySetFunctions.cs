@@ -19,16 +19,22 @@ namespace Atlas.MatchPrediction.Functions.Functions
     {
         private readonly IHaplotypeFrequencyService haplotypeFrequencyService;
         private readonly IMatchPredictionAlgorithm matchPredictionAlgorithm;
+        private readonly IFrequencySetContentHashBackfill contentHashBackfill;
+        private readonly IFrequencySetContentHashBackfillStarter contentHashBackfillStarter;
 
         private const string DonorEthnicityQueryParam = "donorEthnicity";
         private const string DonorRegistryQueryParam = "donorRegistry";
         private const string PatientEthnicityQueryParam = "patientEthnicity";
 
         public HaplotypeFrequencySetFunctions(IHaplotypeFrequencyService haplotypeFrequencyService,
-            IMatchPredictionAlgorithm matchPredictionAlgorithm)
+            IMatchPredictionAlgorithm matchPredictionAlgorithm,
+            IFrequencySetContentHashBackfill contentHashBackfill,
+            IFrequencySetContentHashBackfillStarter contentHashBackfillStarter)
         {
             this.haplotypeFrequencyService = haplotypeFrequencyService;
             this.matchPredictionAlgorithm = matchPredictionAlgorithm;
+            this.contentHashBackfill = contentHashBackfill;
+            this.contentHashBackfillStarter = contentHashBackfillStarter;
         }
 
         /// IMPORTANT: Do not rename this function without careful consideration. This function is called by event grid, which has the function name set by terraform.
@@ -71,6 +77,38 @@ namespace Atlas.MatchPrediction.Functions.Functions
                 {
                     StatusCode = StatusCodes.Status503ServiceUnavailable
                 };
+        }
+
+        /// <summary>
+        /// Writes the content hash of each haplotype frequency set that has none: the sets of the imports from before content
+        /// hashes (see README_Support.md). Sets with the same hash share one entry in the caches. The work reads the
+        /// frequencies of each such set, so it runs in the background of this app: the call starts it, and returns 202 with
+        /// the counts. Call it again to see the progress: 200 means that every set has a hash. When the app restarts during
+        /// the work, the work stops, and the next call continues it.
+        /// </summary>
+        [Function(nameof(BackfillHaplotypeFrequencySetContentHashes))]
+        public async Task<IActionResult> BackfillHaplotypeFrequencySetContentHashes(
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            HttpRequest request)
+        {
+            var counts = await contentHashBackfill.GetCounts();
+            var done = counts.SetsWithNoContentHash == 0;
+
+            if (!done)
+            {
+                contentHashBackfillStarter.Start();
+            }
+
+            var status = new FrequencySetContentHashBackfillStatus(
+                counts.Sets,
+                counts.SetsWithNoContentHash,
+                counts.ContentHashesOfActiveSets,
+                counts.ContentHashes,
+                contentHashBackfillStarter.IsRunning);
+
+            return done
+                ? new OkObjectResult(status)
+                : new ObjectResult(status) { StatusCode = StatusCodes.Status202Accepted };
         }
 
         [QueryStringParameter(DonorEthnicityQueryParam, "Ethnicity ID of the donor", DataType = typeof(string))]

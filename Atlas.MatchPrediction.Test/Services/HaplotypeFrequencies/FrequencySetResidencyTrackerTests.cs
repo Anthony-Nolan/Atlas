@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
@@ -15,13 +14,13 @@ internal class FrequencySetResidencyTrackerTests
 {
     private Fixture fixture;
 
-    // The size of one set, and three set ids.
-    private long setSize;
-    private int setA;
-    private int setB;
-    private int setC;
+    // The size of one entry, and the keys of three entries.
+    private long entrySize;
+    private string entryA;
+    private string entryB;
+    private string entryC;
 
-    private List<int> evictedSetIds;
+    private List<string> evictedKeys;
     private FakeLogger<FrequencySetResidencyTracker> logger;
     private FrequencySetResidencyTracker sut;
 
@@ -29,306 +28,228 @@ internal class FrequencySetResidencyTrackerTests
     public void SetUp()
     {
         fixture = new Fixture();
-        setSize = fixture.Create<int>();
-        var setIds = fixture.CreateMany<int>(3).ToList();
-        (setA, setB, setC) = (setIds[0], setIds[1], setIds[2]);
+        entrySize = fixture.Create<int>();
+        var keys = fixture.CreateMany<string>(3).ToList();
+        (entryA, entryB, entryC) = (keys[0], keys[1], keys[2]);
     }
 
     private void BuildSut(long capacityInBytes)
     {
-        evictedSetIds = [];
+        evictedKeys = [];
         logger = new FakeLogger<FrequencySetResidencyTracker>();
-        sut = new FrequencySetResidencyTracker(capacityInBytes, evictedSetIds.Add, logger);
+        sut = new FrequencySetResidencyTracker(capacityInBytes, evictedKeys.Add, logger);
     }
 
-    /// <summary>As the cache does: an access, then the size of the set once it is loaded.</summary>
-    /// <returns>The admission of the set.</returns>
-    private long Load(int setId, long sizeInBytes, DateTimeOffset? importTime = null)
+    /// <summary>As the cache does: an access, then the size of the entry once it is loaded.</summary>
+    /// <returns>The admission of the entry.</returns>
+    private long Load(string key, long sizeInBytes)
     {
-        sut.RecordAccess(setId);
-        return sut.RecordSize(setId, sizeInBytes, importTime);
+        sut.RecordAccess(key);
+        return sut.RecordSize(key, sizeInBytes);
     }
 
     [Test]
     public void RecordSize_WhenTheTotalFitsTheCapacity_EvictsNothing()
     {
-        BuildSut(capacityInBytes: 2 * setSize);
+        BuildSut(capacityInBytes: 2 * entrySize);
 
-        Load(setA, setSize);
-        Load(setB, setSize);
+        Load(entryA, entrySize);
+        Load(entryB, entrySize);
 
-        evictedSetIds.Should().BeEmpty();
+        evictedKeys.Should().BeEmpty();
     }
 
     [Test]
-    public void RecordAccess_OfANewSet_EvictsNothing()
+    public void RecordAccess_OfANewEntry_EvictsNothing()
     {
-        BuildSut(capacityInBytes: setSize);
-        Load(setA, setSize);
+        BuildSut(capacityInBytes: entrySize);
+        Load(entryA, entrySize);
 
-        // A set counts from its size, which is known when it is loaded.
-        sut.RecordAccess(setB);
+        // An entry counts from its size, which is known when it is loaded.
+        sut.RecordAccess(entryB);
 
-        evictedSetIds.Should().BeEmpty();
+        evictedKeys.Should().BeEmpty();
     }
 
     [Test]
-    public void RecordSize_WhenTheTotalExceedsTheCapacity_EvictsTheLeastRecentlyUsedSet()
+    public void RecordSize_WhenTheTotalExceedsTheCapacity_EvictsTheLeastRecentlyUsedEntry()
     {
-        BuildSut(capacityInBytes: 2 * setSize);
+        BuildSut(capacityInBytes: 2 * entrySize);
 
-        Load(setA, setSize);
-        Load(setB, setSize);
-        Load(setC, setSize);
+        Load(entryA, entrySize);
+        Load(entryB, entrySize);
+        Load(entryC, entrySize);
 
-        evictedSetIds.Should().Equal(setA);
+        evictedKeys.Should().Equal(entryA);
     }
 
     [Test]
-    public void RecordSize_EvictsTheLeastRecentlyUsedSetsUntilTheTotalFits()
+    public void RecordSize_EvictsTheLeastRecentlyUsedEntriesUntilTheTotalFits()
     {
-        BuildSut(capacityInBytes: 2 * setSize);
+        BuildSut(capacityInBytes: 2 * entrySize);
 
-        Load(setA, setSize);
-        Load(setB, setSize);
-        Load(setC, 2 * setSize);
+        Load(entryA, entrySize);
+        Load(entryB, entrySize);
+        Load(entryC, 2 * entrySize);
 
-        evictedSetIds.Should().Equal(setA, setB);
+        evictedKeys.Should().Equal(entryA, entryB);
     }
 
     [Test]
-    public void RecordSize_ReAccessingASet_ProtectsItFromBeingTheNextEviction()
+    public void RecordSize_ReAccessingAnEntry_ProtectsItFromBeingTheNextEviction()
     {
-        BuildSut(capacityInBytes: 2 * setSize);
-        Load(setA, setSize);
-        Load(setB, setSize);
+        BuildSut(capacityInBytes: 2 * entrySize);
+        Load(entryA, entrySize);
+        Load(entryB, entrySize);
 
         // A is now more recently used than B.
-        sut.RecordAccess(setA);
-        Load(setC, setSize);
+        sut.RecordAccess(entryA);
+        Load(entryC, entrySize);
 
-        evictedSetIds.Should().Equal(setB);
+        evictedKeys.Should().Equal(entryB);
     }
 
     [Test]
-    public void RecordSize_OfASetLargerThanTheCapacity_EvictsTheOtherSets_AndKeepsThatSet()
+    public void RecordSize_OfAnEntryLargerThanTheCapacity_EvictsTheOtherEntries_AndKeepsThatEntry()
     {
-        BuildSut(capacityInBytes: setSize);
-        Load(setA, setSize);
+        BuildSut(capacityInBytes: entrySize);
+        Load(entryA, entrySize);
 
         // Not evicted at once: each access would then load it again.
-        Load(setB, 2 * setSize);
+        Load(entryB, 2 * entrySize);
 
-        evictedSetIds.Should().Equal(setA);
+        evictedKeys.Should().Equal(entryA);
     }
 
     [Test]
-    public void RecordSize_AfterASetLargerThanTheCapacity_EvictsThatSet()
+    public void RecordSize_AfterAnEntryLargerThanTheCapacity_EvictsThatEntry()
     {
-        BuildSut(capacityInBytes: setSize);
-        Load(setA, 2 * setSize);
+        BuildSut(capacityInBytes: entrySize);
+        Load(entryA, 2 * entrySize);
 
-        Load(setB, setSize);
+        Load(entryB, entrySize);
 
-        evictedSetIds.Should().Equal(setA);
+        evictedKeys.Should().Equal(entryA);
     }
 
     [Test]
-    public void RecordSize_OfASetLargerThanTheCapacity_LogsAWarning()
+    public void RecordSize_OfAnEntryLargerThanTheCapacity_LogsAWarning()
     {
-        BuildSut(capacityInBytes: setSize);
+        BuildSut(capacityInBytes: entrySize);
 
-        Load(setA, 2 * setSize);
+        Load(entryA, 2 * entrySize);
 
         logger.Collector.GetSnapshot().Should().ContainSingle().Which.Level.Should().Be(LogLevel.Warning);
     }
 
     [Test]
-    public void RecordSize_DoesNotEvictASetThatIsStillLoading()
+    public void RecordSize_DoesNotEvictAnEntryThatIsStillLoading()
     {
-        BuildSut(capacityInBytes: 2 * setSize);
+        BuildSut(capacityInBytes: 2 * entrySize);
 
         // B is the least recently used, but holds no bytes yet: its removal would only make its callers load it again.
-        sut.RecordAccess(setB);
-        Load(setA, setSize);
-        Load(setC, 2 * setSize);
+        sut.RecordAccess(entryB);
+        Load(entryA, entrySize);
+        Load(entryC, 2 * entrySize);
 
-        evictedSetIds.Should().Equal(setA);
+        evictedKeys.Should().Equal(entryA);
     }
 
     [Test]
-    public void RecordSize_OfASetLoadedAgain_ReplacesItsSize()
+    public void RecordSize_OfAnEntryLoadedAgain_ReplacesItsSize()
     {
-        BuildSut(capacityInBytes: 2 * setSize);
-        Load(setA, setSize);
+        BuildSut(capacityInBytes: 2 * entrySize);
+        Load(entryA, entrySize);
 
         // A loaded again, e.g. after an expiry whose Forget has not run yet: it counts once, not twice.
-        Load(setA, setSize);
-        Load(setB, setSize);
+        Load(entryA, entrySize);
+        Load(entryB, entrySize);
 
-        evictedSetIds.Should().BeEmpty();
+        evictedKeys.Should().BeEmpty();
     }
 
     [Test]
-    public void RecordLoadStart_OfALoadedSet_FreesItsBytes()
+    public void RecordLoadStart_OfALoadedEntry_FreesItsBytes()
     {
-        BuildSut(capacityInBytes: 2 * setSize);
-        Load(setA, setSize);
-        Load(setB, setSize);
+        BuildSut(capacityInBytes: 2 * entrySize);
+        Load(entryA, entrySize);
+        Load(entryB, entrySize);
 
         // A expired, and loads again before the Forget of its earlier entry ran.
-        sut.RecordLoadStart(setA);
-        Load(setC, setSize);
+        sut.RecordLoadStart(entryA);
+        Load(entryC, entrySize);
 
-        evictedSetIds.Should().BeEmpty();
+        evictedKeys.Should().BeEmpty();
     }
 
     [Test]
-    public void RecordSize_DoesNotEvictASetThatIsLoadingAgain()
+    public void RecordSize_DoesNotEvictAnEntryThatIsLoadingAgain()
     {
-        BuildSut(capacityInBytes: 2 * setSize);
-        Load(setA, setSize);
-        Load(setB, setSize);
+        BuildSut(capacityInBytes: 2 * entrySize);
+        Load(entryA, entrySize);
+        Load(entryB, entrySize);
 
-        // A loads again, and B is used after that: A is the least recently used set, but the entry of A in the cache is
+        // A loads again, and B is used after that: A is the least recently used entry, but the entry of A in the cache is
         // the one that loads, and no callback could forget its bytes.
-        sut.RecordAccess(setA);
-        sut.RecordLoadStart(setA);
-        sut.RecordAccess(setB);
-        Load(setC, 2 * setSize);
+        sut.RecordAccess(entryA);
+        sut.RecordLoadStart(entryA);
+        sut.RecordAccess(entryB);
+        Load(entryC, 2 * entrySize);
 
-        evictedSetIds.Should().Equal(setB);
+        evictedKeys.Should().Equal(entryB);
     }
 
     [Test]
-    public void Forget_ANotTrackedSet_IsANoOp()
+    public void Forget_ANotTrackedEntry_IsANoOp()
     {
-        BuildSut(capacityInBytes: 2 * setSize);
+        BuildSut(capacityInBytes: 2 * entrySize);
 
-        sut.Forget(setA, fixture.Create<long>());
+        sut.Forget(entryA, fixture.Create<long>());
 
-        evictedSetIds.Should().BeEmpty();
+        evictedKeys.Should().BeEmpty();
     }
 
     [Test]
-    public void Forget_FreesTheBytesOfTheSet()
+    public void Forget_FreesTheBytesOfTheEntry()
     {
-        BuildSut(capacityInBytes: 2 * setSize);
-        var admissionOfA = Load(setA, setSize);
-        Load(setB, setSize);
+        BuildSut(capacityInBytes: 2 * entrySize);
+        var admissionOfA = Load(entryA, entrySize);
+        Load(entryB, entrySize);
 
         // As when the cache entry of A expires.
-        sut.Forget(setA, admissionOfA);
-        Load(setC, setSize);
+        sut.Forget(entryA, admissionOfA);
+        Load(entryC, entrySize);
 
-        evictedSetIds.Should().BeEmpty();
+        evictedKeys.Should().BeEmpty();
     }
 
     [Test]
     public void Forget_WithTheAdmissionOfAnEarlierEntry_DoesNotForgetTheEntryThatReplacedIt()
     {
-        BuildSut(capacityInBytes: 2 * setSize);
-        var admissionOfTheFirstEntry = Load(setA, setSize);
-        Load(setA, setSize);
+        BuildSut(capacityInBytes: 2 * entrySize);
+        var admissionOfTheFirstEntry = Load(entryA, entrySize);
+        Load(entryA, entrySize);
 
         // The post-eviction callback of the first entry, late on the thread pool.
-        sut.Forget(setA, admissionOfTheFirstEntry);
-        Load(setB, setSize);
-        Load(setC, setSize);
+        sut.Forget(entryA, admissionOfTheFirstEntry);
+        Load(entryB, entrySize);
+        Load(entryC, entrySize);
 
-        // A is still tracked: so it is the least recently used set, and goes first.
-        evictedSetIds.Should().Equal(setA);
+        // A is still tracked: so it is the least recently used entry, and goes first.
+        evictedKeys.Should().Equal(entryA);
     }
 
     [Test]
-    public void Forget_AfterTheTrackerEvictedTheSet_DoesNotFreeItsBytesTwice()
+    public void Forget_AfterTheTrackerEvictedTheEntry_DoesNotFreeItsBytesTwice()
     {
-        BuildSut(capacityInBytes: setSize);
-        var admissionOfA = Load(setA, setSize);
-        Load(setB, setSize);
+        BuildSut(capacityInBytes: entrySize);
+        var admissionOfA = Load(entryA, entrySize);
+        Load(entryB, entrySize);
 
         // The post-eviction callback of A, after the tracker evicted A.
-        sut.Forget(setA, admissionOfA);
-        Load(setC, setSize);
+        sut.Forget(entryA, admissionOfA);
+        Load(entryC, entrySize);
 
-        evictedSetIds.Should().Equal(setA, setB);
-    }
-
-    [Test]
-    public void EvictIfReplaced_WithTheImportTimeOfTheLoadedEntry_EvictsNothing()
-    {
-        BuildSut(capacityInBytes: 2 * setSize);
-        var importTime = fixture.Create<DateTimeOffset>();
-        Load(setA, setSize, importTime);
-
-        var evicted = sut.EvictIfReplaced(setA, importTime);
-
-        evicted.Should().BeFalse();
-        evictedSetIds.Should().BeEmpty();
-    }
-
-    [Test]
-    public void EvictIfReplaced_WithAnotherImportTime_EvictsTheSet_AndFreesItsBytes()
-    {
-        BuildSut(capacityInBytes: 2 * setSize);
-        Load(setA, setSize, fixture.Create<DateTimeOffset>());
-        Load(setB, setSize);
-
-        var evicted = sut.EvictIfReplaced(setA, fixture.Create<DateTimeOffset>());
-        Load(setC, setSize);
-
-        evicted.Should().BeTrue();
-        // C takes the bytes of A: B stays.
-        evictedSetIds.Should().Equal(setA);
-    }
-
-    [Test]
-    public void EvictIfReplaced_WhenTheSetHasNoRow_EvictsTheSet()
-    {
-        BuildSut(capacityInBytes: 2 * setSize);
-        Load(setA, setSize, fixture.Create<DateTimeOffset>());
-
-        var evicted = sut.EvictIfReplaced(setA, null);
-
-        evicted.Should().BeTrue();
-        evictedSetIds.Should().Equal(setA);
-    }
-
-    [Test]
-    public void EvictIfReplaced_OfASetLoadedWithNoRow_WhenTheRowExists_EvictsTheSet()
-    {
-        BuildSut(capacityInBytes: 2 * setSize);
-        // A set with no row, and so no import time, has no frequencies either: its entry holds no bytes.
-        Load(setA, 0);
-
-        var evicted = sut.EvictIfReplaced(setA, fixture.Create<DateTimeOffset>());
-
-        evicted.Should().BeTrue();
-        evictedSetIds.Should().Equal(setA);
-    }
-
-    [Test]
-    public void EvictIfReplaced_OfASetThatIsLoading_EvictsNothing()
-    {
-        BuildSut(capacityInBytes: 2 * setSize);
-        Load(setA, setSize, fixture.Create<DateTimeOffset>());
-
-        // A loads again: that load reads the current row.
-        sut.RecordLoadStart(setA);
-        var evicted = sut.EvictIfReplaced(setA, fixture.Create<DateTimeOffset>());
-
-        evicted.Should().BeFalse();
-        evictedSetIds.Should().BeEmpty();
-    }
-
-    [Test]
-    public void EvictIfReplaced_OfASetThatIsNotTracked_EvictsNothing()
-    {
-        BuildSut(capacityInBytes: 2 * setSize);
-
-        var evicted = sut.EvictIfReplaced(setA, fixture.Create<DateTimeOffset>());
-
-        evicted.Should().BeFalse();
-        evictedSetIds.Should().BeEmpty();
+        evictedKeys.Should().Equal(entryA, entryB);
     }
 }
