@@ -1,6 +1,8 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Atlas.Common.ServiceBus;
@@ -17,18 +19,25 @@ public class SessionMessagePublisher<T> : ISessionMessagePublisher<T>
     private readonly int sendRetryCount;
     private readonly int sendRetryCooldownSeconds;
     private readonly ILogger<SessionMessagePublisher<T>> logger;
+    private readonly Func<T, IReadOnlyDictionary<string, object>> applicationPropertiesSelector;
 
+    /// <param name="applicationPropertiesSelector">
+    /// Optional. Selects the values to stamp as Service Bus <see cref="ServiceBusMessage.ApplicationProperties"/> on each message,
+    /// so they are visible without reading the body. See <see cref="ServiceBusMessageExtensions.AddApplicationProperties"/>.
+    /// </param>
     public SessionMessagePublisher(
         ITopicClientFactory topicClientFactory,
         string topicName,
         int sendRetryCount,
         int sendRetryCooldownSeconds,
-        ILogger<SessionMessagePublisher<T>> logger)
+        ILogger<SessionMessagePublisher<T>> logger,
+        Func<T, IReadOnlyDictionary<string, object>> applicationPropertiesSelector = null)
     {
         this.topicClient = topicClientFactory.BuildTopicClient(topicName);
         this.sendRetryCount = sendRetryCount;
         this.sendRetryCooldownSeconds = sendRetryCooldownSeconds;
         this.logger = logger;
+        this.applicationPropertiesSelector = applicationPropertiesSelector;
     }
 
     public async Task PublishWithSession(T content, string sessionId)
@@ -38,6 +47,7 @@ public class SessionMessagePublisher<T> : ISessionMessagePublisher<T>
         {
             SessionId = sessionId
         };
+        message.AddApplicationProperties(applicationPropertiesSelector?.Invoke(content));
 
         await topicClient.SendWithRetryAndWaitAsync(
             message,
