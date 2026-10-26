@@ -44,7 +44,7 @@ namespace Atlas.Common.ServiceBus.BatchReceiving
                 return;
             }
 
-            using (var messageBatchLock = new MessageBatchLock<T>(messageReceiver, messages))
+            await using (var messageBatchLock = new MessageBatchLock<T>(messageReceiver, messages))
             {
                 try
                 {

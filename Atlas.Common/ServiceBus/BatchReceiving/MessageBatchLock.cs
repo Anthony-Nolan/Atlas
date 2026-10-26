@@ -13,7 +13,7 @@ namespace Atlas.Common.ServiceBus.BatchReceiving
     /// Maintains a lock on a collection of messages retrieved from an Azure ServiceBus.
     /// Will renew the lock before it expires, for the duration of that lock.
     /// </summary>
-    public class MessageBatchLock<T> : IDisposable
+    public class MessageBatchLock<T> : IDisposable, IAsyncDisposable
     {
         private readonly IServiceBusMessageReceiver<T> messageReceiver;
         private readonly IEnumerable<DeserializedMessage<T>> messageBatch;
@@ -22,6 +22,7 @@ namespace Atlas.Common.ServiceBus.BatchReceiving
 
         private Timer locksRenewalTimer;
         private bool messageBatchHasBeenReleased;
+        private bool hasBeenDisposed;
 
         /// <param name="messageBatch">The message batch that has been retrieved from </param>
         /// <param name="lockTimeFraction">Fraction of message lock time to use in lock renewal rate calculation.</param>
@@ -56,6 +57,21 @@ namespace Atlas.Common.ServiceBus.BatchReceiving
 
         public void Dispose()
         {
+            hasBeenDisposed = true;
+            locksRenewalTimer?.Dispose();
+        }
+
+        /// <summary>
+        /// Unlike <see cref="Dispose"/>, waits for a lock renewal in progress, so that no renewal uses the receiver after this returns:
+        /// the receiver may be closed next.
+        /// </summary>
+        public async ValueTask DisposeAsync()
+        {
+            using (await asyncLock.LockAsync())
+            {
+                hasBeenDisposed = true;
+            }
+
             locksRenewalTimer?.Dispose();
         }
 
@@ -76,7 +92,7 @@ namespace Atlas.Common.ServiceBus.BatchReceiving
             {
                 using (await asyncLock.LockAsync())
                 {
-                    if (messageBatchHasBeenReleased)
+                    if (messageBatchHasBeenReleased || hasBeenDisposed)
                     {
                         return;
                     }

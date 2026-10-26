@@ -123,8 +123,8 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             }
 
             // The Data Refresh process never receives from this subscription again, so the receiver must be closed with the stage.
-            await using var messageProcessor = messageProcessorFactory.CreateMessageProcessor(targetDatabase);
-            await messageProcessor.ProcessAllMessagesInBatches_Async(
+            await ProcessMessagesWithOwnReceiver(
+                targetDatabase,
                 async batch => await ProcessMessages(batch, targetDatabase, hlaNomenclatureVersionFromRefresh),
                 batchSize);
         }
@@ -139,23 +139,19 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             switch (targetDatabaseState)
             {
                 case DatabaseStateWithRespectToDonorUpdates.Active:
-                {
                     var activeHlaVersion = activeHlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
-                    await using var messageProcessor = messageProcessorFactory.CreateMessageProcessor(targetDatabase);
-                    await messageProcessor.ProcessAllMessagesInBatches_Async(
+                    await ProcessMessagesWithOwnReceiver(
+                        targetDatabase,
                         async batch => await ProcessMessages(batch, targetDatabase, activeHlaVersion),
                         batchSize);
                     return;
-                }
 
                 case DatabaseStateWithRespectToDonorUpdates.Dormant:
-                {
-                    await using var messageProcessor = messageProcessorFactory.CreateMessageProcessor(targetDatabase);
-                    await messageProcessor.ProcessAllMessagesInBatches_Async(
+                    await ProcessMessagesWithOwnReceiver(
+                        targetDatabase,
                         async batch => await DiscardMessages(batch),
                         batchSize * 10);
                     return;
-                }
 
                 case DatabaseStateWithRespectToDonorUpdates.Refreshing:
                     // Do nothing!
@@ -240,6 +236,43 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
 ", LogLevel.Verbose);
 
             return DatabaseStateWithRespectToDonorUpdates.Refreshing;
+        }
+
+        /// <summary>
+        /// Processes a batch with a receiver that exists only for this call, and closes it afterwards, also when processing fails.
+        /// </summary>
+        private async Task ProcessMessagesWithOwnReceiver(
+            TransientDatabase targetDatabase,
+            Func<IEnumerable<DeserializedMessage<SearchableDonorUpdate>>, Task> processMessagesFuncAsync,
+            int messageBatchSize)
+        {
+            var messageProcessor = messageProcessorFactory.CreateMessageProcessor(targetDatabase);
+            try
+            {
+                await messageProcessor.ProcessAllMessagesInBatches_Async(processMessagesFuncAsync, messageBatchSize);
+            }
+            finally
+            {
+                await CloseReceiver(messageProcessor, targetDatabase);
+            }
+        }
+
+        /// <remarks>
+        /// A failure to close must not fail a run whose messages were processed, nor hide the error of a run that failed:
+        /// by now each message has been completed or abandoned, or comes back when its lock expires.
+        /// </remarks>
+        private async Task CloseReceiver(IMessageProcessor<SearchableDonorUpdate> messageProcessor, TransientDatabase targetDatabase)
+        {
+            try
+            {
+                await messageProcessor.DisposeAsync();
+            }
+            catch (Exception ex)
+            {
+                logger.SendTrace(
+                    $"{TraceMessagePrefix}: Failed to close the donor update receiver for '{targetDatabase.GetStringValue()}': {ex.Message}",
+                    LogLevel.Warn);
+            }
         }
 
         private async Task ProcessMessages(IEnumerable<DeserializedMessage<SearchableDonorUpdate>> messageBatch, TransientDatabase targetDatabase, string targetHlaNomenclatureVersion)

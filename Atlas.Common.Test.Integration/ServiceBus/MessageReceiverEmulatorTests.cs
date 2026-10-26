@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -28,6 +28,8 @@ namespace Atlas.Common.Test.Integration.ServiceBus
         // Long enough that no lock expires while a test waits, so a message can only come back by being released.
         private static readonly TimeSpan LockDuration = TimeSpan.FromMinutes(5);
         private static readonly TimeSpan ReceiveWait = TimeSpan.FromSeconds(10);
+        // The emulator's runtime properties do not show which messages a link holds, so the test gives prefetch a moment instead.
+        private static readonly TimeSpan PrefetchWait = TimeSpan.FromSeconds(1);
 
         private ServiceBusAdministrationClient admin;
         private ServiceBusClient client;
@@ -44,7 +46,17 @@ namespace Atlas.Common.Test.Integration.ServiceBus
             topic = "receiver-" + Guid.NewGuid().ToString("N");
             admin = new ServiceBusAdministrationClient(AdminConnectionString);
             await admin.CreateTopicAsync(topic);
-            await admin.CreateSubscriptionAsync(new CreateSubscriptionOptions(topic, Subscription) { LockDuration = LockDuration });
+            try
+            {
+                await admin.CreateSubscriptionAsync(new CreateSubscriptionOptions(topic, Subscription) { LockDuration = LockDuration });
+            }
+            catch
+            {
+                // TearDown does not run when SetUp fails.
+                await admin.DeleteTopicAsync(topic);
+                throw;
+            }
+
             client = new ServiceBusClient(ConnectionString);
         }
 
@@ -54,6 +66,7 @@ namespace Atlas.Common.Test.Integration.ServiceBus
             if (client != null)
             {
                 await client.DisposeAsync();
+                client = null;
                 await admin.DeleteTopicAsync(topic);
             }
         }
@@ -91,7 +104,7 @@ namespace Atlas.Common.Test.Integration.ServiceBus
         /// </summary>
         [TestCase(true)]
         [TestCase(false)]
-        public async Task MessagesPrefetchedByProcessor_ReachNextReceiver_OnlyIfProcessorIsDisposed(bool disposeProcessor)
+        public async Task DisposeAsync_ReleasesMessagesPrefetchedOnTheLink(bool disposeProcessor)
         {
             await using var sender = client.CreateSender(topic);
             foreach (var body in new[] { "\"m0\"", "\"m1\"", "\"m2\"" })
@@ -110,6 +123,8 @@ namespace Atlas.Common.Test.Integration.ServiceBus
                 },
                 batchSize: 1);
             processed.Should().Equal("m0");
+            // Otherwise the next receiver could get a message that the processor's link has not prefetched yet.
+            await Task.Delay(PrefetchWait);
 
             if (disposeProcessor)
             {
