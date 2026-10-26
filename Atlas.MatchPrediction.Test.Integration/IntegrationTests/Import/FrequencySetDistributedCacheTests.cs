@@ -10,6 +10,7 @@ using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
+using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile;
 using Atlas.MatchPrediction.Test.TestHelpers;
 using AutoFixture;
@@ -57,6 +58,40 @@ internal class FrequencySetDistributedCacheTests
         entryOfTheSecondProcess.ShouldBeTheSameEntryAs(entryOfTheFirstProcess);
     }
 
+    /// <summary>The import gives its sets one content hash, so a process can use the content that another process stored.</summary>
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_OfTwoSetsOfOneImport_InTwoProcesses_ReadsTheFrequenciesOnce()
+    {
+        var store = DistributedCacheBuilder.NewSharedStore();
+        var frequencyRepository = CountingFrequencyRepository();
+        var (setIdA, setIdB) = await ImportTwoSets(HaplotypesThatShareNames());
+
+        var entryOfSetA = await NewCache(store, frequencyRepository).GetAllHaplotypeFrequencies(setIdA);
+        var entryOfSetB = await NewCache(store, frequencyRepository).GetAllHaplotypeFrequencies(setIdB);
+
+        await frequencyRepository.ReceivedWithAnyArgs(1).GetAllHaplotypeFrequencies(default);
+        entryOfSetB.ShouldBeTheSameEntryAs(entryOfSetA);
+    }
+
+    /// <summary>A set of an import from before content hashes: it uses a value of its own, as before.</summary>
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_OfASetWithNoContentHash_InASecondProcess_UsesTheValueOfTheSet()
+    {
+        var store = DistributedCacheBuilder.NewSharedStore();
+        var frequencyRepository = CountingFrequencyRepository();
+        var setId = await ImportSet(HaplotypesThatShareNames());
+        await Provider.GetRequiredService<IHaplotypeFrequencyInspectionRepository>().ClearContentHash(setId);
+
+        var entryOfTheFirstProcess = await NewCache(store, frequencyRepository).GetAllHaplotypeFrequencies(setId);
+        var entryOfTheSecondProcess = await NewCache(store, frequencyRepository).GetAllHaplotypeFrequencies(setId);
+
+        await frequencyRepository.Received(1).GetAllHaplotypeFrequencies(setId);
+        entryOfTheSecondProcess.ShouldBeTheSameEntryAs(entryOfTheFirstProcess);
+        var set = await Provider.GetRequiredService<IHaplotypeFrequencySetRepository>().GetSet(setId);
+        var valueOfTheSet = await DistributedCacheBuilder.NewProviderOver(store).GetAsync(HaplotypeFrequencyCache.FrequencySetDistributedCacheKey(set));
+        valueOfTheSet.Should().NotBeNull();
+    }
+
     /// <summary>
     /// Each combination of the expressed test G groups, so that the rows share names at each locus, as the rows of a real
     /// set do. One frequency for all, as in a tie-break of truncation. The import converts them to P groups, and no two of
@@ -83,16 +118,31 @@ internal class FrequencySetDistributedCacheTests
     }
 
     /// <returns>The id of the set that the import activated.</returns>
-    private async Task<int> ImportSet(IEnumerable<HaplotypeFrequency> haplotypes)
+    private async Task<int> ImportSet(IEnumerable<HaplotypeFrequency> haplotypes) => (await ImportSets(haplotypes, 1)).Single();
+
+    /// <returns>The ids of the two sets that one import activated, one for each of two registries.</returns>
+    private async Task<(int, int)> ImportTwoSets(IEnumerable<HaplotypeFrequency> haplotypes)
     {
-        // A registry of its own, so the other tests' sets do not matter here.
-        var registryCode = fixture.Create<string>();
-        using var file = FrequencySetFileBuilder.New(haplotypes, [registryCode]).Build();
+        var setIds = await ImportSets(haplotypes, 2);
+        return (setIds[0], setIds[1]);
+    }
+
+    private async Task<List<int>> ImportSets(IEnumerable<HaplotypeFrequency> haplotypes, int registryCount)
+    {
+        // Registries of their own, so the other tests' sets do not matter here.
+        var registryCodes = fixture.CreateMany<string>(registryCount).ToArray();
+        using var file = FrequencySetFileBuilder.New(haplotypes, registryCodes).Build();
         await Provider.GetRequiredService<IHaplotypeFrequencyService>().ImportFrequencySet(file);
 
-        var activeSet = await Provider.GetRequiredService<IHaplotypeFrequencySetRepository>().GetActiveSet(registryCode, null);
-        activeSet.Should().NotBeNull("the import must activate the set; a failed import only sends an alert");
-        return activeSet.Id;
+        var setIds = new List<int>();
+        foreach (var registryCode in registryCodes)
+        {
+            var activeSet = await Provider.GetRequiredService<IHaplotypeFrequencySetRepository>().GetActiveSet(registryCode, null);
+            activeSet.Should().NotBeNull("the import must activate the set; a failed import only sends an alert");
+            setIds.Add(activeSet.Id);
+        }
+
+        return setIds;
     }
 
     /// <summary>The frequency repository over the real database, with its calls recorded.</summary>

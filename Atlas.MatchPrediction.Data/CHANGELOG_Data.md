@@ -7,6 +7,11 @@ This includes both schema and data workflow changes.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 4.2.0
+* Added the nullable column `ContentHash` (`binary(32)`) to `HaplotypeFrequencySets`: the SHA-256 of the frequencies of the set, in the order of their ids,
+  without the set id. Sets with the same hash have the same frequencies, and share one entry in the caches. The import writes it. For the sets of older
+  imports, call `POST /api/BackfillHaplotypeFrequencySetContentHashes` on the match prediction functions app (see README_Support).
+
 ## 3.0.0
 * Updated .NET version from 6.0 to 8.0
 

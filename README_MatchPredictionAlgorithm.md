@@ -121,6 +121,10 @@ pinned by `ImputationEquivalenceTests`, `ExpandedGenotypeTruncaterTests`, `PairR
   genotypes have equal likelihood. Which genotypes a capped subject keeps is a clinical output, so any reordering
   anywhere in that chain needs HLA-expert sign-off, not just a passing build. In particular, do not rebuild the pool
   from the SQL rows: project it from the frozen dictionary, which is what fixes the order.
+* **The rows of a set are read in the order of their ids** (`ORDER BY Id` in `GetAllHaplotypeFrequencies`): the order
+  of the import, which sets the order of the frozen dictionary. Without the `ORDER BY`, another plan (the unique index
+  on the names also covers the read) or a parallel plan could give another order. The content hash of a set covers its
+  rows in this order (see [The frequency set cache](#the-frequency-set-cache)).
 * **Truncation selects by `(likelihood descending, insertion order ascending)`.** A plain bounded heap does not do
   this; the tie-break is explicit in `ExpandedGenotypeTruncater.MostLikelyFirst` and must stay so.
 * **Interned allele ids never leave `FrequencySetCacheEntry`.** They are meaningful only against that entry's
@@ -190,7 +194,7 @@ genotype set records its frequency set, and search does not use a stored set of 
 
 ## The frequency set cache
 Imputation reads a frequency set from its cache entry (`FrequencySetCacheEntry`): the frequencies, the projected pool,
-the allele index and the consolidated frequencies of the set. The set is kept in two caches:
+the allele index and the consolidated frequencies of the set. The entry is kept in two caches:
 - **In each process**, with a limit on the memory: `HaplotypeFrequencySetCache:MaxCachedFrequencySetMegabytes` (768
   MiB). When a loaded set takes the total over the limit, the least recently used other sets are removed until it fits.
   The expiry is sliding: a set that is not used for `HaplotypeFrequencySetCache:SetCacheExpiryMinutes` (60 minutes) is
@@ -198,51 +202,79 @@ the allele index and the consolidated frequencies of the set. The set is kept in
 - **In the distributed cache** (Redis), which all processes share, for 30 days. When no Redis is configured
   (`DistributedCache:ConnectionString` is empty), each process reads each set from SQL instead.
 
-**A load.** A process that does not hold a set reads its row in `HaplotypeFrequencySets`, then the distributed cache.
-On a miss, it reads the frequencies from SQL, and then writes the set to the distributed cache. So the first process
-that uses a new set writes it: the import does not. Only an active set is written: an inactive set can be the set of an
-import that still runs, with only part of its rows. When no Redis is configured, the process reads the frequencies from
-SQL at once, and does not encode the set.
+**Sets with the same rows share one entry.** An import makes one set for each registry and ethnicity pair of its file,
+and each of these sets gets the same rows. Before the import activates its sets, it reads the rows of one of them back
+from SQL and writes their content hash to all of them: `HaplotypeFrequencySets.ContentHash`, the SHA-256 of the rows in
+the order of their ids, without the set id. Sets with the same hash share one entry in each process, one place in the
+memory limit, and one value in the distributed cache. So a process loads and holds each content once: on a copy of
+WMDA LIVE (October 2026), the 208 active sets have 42 contents. A set of an import from before content hashes has no
+hash until the backfill writes it (see [README_Support](README_Support.md#content-hashes-of-the-frequency-sets)):
+until then, it has an entry of its own, as before.
+
+**A load.** A process that does not hold the entry of a set reads the row of the set in `HaplotypeFrequencySets`, then
+the distributed cache. On a miss, it reads the frequencies of the set from SQL, checks that they have the content hash
+of the row, and then writes the content to the distributed cache. So the first process that uses a new content writes
+it: the import does not. Only an active set writes: an inactive set can be the set of an import that still runs, with
+only part of its rows. When no Redis is configured, the process reads the frequencies from SQL at once, and does not
+encode them.
+
+**Rows that do not have the content hash of their set** are an error: for example, after a change of the frequencies of
+the set with SQL. The process logs the error, and uses the rows of that set for that set only, until the hash in its row
+changes: it does not share them, and does not write them to the distributed cache. The check sees such a set only when
+the set itself loads the content: when another set with the same hash loads it first, the set gets the rows of that set.
+So what makes the hash right is that the import and the backfill calculate it from the rows in SQL. Do not change the
+frequencies of a set with SQL: see [README_Support](README_Support.md#content-hashes-of-the-frequency-sets).
 
 **A replaced set.** While a process uses a set, it checks the row of the set in `HaplotypeFrequencySets` once each
-`HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes` (1 minute). When the row has another import time, or there is
-no row, the process removes the set and loads it again: set ids are SQL identity values, so after a restore, a copy or a
-rebuild of the database, an id can name another set. So a restore needs no step for the sets (the list of active sets
-does: see [The active set cache](#the-active-set-cache)), and each process uses a replaced set within the same minute as
-the list of active sets that names it. The callers of the set wait for the check, so the check waits at most 5 seconds
-for the row. When the check cannot read the row in that time, the process keeps the set, logs a warning, and checks
-again a minute later.
+`HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes` (1 minute). When the row has another content hash or import
+time, or there is no row, the process uses the entry of the new row: set ids are SQL identity values, so after a
+restore, a copy or a rebuild of the database, an id can name another set. The old entry goes when no set uses it for the
+expiry, or when the memory limit removes it. So a restore needs no step for the sets (the list of active sets does: see
+[The active set cache](#the-active-set-cache)), and each process uses a replaced set within the same minute as the list
+of active sets that names it. The callers of the set wait for the check, so the check waits at most 5 seconds for the
+row. When the check cannot read the row in that time, the process keeps the set, logs a warning, and checks again a
+minute later.
 
-**The stored set.** The key is `hf-set-v1:{set id}:{import time, in ticks}`. The import time is in the key for the same
-reason: after a restore, a copy or a rebuild of the database, an id can name another set.
-The value holds the rows of the set in the order that SQL gave them, so a set from the distributed cache builds the same
-entry as a set from SQL: the order is part of the output (see [Invariants](#invariants)). The value is compressed, and
-is stored in chunks of 96 KiB under a small manifest, because Microsoft's guidance for Azure Managed Redis is to keep each
-value under 100 kB. The chunk keys contain the SHA-256 of the value: processes that write one set at the same time write
-the same chunks, and Redis keeps one copy. A stored set that cannot be decoded is logged as a warning, read from SQL and
-written again. Change the version in the cache name (`hf-set-v1`) when the format of the value changes.
+**The stored values.** A content is stored under `hf-set-v2:{content hash}`. A set with no content hash is stored under
+`hf-set-v1:{set id}:{import time, in ticks}`: the import time is in the key because, after a restore, a copy or a
+rebuild of the database, an id can name another set. A value holds the rows in the order that SQL gave them, so an entry
+from the distributed cache is the same as an entry from SQL: the order is part of the output (see
+[Invariants](#invariants)). The value is compressed, and is stored in chunks of 96 KiB under a small manifest, because
+Microsoft's guidance for Azure Managed Redis is to keep each value under 100 kB. The chunk keys contain the SHA-256 of
+the value: processes that write one value at the same time write the same chunks, and Redis keeps one copy. A value that
+cannot be decoded, or a content whose rows do not have its hash, is logged as a warning, read from SQL and written
+again. Change the version in the cache name (`hf-set-v1`, `hf-set-v2`) when the format of its values changes.
 
-**SQL reads are limited.** In each process, one load of a set runs at a time, and concurrent callers wait for it. So
-when the distributed cache misses or cannot be reached, each process reads each set from SQL once at a time. There is no
-limit across processes: a lock in Redis cannot work while Redis is down, which is when the processes read SQL. An empty
-distributed cache gives the SQL reads that each scale-out gave before it.
+**SQL reads are limited.** In each process, one load of a content, or of a set with no content hash, runs at a time, and
+concurrent callers wait for it. So when the distributed cache misses or cannot be reached, each process reads each
+content from SQL once at a time, with the rows of one of its sets. There is no limit across processes: a lock in Redis
+cannot work while Redis is down, which is when the processes read SQL. An empty distributed cache gives at most the SQL
+reads that each scale-out gave before it.
 
 **Sizes**, measured on the 208 active sets of a copy of WMDA LIVE (18,540,779 haplotypes, October 2026):
-- In the distributed cache: 105.8 MB in all, about 6 bytes for each haplotype, in 1,195 chunks. The largest set, the
-  global set (274,606 haplotypes), takes 1,224 KiB in 13 chunks.
-- In a process: 233 bytes for each haplotype on average, with the consolidated frequencies. The largest set takes 59 MiB,
-  and all 208 sets would take about 4.1 GiB.
+- The 208 sets have 42 contents, with 2,262,873 haplotypes in all: 87.8% of the haplotypes are copies. The largest group
+  of sets with one content has 63 sets.
+- In the distributed cache: 14.0 MB for the 42 contents (105.8 MB with a value for each set), about 6 bytes for each
+  haplotype. The largest content, the global set (274,606 haplotypes), takes 1,224 KiB in 13 chunks.
+- In a process: 233 bytes for each haplotype on average, with the consolidated frequencies. The largest set takes 59 MiB.
+  All 42 contents take about 508 MiB, and 604 MiB as the memory limit counts them: less than the default limit. (All
+  208 sets, each with an entry of its own, would take about 4.1 GiB.)
 - A load of the largest set: 24 s for the SQL read from a developer machine; 0.3 s to decode it and build its entry.
 
 **Logs and metrics.**
 - The timed logs `Get All Frequencies from HF set - from SQL database` (the SQL read and the build of the entry) and
   `Get All Frequencies from HF set - from the distributed cache` (the decode and the build), at the verbose level.
-- Each write to the distributed cache logs the set id, the rows, the bytes and the chunks, and `Not stored.` when the
-  cache did not store the set.
-- A set that the check removes logs its id: `HF set {id} has another import time in the database, or no row, so this
-  process loads it again.` A check that cannot read the row logs a warning.
-- The `DistributedCache.*` metrics: the cache name `hf-set-v1` counts the reads of whole sets (its hit ratio is the hit
-  ratio of the sets), and `hf-set-v1-chunks` the reads of chunks.
+- `Calculating consolidated frequencies with missing loci for set: {id} (content {start of the content hash})`, once for
+  each load of an entry: the set is the one whose call loaded the content.
+- Each write to the distributed cache logs the set (and the start of its content hash), the rows, the bytes and the
+  chunks, and `Not stored.` when the cache did not store the value.
+- A set whose row changed logs its id: `HF set {id} has another content hash or import time in the database, or no row,
+  so this process loads it again.` A check that cannot read the row logs a warning.
+- Rows without the content hash of their set log an error: `HF set {id}: its rows do not have the content hash in its
+  row (...)`.
+- The `DistributedCache.*` metrics: the cache name `hf-set-v2` counts the reads of whole contents (its hit ratio is the
+  hit ratio of the contents), and `hf-set-v2-chunks` the reads of their chunks; `hf-set-v1` and `hf-set-v1-chunks` count
+  the same for the sets with no content hash.
 
 ## Precomputed donor genotype sets (search)
 Donor genotype sets can be computed ahead of time and stored in the transient matching database. Today the differential
