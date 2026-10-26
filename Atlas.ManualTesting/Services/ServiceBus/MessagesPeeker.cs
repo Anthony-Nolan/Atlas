@@ -28,18 +28,23 @@ namespace Atlas.ManualTesting.Services.ServiceBus
 
     internal abstract class ServiceBusPeeker<T> : IServiceBusPeeker<T>
     {
-        private readonly IMessageReceiver messageReceiver;
+        private readonly IMessageReceiverFactory factory;
+        private readonly string topicName;
+        private readonly string subscriptionName;
 
         protected ServiceBusPeeker(
             IMessageReceiverFactory factory,
             string topicName,
             string subscriptionName)
         {
-            messageReceiver = factory.GetMessageReceiver(topicName, subscriptionName);
+            this.factory = factory;
+            this.topicName = topicName;
+            this.subscriptionName = subscriptionName;
         }
 
         public async Task<PeekServiceBusMessagesResponse<T>> Peek(PeekServiceBusMessagesRequest peekRequest)
         {
+            await using var messageReceiver = factory.CreateMessageReceiver(topicName, subscriptionName);
             var messages = new List<T>();
             long? lastSequenceNumber = null;
             var fromSequenceNumber = peekRequest.FromSequenceNumber;

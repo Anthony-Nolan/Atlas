@@ -1,4 +1,5 @@
 ﻿using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ServiceBus;
 using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
@@ -20,17 +21,38 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
 {
     // Normally we'd put interfaces etc. in their own files.
     // However these interfaces and classes are A) tiny, and B) exist exclusively to serve this file. So they're more useful, convenient and clear if they live here.
-    public interface IMessageProcessorForDbADonorUpdates : IMessageProcessor<SearchableDonorUpdate> { }
-    public interface IMessageProcessorForDbBDonorUpdates : IMessageProcessor<SearchableDonorUpdate> { }
-
-    public class DonorUpdateMessageProcessor
-        : MessageProcessor<SearchableDonorUpdate>,
-          IMessageProcessorForDbADonorUpdates,
-          IMessageProcessorForDbBDonorUpdates
+    public interface IDonorUpdateMessageProcessorFactory
     {
-        public DonorUpdateMessageProcessor(IServiceBusMessageReceiver<SearchableDonorUpdate> messageReceiver)
-            : base(messageReceiver)
-        { }
+        /// <summary>
+        /// Creates a processor with its own receiver on the subscription of the target database.
+        /// The caller must dispose it as soon as it is done, so the receiver cannot keep link credit or lock messages that nobody will process.
+        /// </summary>
+        IMessageProcessor<SearchableDonorUpdate> CreateMessageProcessor(TransientDatabase targetDatabase);
+    }
+
+    public class DonorUpdateMessageProcessorFactory : IDonorUpdateMessageProcessorFactory
+    {
+        private readonly IMessageReceiverFactory messageReceiverFactory;
+        private readonly DonorManagementSettings settings;
+
+        public DonorUpdateMessageProcessorFactory(IMessageReceiverFactory messageReceiverFactory, DonorManagementSettings settings)
+        {
+            this.messageReceiverFactory = messageReceiverFactory;
+            this.settings = settings;
+        }
+
+        public IMessageProcessor<SearchableDonorUpdate> CreateMessageProcessor(TransientDatabase targetDatabase)
+        {
+            var subscriptionName = targetDatabase switch
+            {
+                TransientDatabase.DatabaseA => settings.SubscriptionForDbA,
+                TransientDatabase.DatabaseB => settings.SubscriptionForDbB,
+                _ => throw new ArgumentOutOfRangeException(nameof(targetDatabase), targetDatabase, null)
+            };
+
+            var messageReceiver = new ServiceBusMessageReceiver<SearchableDonorUpdate>(messageReceiverFactory, settings.Topic, subscriptionName);
+            return new MessageProcessor<SearchableDonorUpdate>(messageReceiver);
+        }
     }
 
     internal enum DatabaseStateWithRespectToDonorUpdates
@@ -52,8 +74,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
     {
         private const string TraceMessagePrefix = nameof(ProcessDifferentialDonorUpdates);
 
-        private readonly IMessageProcessorForDbADonorUpdates dbAMessageProcessorService;
-        private readonly IMessageProcessorForDbBDonorUpdates dbBMessageProcessorService;
+        private readonly IDonorUpdateMessageProcessorFactory messageProcessorFactory;
         private readonly IDataRefreshHistoryRepository refreshHistoryRepository;
         private readonly IDonorManagementService donorManagementService;
         private readonly ISearchableDonorUpdateConverter searchableDonorUpdateConverter;
@@ -66,8 +87,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
         private readonly IDonorUpdatesSaver donorUpdatesSaver;
 
         public DonorUpdateProcessor(
-            IMessageProcessorForDbADonorUpdates dbAMessageProcessorService,
-            IMessageProcessorForDbBDonorUpdates dbBMessageProcessorService,
+            IDonorUpdateMessageProcessorFactory messageProcessorFactory,
             IDataRefreshHistoryRepository refreshHistoryRepository,
             IDonorManagementService donorManagementService,
             ISearchableDonorUpdateConverter searchableDonorUpdateConverter,
@@ -78,8 +98,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             IDonorReader donorReader,
             IDonorUpdatesSaver donorUpdatesSaver)
         {
-            this.dbAMessageProcessorService = dbAMessageProcessorService;
-            this.dbBMessageProcessorService = dbBMessageProcessorService;
+            this.messageProcessorFactory = messageProcessorFactory;
             this.refreshHistoryRepository = refreshHistoryRepository;
             this.donorManagementService = donorManagementService;
             this.searchableDonorUpdateConverter = searchableDonorUpdateConverter;
@@ -103,9 +122,9 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
                 throw new InvalidOperationException($"The method {nameof(ApplyDifferentialDonorUpdatesDuringRefresh)} was called an analysis of the DataRefreshHistory table implies that '{targetDatabase.GetStringValue()}' is not currently Refreshing");
             }
 
-            var messageProcessorService = ChooseMessagesToProcess(targetDatabase);
-
-            await messageProcessorService.ProcessAllMessagesInBatches_Async(
+            // The Data Refresh process never receives from this subscription again, so the receiver must be closed with the stage.
+            await using var messageProcessor = messageProcessorFactory.CreateMessageProcessor(targetDatabase);
+            await messageProcessor.ProcessAllMessagesInBatches_Async(
                 async batch => await ProcessMessages(batch, targetDatabase, hlaNomenclatureVersionFromRefresh),
                 batchSize);
         }
@@ -116,22 +135,27 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
         public async Task ProcessDifferentialDonorUpdates(TransientDatabase targetDatabase)
         {
             var targetDatabaseState = DetermineDatabaseState(targetDatabase);
-            var messageProcessorService = ChooseMessagesToProcess(targetDatabase);
 
             switch (targetDatabaseState)
             {
                 case DatabaseStateWithRespectToDonorUpdates.Active:
+                {
                     var activeHlaVersion = activeHlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
-                    await messageProcessorService.ProcessAllMessagesInBatches_Async(
+                    await using var messageProcessor = messageProcessorFactory.CreateMessageProcessor(targetDatabase);
+                    await messageProcessor.ProcessAllMessagesInBatches_Async(
                         async batch => await ProcessMessages(batch, targetDatabase, activeHlaVersion),
                         batchSize);
                     return;
+                }
 
                 case DatabaseStateWithRespectToDonorUpdates.Dormant:
-                    await messageProcessorService.ProcessAllMessagesInBatches_Async(
+                {
+                    await using var messageProcessor = messageProcessorFactory.CreateMessageProcessor(targetDatabase);
+                    await messageProcessor.ProcessAllMessagesInBatches_Async(
                         async batch => await DiscardMessages(batch),
                         batchSize * 10);
                     return;
+                }
 
                 case DatabaseStateWithRespectToDonorUpdates.Refreshing:
                     // Do nothing!
@@ -216,16 +240,6 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
 ", LogLevel.Verbose);
 
             return DatabaseStateWithRespectToDonorUpdates.Refreshing;
-        }
-
-        public IMessageProcessor<SearchableDonorUpdate> ChooseMessagesToProcess(TransientDatabase targetDatabase)
-        {
-            return targetDatabase switch
-            {
-                TransientDatabase.DatabaseA => dbAMessageProcessorService,
-                TransientDatabase.DatabaseB => dbBMessageProcessorService,
-                _ => throw new ArgumentOutOfRangeException(nameof(targetDatabase), targetDatabase, null)
-            };
         }
 
         private async Task ProcessMessages(IEnumerable<DeserializedMessage<SearchableDonorUpdate>> messageBatch, TransientDatabase targetDatabase, string targetHlaNomenclatureVersion)
