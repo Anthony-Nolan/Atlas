@@ -35,10 +35,10 @@ Test projects follow a strict per-component split, each with different infra req
 - `*.Test` — pure unit tests, no external dependencies.
 - `*.Test.Integration` — hits a real SQL database, which it migrates itself (matching and donor import need SQL Server Developer/Enterprise: their migrations use `ONLINE` index operations, which LocalDB/Express reject); the MAC Dictionary suite also needs Azurite; other dependencies (HMD, etc.) are stubbed.
 - `*.Test.Validation` (Matching, Match Prediction) — spins up a real in-memory server and exercises it over HTTP; written in Gherkin via Reqnroll for non-technical review by the Search/BioInformatics teams. Matching validation needs only SQL Server: it reads the HMD (v3330) and MAC Dictionary from the same files as the integration tests, and substitutes the Service Bus clients.
-- The build pipeline (`build-pipeline.yml`) runs the unit tests on every commit, and the integration and matching validation suites in parallel with them, against SQL Server/Azurite containers on each agent, with no Azure resources; see `README_Deployment.md#system-tests`.
+- The build pipeline (`build-pipeline.yml`) runs the unit tests on every commit, and the integration and matching validation suites in parallel with them, against SQL Server, Azurite, and the Service Bus emulator containers on each agent, with no Azure resources; see `README_Deployment.md#system-tests`.
 - `*.Test.Performance` / `*.Test.Verification` — manual/CI-nightly performance harnesses, gated by the custom `IgnoreExceptOnCiPerfTestAttribute` (only runs when `RUN_CI_PERF_TESTS` env var is set).
 
-There is no local Azure Service Bus emulator in use for this project — local dev requires a real Azure Service Bus namespace with manually-created topics/subscriptions (see `README_DevelopmentStartUpGuide.md` for the exact topic/subscription names needed per workflow). Microsoft does ship a dockerized Service Bus emulator, but it isn't adopted here (it caps out at ~10 concurrent requests and is clunky to configure).
+Local functions still need a real Azure Service Bus namespace with manually-created topics/subscriptions (see `README_DevelopmentStartUpGuide.md`). The Service Bus emulator (10 concurrent connections, AMQP TCP only) is for `Atlas.Common.Test.Integration`. Its own pipeline job starts the emulator and the SQL Server container the emulator stores its entities in, and sets `RUN_SERVICE_BUS_EMULATOR_TESTS`.
 
 ## Architecture
 

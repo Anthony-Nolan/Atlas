@@ -29,7 +29,15 @@ How to run functions via Swagger using Visual Studio:
 - Trigger the HealthCheck endpoint in Swagger to make sure the function is working correctly.
 
 ## Service Bus Messaging
-- There is no emulator for azure service bus, so a new bus will need to be manually set up in Azure for use when developing locally.
+- Running the functions locally still needs a Service Bus namespace in Azure. Create the topics and subscriptions named in the sections below, and override the connection strings in `local.settings.json`.
+- Microsoft ships a [Service Bus emulator](https://learn.microsoft.com/azure/service-bus-messaging/overview-emulator) as a Linux container. It is for local tests of Service Bus code, not a stand-in for that namespace.
+  - It speaks AMQP over TCP only, allows 10 concurrent connections, and does not work with Service Bus Explorer. Partitioned entities and AMQP over WebSockets are not supported. Entities disappear when the container restarts.
+  - Start it with the Docker Compose steps in [Test locally by using the Azure Service Bus emulator](https://learn.microsoft.com/azure/service-bus-messaging/test-locally-with-service-bus-emulator). The data-plane connection string on the same machine is `Endpoint=sb://localhost;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;`. Management operations use the same string with port `5300`.
+  - `Atlas.Common.Test.Integration` checks two things:
+    - the `MessageReceiverFactory` gives a working receiver after an earlier one for the same subscription was disposed, so receivers are not cached;
+    - disposing a `MessageProcessor` closes its link at the broker: messages locked on that link go back to the subscription at once, and stay locked when it is not disposed. Without prefetch a link holds no messages between receives: the broker can still send it messages for the credit left over after a receive, but the client (Azure.Messaging.ServiceBus 7.20.1) releases each one at once, with no lock and no delivery count. So the test uses a prefetching receiver to hold them.
+
+    The tests themselves do not use SQL. The emulator does, so its pipeline job starts a SQL Server container for the emulator and sets `RUN_SERVICE_BUS_EMULATOR_TESTS`. Locally, start the emulator and set that variable before running the project.
 
 ### Alerts & Notifications
 - On the bus instance used for local dev, manually create two topics, `notifications` and `alerts`
