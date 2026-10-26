@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.LogFile;
 using Atlas.Client.Models.SupportMessages;
-using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
@@ -328,7 +327,7 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
         resultSet.BlobStorageContainerName = resultSet.IsRepeatSearchSet
             ? azureStorageSettings.RepeatSearchResultsBlobContainer
             : azureStorageSettings.SearchResultsBlobContainer;
-        resultSet.BatchedResult = run.ResultsBatched && azureStorageSettings.ShouldBatchResults;
+        resultSet.BatchedResult = true;
 
         // Download the per-batch result blobs and merge into one donor → result map.
         var matchPredictionResults = await logger.RunTimedAsync(
@@ -336,17 +335,14 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
             async () => await resultsCombiner.DownloadBatchedMatchPredictionResults(batchResultLocations)
         );
 
-        resultSet.Results = await logger.RunTimedAsync("Combining search results", async () =>
-            run.ResultsBatched
-                ? await CombineBatchedSearchResults(
-                    resultSet.SearchRequestId,
-                    run.IsRepeatSearch,
-                    matchPredictionResults,
-                    run.BatchFolderName,
-                    resultSet.BlobStorageContainerName,
-                    azureStorageSettings.ShouldBatchResults
-                )
-                : resultsCombiner.CombineResults(resultSet.SearchRequestId, matchingResultsSummary.Results, matchPredictionResults)
+        await logger.RunTimedAsync("Combining search results", async () =>
+             await CombineBatchedSearchResults(
+                   resultSet.SearchRequestId,
+                   run.IsRepeatSearch,
+                   matchPredictionResults,
+                   run.BatchFolderName,
+                   resultSet.BlobStorageContainerName
+              )
         );
 
         await searchResultsBlobUploader.UploadResults(
@@ -413,15 +409,14 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
         await repository.MarkRunFinalised(runId, DateTime.UtcNow);
     }
 
-    private async Task<IEnumerable<SearchResult>> CombineBatchedSearchResults(
+    private async Task CombineBatchedSearchResults(
         string searchRequestId,
         bool isRepeatSearch,
         IReadOnlyDictionary<int, MatchProbabilityResponse> matchPredictionResults,
         string batchFolder,
-        string blobStorageContainerName,
-        bool resultsShouldBeBatched)
+        string blobStorageContainerName
+        )
     {
-        var allSearchResults = new List<SearchResult>();
         var batchNumber = 0;
 
         await foreach (var matchingResults in matchingResultsDownloader.DownloadResults(isRepeatSearch, batchFolder))
@@ -438,18 +433,9 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
             var currentSearchResults =
                 resultsCombiner.CombineResults(searchRequestId, matchingAlgorithmResults, matchPredictionResultsForCurrentDonors);
 
-            if (resultsShouldBeBatched)
-            {
-                await searchResultsBlobUploader.UploadResults(
-                    currentSearchResults, blobStorageContainerName, $"{batchFolder}/{++batchNumber}.json"
-                );
-            }
-            else
-            {
-                allSearchResults.AddRange(currentSearchResults);
-            }
+            await searchResultsBlobUploader.UploadResults(
+                currentSearchResults, blobStorageContainerName, $"{batchFolder}/{++batchNumber}.json"
+            );
         }
-
-        return allSearchResults;
     }
 }

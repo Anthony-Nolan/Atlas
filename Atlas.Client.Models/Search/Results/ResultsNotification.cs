@@ -1,4 +1,6 @@
-﻿namespace Atlas.Client.Models.Search.Results
+﻿using System;
+
+namespace Atlas.Client.Models.Search.Results
 {
     public abstract class ResultsNotification
     {
@@ -32,6 +34,7 @@
         /// <summary>
         /// Indicates if results were batched (i.e. saved in multiple files separately from the search summary) or not
         /// </summary>
+        [Obsolete("All results are now batched.")]
         public bool ResultsBatched { get; set; }
 
         /// <summary>
