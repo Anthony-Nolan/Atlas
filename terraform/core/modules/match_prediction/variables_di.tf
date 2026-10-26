@@ -23,8 +23,7 @@ variable "azure_storage" {
 
 variable "distributed_cache" {
   type = object({
-    connection_string          = string
-    managed_identity_client_id = string
+    connection_string = string
   })
 }
 
@@ -96,5 +95,15 @@ variable "matching_sql_database_secret_ids" {
     persistent  = string
     transient_a = string
     transient_b = string
+  })
+}
+
+// The identity of the Atlas apps (identity.tf in the root module), with which they resolve Key Vault references and
+// sign in to other resources with Microsoft Entra ID.
+variable "function_apps_identity" {
+  type = object({
+    id           = string
+    client_id    = string
+    principal_id = string
   })
 }

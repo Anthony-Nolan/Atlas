@@ -54,10 +54,11 @@ resource "azurerm_monitor_diagnostic_setting" "distributed_cache_connection_even
 }
 
 locals {
-  // Both values are plain app settings: the connection string is host:port only, and Atlas.Common's RedisConnection
-  // turns on TLS and Entra sign-in when the client id is set. Empty values would turn the cache off.
+  // A plain app setting, host:port only, as the apps sign in with Microsoft Entra ID rather than a key: they set
+  // DistributedCache:ManagedIdentityClientId to the client id of function_apps_identity, which has the access policy
+  // above, and Atlas.Common's RedisConnection then turns on TLS and Entra sign-in. An empty connection string would turn
+  // the cache off.
   distributed_cache_handoff = {
-    connection_string          = "${azurerm_managed_redis.atlas.hostname}:${azurerm_managed_redis.atlas.default_database[0].port}"
-    managed_identity_client_id = azurerm_user_assigned_identity.function_apps_identity.client_id
+    connection_string = "${azurerm_managed_redis.atlas.hostname}:${azurerm_managed_redis.atlas.default_database[0].port}"
   }
 }

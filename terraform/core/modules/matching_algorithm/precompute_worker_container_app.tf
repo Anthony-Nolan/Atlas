@@ -17,7 +17,7 @@ resource "azurerm_container_app" "atlas_precompute_worker" {
   // by the depends_on on the module block.
   identity {
     type         = "UserAssigned"
-    identity_ids = [var.aca_identity.id, var.key_vault.function_apps_identity_id]
+    identity_ids = [var.aca_identity.id, var.function_apps_identity.id]
   }
 
   template {
@@ -124,7 +124,7 @@ resource "azurerm_container_app" "atlas_precompute_worker" {
       }
       env {
         name  = "DistributedCache__ManagedIdentityClientId"
-        value = var.distributed_cache.managed_identity_client_id
+        value = var.function_apps_identity.client_id
       }
       env {
         name  = "HaplotypeFrequencySetCache__ActiveSetCacheExpiryMinutes"
@@ -193,36 +193,36 @@ resource "azurerm_container_app" "atlas_precompute_worker" {
   secret {
     name                = "azure-storage-connection-string"
     key_vault_secret_id = var.key_vault.secret_ids["azure-storage-connection-string"]
-    identity            = var.key_vault.function_apps_identity_id
+    identity            = var.function_apps_identity.id
   }
 
   secret {
     name                = "servicebus-read-only-connection-string"
     key_vault_secret_id = var.key_vault.secret_ids["servicebus-read-only-connection-string"]
-    identity            = var.key_vault.function_apps_identity_id
+    identity            = var.function_apps_identity.id
   }
 
   secret {
     name                = "matching-persistent-sql-connection-string"
     key_vault_secret_id = azurerm_key_vault_secret.matching_algorithm["matching-persistent-sql-connection-string"].id
-    identity            = var.key_vault.function_apps_identity_id
+    identity            = var.function_apps_identity.id
   }
 
   secret {
     name                = "matching-transient-a-sql-connection-string"
     key_vault_secret_id = azurerm_key_vault_secret.matching_algorithm["matching-transient-a-sql-connection-string"].id
-    identity            = var.key_vault.function_apps_identity_id
+    identity            = var.function_apps_identity.id
   }
 
   secret {
     name                = "matching-transient-b-sql-connection-string"
     key_vault_secret_id = azurerm_key_vault_secret.matching_algorithm["matching-transient-b-sql-connection-string"].id
-    identity            = var.key_vault.function_apps_identity_id
+    identity            = var.function_apps_identity.id
   }
 
   secret {
     name                = "match-prediction-sql-connection-string"
     key_vault_secret_id = var.match_prediction_sql_database.connection_string_secret_id
-    identity            = var.key_vault.function_apps_identity_id
+    identity            = var.function_apps_identity.id
   }
 }

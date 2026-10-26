@@ -107,9 +107,10 @@ Secrets shared by more than one Atlas component are held in an Azure Key Vault, 
 `an-<environment>-atlas-kv` (e.g. `an-dev-atlas-kv`) — the "an-" prefix is needed because Key Vault names are unique
 across all of Azure, not just this tenant, and `<environment>-atlas-kv` alone collided with an unrelated tenant's
 vault. The function apps read them through
-`@Microsoft.KeyVault(...)` app settings, authenticating with a shared user-assigned identity
-(`<environment>-atlas-id-functions`) that is granted **Key Vault Secrets User** on the vault. The same identity signs in
-to the [distributed cache](#distributed-cache-azure-managed-redis).
+`@Microsoft.KeyVault(...)` app settings, authenticating with the user-assigned identity that the Atlas apps share
+(`<environment>-atlas-id-functions`, declared in `terraform/core/identity.tf`), which is granted **Key Vault Secrets
+User** on the vault. The apps sign in to the [distributed cache](#distributed-cache-azure-managed-redis) with the same
+identity.
 
 The vault uses Azure RBAC rather than access policies, which means nobody - including the principal that created the
 vault - has data-plane access unless it has been granted. Terraform grants itself **Key Vault Secrets Officer** so that
@@ -153,8 +154,8 @@ the app automatically.
 Each environment has its own Azure Managed Redis, `an-<environment>-atlas-redis`, for the distributed cache. Cache keys
 carry no environment prefix, so environments must never share one. Terraform creates it and sets
 `DistributedCache:ConnectionString` (host and port, no secret) and `DistributedCache:ManagedIdentityClientId` on the six
-apps that use the cache. The apps sign in with Microsoft Entra ID, as `<environment>-atlas-id-functions`, which has an
-access policy on the cache. Access keys are disabled. The cache is reached over its public endpoint with TLS, as Atlas
+apps that use the cache. The apps sign in with Microsoft Entra ID, as their shared identity
+`<environment>-atlas-id-functions`, which has an access policy on the cache. Access keys are disabled. The cache is reached over its public endpoint with TLS, as Atlas
 has no VNet; see [ADR 003](/ArchitecturalDecisionRecord/Phase3/003-Redis_Hosting_AMR_vs_ACA.md#network-posture--phased-deliberately).
 Connection and sign-in events go to the `REDConnectionEvents` table of the environment's Log Analytics workspace.
 

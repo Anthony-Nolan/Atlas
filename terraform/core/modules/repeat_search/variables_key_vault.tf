@@ -2,8 +2,7 @@
 // strings keyed by secret name, for the secrets the root module owns.
 variable "key_vault" {
   type = object({
-    id                        = string
-    function_apps_identity_id = string
-    secret_refs               = map(string)
+    id          = string
+    secret_refs = map(string)
   })
 }

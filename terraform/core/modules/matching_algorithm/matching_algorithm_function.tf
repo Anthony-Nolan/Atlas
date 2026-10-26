@@ -68,10 +68,10 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_function" {
   // this identity read the vault lives in the root module, so it is ordered by the depends_on on the module block.
   identity {
     type         = "UserAssigned"
-    identity_ids = [var.key_vault.function_apps_identity_id]
+    identity_ids = [var.function_apps_identity.id]
   }
 
-  key_vault_reference_identity_id = var.key_vault.function_apps_identity_id
+  key_vault_reference_identity_id = var.function_apps_identity.id
 
   site_config {
     application_insights_key = var.application_insights.instrumentation_key

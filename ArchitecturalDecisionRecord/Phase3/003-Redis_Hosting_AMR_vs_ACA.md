@@ -396,8 +396,8 @@ endpoint from it; the work is not wasted, and it is not a prerequisite.
      `DISTRIBUTED_CACHE_HIGH_AVAILABILITY_ENABLED`.
 3. Authentication: Microsoft Entra ID via managed identity. Leave `access_keys_authentication_enabled` at its `false` default and grant access with
    `azurerm_managed_redis_access_policy_assignment`. No connection-string secret in `local.settings.template.json` or the container app's `secret` blocks.
-   ATL-214 grants the access policy to the existing `<env>-atlas-id-functions` identity, which every host that uses the cache already carries for its
-   Key Vault references, rather than to a new identity.
+   ATL-214 grants the access policy to the existing `<env>-atlas-id-functions` identity, which every host that uses the cache already carries as the
+   shared identity of the Atlas apps, rather than to a new identity.
 4. Transport: leave `client_protocol` at `"Encrypted"`.
 5. Clustering: leave `clustering_policy` at `"OSSCluster"`. `StackExchange.Redis` needs no special configuration for it.
 6. Persistence: none. Every cached value is reconstructible from SQL or Table Storage, and the design already requires graceful degradation to the

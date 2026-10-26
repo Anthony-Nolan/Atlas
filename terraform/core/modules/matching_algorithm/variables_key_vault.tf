@@ -3,9 +3,8 @@
 // IDs, for the container app's `key_vault_secret_id`, which does not accept a reference string.
 variable "key_vault" {
   type = object({
-    id                        = string
-    function_apps_identity_id = string
-    secret_refs               = map(string)
-    secret_ids                = map(string)
+    id          = string
+    secret_refs = map(string)
+    secret_ids  = map(string)
   })
 }

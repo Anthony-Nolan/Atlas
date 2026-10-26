@@ -53,6 +53,7 @@ module "donor_import" {
   app_service_plan        = azurerm_service_plan.atlas-elastic-plan
   application_insights    = azurerm_application_insights.atlas
   azure_storage           = azurerm_storage_account.azure_storage
+  function_apps_identity  = azurerm_user_assigned_identity.function_apps_identity
   key_vault               = local.key_vault_module_handoff
   servicebus_namespace    = azurerm_servicebus_namespace.general
   shared_function_storage = azurerm_storage_account.function_storage
@@ -117,6 +118,7 @@ module "matching_algorithm" {
   distributed_cache             = local.distributed_cache_handoff
   donor_import_sql_database     = azurerm_mssql_database.atlas-database-shared
   elastic_app_service_plan      = azurerm_service_plan.atlas-elastic-plan
+  function_apps_identity        = azurerm_user_assigned_identity.function_apps_identity
   key_vault                     = local.key_vault_module_handoff
   mac_import_table              = module.multiple_allele_code_lookup.storage_table
   match_prediction_sql_database = module.match_prediction.sql_database
@@ -236,6 +238,7 @@ module "match_prediction" {
   app_service_plan        = azurerm_service_plan.atlas-elastic-plan
   azure_storage           = azurerm_storage_account.azure_storage
   distributed_cache       = local.distributed_cache_handoff
+  function_apps_identity  = azurerm_user_assigned_identity.function_apps_identity
   key_vault               = local.key_vault_module_handoff
   servicebus_namespace    = azurerm_servicebus_namespace.general
   shared_function_storage = azurerm_storage_account.function_storage
@@ -320,6 +323,7 @@ module "repeat_search" {
   azure_app_configuration                = azurerm_app_configuration.atlas_app_configuration
   azure_storage                          = azurerm_storage_account.azure_storage
   donor_database_kv_ref                  = module.donor_import.sql_database.connection_string_kv_ref
+  function_apps_identity                 = azurerm_user_assigned_identity.function_apps_identity
   key_vault                              = local.key_vault_module_handoff
   mac_import_table                       = module.multiple_allele_code_lookup.storage_table
   matching_persistent_database_kv_ref    = module.matching_algorithm.sql_database.persistent_database_kv_ref
@@ -380,6 +384,7 @@ module "search_tracking" {
   application_insights    = azurerm_application_insights.atlas
   app_service_plan        = azurerm_service_plan.atlas-elastic-plan
   azure_app_configuration = azurerm_app_configuration.atlas_app_configuration
+  function_apps_identity  = azurerm_user_assigned_identity.function_apps_identity
   key_vault               = local.key_vault_module_handoff
   servicebus_namespace    = azurerm_servicebus_namespace.general
   shared_function_storage = azurerm_storage_account.function_storage
