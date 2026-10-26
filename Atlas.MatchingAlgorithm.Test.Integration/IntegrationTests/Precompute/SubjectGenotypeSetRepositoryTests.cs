@@ -12,6 +12,8 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using AutoFixture;
 using AwesomeAssertions;
+using Dapper;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -195,6 +197,109 @@ public class SubjectGenotypeSetRepositoryTests
         {
             secondIds[key].Should().Be(id);
         }
+    }
+
+    [Test]
+    public async Task GetOrCreateValueIds_WithoutKeyRangeLocks_ForAMixOfNewAndStoredKeys_ReturnsIdsForAllAndInsertsOnlyTheNew()
+    {
+        var stored = NewValue();
+        var storedIds = await repository.GetOrCreateValueIds([stored]);
+        var newValue = NewValue();
+
+        var ids = await repository.GetOrCreateValueIds([stored, newValue], SubjectGenotypeSetValueInsertMode.RetryOnDuplicate);
+
+        ids.Should().HaveCount(2);
+        ids[stored.Key].Should().Be(storedIds[stored.Key]);
+        (await StoredValueCount()).Should().Be(2);
+        (await StoredValue(ids[newValue.Key])).SubjectGenotypeSetData.Should().BeEquivalentTo(newValue.SubjectGenotypeSetData);
+    }
+
+    [Test]
+    public async Task GetOrCreateValueIds_WithoutKeyRangeLocks_ConcurrentlyForTheSameNewKey_StoresOneRowAndAgreesOnItsId()
+    {
+        // With no lock hints, the racing writers all pass NOT EXISTS. The unique index lets one insert through, and the
+        // others fail it and run the insert again, which then finds the key. Only the retry stands between this and a
+        // failed call.
+        var value = NewValue();
+        var repositories = Enumerable.Range(0, 8).Select(_ => NewRepository()).ToList();
+
+        var results = await Task.WhenAll(repositories.Select(r => r.GetOrCreateValueIds([value], SubjectGenotypeSetValueInsertMode.RetryOnDuplicate)));
+
+        (await StoredValueCount()).Should().Be(1);
+        results.Select(ids => ids[value.Key]).Distinct().Should().ContainSingle();
+    }
+
+    [Test]
+    public async Task GetOrCreateValueIds_WithoutKeyRangeLocks_ConcurrentlyForOverlappingChunks_StoresEachKeyOnce()
+    {
+        // Eight writers of the same 50 new keys, each in its own order: every writer but the first loses races, and all
+        // must still agree on every id.
+        var values = Enumerable.Range(0, 50).Select(_ => NewValue()).ToList();
+        var repositories = Enumerable.Range(0, 8).Select(_ => NewRepository()).ToList();
+
+        var results = await Task.WhenAll(repositories.Select((r, i) =>
+            r.GetOrCreateValueIds(values.Skip(i * 5).Concat(values.Take(i * 5)).ToList(), SubjectGenotypeSetValueInsertMode.RetryOnDuplicate)));
+
+        (await StoredValueCount()).Should().Be(values.Count);
+        foreach (var value in values)
+        {
+            results.Select(ids => ids[value.Key]).Distinct().Should().ContainSingle();
+        }
+    }
+
+    [Test]
+    public async Task GetOrCreateValueIds_WithoutKeyRangeLocks_AcrossMoreThanOneChunk_StoresEachKeyOnce()
+    {
+        var values = Enumerable.Range(0, SubjectGenotypeSetRepository.StagingChunkSize + 5).Select(_ => NewValue()).ToList();
+        var firstIds = await repository.GetOrCreateValueIds(values, SubjectGenotypeSetValueInsertMode.RetryOnDuplicate);
+
+        var extraValues = Enumerable.Range(0, 3).Select(_ => NewValue()).ToList();
+        var secondIds = await repository.GetOrCreateValueIds([..values, ..extraValues], SubjectGenotypeSetValueInsertMode.RetryOnDuplicate);
+
+        (await StoredValueCount()).Should().Be(values.Count + extraValues.Count);
+        foreach (var (key, id) in firstIds)
+        {
+            secondIds[key].Should().Be(id);
+        }
+    }
+
+    [Test]
+    public async Task GetOrCreateValueIds_UnderKeyRangeLocks_WaitsForAnUncommittedInsertOfTheNextKey()
+    {
+        // The locked probe of a new key locks the gap of the index up to the next key. Another writer's uncommitted
+        // insert of that next key holds it, so the probe waits: the LCK_M_RS_U waits of ATL-473.
+        var (newKey, nextKey) = AdjacentKeys();
+        await using var blocker = await BeginUncommittedInsert(nextKey);
+
+        var write = repository.GetOrCreateValueIds([NewValue(newKey)]);
+        var finishedFirst = await Task.WhenAny(write, Task.Delay(TimeSpan.FromSeconds(3)));
+        await blocker.Transaction.RollbackAsync();
+
+        finishedFirst.Should().NotBeSameAs(write);
+        (await write).Should().ContainKey(newKey);
+    }
+
+    [TestCase(false)]
+    [TestCase(true)]
+    public async Task GetOrCreateValueIds_WithoutKeyRangeLocks_DoesNotWaitForAnUncommittedInsertOfTheNextKey(bool poolLeftAtSerializable)
+    {
+        // The data refresh stage writes thousands of new keys at once, and must not wait for each other's neighbours.
+        // A pooled connection can keep SERIALIZABLE from its last user, a TransactionScope say, and then the probe takes
+        // range locks with no hint. This test failed that way, now and then, when the donor import tests ran first.
+        if (poolLeftAtSerializable)
+        {
+            await LeavePooledConnectionsAtSerializable();
+        }
+
+        var (newKey, nextKey) = AdjacentKeys();
+        await using var blocker = await BeginUncommittedInsert(nextKey);
+
+        var write = repository.GetOrCreateValueIds([NewValue(newKey)], SubjectGenotypeSetValueInsertMode.RetryOnDuplicate);
+        var finishedFirst = await Task.WhenAny(write, Task.Delay(TimeSpan.FromSeconds(10)));
+        await blocker.Transaction.RollbackAsync();
+
+        finishedFirst.Should().BeSameAs(write);
+        (await write).Should().ContainKey(newKey);
     }
 
     [Test]
@@ -484,6 +589,59 @@ public class SubjectGenotypeSetRepositoryTests
         await using var context = new ContextFactory().Create(transientConnectionString);
         var rows = await context.DonorSubjectGenotypeSets.ToListAsync();
         return rows.Select(row => (row.DonorId, row.AllowedLociKey, row.SubjectGenotypeSetValueId)).ToList();
+    }
+
+    /// <summary>Two keys that sort next to each other in the unique index, with no key between them.</summary>
+    private (SubjectGenotypeSetKey NewKey, SubjectGenotypeSetKey NextKey) AdjacentKeys()
+    {
+        var frequencySetId = fixture.Create<int>();
+        return (
+            new SubjectGenotypeSetKey("7" + new string('f', 63), frequencySetId, AllowedLociKey.ABCDrb1Dqb1),
+            new SubjectGenotypeSetKey("8" + new string('0', 63), frequencySetId, AllowedLociKey.ABCDrb1Dqb1));
+    }
+
+    /// <summary>
+    /// Returns connections to the pool at <c>SERIALIZABLE</c>, as a <c>TransactionScope</c> does: the pool does not reset
+    /// the isolation level of a connection that it hands out again.
+    /// </summary>
+    private async Task LeavePooledConnectionsAtSerializable()
+    {
+        var connections = Enumerable.Range(0, 4).Select(_ => new SqlConnection(transientConnectionString)).ToList();
+        foreach (var connection in connections)
+        {
+            await connection.OpenAsync();
+            await connection.ExecuteAsync("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
+        }
+
+        foreach (var connection in connections)
+        {
+            await connection.DisposeAsync();
+        }
+    }
+
+    /// <summary>Inserts a value row in a transaction that stays open, as a concurrent writer that has not committed yet.</summary>
+    private async Task<OpenTransaction> BeginUncommittedInsert(SubjectGenotypeSetKey key)
+    {
+        var connection = new SqlConnection(transientConnectionString);
+        await connection.OpenAsync();
+        var transaction = (SqlTransaction) await connection.BeginTransactionAsync();
+        await connection.ExecuteAsync(
+            """
+            INSERT INTO SubjectGenotypeSetValues (HlaTypingKey, HaplotypeFrequencySetId, AllowedLociKey, IsUnrepresented, SubjectGenotypeSetData)
+            VALUES (@HlaTypingKey, @HaplotypeFrequencySetId, @AllowedLociKey, 1, NULL)
+            """,
+            new { key.HlaTypingKey, key.HaplotypeFrequencySetId, AllowedLociKey = key.AllowedLociKey.ToString() },
+            transaction);
+        return new OpenTransaction(connection, transaction);
+    }
+
+    private sealed record OpenTransaction(SqlConnection Connection, SqlTransaction Transaction) : IAsyncDisposable
+    {
+        public async ValueTask DisposeAsync()
+        {
+            await Transaction.DisposeAsync();
+            await Connection.DisposeAsync();
+        }
     }
 
     private static ISubjectGenotypeSetRepository NewRepository() =>

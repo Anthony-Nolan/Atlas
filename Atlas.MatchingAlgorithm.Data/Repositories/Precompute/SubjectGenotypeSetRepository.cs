@@ -24,8 +24,8 @@ public interface ISubjectGenotypeSetRepository
     /// batch of the same refresh has already paid for, including a batch from a stopped run that is now continued. Under
     /// the agreed design, rows do not outlive their refresh - ATL-231 adds both tables to the clean-up that starts each
     /// refresh - which is why the key can leave out the HLA nomenclature version. This call is NOT how duplicate rows
-    /// are prevented - that is <see cref="GetOrCreateValueIds"/>'s guarded insert - so a caller may skip it entirely
-    /// and still be correct, just slower.
+    /// are prevented - that is <see cref="GetOrCreateValueIds"/>'s insert and the unique index behind it - so a caller
+    /// may skip it entirely and still be correct, just slower.
     /// </remarks>
     Task<IReadOnlyDictionary<SubjectGenotypeSetKey, int>> GetExistingValueIds(IReadOnlyCollection<SubjectGenotypeSetKey> keys);
 
@@ -38,7 +38,11 @@ public interface ISubjectGenotypeSetRepository
     /// computed one for the same key describe the same genotype set; rewriting would cost a large
     /// <c>varbinary(max)</c> update to store what is already there.
     /// </remarks>
-    Task<IReadOnlyDictionary<SubjectGenotypeSetKey, int>> GetOrCreateValueIds(IReadOnlyCollection<SubjectGenotypeSetValueToStore> values);
+    /// <param name="values">The values to store.</param>
+    /// <param name="insertMode">How a race of two writers on one new key ends. Each key is stored once in both modes.</param>
+    Task<IReadOnlyDictionary<SubjectGenotypeSetKey, int>> GetOrCreateValueIds(
+        IReadOnlyCollection<SubjectGenotypeSetValueToStore> values,
+        SubjectGenotypeSetValueInsertMode insertMode = SubjectGenotypeSetValueInsertMode.KeyRangeLocked);
 
     /// <summary>
     /// Points each donor at the value it resolves to, per locus combination: inserts the rows that are missing, and
@@ -180,10 +184,16 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
     /// </para>
     ///
     /// <para>
-    /// A backstop, not the mechanism. <see cref="InsertMissingValuesSql"/>'s lock hints are what stop the collision
-    /// happening; measured with 8 concurrent writers on one key, this retry never fires while they are in place. It
-    /// exists for the deadlock a longer chunk can still produce, and so that one lost race costs a second attempt
-    /// rather than a failed refresh stage.
+    /// With <see cref="SubjectGenotypeSetValueInsertMode.KeyRangeLocked"/>, a backstop, not the mechanism.
+    /// <see cref="InsertMissingValuesSql"/>'s lock hints are what stop the collision happening; measured with 8
+    /// concurrent writers on one key, this retry never fires while they are in place. It exists for the deadlock a
+    /// longer chunk can still produce, and so that one lost race costs a second attempt rather than a failed refresh
+    /// stage.
+    /// </para>
+    ///
+    /// <para>
+    /// With <see cref="SubjectGenotypeSetValueInsertMode.RetryOnDuplicate"/>, the mechanism: a lost race is a unique
+    /// index violation, and the second attempt finds the key the other writer stored.
     /// </para>
     /// </summary>
     private const int MaxAttempts = 3;
@@ -413,6 +423,14 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
     /// the outcome survives losing one of the two. What the hints buy over the retry alone is that a payload-heavy
     /// set-based insert is never rolled back and re-run under contention.
     /// </para>
+    ///
+    /// <para>
+    /// <b>What the hints cost.</b> The probe of a key that is not stored yet locks the gap of the index around it, up to
+    /// the next stored key. A hash key puts each new key at a random place, so two writers of different new keys often
+    /// probe the same gap. Each then waits for the other (<c>LCK_M_RS_U</c>), and with a thousand keys per statement they
+    /// deadlock. In the data refresh stage, with 80 writers and an almost empty table, most writers waited and thousands
+    /// of chunks deadlocked (ATL-473). That stage uses <see cref="InsertMissingValuesWithoutLockHintsSql"/> instead.
+    /// </para>
     /// </summary>
     private const string InsertMissingValuesSql = $"""
         INSERT INTO {ValuesTableName} (
@@ -430,6 +448,54 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
         FROM {StagingTableName} s
         WHERE NOT EXISTS (
             SELECT 1 FROM {ValuesTableName} v WITH (UPDLOCK, HOLDLOCK)
+            WHERE v.{nameof(SubjectGenotypeSetValue.HlaTypingKey)} = s.{nameof(SubjectGenotypeSetValue.HlaTypingKey)}
+              AND v.{nameof(SubjectGenotypeSetValue.HaplotypeFrequencySetId)} = s.{nameof(SubjectGenotypeSetValue.HaplotypeFrequencySetId)}
+              AND v.{nameof(SubjectGenotypeSetValue.AllowedLociKey)} = s.{nameof(SubjectGenotypeSetValue.AllowedLociKey)})
+        """;
+
+    /// <summary>
+    /// <see cref="InsertMissingValuesSql"/> without the lock hints, for
+    /// <see cref="SubjectGenotypeSetValueInsertMode.RetryOnDuplicate"/>.
+    ///
+    /// <para>
+    /// The probe takes no key-range locks: under read-committed snapshot, which Azure SQL Database turns on by default,
+    /// it reads committed rows without locks. The insert locks only the keys it inserts. Two writers of the same new key
+    /// both pass the probe; the second waits on the first's insert, and then fails the unique index (error 2601), which
+    /// <see cref="WithRetries{T}"/> runs again. The whole statement is rolled back, so a lost race costs the insert of
+    /// one chunk, and never stores a key twice.
+    /// </para>
+    ///
+    /// <para>
+    /// <b>Read committed, set here.</b> Under <c>SERIALIZABLE</c> the probe takes key-range locks without any hint, and
+    /// read-committed snapshot does not apply. A pooled connection can keep that level from its last user: a
+    /// <see cref="System.Transactions.TransactionScope"/> runs at <c>SERIALIZABLE</c> by default, and the donor import uses
+    /// one. Seen in the integration tests, where the probe waited on a <c>RangeS-S</c> lock. The level stays on the
+    /// session, which is harmless: read committed is the default.
+    /// </para>
+    ///
+    /// <para>
+    /// The staging table is ordered by the key, so writers insert their keys in the same order, and lock them in the
+    /// same order. A deadlock is still possible, for example on a page, and is retried like a lost race.
+    /// </para>
+    /// </summary>
+    private const string InsertMissingValuesWithoutLockHintsSql = $"""
+        SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+        INSERT INTO {ValuesTableName} (
+            {nameof(SubjectGenotypeSetValue.HlaTypingKey)},
+            {nameof(SubjectGenotypeSetValue.HaplotypeFrequencySetId)},
+            {nameof(SubjectGenotypeSetValue.AllowedLociKey)},
+            {nameof(SubjectGenotypeSetValue.IsUnrepresented)},
+            {nameof(SubjectGenotypeSetValue.SubjectGenotypeSetData)})
+        SELECT
+            s.{nameof(SubjectGenotypeSetValue.HlaTypingKey)},
+            s.{nameof(SubjectGenotypeSetValue.HaplotypeFrequencySetId)},
+            s.{nameof(SubjectGenotypeSetValue.AllowedLociKey)},
+            s.{nameof(SubjectGenotypeSetValue.IsUnrepresented)},
+            s.{nameof(SubjectGenotypeSetValue.SubjectGenotypeSetData)}
+        FROM {StagingTableName} s
+        WHERE NOT EXISTS (
+            SELECT 1 FROM {ValuesTableName} v
             WHERE v.{nameof(SubjectGenotypeSetValue.HlaTypingKey)} = s.{nameof(SubjectGenotypeSetValue.HlaTypingKey)}
               AND v.{nameof(SubjectGenotypeSetValue.HaplotypeFrequencySetId)} = s.{nameof(SubjectGenotypeSetValue.HaplotypeFrequencySetId)}
               AND v.{nameof(SubjectGenotypeSetValue.AllowedLociKey)} = s.{nameof(SubjectGenotypeSetValue.AllowedLociKey)})
@@ -481,7 +547,8 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
 
     /// <inheritdoc />
     public async Task<IReadOnlyDictionary<SubjectGenotypeSetKey, int>> GetOrCreateValueIds(
-        IReadOnlyCollection<SubjectGenotypeSetValueToStore> values)
+        IReadOnlyCollection<SubjectGenotypeSetValueToStore> values,
+        SubjectGenotypeSetValueInsertMode insertMode = SubjectGenotypeSetValueInsertMode.KeyRangeLocked)
     {
         if (values == null || values.Count == 0)
         {
@@ -493,9 +560,16 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
         // two entries for one key are, by definition, two encodings of the same genotype set.
         var distinctValues = values.DistinctBy(value => value.Key).ToList();
 
+        var insertSql = insertMode switch
+        {
+            SubjectGenotypeSetValueInsertMode.KeyRangeLocked => InsertMissingValuesSql,
+            SubjectGenotypeSetValueInsertMode.RetryOnDuplicate => InsertMissingValuesWithoutLockHintsSql,
+            _ => throw new ArgumentOutOfRangeException(nameof(insertMode), insertMode, null)
+        };
+
         return await OverStagedChunks(distinctValues, async connection =>
         {
-            await connection.ExecuteAsync(InsertMissingValuesSql, commandTimeout: CommandTimeoutInSeconds);
+            await connection.ExecuteAsync(insertSql, commandTimeout: CommandTimeoutInSeconds);
             return await ReadStagedValueIds(connection);
         });
     }

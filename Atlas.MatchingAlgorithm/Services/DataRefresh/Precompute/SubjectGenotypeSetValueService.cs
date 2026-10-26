@@ -92,10 +92,14 @@ public interface ISubjectGenotypeSetValueService
     /// The nomenclature version of <paramref name="targetDatabase"/>, which the P-group conversion runs at.
     /// </param>
     /// <param name="targetDatabase">The transient database that the values are read from and written to.</param>
+    /// <param name="insertMode">
+    /// How the store of the values ends a race of two writers on one new key. See <see cref="SubjectGenotypeSetValueInsertMode"/>.
+    /// </param>
     Task<SubjectGenotypeSetValueResults> GetOrComputeValueIds(
         IReadOnlyList<SubjectGenotypeSetValueRequest> requests,
         string matchingAlgorithmHlaNomenclatureVersion,
-        TransientDatabase targetDatabase);
+        TransientDatabase targetDatabase,
+        SubjectGenotypeSetValueInsertMode insertMode = SubjectGenotypeSetValueInsertMode.KeyRangeLocked);
 }
 
 /// <summary>
@@ -129,7 +133,8 @@ public class SubjectGenotypeSetValueService : ISubjectGenotypeSetValueService
     public async Task<SubjectGenotypeSetValueResults> GetOrComputeValueIds(
         IReadOnlyList<SubjectGenotypeSetValueRequest> requests,
         string matchingAlgorithmHlaNomenclatureVersion,
-        TransientDatabase targetDatabase)
+        TransientDatabase targetDatabase,
+        SubjectGenotypeSetValueInsertMode insertMode = SubjectGenotypeSetValueInsertMode.KeyRangeLocked)
     {
         if (requests.Count == 0)
         {
@@ -153,6 +158,7 @@ public class SubjectGenotypeSetValueService : ISubjectGenotypeSetValueService
                     keyedRequests.Where(request => !unambiguous.Contains(request.Key) && !failures.ContainsKey(request.Key)).ToList(),
                     repository,
                     matchingAlgorithmHlaNomenclatureVersion,
+                    insertMode,
                     ids,
                     failures);
             }
@@ -184,11 +190,12 @@ public class SubjectGenotypeSetValueService : ISubjectGenotypeSetValueService
         IReadOnlyCollection<KeyedRequest> keyedRequests,
         ISubjectGenotypeSetRepository repository,
         string matchingAlgorithmHlaNomenclatureVersion,
+        SubjectGenotypeSetValueInsertMode insertMode,
         IDictionary<SubjectGenotypeSetKey, int> ids,
         IDictionary<SubjectGenotypeSetKey, SubjectGenotypeSetValueFailure> failures)
     {
-        // A read, not a guarantee: GetOrCreateValueIds checks again under a lock. This only saves the imputations of
-        // the values that an earlier batch stored.
+        // A read, not a guarantee: GetOrCreateValueIds checks again, and the unique index has the last word. This only
+        // saves the imputations of the values that an earlier batch stored.
         foreach (var (key, id) in await repository.GetExistingValueIds(keyedRequests.Select(request => request.Key).Distinct().ToList()))
         {
             ids[key] = id;
@@ -200,7 +207,7 @@ public class SubjectGenotypeSetValueService : ISubjectGenotypeSetValueService
             var (values, stoppedBy) = await Compute(chunk, matchingAlgorithmHlaNomenclatureVersion, failures);
 
             // Also when the computation stopped: the values that it computed are done.
-            foreach (var (key, id) in await repository.GetOrCreateValueIds(values))
+            foreach (var (key, id) in await repository.GetOrCreateValueIds(values, insertMode))
             {
                 ids[key] = id;
             }
