@@ -228,6 +228,9 @@
   <Project Path="Atlas.Common.Test/Atlas.Common.Test.csproj">
     <BuildType Solution="Development|*" Project="Debug" />
   </Project>
+  <Project Path="Atlas.Common.Test.Integration/Atlas.Common.Test.Integration.csproj">
+    <BuildType Solution="Development|*" Project="Debug" />
+  </Project>
   <Project Path="Atlas.Common/Atlas.Common.csproj">
     <BuildType Solution="Development|*" Project="Debug" />
   </Project>

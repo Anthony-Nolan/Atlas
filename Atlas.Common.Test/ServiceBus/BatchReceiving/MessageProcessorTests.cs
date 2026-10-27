@@ -27,5 +27,13 @@ namespace Atlas.Common.Test.ServiceBus.BatchReceiving
 
             await messageReceiver.Received(1).ReceiveMessageBatchAsync(batchSize);
         }
+
+        [Test]
+        public async Task DisposeAsync_ClosesReceiver()
+        {
+            await messageProcessor.DisposeAsync();
+
+            await messageReceiver.Received(1).DisposeAsync();
+        }
     }
 }

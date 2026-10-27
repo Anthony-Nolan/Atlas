@@ -33,12 +33,12 @@ Data projects with their own EF Core migrations: `Atlas.MatchingAlgorithm.Data`,
 
 Test projects follow a strict per-component split, each with different infra requirements:
 - `*.Test` — pure unit tests, no external dependencies.
-- `*.Test.Integration` — hits a real SQL database, which it migrates itself (matching and donor import need SQL Server Developer/Enterprise: their migrations use `ONLINE` index operations, which LocalDB/Express reject); the MAC Dictionary suite also needs Azurite; other dependencies (HMD, etc.) are stubbed.
+- `*.Test.Integration` — hits a real SQL database, which it migrates itself (matching and donor import need SQL Server Developer/Enterprise: their migrations use `ONLINE` index operations, which LocalDB/Express reject); the MAC Dictionary suite also needs Azurite; other dependencies (HMD, etc.) are stubbed. The exception is `Atlas.Common.Test.Integration`: it uses no database, only the Service Bus emulator (see below).
 - `*.Test.Validation` (Matching, Match Prediction) — spins up a real in-memory server and exercises it over HTTP; written in Gherkin via Reqnroll for non-technical review by the Search/BioInformatics teams. Matching validation needs only SQL Server: it reads the HMD (v3330) and MAC Dictionary from the same files as the integration tests, and substitutes the Service Bus clients.
-- The build pipeline (`build-pipeline.yml`) runs the unit tests on every commit, and the integration and matching validation suites in parallel with them, against SQL Server/Azurite containers on each agent, with no Azure resources; see `README_Deployment.md#system-tests`.
+- The build pipeline (`build-pipeline.yml`) runs the unit tests on every commit, and the integration and matching validation suites in parallel with them, against SQL Server, Azurite, and the Service Bus emulator containers on each agent, with no Azure resources; see `README_Deployment.md#system-tests`.
 - `*.Test.Performance` / `*.Test.Verification` — manual/CI-nightly performance harnesses, gated by the custom `IgnoreExceptOnCiPerfTestAttribute` (only runs when `RUN_CI_PERF_TESTS` env var is set).
 
-There is no local Azure Service Bus emulator in use for this project — local dev requires a real Azure Service Bus namespace with manually-created topics/subscriptions (see `README_DevelopmentStartUpGuide.md` for the exact topic/subscription names needed per workflow). Microsoft does ship a dockerized Service Bus emulator, but it isn't adopted here (it caps out at ~10 concurrent requests and is clunky to configure).
+Local functions still need a real Azure Service Bus namespace with manually-created topics/subscriptions (see `README_DevelopmentStartUpGuide.md`). The Service Bus emulator (10 concurrent connections, AMQP TCP only) is for `Atlas.Common.Test.Integration`. Its own pipeline job starts the emulator and the SQL Server container the emulator stores its entities in, and sets `RUN_SERVICE_BUS_EMULATOR_TESTS`.
 
 ## Architecture
 
@@ -71,8 +71,8 @@ Non-Functions projects use `appsettings.json` + user secrets. Functions apps use
 
 Based on Anthony Nolan's org-wide [Git Standards](https://anthonynolan.atlassian.net/wiki/spaces/NPDWS/pages/532185178/Git+Standards) (Confluence, NPDWS space), adapted for Atlas: **`master` is the primary branch** most changes are merged into (Atlas has no separate `develop` branch).
 
-- **Release candidate branches**: prefix `rc/`, named for the target minor version (e.g. `rc/3.4.0`), cut from `master` when a version is ready to test/release. Once cut, no new features land on it — only bug fixes. One `rc/` branch is active per in-progress minor version; delete it once no longer used in any environment.
-- **Hotfix branches**: prefix `hotfix/` (e.g. `hotfix/3.1.1`), cut from the corresponding already-released `rc/` branch, for patching a version already live.
+- **Release candidate branches**: prefix `rc/`, named for the target minor version (e.g. `rc/3.4.0`), cut from `master` when a version is ready to test/release. Once cut, no new features land on it — only bug fixes. One `rc/` branch is active per in-progress minor version. It is deleted automatically (`delete_rc_on_release.yml`) when its version is tagged `released/wmda/x.y.z`, i.e. deployed to WMDA LIVE, the last environment in the release cadence.
+- **Hotfix branches**: prefix `hotfix/` (e.g. `hotfix/4.0.1`), for patching a version already live. Cut from the `released/wmda/` tag of the version being patched (e.g. `hotfix/4.0.1` from `released/wmda/4.0.0`), not from its `rc/` branch, which is deleted on release. Deleted automatically in the same way once the hotfix version is itself tagged `released/wmda/`.
 - **Feature/fix branches**: write changes on a feature branch first, then PR it in for review.
   - **Target branch rule**: if there's no `rc/`/`hotfix/` branch currently open for the release you're targeting, PR into `master`; if one is already open, PR into that `rc/`/`hotfix/` branch instead.
   - **Naming**: lowercase, hyphenated, starting with the Jira story card ID (use the story number even if a subtask is involved) followed by a short description — e.g. `atl-1234-add-search-patient-endpoint`. Avoid mixed case, a missing description, or a missing ticket ID.

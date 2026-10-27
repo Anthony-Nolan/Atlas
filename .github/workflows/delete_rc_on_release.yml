@@ -1,7 +1,11 @@
 # This workflow will:
 # * When a version is tagged as released to WMDA LIVE (the last environment in the release cadence):
-# * Parse the major/minor version of the tag
-# * Delete any corresponding rc/* branch from origin
+# * Parse the version x.y.z from the `released/wmda/x.y.z` tag
+# * Delete the `rc/x.y.z` and `hotfix/x.y.z` branches of that version from origin, where they exist
+#
+# A later hotfix of a released version is cut from its `released/wmda/x.y.z` tag, not from the deleted branch.
+# A missing branch is only a warning; any other git error fails the run (ATL-484).
+# See README_Contribution_Versioning.md.
 
 name: Delete Deployed Release Candidate Branch
 
@@ -9,25 +13,64 @@ on:
   push:
     tags:
       - 'released/wmda/**'
+  # Allows you to run this workflow manually from the Actions tab: to test it with a dry run, or to delete
+  # the branch of a version whose tag ran an older copy of this workflow.
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Released version whose rc/ and hotfix/ branches to delete, e.g. 4.0.0'
+        type: string
+        required: true
+      dry_run:
+        description: 'Log the branches that would be deleted, but do not delete them'
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
 
 jobs:
-  delete-rc-branch:
-    name: Delete Deployed RC Branch
+  delete-release-branch:
+    name: Delete Deployed Release Branch
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      # Use third-party tool to parse semver from arbitrarily formatted tag
-      - run: sudo npm install -g semver
+      - name: Delete release branches
+        env:
+          VERSION: ${{ inputs.version || github.ref_name }}
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+        run: |
+          version="${VERSION#released/wmda/}"
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::warning::'$VERSION' isn't an x.y.z version - nothing to delete"
+            exit 0
+          fi
+          echo "Released version: $version"
 
-      - run: |
-          # Extract semantic version from tag and cut to major.minor
-          majMin=$(semver -c ${{ github.ref }} | cut -f1,2 -d'.')
+          deleted=false
+          for branch in "rc/$version" "hotfix/$version"; do
+            # --exit-code: 0 = branch exists, 2 = no such branch, anything else = git/auth error.
+            status=0
+            git ls-remote --exit-code --heads origin "refs/heads/$branch" > /dev/null || status=$?
+            case $status in
+              0)
+                if [[ "$DRY_RUN" == "true" ]]; then
+                  echo "Dry run - would delete $branch"
+                else
+                  git push origin --delete "$branch"
+                  echo "Deleted $branch"
+                fi
+                deleted=true ;;
+              2)
+                echo "No $branch on origin" ;;
+              *)
+                echo "::error::Could not check $branch on origin (git exit code $status)"
+                exit "$status" ;;
+            esac
+          done
 
-          echo "Parsed major.minor: $majMin"
-
-          git push origin --delete "rc/$majMin" || true
-          git push origin --delete "rc/$majMin.x" || true
+          if [[ "$deleted" != "true" ]]; then
+            echo "::warning::Neither rc/$version nor hotfix/$version exists on origin - nothing deleted"
+          fi

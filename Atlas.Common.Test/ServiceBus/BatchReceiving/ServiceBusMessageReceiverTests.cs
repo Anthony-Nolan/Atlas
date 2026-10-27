@@ -24,7 +24,7 @@ namespace Atlas.Common.Test.ServiceBus.BatchReceiving
             messageReceiverFactory = Substitute.For<IMessageReceiverFactory>();
             messageReceiver = Substitute.For<IMessageReceiver>();
 
-            messageReceiverFactory.GetMessageReceiver(TopicName, SubscriptionName).Returns(messageReceiver);
+            messageReceiverFactory.CreateMessageReceiver(TopicName, SubscriptionName).Returns(messageReceiver);
 
             serviceBusMessageReceiver = new ServiceBusMessageReceiver<string>(messageReceiverFactory, TopicName, SubscriptionName);
         }
@@ -75,6 +75,14 @@ namespace Atlas.Common.Test.ServiceBus.BatchReceiving
             await serviceBusMessageReceiver.AbandonMessageAsync(lockToken);
 
             await messageReceiver.Received().AbandonMessageAsync(lockToken);
+        }
+
+        [Test]
+        public async Task DisposeAsync_ClosesReceiver()
+        {
+            await serviceBusMessageReceiver.DisposeAsync();
+
+            await messageReceiver.Received(1).DisposeAsync();
         }
     }
 }

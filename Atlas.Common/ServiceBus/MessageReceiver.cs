@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Atlas.Common.ServiceBus
 {
-    public interface IMessageReceiver
+    public interface IMessageReceiver : IAsyncDisposable
     {
         Task<IEnumerable<ServiceBusReceivedMessage>> PeekMessagesAsync(int maxMessages, long fromSequenceNumber);
         Task AbandonMessageAsync(object lockToken);
@@ -16,7 +16,7 @@ namespace Atlas.Common.ServiceBus
         Task<IEnumerable<ServiceBusReceivedMessage>> ReceiveMessagesAsync(int batchSize);
     }
 
-    public sealed class MessageReceiver : IMessageReceiver, IAsyncDisposable
+    public sealed class MessageReceiver : IMessageReceiver
     {
         private readonly ServiceBusReceiver receiver;
 
