@@ -91,7 +91,7 @@ deliberately conservative (biased high) so the SKU choice is not invalidated by 
 |---|---|---|---|---|---|---|---|
 | **HMD metadata tables (ATL-196)** | **Must** | 9 repository classes × 1 table each, per nomenclature version | Whole serialised table per key | **200–500 MB per nomenclature version** | Cold start and post-refresh only — L1 serves steady state | Written once by the first instance to build each table | **Immutable per version**; 12 h L2 TTL, invalidated only after a successful Data Refresh |
 | Active HF set lookup (ATL-194) | Must (correctness fix) | 1 key — a `(RegistryCode, EthnicityCode) → HaplotypeFrequencySet` map | Small serialised collection | < 100 KB | Every Match Prediction request, behind a short L1 TTL | Invalidated on HF set import (rare) | Rare, explicit invalidation |
-| HF sets (ATL-195) | Should / limited | 1 per active HF set — about 210, each a manifest and chunks of 96 KiB | The rows of the set, in columns, gzip | **105.8 MB measured** for the 208 active sets of a copy of WMDA LIVE: 1,195 chunks, the largest set 1,224 KiB | Once per set per process, on a local miss (cold start, scale-out, local eviction) | Written by the first process that reads the set from SQL; 30-day TTL | Immutable per key (set id and import time) |
+| HF sets (ATL-195, keyed by content since ATL-480) | Should / limited | 1 per content: the sets with the same rows share one value (42 contents for the 208 active sets of a copy of WMDA LIVE). Each value is a manifest and chunks of 96 KiB | The rows, in columns, gzip | **14.0 MB measured** for those 42 contents (105.8 MB with a value for each set); the largest content 1,224 KiB | Once per content per process, on a local miss (cold start, scale-out, local eviction) | Written by the first process that reads the content from SQL; 30-day TTL | Immutable per key (content hash; a set with no content hash: set id and import time) |
 | Imputed / converted genotype sets (candidate) | Could | One per `(donor, AllowedLociKey, HF set version, nomenclature version)` | Moderate object | Grows with searched-donor population — open-ended | Read once per replica per donor within a burst | Write-on-compute | Immutable per key |
 | `ScoringCache` (candidate, not in v2) | Not yet scoped | Very high — one key per `(locus, donor HLA, patient HLA, nomenclature version)` | `MatchGrade` / `MatchConfidence` / `bool?` — a few bytes behind a ~60–80 byte key | Open-ended | Extremely high op rate, tiny values | Write-on-compute | Deterministic and immutable per nomenclature version |
 | MAC dictionary | **Not needed in L2** | — | — | — (~567,000 codes stay local) | — | — | — |
@@ -308,7 +308,7 @@ Comparison at the sizing this workload actually calls for:
 | **AMR `Balanced_B3`, HA — recommended for production** | **~40** | ~2.4 GB | **Yes**, ≥2 nodes, zone-distributed | **Yes** | Patched, Entra auth, 15,000 connections, reachable by every consumer with no new networking |
 | AMR `Balanced_B5`, HA | ~96 | ~4.8 GB | Yes | Yes | The step up if the HMD estimate proves low |
 | AMR `Balanced_B10`, HA | ~195 | ~9.6 GB | Yes | Yes | 12 GB; `MemoryOptimized_M10` is the same 12 GB for ~133 with fewer vCPUs |
-| AMR `Balanced_B1`, HA | ~20 | ~0.8 GB | Yes | Yes | Enough only while the cache holds the ATL-194 and ATL-195 data (~106 MB measured), not the HMD tables |
+| AMR `Balanced_B1`, HA | ~20 | ~0.8 GB | Yes | Yes | Enough only while the cache holds the ATL-194 and ATL-195 data (~106 MB measured, ~14 MB after ATL-480), not the HMD tables |
 | AMR `Balanced_B1`, non-HA (dev/uat) | ~10 | ~0.8 GB | No | No | Non-production only |
 | Redis on ACA, 2 vCPU / 4 GiB | ~105 (47–163) | ~3–3.5 GB | **No** | **No** | Flushed on every restart and maintenance event; needs VNet + environment work first |
 | Redis on ACA, 4 vCPU / 8 GiB | ~210 (95–326) | ~7 GB | **No** | **No** | Requires a workload profiles environment |
@@ -386,7 +386,8 @@ endpoint from it; the work is not wasted, and it is not a prerequisite.
      carry no SLA and may lose data during maintenance, and dev/uat need not hold a full production-scale HMD dataset.
    - If ATL-194 and ATL-195 ship before ATL-196, `Balanced_B1` with HA (~£20/month) is sufficient for production in the interim. The cache then holds
      the active-set lookup and the HF sets: 105.8 MB measured for the 208 active sets of a copy of WMDA LIVE (1,195 chunks), and the replaced sets
-     until their 30-day TTL. Scale up to B3 before ATL-196 goes live.
+     until their 30-day TTL. With ATL-480, the sets with the same rows share one value: 14.0 MB for the 42 contents of those 208 sets. Scale up to B3
+     before ATL-196 goes live.
    - Revisit the size on measured `Used Memory` once HMD data is actually resident; the 200–500 MB figure is an estimate, and memory size and
      performance tier are both in-place scale operations. Note that `high_availability_enabled` is *not* an in-place change, it forces recreation, so
      the HA choice must be right per environment at creation time.

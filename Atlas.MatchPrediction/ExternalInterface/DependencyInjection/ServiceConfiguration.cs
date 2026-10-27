@@ -115,6 +115,25 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             services.AddScoped<IMatchPredictionValidator, MatchPredictionValidator>();
         }
 
+        /// <summary>
+        /// Opt-in, for the app with the content hash backfill endpoint: the backfill of the haplotype frequency sets, and
+        /// the background worker that runs it. The host must also register <see cref="RegisterMatchPredictionAlgorithm"/>,
+        /// which registers the repositories.
+        /// </summary>
+        /// <remarks>
+        /// Not in <see cref="RegisterMatchPredictionAlgorithm"/>: the worker is a hosted service, which runs for the lifetime
+        /// of the process, and the other hosts of match prediction have no endpoint to start it.
+        /// </remarks>
+        public static void RegisterHaplotypeFrequencySetContentHashBackfill(this IServiceCollection services)
+        {
+            services.AddScoped<IFrequencySetContentHashBackfill, FrequencySetContentHashBackfill>();
+
+            // One instance: the endpoint starts the worker that the host runs.
+            services.AddSingleton<FrequencySetContentHashBackfillWorker>();
+            services.AddSingleton<IFrequencySetContentHashBackfillStarter>(sp => sp.GetRequiredService<FrequencySetContentHashBackfillWorker>());
+            services.AddHostedService(sp => sp.GetRequiredService<FrequencySetContentHashBackfillWorker>());
+        }
+
         public static void RegisterHaplotypeFrequenciesReader(
             this IServiceCollection services,
             Func<IServiceProvider, string> fetchMatchPredictionDatabaseConnectionString)
@@ -260,7 +279,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
                 var cacheProvider = sp.GetRequiredService<IHaplotypeFrequencySetCacheProvider>();
                 return new FrequencySetResidencyTracker(
                     cacheSettings.MaxCachedFrequencySetMegabytes * bytesPerMegabyte,
-                    evictedSetId => cacheProvider.Cache.Remove(HaplotypeFrequencyCache.AllFrequenciesCacheKey(evictedSetId)),
+                    evictedKey => cacheProvider.Cache.Remove(evictedKey),
                     sp.GetRequiredService<ILogger<FrequencySetResidencyTracker>>()
                 );
             });

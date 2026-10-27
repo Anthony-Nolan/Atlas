@@ -91,6 +91,9 @@ namespace Atlas.MatchPrediction.Data.Migrations
                     b.Property<bool>("Active")
                         .HasColumnType("bit");
 
+                    b.Property<byte[]>("ContentHash")
+                        .HasColumnType("binary(32)");
+
                     b.Property<DateTimeOffset>("DateTimeAdded")
                         .HasColumnType("datetimeoffset");
 

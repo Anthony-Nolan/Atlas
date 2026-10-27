@@ -19,11 +19,18 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 /// </para>
 ///
 /// <para>
-/// <b>Layout.</b> One uncompressed prefix byte, <see cref="FormatVersion"/>, then a gzip stream that holds the body:
+/// <b>Two formats.</b> <see cref="ContentFormatVersion"/> is the value of a content, under the key of its content hash:
+/// the rows that the sets with that hash share. Its body has no set id, and the decoder checks the content hash of the
+/// rows instead (<see cref="FrequencySetContentHash"/>). <see cref="FormatVersion"/> is the value of one set that has no
+/// content hash, under a key with its set id: its body starts with the set id, and the decoder checks it.
+/// </para>
+///
+/// <para>
+/// <b>Layout.</b> One uncompressed prefix byte, the format version, then a gzip stream that holds the body:
 /// </para>
 ///
 /// <list type="table">
-/// <item><term>SetId</term><description>int32. The decoder checks it.</description></item>
+/// <item><term>SetId</term><description>int32, in <see cref="FormatVersion"/> only. The decoder checks it.</description></item>
 /// <item><term>RowCount</term><description>int32. Zero is legal.</description></item>
 /// <item><term>Pools</term><description>For each locus (A, B, C, DQB1, DRB1): a 7-bit encoded count, then that many
 /// length-prefixed UTF-8 names, in the order the rows first use them.</description></item>
@@ -49,14 +56,17 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 ///
 /// <para>
 /// <b>Failure contract.</b> Every malformed payload throws <see cref="InvalidDataException"/>, and so does a payload of
-/// another set. The version is also in the cache name: change both when the format changes, as the old and the new code
-/// read the same cache during a deployment.
+/// another set or of another content. The version is also in the cache name: change both when the format changes, as the
+/// old and the new code read the same cache during a deployment.
 /// </para>
 /// </summary>
 internal static class FrequencySetPayload
 {
-    /// <summary>The first byte of each payload, outside the gzip stream.</summary>
+    /// <summary>The first byte of the payload of one set, outside the gzip stream: the body starts with the set id.</summary>
     internal const byte FormatVersion = 1;
+
+    /// <summary>The first byte of the payload of a content, outside the gzip stream: the body has no set id.</summary>
+    internal const byte ContentFormatVersion = 2;
 
     /// <summary>
     /// <see cref="CompressionLevel.Optimal"/> is the measured choice: <c>Fastest</c> saves little time, and gives
@@ -67,8 +77,11 @@ internal static class FrequencySetPayload
     private const int PrefixSize = 1;
     private const int DecimalPartCount = 4;
 
-    /// <summary>The body header: the set id and the row count.</summary>
-    private const int HeaderSize = sizeof(int) + sizeof(int);
+    /// <summary>The size of the set id at the start of a body of <see cref="FormatVersion"/>.</summary>
+    private const int SetIdSize = sizeof(int);
+
+    /// <summary>The size of the row count, after the set id if there is one.</summary>
+    private const int RowCountSize = sizeof(int);
 
     /// <summary>
     /// The smallest a row can be: five one-byte indices, the four ints of its frequency and its category. Used only to
@@ -91,23 +104,59 @@ internal static class FrequencySetPayload
     /// </summary>
     private static readonly Encoding NameEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
-    /// <summary>Encodes the rows of set <paramref name="setId"/>, in their order.</summary>
-    public static byte[] Encode(int setId, IReadOnlyList<LightweightHaplotypeFrequencyRecord> rows)
+    /// <summary>Encodes the rows of set <paramref name="setId"/>, in their order, in <see cref="FormatVersion"/>.</summary>
+    public static byte[] Encode(int setId, IReadOnlyList<LightweightHaplotypeFrequencyRecord> rows) => Encode(FormatVersion, setId, rows);
+
+    /// <summary>
+    /// Encodes the rows of a content, in their order, in <see cref="ContentFormatVersion"/>: with no set id, as the
+    /// value that all the sets with its content hash share.
+    /// </summary>
+    public static byte[] EncodeContent(IReadOnlyList<LightweightHaplotypeFrequencyRecord> rows) => Encode(ContentFormatVersion, null, rows);
+
+    /// <summary>The exact inverse of <see cref="Encode(int, IReadOnlyList{LightweightHaplotypeFrequencyRecord})"/>, for set <paramref name="setId"/>.</summary>
+    /// <exception cref="InvalidDataException">
+    /// The payload is not a payload of this format, or it is the payload of another set.
+    /// </exception>
+    public static List<LightweightHaplotypeFrequencyRecord> Decode(int setId, byte[] payload) =>
+        DecodeBody(setId, ReadBody(payload, FormatVersion));
+
+    /// <summary>
+    /// The exact inverse of <see cref="EncodeContent"/>, for the content with <paramref name="contentHash"/>. The rows
+    /// have set id 0: a content belongs to no one set.
+    /// </summary>
+    /// <exception cref="InvalidDataException">
+    /// The payload is not a payload of this format, or its rows do not have the content hash
+    /// <paramref name="contentHash"/>.
+    /// </exception>
+    public static List<LightweightHaplotypeFrequencyRecord> DecodeContent(byte[] contentHash, byte[] payload)
+    {
+        ArgumentNullException.ThrowIfNull(contentHash);
+
+        var rows = DecodeBody(null, ReadBody(payload, ContentFormatVersion));
+
+        var hashOfTheRows = FrequencySetContentHash.Calculate(rows);
+        if (!hashOfTheRows.AsSpan().SequenceEqual(contentHash))
+        {
+            throw new InvalidDataException(
+                $"Payload holds content {FrequencySetContentHash.ToHex(hashOfTheRows)}, not content {FrequencySetContentHash.ToHex(contentHash)}.");
+        }
+
+        return rows;
+    }
+
+    private static byte[] Encode(byte formatVersion, int? setId, IReadOnlyList<LightweightHaplotypeFrequencyRecord> rows)
     {
         ArgumentNullException.ThrowIfNull(rows);
 
         using var output = new MemoryStream();
-        output.WriteByte(FormatVersion);
+        output.WriteByte(formatVersion);
         GzipPayloadBody.Write(output, EncodeBody(setId, rows), Compression);
 
         return output.ToArray();
     }
 
-    /// <summary>The exact inverse of <see cref="Encode"/>, for set <paramref name="setId"/>.</summary>
-    /// <exception cref="InvalidDataException">
-    /// The payload is not a payload of this format, or it is the payload of another set.
-    /// </exception>
-    public static List<LightweightHaplotypeFrequencyRecord> Decode(int setId, byte[] payload)
+    /// <returns>The body of <paramref name="payload"/>, after a check that it has <paramref name="formatVersion"/>.</returns>
+    private static byte[] ReadBody(byte[] payload, byte formatVersion)
     {
         ArgumentNullException.ThrowIfNull(payload);
 
@@ -116,20 +165,25 @@ internal static class FrequencySetPayload
             throw new InvalidDataException($"Payload is {payload.Length} bytes; it is too short to hold the format version and a gzip member.");
         }
 
-        if (payload[0] != FormatVersion)
+        if (payload[0] != formatVersion)
         {
-            throw new InvalidDataException($"Format version {payload[0]} is not supported; this build reads version {FormatVersion}.");
+            throw new InvalidDataException($"Format version {payload[0]} is not supported here; this read wants version {formatVersion}.");
         }
 
-        return DecodeBody(setId, GzipPayloadBody.Read(payload, PrefixSize));
+        return GzipPayloadBody.Read(payload, PrefixSize);
     }
 
-    private static byte[] EncodeBody(int setId, IReadOnlyList<LightweightHaplotypeFrequencyRecord> rows)
+    /// <param name="setId">The set id at the start of the body; null for a content, which has none.</param>
+    private static byte[] EncodeBody(int? setId, IReadOnlyList<LightweightHaplotypeFrequencyRecord> rows)
     {
         using var stream = new MemoryStream();
         using (var writer = new BinaryWriter(stream, NameEncoding, leaveOpen: true))
         {
-            writer.Write(setId);
+            if (setId.HasValue)
+            {
+                writer.Write(setId.Value);
+            }
+
             writer.Write(rows.Count);
 
             var indicesByLocus = new List<int[]>(NamesByLocus.Length);
@@ -200,21 +254,27 @@ internal static class FrequencySetPayload
         return indices;
     }
 
-    private static List<LightweightHaplotypeFrequencyRecord> DecodeBody(int setId, byte[] body)
+    /// <param name="setId">The set id that the body must start with; null for a content, which has none.</param>
+    /// <param name="body">The body.</param>
+    private static List<LightweightHaplotypeFrequencyRecord> DecodeBody(int? setId, byte[] body)
     {
         try
         {
             using var stream = new MemoryStream(body, writable: false);
             using var reader = new BinaryReader(stream, NameEncoding, leaveOpen: true);
 
-            var storedSetId = reader.ReadInt32();
-            if (storedSetId != setId)
+            if (setId.HasValue)
             {
-                throw new InvalidDataException($"Payload holds set {storedSetId}, not set {setId}.");
+                var storedSetId = reader.ReadInt32();
+                if (storedSetId != setId)
+                {
+                    throw new InvalidDataException($"Payload holds set {storedSetId}, not set {setId}.");
+                }
             }
 
+            var headerSize = (setId.HasValue ? SetIdSize : 0) + RowCountSize;
             var rowCount = reader.ReadInt32();
-            if (rowCount < 0 || (long)rowCount * MinimumRowSize > body.Length - HeaderSize)
+            if (rowCount < 0 || (long)rowCount * MinimumRowSize > body.Length - headerSize)
             {
                 throw new InvalidDataException($"Row count {rowCount:N0} cannot fit in a {body.Length:N0}-byte body; the payload is corrupt.");
             }
@@ -253,7 +313,7 @@ internal static class FrequencySetPayload
                     C = namesByLocus[2][i],
                     DQB1 = namesByLocus[3][i],
                     DRB1 = namesByLocus[4][i],
-                    SetId = setId,
+                    SetId = setId ?? 0,
                     Frequency = ReadDecimal(bits),
                     TypingCategory = ReadCategory(reader)
                 });

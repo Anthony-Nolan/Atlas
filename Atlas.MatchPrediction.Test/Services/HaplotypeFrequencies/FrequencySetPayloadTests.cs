@@ -186,8 +186,104 @@ internal class FrequencySetPayloadTests
         string Pick(string[] names) => names[random.Next(names.Length)];
     }
 
+    // ---- Contents ----------------------------------------------------------------------------------------------------
+
+    [Test]
+    public void DecodeContent_OfEncodeContent_ReturnsTheRowsInTheirOrder_WithNoSetId()
+    {
+        var rows = NewRows(fixture.Create<int>());
+
+        var decoded = RoundTripContent(rows);
+
+        decoded.Should().Equal(rows.Select(row => row with { SetId = 0 }));
+    }
+
+    [Test]
+    public void DecodeContent_OfEncodeContent_KeepsTheBitsOfEachFrequency_NullAndEmptyNames_AndEachTypingCategory()
+    {
+        var frequency = fixture.Create<decimal>();
+        var rows = Enum.GetValues<HaplotypeTypingCategory>()
+            .Select(category => NewRow() with { TypingCategory = category })
+            .Append(NewRow() with { Frequency = frequency, C = null, DQB1 = "" })
+            .Append(NewRow() with { Frequency = frequency * 1.000m, C = "", DQB1 = null })
+            .ToList();
+
+        var decoded = RoundTripContent(rows);
+
+        decoded.Select(Comparable).Should().Equal(rows.Select(Comparable));
+
+        static (string, string, string, string, string, string, HaplotypeTypingCategory) Comparable(LightweightHaplotypeFrequencyRecord row) =>
+            (row.A, row.B, row.C, row.DQB1, row.DRB1, string.Join(",", decimal.GetBits(row.Frequency)), row.TypingCategory);
+    }
+
+    [Test]
+    public void DecodeContent_OfAContentWithNoRows_ReturnsNoRows()
+    {
+        var decoded = RoundTripContent([]);
+
+        decoded.Should().BeEmpty();
+    }
+
+    /// <summary>So that all the sets with the content, in each process, store the same chunks.</summary>
+    [Test]
+    public void EncodeContent_OfTheSameRowsOfAnotherSet_GivesTheSameBytes()
+    {
+        var rows = NewRows(fixture.Create<int>());
+
+        var payload = FrequencySetPayload.EncodeContent(rows);
+        var payloadOfAnotherSet = FrequencySetPayload.EncodeContent(rows.Select(row => row with { SetId = setId + 1 }).ToList());
+
+        payloadOfAnotherSet.Should().Equal(payload);
+    }
+
+    [Test]
+    public void DecodeContent_ForAnotherContentHash_Throws()
+    {
+        var payload = FrequencySetPayload.EncodeContent(NewRows(fixture.Create<int>()));
+        var hashOfOtherRows = FrequencySetContentHash.Calculate(NewRows(fixture.Create<int>()));
+
+        var decode = () => FrequencySetPayload.DecodeContent(hashOfOtherRows, payload);
+
+        decode.Should().Throw<InvalidDataException>().WithMessage($"*not content {FrequencySetContentHash.ToHex(hashOfOtherRows)}*");
+    }
+
+    [Test]
+    public void DecodeContent_OfThePayloadOfASet_Throws()
+    {
+        var rows = NewRows(fixture.Create<int>());
+
+        var decode = () => FrequencySetPayload.DecodeContent(FrequencySetContentHash.Calculate(rows), FrequencySetPayload.Encode(setId, rows));
+
+        decode.Should().Throw<InvalidDataException>().WithMessage("*Format version*");
+    }
+
+    [Test]
+    public void Decode_OfThePayloadOfAContent_Throws()
+    {
+        var payload = FrequencySetPayload.EncodeContent(NewRows(fixture.Create<int>()));
+
+        var decode = () => FrequencySetPayload.Decode(setId, payload);
+
+        decode.Should().Throw<InvalidDataException>().WithMessage("*Format version*");
+    }
+
+    [TestCase(1)]
+    [TestCase(8)]
+    public void DecodeContent_OfATruncatedPayload_Throws(int missingBytes)
+    {
+        var rows = NewRows(100);
+        var payload = FrequencySetPayload.EncodeContent(rows);
+
+        var decode = () => FrequencySetPayload.DecodeContent(FrequencySetContentHash.Calculate(rows), payload[..^missingBytes]);
+
+        decode.Should().Throw<InvalidDataException>();
+    }
+
     private List<LightweightHaplotypeFrequencyRecord> RoundTrip(List<LightweightHaplotypeFrequencyRecord> rows) =>
         FrequencySetPayload.Decode(setId, FrequencySetPayload.Encode(setId, rows));
+
+    private static List<LightweightHaplotypeFrequencyRecord> RoundTripContent(List<LightweightHaplotypeFrequencyRecord> rows) =>
+        FrequencySetPayload.DecodeContent(FrequencySetContentHash.Calculate(rows), FrequencySetPayload.EncodeContent(rows));
 
     private LightweightHaplotypeFrequencyRecord NewRow() =>
         fixture.Build<LightweightHaplotypeFrequencyRecord>().With(x => x.SetId, setId).Create();

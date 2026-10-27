@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,8 @@ using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Test.TestHelpers;
 using AutoFixture;
 using AwesomeAssertions;
+using LazyCache;
+using LazyCache.Providers;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -98,7 +101,8 @@ internal class HaplotypeFrequencyCacheTests
     private (HaplotypeFrequencyCache Sut, IHaplotypeFrequencySetCacheProvider CacheProvider) BuildSutWithCacheProvider(
         bool awaitConsolidatedFrequencyWarm = false,
         long cacheCapacityInBytes = long.MaxValue,
-        IDistributedCacheProvider distributedCache = null)
+        IDistributedCacheProvider distributedCache = null,
+        IAppCache appCache = null)
     {
         var cacheSettings = fixture.Build<HaplotypeFrequencySetCacheSettings>()
             .With(x => x.ActiveSetCacheExpiryMinutes, ActiveSetCacheExpiryMinutes)
@@ -107,10 +111,10 @@ internal class HaplotypeFrequencyCacheTests
             .Create();
 
         var cacheProvider = new HaplotypeFrequencySetCacheProvider(
-            AppCacheBuilder.NewCacheOver(new MemoryCache(new MemoryCacheOptions { Clock = clock })));
+            appCache ?? AppCacheBuilder.NewCacheOver(new MemoryCache(new MemoryCacheOptions { Clock = clock })));
         var residencyTracker = new FrequencySetResidencyTracker(
             cacheCapacityInBytes,
-            evictedSetId => cacheProvider.Cache.Remove(HaplotypeFrequencyCache.AllFrequenciesCacheKey(evictedSetId)),
+            evictedKey => cacheProvider.Cache.Remove(evictedKey),
             NullLogger<FrequencySetResidencyTracker>.Instance
         );
 
@@ -367,8 +371,9 @@ internal class HaplotypeFrequencyCacheTests
         await limitedSut.GetAllHaplotypeFrequencies(setIdA);
 
         // Simulates the cache's own TTL expiring A independently of the tracker. The PostEvictionCallback registered on
-        // A's entry must tell the tracker to forget it, freeing its bytes.
-        cacheProvider.Cache.Remove(HaplotypeFrequencyCache.AllFrequenciesCacheKey(setIdA));
+        // A's entry must tell the tracker to forget it, freeing its bytes. (A has no row here, so its entry has the key of a
+        // set with no row.)
+        cacheProvider.Cache.Remove(HaplotypeFrequencyCache.MissingSetCacheKey(setIdA));
         // MemoryCache dispatches post-eviction callbacks on the thread pool rather than inline with Remove, so give
         // it a moment to actually run before relying on its effect below.
         await Task.Delay(200);
@@ -743,9 +748,276 @@ internal class HaplotypeFrequencyCacheTests
         rowReadOfTheCheck.SetResult(newSet);
         await Task.WhenAll(calls);
 
-        // The read of the first load, the read of the check, and the read of the load of the new set.
-        await frequencySetRepository.Received(3).GetSet(set.Id, Arg.Any<CancellationToken>());
+        // The read of the first call, and the read of the check: a load reads no row, as the source of the set has it.
+        await frequencySetRepository.Received(2).GetSet(set.Id, Arg.Any<CancellationToken>());
         await frequencyRepository.Received(2).GetAllHaplotypeFrequencies(set.Id);
+    }
+
+    // ---- Sets with a content hash -----------------------------------------------------------------------------------
+
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_TwoSetsWithOneContent_ReadTheDatabaseOnce_AndTakeOnePlaceInTheMemoryLimit()
+    {
+        // The memory limit holds one entry of one row.
+        var limitedSut = BuildSut(awaitConsolidatedFrequencyWarm: false, cacheCapacityInBytes: OneRowSetSize);
+        var rows = NewRows(0, 1);
+        var setA = NewSetWithContent(rows);
+        var setB = NewSetWithContent(rows);
+
+        var entryOfA = await limitedSut.GetAllHaplotypeFrequencies(setA.Id);
+        var entryOfB = await limitedSut.GetAllHaplotypeFrequencies(setB.Id);
+        var entryOfAAgain = await limitedSut.GetAllHaplotypeFrequencies(setA.Id);
+
+        entryOfB.Should().BeSameAs(entryOfA);
+        entryOfAAgain.Should().BeSameAs(entryOfA);
+        await frequencyRepository.ReceivedWithAnyArgs(1).GetAllHaplotypeFrequencies(default);
+    }
+
+    /// <summary>
+    /// No behaviour change: a set gets the same entry from the shared content as from its own rows, with the order of the
+    /// projected pool, which is the tie-break of truncation when frequencies are equal.
+    /// </summary>
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_ForASetWhoseContentAnotherSetLoaded_BuildsTheSameEntryAsFromTheRowsOfTheSet()
+    {
+        var rows = RowsWithOneFrequency(0);
+        var setA = NewSetWithContent(rows);
+        var setB = NewSetWithContent(rows);
+
+        await sut.GetAllHaplotypeFrequencies(setA.Id);
+        var entryOfB = await sut.GetAllHaplotypeFrequencies(setB.Id);
+
+        entryOfB.ShouldBeTheSameEntryAs(FrequencySetCacheEntry.Build(RowsOfSet(setB.Id, rows)));
+        await frequencyRepository.DidNotReceive().GetAllHaplotypeFrequencies(setB.Id);
+    }
+
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_ForASetWhoseContentAnotherInstanceLoaded_DoesNotReadTheFrequenciesFromTheDatabase()
+    {
+        var store = DistributedCacheBuilder.NewSharedStore();
+        var instanceA = BuildInstance(DistributedCacheBuilder.NewProviderOver(store));
+        var instanceB = BuildInstance(DistributedCacheBuilder.NewProviderOver(store));
+        var rows = RowsWithOneFrequency(0);
+        var setA = NewSetWithContent(rows);
+        var setB = NewSetWithContent(rows);
+
+        var entryOfA = await instanceA.GetAllHaplotypeFrequencies(setA.Id);
+        var entryOfB = await instanceB.GetAllHaplotypeFrequencies(setB.Id);
+
+        entryOfB.ShouldBeTheSameEntryAs(entryOfA);
+        await frequencyRepository.ReceivedWithAnyArgs(1).GetAllHaplotypeFrequencies(default);
+    }
+
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_OnAMissOfAContent_StoresTheContentUnderItsHashForThirtyDays()
+    {
+        var distributedCache = DistributedCacheThatAcceptsEachWrite();
+        var instance = BuildInstance(distributedCache);
+        var set = NewSetWithContent(NewRows(0, 1));
+
+        await instance.GetAllHaplotypeFrequencies(set.Id);
+
+        await distributedCache.Received(1).SetAsync(
+            HaplotypeFrequencyCache.ContentDistributedCacheKey(set.ContentHash),
+            Arg.Any<byte[]>(),
+            TimeSpan.FromDays(30),
+            Arg.Any<CancellationToken>());
+    }
+
+    /// <summary>An inactive set can be the set of an import that still runs.</summary>
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_ForAnInactiveSetWithAContentHash_DoesNotStoreTheContent()
+    {
+        var distributedCache = DistributedCacheThatAcceptsEachWrite();
+        var instance = BuildInstance(distributedCache);
+        var set = NewSetWithContent(NewRows(0, 1), active: false);
+
+        await instance.GetAllHaplotypeFrequencies(set.Id);
+
+        await distributedCache.DidNotReceiveWithAnyArgs().SetAsync(default, default, default, default);
+    }
+
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_WhenTheStoredContentHasAnotherHash_ReadsTheDatabaseAndStoresTheContentAgain()
+    {
+        var store = DistributedCacheBuilder.NewSharedStore();
+        var rows = NewRows(0, fixture.Create<int>());
+        var set = NewSetWithContent(rows);
+        await DistributedCacheBuilder.NewProviderOver(store).SetChunkedAsync(
+            HaplotypeFrequencyCache.ContentDistributedCacheKey(set.ContentHash),
+            FrequencySetPayload.EncodeContent(NewRows(0, fixture.Create<int>())),
+            TimeSpan.FromDays(1));
+
+        var entry = await BuildInstance(DistributedCacheBuilder.NewProviderOver(store)).GetAllHaplotypeFrequencies(set.Id);
+        var entryOfAnotherInstance = await BuildInstance(DistributedCacheBuilder.NewProviderOver(store)).GetAllHaplotypeFrequencies(set.Id);
+
+        entry.ShouldBeTheSameEntryAs(FrequencySetCacheEntry.Build(rows));
+        entryOfAnotherInstance.ShouldBeTheSameEntryAs(FrequencySetCacheEntry.Build(rows));
+        // The other instance used the content that the first stored again.
+        await frequencyRepository.Received(1).GetAllHaplotypeFrequencies(set.Id);
+        logger.Received(1).SendTrace(Arg.Is<string>(message => message.Contains("cannot be decoded")), LogLevel.Warn);
+    }
+
+    /// <summary>E.g. after a change of the frequencies of the set with SQL.</summary>
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_WhenTheRowsDoNotHaveTheStoredHash_LogsAnError_AndUsesTheRowsOfTheSetForThatSetOnly()
+    {
+        var distributedCache = DistributedCacheThatAcceptsEachWrite();
+        var instance = BuildInstance(distributedCache);
+        var set = NewSetWithContent(NewRows(0, fixture.Create<int>()));
+        var rowsInTheDatabase = NewRows(set.Id, fixture.Create<int>());
+        frequencyRepository.GetAllHaplotypeFrequencies(set.Id).Returns(rowsInTheDatabase);
+
+        var entry = await instance.GetAllHaplotypeFrequencies(set.Id);
+        var entryOfALaterCall = await instance.GetAllHaplotypeFrequencies(set.Id);
+
+        entry.ShouldBeTheSameEntryAs(FrequencySetCacheEntry.Build(rowsInTheDatabase));
+        entryOfALaterCall.Should().BeSameAs(entry);
+        logger.Received(1).SendTrace(Arg.Is<string>(message => message.Contains("do not have the content hash")), LogLevel.Error);
+        await distributedCache.DidNotReceiveWithAnyArgs().SetAsync(default, default, default, default);
+        // The read of the load of the content, and the read of the load of the set alone: not one for each later call.
+        await frequencyRepository.Received(2).GetAllHaplotypeFrequencies(set.Id);
+    }
+
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_WhenTheRowsOfOneSetDoNotHaveTheStoredHash_AnotherSetThatWaitsForTheContent_GetsItsOwnRows()
+    {
+        var (instance, cacheProvider) = BuildSutWithCacheProvider(distributedCache: UnreachableDistributedCache());
+        var rows = NewRows(0, fixture.Create<int>());
+        var wrongSet = NewSetWithContent(rows);
+        var rightSet = NewSetWithContent(rows);
+
+        // The sources of both sets are in the cache now, and so are got at once: a source that is read starts its factory
+        // on the thread pool, and so could let the right set load the content first. Then the content goes.
+        await instance.GetAllHaplotypeFrequencies(rightSet.Id);
+        await instance.GetAllHaplotypeFrequencies(wrongSet.Id);
+        cacheProvider.Cache.Remove(HaplotypeFrequencyCache.ContentCacheKey(rightSet.ContentHash));
+
+        var rowsOfTheWrongSet = NewRows(wrongSet.Id, fixture.Create<int>());
+        var firstReadOfTheWrongSet = new TaskCompletionSource<List<LightweightHaplotypeFrequencyRecord>>();
+        frequencyRepository.GetAllHaplotypeFrequencies(wrongSet.Id).Returns(firstReadOfTheWrongSet.Task, Task.FromResult(rowsOfTheWrongSet));
+
+        // The wrong set puts the load of the content in the cache, with its own rows, and the right set waits for that load.
+        var callOfTheWrongSet = instance.GetAllHaplotypeFrequencies(wrongSet.Id);
+        var callOfTheRightSet = instance.GetAllHaplotypeFrequencies(rightSet.Id);
+        firstReadOfTheWrongSet.SetResult(rowsOfTheWrongSet);
+
+        (await callOfTheRightSet).ShouldBeTheSameEntryAs(FrequencySetCacheEntry.Build(rows));
+        (await callOfTheWrongSet).ShouldBeTheSameEntryAs(FrequencySetCacheEntry.Build(rowsOfTheWrongSet));
+        logger.Received(1).SendTrace(Arg.Is<string>(message => message.Contains("do not have the content hash")), LogLevel.Error);
+    }
+
+    /// <summary>
+    /// E.g. after a change of the frequencies of three or more sets of one content with SQL. Each failed load quarantines a
+    /// set, so a caller that waits for the content goes on until a set whose rows have the hash loads it.
+    /// </summary>
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_WhenLoadsOfTheContentFailForThreeOtherSetsInARow_LoadsTheContent()
+    {
+        var rows = NewRows(0, fixture.Create<int>());
+        var set = NewSetWithContent(rows);
+        var instance = BuildInstanceWhoseLoadsFirstFail(HaplotypeFrequencyCache.ContentCacheKey(set.ContentHash), fixture.CreateMany<int>(3));
+
+        var entry = await instance.GetAllHaplotypeFrequencies(set.Id);
+
+        entry.ShouldBeTheSameEntryAs(FrequencySetCacheEntry.Build(rows));
+    }
+
+    /// <summary>The set itself fails the third load: it is quarantined then, and the call goes on with its own rows.</summary>
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_WhenTheSetFailsALoadOfTheContentAfterTwoOtherSets_UsesTheRowsOfTheSet()
+    {
+        var set = NewSetWithContent(NewRows(0, fixture.Create<int>()));
+        var rowsInTheDatabase = NewRows(set.Id, fixture.Create<int>());
+        frequencyRepository.GetAllHaplotypeFrequencies(set.Id).Returns(rowsInTheDatabase);
+        var instance = BuildInstanceWhoseLoadsFirstFail(HaplotypeFrequencyCache.ContentCacheKey(set.ContentHash), fixture.CreateMany<int>(2));
+
+        var entry = await instance.GetAllHaplotypeFrequencies(set.Id);
+
+        entry.ShouldBeTheSameEntryAs(FrequencySetCacheEntry.Build(rowsInTheDatabase));
+        logger.Received(1).SendTrace(Arg.Is<string>(message => message.Contains("do not have the content hash")), LogLevel.Error);
+    }
+
+    /// <summary>
+    /// A set fails a second load of one call only when its quarantine did not hold, or when a caller got its source just
+    /// before the quarantine. The call stops then, so that it does not read the database again and again.
+    /// </summary>
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_WhenOneSetFailsTwoLoadsOfTheContent_Throws()
+    {
+        var set = NewSetWithContent(NewRows(0, fixture.Create<int>()));
+        var otherSetId = fixture.Create<int>();
+        var instance = BuildInstanceWhoseLoadsFirstFail(HaplotypeFrequencyCache.ContentCacheKey(set.ContentHash), [otherSetId, otherSetId]);
+
+        var act = () => instance.GetAllHaplotypeFrequencies(set.Id);
+
+        await act.Should().ThrowAsync<FrequencySetContentMismatchException>();
+    }
+
+    /// <summary>The check keeps the source of a set when it cannot read the row: for a quarantined set, its own source.</summary>
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_ForAQuarantinedSet_WhenALaterCheckCannotReadTheRow_StillUsesTheRowsOfTheSet()
+    {
+        var rows = NewRows(0, fixture.Create<int>());
+        var wrongSet = NewSetWithContent(rows);
+        var rightSet = NewSetWithContent(rows);
+        var rowsOfTheWrongSet = NewRows(wrongSet.Id, fixture.Create<int>());
+        frequencyRepository.GetAllHaplotypeFrequencies(wrongSet.Id).Returns(rowsOfTheWrongSet);
+        await sut.GetAllHaplotypeFrequencies(wrongSet.Id);
+        // The content is in the cache now, from the rows of the right set.
+        await sut.GetAllHaplotypeFrequencies(rightSet.Id);
+
+        frequencySetRepository.GetSet(wrongSet.Id, Arg.Any<CancellationToken>()).ThrowsAsync(new InvalidOperationException(fixture.Create<string>()));
+        MoveClockTo(SetCheckInterval + ClockMargin);
+        var entry = await sut.GetAllHaplotypeFrequencies(wrongSet.Id);
+
+        entry.ShouldBeTheSameEntryAs(FrequencySetCacheEntry.Build(rowsOfTheWrongSet));
+    }
+
+    /// <summary>E.g. after a restore or a copy of the database: the same import time, but other rows.</summary>
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_AfterTheCheckInterval_ForASetWithAnotherContentHash_UsesTheNewContent()
+    {
+        var set = NewSetWithContent(NewRows(0, 1));
+        await sut.GetAllHaplotypeFrequencies(set.Id);
+
+        var newRows = NewRows(set.Id, 1);
+        var setWithTheNewRows = fixture.Build<Data.Models.HaplotypeFrequencySet>()
+            .With(x => x.Id, set.Id)
+            .With(x => x.Active, true)
+            .With(x => x.DateTimeAdded, set.DateTimeAdded)
+            .With(x => x.ContentHash, FrequencySetContentHash.Calculate(newRows))
+            .Create();
+        frequencySetRepository.GetSet(set.Id, Arg.Any<CancellationToken>()).Returns(setWithTheNewRows);
+        frequencyRepository.GetAllHaplotypeFrequencies(set.Id).Returns(newRows);
+        MoveClockTo(SetCheckInterval + ClockMargin);
+        var entry = await sut.GetAllHaplotypeFrequencies(set.Id);
+
+        entry.ShouldBeTheSameEntryAs(FrequencySetCacheEntry.Build(newRows));
+    }
+
+    /// <summary>The backfill wrote the hash of a set that this process had loaded by its id.</summary>
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_AfterTheCheckInterval_ForASetThatGotAContentHash_SharesTheContent()
+    {
+        var set = NewSet();
+        var rows = NewRows(set.Id, 1);
+        frequencyRepository.GetAllHaplotypeFrequencies(set.Id).Returns(rows);
+        await sut.GetAllHaplotypeFrequencies(set.Id);
+
+        var setWithAHash = fixture.Build<Data.Models.HaplotypeFrequencySet>()
+            .With(x => x.Id, set.Id)
+            .With(x => x.Active, true)
+            .With(x => x.DateTimeAdded, set.DateTimeAdded)
+            .With(x => x.ContentHash, FrequencySetContentHash.Calculate(rows))
+            .Create();
+        frequencySetRepository.GetSet(set.Id, Arg.Any<CancellationToken>()).Returns(setWithAHash);
+        var otherSet = NewSetWithContent(rows);
+        MoveClockTo(SetCheckInterval + ClockMargin);
+        var entryOfTheSet = await sut.GetAllHaplotypeFrequencies(set.Id);
+        var entryOfTheOtherSet = await sut.GetAllHaplotypeFrequencies(otherSet.Id);
+
+        entryOfTheOtherSet.Should().BeSameAs(entryOfTheSet);
     }
 
     [Test]
@@ -966,13 +1238,56 @@ internal class HaplotypeFrequencyCacheTests
         return distributedCache;
     }
 
-    /// <summary>A set in the database: <see cref="IHaplotypeFrequencySetRepository.GetSet"/> returns it.</summary>
+    /// <summary>
+    /// The cache of one process, whose loads under <paramref name="key"/> first fail, one for each set of
+    /// <paramref name="setIdsOfTheFailedLoads"/>: as a load of a content fails for all its callers when the rows of the set
+    /// that loads it do not have the hash.
+    /// </summary>
+    private HaplotypeFrequencyCache BuildInstanceWhoseLoadsFirstFail(string key, IEnumerable<int> setIdsOfTheFailedLoads) =>
+        BuildSutWithCacheProvider(
+            appCache: new CacheWhoseLoadsFirstFail(new MemoryCache(new MemoryCacheOptions { Clock = clock }), key, setIdsOfTheFailedLoads)
+        ).Sut;
+
+    /// <summary>A local cache whose loads under one key first fail, each with the id of a set whose rows do not have the hash.</summary>
+    private sealed class CacheWhoseLoadsFirstFail(MemoryCache underlyingCache, string failingKey, IEnumerable<int> setIdsOfTheFailedLoads)
+        : CachingService(new MemoryCacheProvider(underlyingCache))
+    {
+        private readonly ConcurrentQueue<int> failedLoads = new(setIdsOfTheFailedLoads);
+
+        public override Task<T> GetOrAddAsync<T>(string key, Func<ICacheEntry, Task<T>> addItemFactory, MemoryCacheEntryOptions policy) =>
+            key == failingKey && failedLoads.TryDequeue(out var setId)
+                ? Task.FromException<T>(new FrequencySetContentMismatchException(setId))
+                : base.GetOrAddAsync(key, addItemFactory, policy);
+    }
+
+    /// <summary>
+    /// A set in the database with no content hash, as from an import before content hashes: so it has an entry of its own.
+    /// <see cref="IHaplotypeFrequencySetRepository.GetSet"/> returns it.
+    /// </summary>
     private Data.Models.HaplotypeFrequencySet NewSet(bool active = true)
     {
-        var set = fixture.Build<Data.Models.HaplotypeFrequencySet>().With(x => x.Active, active).Create();
+        var set = fixture.Build<Data.Models.HaplotypeFrequencySet>().With(x => x.Active, active).Without(x => x.ContentHash).Create();
         frequencySetRepository.GetSet(set.Id, Arg.Any<CancellationToken>()).Returns(set);
         return set;
     }
+
+    /// <summary>
+    /// A set in the database with <paramref name="rows"/> and their content hash: <see cref="IHaplotypeFrequencySetRepository.GetSet"/>
+    /// returns it, and <see cref="IHaplotypeFrequenciesRepository.GetAllHaplotypeFrequencies"/> returns the rows.
+    /// </summary>
+    private Data.Models.HaplotypeFrequencySet NewSetWithContent(IReadOnlyList<LightweightHaplotypeFrequencyRecord> rows, bool active = true)
+    {
+        var set = fixture.Build<Data.Models.HaplotypeFrequencySet>()
+            .With(x => x.Active, active)
+            .With(x => x.ContentHash, FrequencySetContentHash.Calculate(rows))
+            .Create();
+        frequencySetRepository.GetSet(set.Id, Arg.Any<CancellationToken>()).Returns(set);
+        frequencyRepository.GetAllHaplotypeFrequencies(set.Id).Returns(RowsOfSet(set.Id, rows));
+        return set;
+    }
+
+    private static List<LightweightHaplotypeFrequencyRecord> RowsOfSet(int setId, IEnumerable<LightweightHaplotypeFrequencyRecord> rows) =>
+        rows.Select(row => row with { SetId = setId }).ToList();
 
     /// <summary>
     /// The set that the id of <paramref name="set"/> names after a restore or a copy of the database: another set, with
@@ -983,6 +1298,7 @@ internal class HaplotypeFrequencyCacheTests
             .With(x => x.Id, set.Id)
             .With(x => x.Active, true)
             .With(x => x.DateTimeAdded, set.DateTimeAdded + TimeSpan.FromMinutes(fixture.Create<int>()))
+            .Without(x => x.ContentHash)
             .Create();
 
     private List<LightweightHaplotypeFrequencyRecord> NewRows(int setId, int rowCount) =>
