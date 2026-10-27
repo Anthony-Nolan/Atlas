@@ -46,6 +46,7 @@ internal class MatchPredictionRequestRunnerTests
     {
         matchPredictionAlgorithm = Substitute.For<IMatchPredictionAlgorithm>();
         resultUploader = Substitute.For<IMatchPredictionRequestResultUploader>();
+        resultUploader.UploadMatchPredictionRequestResult(default, default).ReturnsForAnyArgs(_ => new MatchPredictionResultLocation());
         locationPublisher = Substitute.For<IMessageBatchPublisher<MatchPredictionResultLocation>>();
         batchLogger = Substitute.For<IAtlasLogger>();
         logger = Substitute.For<IMatchPredictionLogger<MatchPredictionRequestLoggingContext>>();
@@ -121,6 +122,37 @@ internal class MatchPredictionRequestRunnerTests
         await runner.RunMatchPredictionRequestBatch(requestBatch);
 
         await locationPublisher.Received(1).BatchPublish(Arg.Is<IEnumerable<MatchPredictionResultLocation>>(x => x.Count() == requestCount));
+    }
+
+    [Test]
+    public async Task RunMatchPredictionRequestBatch_SetsSearchRequestIdOfRequestOnPublishedResultLocation()
+    {
+        const string searchRequestId = "search-request-id";
+
+        var request = FixtureBuilder.For<IdentifiedMatchPredictionRequest>()
+            .With(x => x.Id, DefaultRequestId)
+            .With(x => x.SingleDonorMatchProbabilityInput, new SingleDonorMatchProbabilityInput { SearchRequestId = searchRequestId })
+            .Build();
+        matchPredictionAlgorithm.RunMatchPredictionAlgorithm(default).ReturnsForAnyArgs(new MatchProbabilityResponse());
+        resultUploader.UploadMatchPredictionRequestResult(default, default).ReturnsForAnyArgs(new MatchPredictionResultLocation());
+
+        await runner.RunMatchPredictionRequestBatch(new[] { request });
+
+        await locationPublisher.Received(1).BatchPublish(Arg.Is<IEnumerable<MatchPredictionResultLocation>>(x =>
+            x.Single().SearchRequestId == searchRequestId));
+    }
+
+    [Test]
+    public async Task RunMatchPredictionRequestBatch_RequestWithoutSearchRequestId_PublishesResultLocationWithNullSearchRequestId()
+    {
+        var requestBatch = DefaultRequestBuilder.Build(1);
+        matchPredictionAlgorithm.RunMatchPredictionAlgorithm(default).ReturnsForAnyArgs(new MatchProbabilityResponse());
+        resultUploader.UploadMatchPredictionRequestResult(default, default).ReturnsForAnyArgs(new MatchPredictionResultLocation());
+
+        await runner.RunMatchPredictionRequestBatch(requestBatch);
+
+        await locationPublisher.Received(1).BatchPublish(Arg.Is<IEnumerable<MatchPredictionResultLocation>>(x =>
+            x.Single().SearchRequestId == null));
     }
 
     [Test]
