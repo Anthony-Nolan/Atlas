@@ -76,6 +76,26 @@ public class SubjectGenotypeSetValueServiceTests
         await genotypeSetService.Received(3).GetGenotypeSet(Arg.Any<SubjectData>(), Arg.Any<MatchPredictionParameters>());
     }
 
+    [TestCase(SubjectGenotypeSetValueInsertMode.KeyRangeLocked)]
+    [TestCase(SubjectGenotypeSetValueInsertMode.RetryOnDuplicate)]
+    public async Task GetOrComputeValueIds_StoresTheValuesWithTheGivenInsertMode(SubjectGenotypeSetValueInsertMode insertMode)
+    {
+        await valueService.GetOrComputeValueIds(NewRequests(2), hlaNomenclatureVersion, database, insertMode);
+
+        await repository.Received(1).GetOrCreateValueIds(Arg.Is<IReadOnlyCollection<SubjectGenotypeSetValueToStore>>(values => values.Count == 2), insertMode);
+    }
+
+    [Test]
+    public async Task GetOrComputeValueIds_ByDefault_StoresTheValuesUnderKeyRangeLocks()
+    {
+        // The donor import, search and the debug endpoint share keys often, and keep the locked insert.
+        await valueService.GetOrComputeValueIds(NewRequests(1), hlaNomenclatureVersion, database);
+
+        await repository.Received(1).GetOrCreateValueIds(
+            Arg.Any<IReadOnlyCollection<SubjectGenotypeSetValueToStore>>(),
+            SubjectGenotypeSetValueInsertMode.KeyRangeLocked);
+    }
+
     [Test]
     public async Task GetOrComputeValueIds_ForAValueThatIsStored_ReturnsItsIdAndComputesNothing()
     {
