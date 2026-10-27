@@ -201,7 +201,10 @@ public class DonorGenotypePrecomputationBatchProcessor : IDonorGenotypePrecomput
                     $"group {group.GroupId} (donor {group.RepresentativeDonorId})"))
                 .ToList(),
             batch.HlaNomenclatureVersion,
-            database);
+            database,
+            // The batches of the stage have their own groups, so two writers almost never store the same key, and many
+            // writers store new keys at the same time. Key-range locks would make them wait for each other (ATL-473).
+            SubjectGenotypeSetValueInsertMode.RetryOnDuplicate);
 
         for (var i = 0; i < groupsToCompute.Count; i++)
         {
