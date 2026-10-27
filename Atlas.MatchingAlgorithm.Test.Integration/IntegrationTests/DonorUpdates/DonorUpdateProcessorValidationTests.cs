@@ -36,7 +36,7 @@ public class DonorUpdateProcessorValidationTests
     private IDonorUpdateProcessor donorUpdateProcessor;
 
     private IServiceBusMessageReceiver<SearchableDonorUpdate> messageReceiver;
-    private DonorUpdateMessageProcessor messageProcessor;
+    private IMessageProcessor<SearchableDonorUpdate> messageProcessor;
     private IDonorManagementService donorManagementService;
     private ISearchableDonorUpdateConverter searchableDonorUpdateConverter;
     private IMatchingAlgorithmImportLogger logger;
@@ -51,7 +51,9 @@ public class DonorUpdateProcessorValidationTests
         var provider = DependencyInjection.DependencyInjection.Provider;
 
         messageReceiver = Substitute.For<IServiceBusMessageReceiver<SearchableDonorUpdate>>();
-        messageProcessor = new DonorUpdateMessageProcessor(messageReceiver);
+        messageProcessor = new MessageProcessor<SearchableDonorUpdate>(messageReceiver);
+        var messageProcessorFactory = Substitute.For<IDonorUpdateMessageProcessorFactory>();
+        messageProcessorFactory.CreateMessageProcessor(DbTarget).Returns(messageProcessor);
 
         var refreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
         refreshHistoryRepository.GetActiveDatabase().Returns(DbTarget);
@@ -67,8 +69,7 @@ public class DonorUpdateProcessorValidationTests
         batchSize = 10;
 
         donorUpdateProcessor = new DonorUpdateProcessor(
-            messageProcessor,
-            messageProcessor,
+            messageProcessorFactory,
             refreshHistoryRepository,
             donorManagementService,
             searchableDonorUpdateConverter,

@@ -52,6 +52,9 @@ Feature flags permit greater control over the release of new features (see this 
   * For local development, add a `data-refresh` subscription to the `data-refresh-requests` topic of your own Service Bus namespace.
 * E: The donor genotype precomputation no longer stores the genotype set of a donor whose typing is unambiguous at small g group for a combination of loci: one small g group at both positions of every locus. Search computes such a set live without the haplotype frequency set, about as quickly as it reads a stored row. This removes many of the rows that the precomputation writes (about 23 % of the donor rows in a full DEV Data Refresh), but only a small part of the stored data. The donor import follows the same rule. In search, such a donor is counted as `NotStoredUnambiguous`, not `NoRow`, and its set is not stored back. The debug parity check reports `NotStoredUnambiguous` for it. See the [Match Prediction README](/README_MatchPredictionAlgorithm.md#donors-that-are-not-precomputed).
 
+#### Matching Algorithm
+* BF: Donor updates no longer reach the matching databases 5–30 min late (whole message lock periods), mostly after a restart of the donor management functions app. The donor update receivers no longer prefetch messages, and each receiver, including the one the Data Refresh app uses in its last stage, is closed when its run ends.
+
 #### Match Prediction
 * E: Faster live imputation in match prediction, when donor genotype sets are not read from the pre-computed tables.
   * Donor inputs are batched by haplotype frequency set (registry and ethnicity), so each batch needs fewer frequency sets.

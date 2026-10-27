@@ -8,7 +8,10 @@ using Atlas.Common.Utils.Extensions;
 
 namespace Atlas.Common.ServiceBus.BatchReceiving
 {
-    public interface IMessageProcessor<T>
+    /// <remarks>
+    /// Owns its receiver: disposing it closes the receiver.
+    /// </remarks>
+    public interface IMessageProcessor<T> : IAsyncDisposable
     {
         Task ProcessAllMessagesInBatches_Async(
             Func<IEnumerable<DeserializedMessage<T>>, Task> processMessagesFuncAsync,
@@ -41,7 +44,7 @@ namespace Atlas.Common.ServiceBus.BatchReceiving
                 return;
             }
 
-            using (var messageBatchLock = new MessageBatchLock<T>(messageReceiver, messages))
+            await using (var messageBatchLock = new MessageBatchLock<T>(messageReceiver, messages))
             {
                 try
                 {
@@ -56,5 +59,8 @@ namespace Atlas.Common.ServiceBus.BatchReceiving
                 await messageBatchLock.CompleteBatchAsync();
             }
         }
+
+        public ValueTask DisposeAsync() =>
+            messageReceiver.DisposeAsync();
     }
 }
