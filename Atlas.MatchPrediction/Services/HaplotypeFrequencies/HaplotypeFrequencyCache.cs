@@ -573,9 +573,9 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
     /// again with its own source. While its row has this hash, the set then uses its own rows only.
     /// </summary>
     /// <remarks>
-    /// The check sees a wrong hash only when the set itself loads the content. When another set with the hash loads it
-    /// first, this set gets the rows of that set. So what makes the hash right is how the import and the backfill write
-    /// it, not this check.
+    /// The check sees a wrong hash only when the set itself reads the content from the database. A hit in the distributed
+    /// cache is not checked, and when another set with the hash loads it first, this set gets the rows of that set. So what
+    /// makes the hash right is how the import and the backfill write it, not this check.
     /// </remarks>
     /// <exception cref="FrequencySetContentMismatchException">The rows do not have the content hash.</exception>
     private void EnsureTheRowsHaveTheContentHash(FrequencySetSource source, IReadOnlyList<LightweightHaplotypeFrequencyRecord> rows)

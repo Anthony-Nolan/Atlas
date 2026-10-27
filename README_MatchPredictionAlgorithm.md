@@ -219,11 +219,14 @@ only part of its rows. When no Redis is configured, the process reads the freque
 encode them.
 
 **Rows that do not have the content hash of their set** are an error: for example, after a change of the frequencies of
-the set with SQL. The process logs the error, and uses the rows of that set for that set only, until the hash in its row
-changes: it does not share them, and does not write them to the distributed cache. The check sees such a set only when
-the set itself loads the content: when another set with the same hash loads it first, the set gets the rows of that set.
-So what makes the hash right is that the import and the backfill calculate it from the rows in SQL. Do not change the
-frequencies of a set with SQL: see [README_Support](README_Support.md#content-hashes-of-the-frequency-sets).
+the set with SQL. A process that reads such rows from SQL logs the error, and uses the rows of that set for that set
+only, until the hash in its row changes: it does not share them, and does not write them to the distributed cache. The
+check sees such a set only when the set itself reads the content from SQL. A hit in the distributed cache is not
+checked, and when another set with the same hash loads the content first, the set gets the rows of that set. So after a
+change with SQL, the sets with that hash can keep the earlier rows for up to 30 days, and usually nothing is logged.
+What makes the hash right is that the import and the backfill calculate it from the rows in SQL, and that Atlas never
+changes the rows of a set: an import makes new sets. Do not change the frequencies of a set with SQL: see
+[README_Support](README_Support.md#content-hashes-of-the-frequency-sets).
 
 **A replaced set.** While a process uses a set, it checks the row of the set in `HaplotypeFrequencySets` once each
 `HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes` (1 minute). When the row has another content hash or import

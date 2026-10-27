@@ -78,10 +78,15 @@ machine, and less from Azure. Call the endpoint again to see the progress: `200`
 backfill stops, and the next call continues it. A call that goes to another instance of the app can start a second backfill there: this costs reads, and does no
 harm.
 
-**Do not change the frequencies of a set with SQL.** The content hash of the set would then not match its frequencies. An app that loads the set logs an error
-(`HF set {id}: its rows do not have the content hash in its row ...`), and uses the frequencies of that set for that set only; but an app that first loads the
-content from another set with the same hash gives this set the frequencies of the other set. To change frequencies, import a new file. If the frequencies of a
-set were changed with SQL, set the `ContentHash` of that set to `NULL`, and call the backfill.
+**Do not change the frequencies of a set with SQL.** The content hash of the set would then not match its frequencies, and the apps usually do not see it. An
+app reads the frequencies of a content hash from SQL only when the distributed cache does not have them, and the distributed cache keeps them for 30 days. So
+all the sets with that hash keep the frequencies from before the change, and usually no error is logged. Only an app that reads the frequencies of the changed
+set from SQL logs an error (`HF set {id}: its rows do not have the content hash in its row ...`), and uses them for that set only. Atlas itself never changes
+the frequencies of a set: an import makes new sets, and a rollback changes only the `Active` flags. To change frequencies, import a new file.
+
+If the frequencies of a set were changed with SQL, set the `ContentHash` of that set to `NULL`, and call the backfill at once. Until the backfill writes the new
+hash, the apps can still give the set its frequencies from before the change. After that, each app loads the new frequencies at its next check of the set (once
+a minute).
 
 ### Alert: the new active sets are not confirmed in the distributed cache
 
