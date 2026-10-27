@@ -25,7 +25,8 @@ public interface ISubjectGenotypeSetRepository
     /// the agreed design, rows do not outlive their refresh - ATL-231 adds both tables to the clean-up that starts each
     /// refresh - which is why the key can leave out the HLA nomenclature version. This call is NOT how duplicate rows
     /// are prevented - that is <see cref="GetOrCreateValueIds"/>'s insert and the unique index behind it - so a caller
-    /// may skip it entirely and still be correct, just slower.
+    /// may skip it entirely and still be correct, just slower. It reads at read committed, so it never waits on the gap
+    /// of a key that another writer is inserting.
     /// </remarks>
     Task<IReadOnlyDictionary<SubjectGenotypeSetKey, int>> GetExistingValueIds(IReadOnlyCollection<SubjectGenotypeSetKey> keys);
 
@@ -425,11 +426,10 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
     /// </para>
     ///
     /// <para>
-    /// <b>What the hints cost.</b> The probe of a key that is not stored yet locks the gap of the index around it, up to
-    /// the next stored key. A hash key puts each new key at a random place, so two writers of different new keys often
-    /// probe the same gap. Each then waits for the other (<c>LCK_M_RS_U</c>), and with a thousand keys per statement they
-    /// deadlock. In the data refresh stage, with 80 writers and an almost empty table, most writers waited and thousands
-    /// of chunks deadlocked (ATL-473). That stage uses <see cref="InsertMissingValuesWithoutLockHintsSql"/> instead.
+    /// <b>What the hints cost.</b> The probe of a new key also locks the gap of the index up to the next key, and new hash
+    /// keys fall into random gaps. So writers of different new keys wait for each other, and can deadlock. A writer that
+    /// stores many new keys at once must not take these locks: it uses <see cref="InsertMissingValuesWithoutLockHintsSql"/>,
+    /// where the unique index and the retry close a lost race.
     /// </para>
     /// </summary>
     private const string InsertMissingValuesSql = $"""
@@ -466,11 +466,7 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
     /// </para>
     ///
     /// <para>
-    /// <b>Read committed, set here.</b> Under <c>SERIALIZABLE</c> the probe takes key-range locks without any hint, and
-    /// read-committed snapshot does not apply. A pooled connection can keep that level from its last user: a
-    /// <see cref="System.Transactions.TransactionScope"/> runs at <c>SERIALIZABLE</c> by default, and the donor import uses
-    /// one. Seen in the integration tests, where the probe waited on a <c>RangeS-S</c> lock. The level stays on the
-    /// session, which is harmless: read committed is the default.
+    /// This relies on the session being at read committed, which <see cref="OverStagedChunks"/> sets.
     /// </para>
     ///
     /// <para>
@@ -479,8 +475,6 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
     /// </para>
     /// </summary>
     private const string InsertMissingValuesWithoutLockHintsSql = $"""
-        SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
-
         INSERT INTO {ValuesTableName} (
             {nameof(SubjectGenotypeSetValue.HlaTypingKey)},
             {nameof(SubjectGenotypeSetValue.HaplotypeFrequencySetId)},
@@ -823,6 +817,14 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
     /// <summary>
     /// Stages <paramref name="values"/> a chunk at a time and runs <paramref name="perChunk"/> over each, on one
     /// connection held for the whole operation - which is what keeps the local temp table alive between chunks.
+    ///
+    /// <para>
+    /// <b>Read committed, set on open.</b> A pooled connection can keep <c>SERIALIZABLE</c> from its last user: a
+    /// <see cref="System.Transactions.TransactionScope"/> runs at that level by default, and the pool does not reset it.
+    /// Under <c>SERIALIZABLE</c>, a read or probe of a key that is not stored takes a key-range lock without any hint,
+    /// and waits for a writer of the next key. The reads and the unlocked insert must not do that. The locked insert
+    /// takes its range locks from its hints, so the level does not change it.
+    /// </para>
     /// </summary>
     private async Task<IReadOnlyDictionary<SubjectGenotypeSetKey, int>> OverStagedChunks(
         List<SubjectGenotypeSetValueToStore> values,
@@ -832,6 +834,7 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
 
         await using var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString());
         await connection.OpenAsync();
+        await connection.ExecuteAsync("SET TRANSACTION ISOLATION LEVEL READ COMMITTED", commandTimeout: CommandTimeoutInSeconds);
         await connection.ExecuteAsync(CreateStagingTableSql, commandTimeout: CommandTimeoutInSeconds);
 
         var isFirstChunk = true;

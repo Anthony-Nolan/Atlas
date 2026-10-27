@@ -32,8 +32,8 @@ public enum SubjectGenotypeSetValueInsertMode
     /// the same key. For writers that often share keys: the donor import, search and the debug endpoint.
     /// </summary>
     /// <remarks>
-    /// The locks are key-range locks on the unique index, and a writer of a new key also locks the gap around it. Many
-    /// writers of different new keys then wait for each other, and deadlock (ATL-473).
+    /// The locks are key-range locks on the unique index, and a writer of a new key also locks the gap around it. So it
+    /// does not suit many writers of different new keys at once: they wait for each other, and can deadlock (ATL-473).
     /// </remarks>
     KeyRangeLocked,
 

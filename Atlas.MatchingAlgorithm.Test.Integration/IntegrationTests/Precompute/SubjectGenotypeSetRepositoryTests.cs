@@ -302,6 +302,28 @@ public class SubjectGenotypeSetRepositoryTests
         (await write).Should().ContainKey(newKey);
     }
 
+    [TestCase(false)]
+    [TestCase(true)]
+    public async Task GetExistingValueIds_DoesNotWaitForAnUncommittedInsertOfTheNextKey(bool poolLeftAtSerializable)
+    {
+        // The data refresh stage reads its keys before it writes them, on its own connection. That read must not wait
+        // for another writer's neighbour either, also on a pooled connection left at SERIALIZABLE.
+        if (poolLeftAtSerializable)
+        {
+            await LeavePooledConnectionsAtSerializable();
+        }
+
+        var (newKey, nextKey) = AdjacentKeys();
+        await using var blocker = await BeginUncommittedInsert(nextKey);
+
+        var read = repository.GetExistingValueIds([newKey]);
+        var finishedFirst = await Task.WhenAny(read, Task.Delay(TimeSpan.FromSeconds(10)));
+        await blocker.Transaction.RollbackAsync();
+
+        finishedFirst.Should().BeSameAs(read);
+        (await read).Should().BeEmpty();
+    }
+
     [Test]
     public async Task GetOrCreateValueIds_WithNoValues_StoresNothing()
     {
