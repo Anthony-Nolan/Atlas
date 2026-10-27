@@ -18,6 +18,11 @@ parameters:
   - name: azurite
     type: boolean
     default: false
+  # The Service Bus emulator. It stores its own data in the SQL Server container this template starts,
+  # so it is only valid when sqlServer is true. The tests create their own topics.
+  - name: serviceBusEmulator
+    type: boolean
+    default: false
 
 steps:
   - checkout: none
@@ -77,6 +82,72 @@ steps:
         echo "##vso[task.logissue type=error]Azurite did not start within a minute"
         exit 1
       displayName: 'Wait for Azurite'
+  - ${{ if parameters.serviceBusEmulator }}:
+    # Started after SQL Server accepts queries. The emulator reads that server through the host port and will not retry for long.
+    # SQL_WAIT_INTERVAL is a fixed sleep before the emulator first connects to SQL, not a timeout, so it is 0: SQL is already up.
+    - bash: |
+        config="$(Agent.TempDirectory)/service-bus-emulator-config.json"
+        cat > "$config" <<'JSON'
+        {
+          "UserConfig": {
+            "Namespaces": [
+              {
+                "Name": "sbemulatorns",
+                "Queues": [],
+                "Topics": [
+                  {
+                    "Name": "topic.1",
+                    "Properties": {
+                      "DefaultMessageTimeToLive": "PT1H",
+                      "DuplicateDetectionHistoryTimeWindow": "PT20S",
+                      "RequiresDuplicateDetection": false
+                    },
+                    "Subscriptions": [
+                      {
+                        "Name": "subscription.1",
+                        "Properties": {
+                          "DeadLetteringOnMessageExpiration": false,
+                          "DefaultMessageTimeToLive": "PT1H",
+                          "LockDuration": "PT1M",
+                          "MaxDeliveryCount": 3,
+                          "RequiresSession": false
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "Logging": { "Type": "Console" }
+          }
+        }
+        JSON
+        docker run -d --name atlas-servicebus-emulator \
+          --add-host=host.docker.internal:host-gateway \
+          -p 5672:5672 -p 5300:5300 \
+          -e SQL_SERVER=host.docker.internal:1433 \
+          -e MSSQL_SA_PASSWORD="$SQL_SA_PASSWORD" \
+          -e ACCEPT_EULA=Y \
+          -e SQL_WAIT_INTERVAL=0 \
+          -e EMULATOR_HTTP_PORT=5300 \
+          -v "$config:/ServiceBus_Emulator/ConfigFiles/Config.json" \
+          mcr.microsoft.com/azure-messaging/servicebus-emulator:2.0.1
+      displayName: 'Start Service Bus emulator'
+      env:
+        SQL_SA_PASSWORD: $(sqlSaPassword)
+    - bash: |
+        for attempt in $(seq 1 60); do
+          if curl --fail --silent http://localhost:5300/health > /dev/null; then
+            echo "Service Bus emulator is ready"
+            exit 0
+          fi
+          sleep 2
+        done
+
+        docker logs atlas-servicebus-emulator
+        echo "##vso[task.logissue type=error]Service Bus emulator did not become healthy within 2 minutes"
+        exit 1
+      displayName: 'Wait for Service Bus emulator'
 
   # Each project runs even if the one before it failed, and publishes its results as its own test run.
   - ${{ each test in parameters.tests }}:

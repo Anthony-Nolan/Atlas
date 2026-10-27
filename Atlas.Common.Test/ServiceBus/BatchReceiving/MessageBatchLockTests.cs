@@ -117,6 +117,29 @@ namespace Atlas.Common.Test.ServiceBus.BatchReceiving
         }
 
         [Test]
+        public async Task DisposeAsync_WaitsForRenewalInProgress_AndStopsLaterRenewals()
+        {
+            var renewalStarted = new TaskCompletionSource();
+            var renewalCanFinish = new TaskCompletionSource();
+            messageReceiver.RenewMessageLockAsync(LockToken).Returns(_ =>
+            {
+                renewalStarted.TrySetResult();
+                return renewalCanFinish.Task;
+            });
+
+            await renewalStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            var disposal = messageBatchLock.DisposeAsync().AsTask();
+            await Task.Delay(LockRenewalTime);
+            disposal.IsCompleted.Should().BeFalse();
+
+            renewalCanFinish.SetResult();
+            await disposal.WaitAsync(TimeSpan.FromSeconds(5));
+            await Task.Delay(LockRenewalTime * 2);
+
+            await messageReceiver.Received(1).RenewMessageLockAsync(Arg.Any<object>());
+        }
+
+        [Test]
         public void MessageBatchLockExpired_ThrowSException()
         {
             messages = new List<DeserializedMessage<string>>

@@ -9,7 +9,10 @@ using System;
 
 namespace Atlas.Common.ServiceBus.BatchReceiving
 {
-    public interface IServiceBusMessageReceiver<T>
+    /// <remarks>
+    /// Owns its receiver: disposing it closes the receiver.
+    /// </remarks>
+    public interface IServiceBusMessageReceiver<T> : IAsyncDisposable
     {
         /// <summary>
         /// Fetches Azure service bus messages in batches and transforms them to a message collection of type T.
@@ -32,7 +35,7 @@ namespace Atlas.Common.ServiceBus.BatchReceiving
             string subscriptionName
             )
         {
-            messageReceiver = factory.GetMessageReceiver(topicName, subscriptionName);
+            messageReceiver = factory.CreateMessageReceiver(topicName, subscriptionName);
         }
 
         public async Task<IEnumerable<DeserializedMessage<T>>> ReceiveMessageBatchAsync(int batchSize)
@@ -57,6 +60,9 @@ namespace Atlas.Common.ServiceBus.BatchReceiving
         {
             await messageReceiver.AbandonMessageAsync(lockToken);
         }
+
+        public ValueTask DisposeAsync() =>
+            messageReceiver.DisposeAsync();
 
         private static DeserializedMessage<T> GetServiceBusMessage(ServiceBusReceivedMessage message)
         {

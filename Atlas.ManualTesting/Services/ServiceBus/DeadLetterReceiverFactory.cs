@@ -16,7 +16,7 @@ namespace Atlas.ManualTesting.Services.ServiceBus
             this.client = client;
         }
 
-        public IMessageReceiver GetMessageReceiver(string topicName, string subscriptionName)
+        public IMessageReceiver CreateMessageReceiver(string topicName, string subscriptionName)
         {
             var options = new ServiceBusReceiverOptions { SubQueue = SubQueue.DeadLetter };
 

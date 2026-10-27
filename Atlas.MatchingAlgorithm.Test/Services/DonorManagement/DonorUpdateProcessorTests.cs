@@ -18,6 +18,7 @@ using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
 using AwesomeAssertions;
 using NSubstitute;
+using NSubstitute.ClearExtensions;
 using NUnit.Framework;
 using static Atlas.MatchingAlgorithm.Data.Persistent.Models.TransientDatabase;
 
@@ -28,8 +29,9 @@ public class DonorUpdateProcessorTests
 {
     private const int BatchSize = 100;
 
-    private IMessageProcessorForDbADonorUpdates messageProcessorServiceForA;
-    private IMessageProcessorForDbBDonorUpdates messageProcessorServiceForB;
+    private IDonorUpdateMessageProcessorFactory messageProcessorFactory;
+    private IMessageProcessor<SearchableDonorUpdate> messageProcessorServiceForA;
+    private IMessageProcessor<SearchableDonorUpdate> messageProcessorServiceForB;
     private IDonorManagementService donorManagementService;
     private IDonorUpdateProcessor donorUpdateProcessor;
     private ISearchableDonorUpdateConverter searchableDonorUpdateConverter;
@@ -43,8 +45,11 @@ public class DonorUpdateProcessorTests
     [SetUp]
     public void Setup()
     {
-        messageProcessorServiceForA = Substitute.For<IMessageProcessorForDbADonorUpdates>();
-        messageProcessorServiceForB = Substitute.For<IMessageProcessorForDbBDonorUpdates>();
+        messageProcessorServiceForA = Substitute.For<IMessageProcessor<SearchableDonorUpdate>>();
+        messageProcessorServiceForB = Substitute.For<IMessageProcessor<SearchableDonorUpdate>>();
+        messageProcessorFactory = Substitute.For<IDonorUpdateMessageProcessorFactory>();
+        messageProcessorFactory.CreateMessageProcessor(DatabaseA).Returns(messageProcessorServiceForA);
+        messageProcessorFactory.CreateMessageProcessor(DatabaseB).Returns(messageProcessorServiceForB);
 
         refreshHistory = Substitute.For<IDataRefreshHistoryRepository>();
         refreshHistory.GetIncompleteRefreshJobs().Returns(Enumerable.Empty<DataRefreshRecord>());
@@ -60,8 +65,7 @@ public class DonorUpdateProcessorTests
         donorUpdatesSaver = Substitute.For<IDonorUpdatesSaver>();
 
         donorUpdateProcessor = new DonorUpdateProcessor(
-            messageProcessorServiceForA,
-            messageProcessorServiceForB,
+            messageProcessorFactory,
             refreshHistory,
             donorManagementService,
             searchableDonorUpdateConverter,
@@ -228,6 +232,83 @@ public class DonorUpdateProcessorTests
         await messageProcessorServiceForA.Received(1).ProcessAllMessagesInBatches_Async(
             Arg.Any<Func<IEnumerable<DeserializedMessage<SearchableDonorUpdate>>, Task>>(),
             BatchSize);
+    }
+
+    /// <param name="activeDatabase">DatabaseA: the target is Active. DatabaseB: the target is Dormant.</param>
+    [Test]
+    public async Task ProcessDonorUpdates_ClosesReceiver_WithoutChangingOutcome(
+        [Values(DatabaseA, DatabaseB)] TransientDatabase activeDatabase,
+        [Values] bool processingFails,
+        [Values] bool closingFails)
+    {
+        refreshHistory.GetActiveDatabase().Returns(activeDatabase);
+        ConfigureMockMessageProcessorToFail(messageProcessorServiceForA, processingFails, closingFails);
+
+        var processing = () => donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
+
+        await AssertCompletion(processing, processingFails);
+        await messageProcessorServiceForA.Received(1).DisposeAsync();
+    }
+
+    [Test]
+    public async Task ProcessDonorUpdates_IfTargetDbIsRefreshing_ThenDoesNotOpenReceiver()
+    {
+        refreshHistory.GetIncompleteRefreshJobs().Returns(new[] {dbARefreshing});
+        refreshHistory.GetActiveDatabase().Returns(DatabaseB);
+
+        await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
+
+        messageProcessorFactory.DidNotReceiveWithAnyArgs().CreateMessageProcessor(default);
+    }
+
+    [Test]
+    public async Task ApplyDifferentialDonorUpdatesDuringRefresh_ClosesReceiver_WithoutChangingOutcome(
+        [Values] bool processingFails,
+        [Values] bool closingFails)
+    {
+        refreshHistory.GetIncompleteRefreshJobs().Returns(new[] {dbARefreshing});
+        refreshHistory.GetActiveDatabase().Returns(DatabaseB);
+        ConfigureMockMessageProcessorToFail(messageProcessorServiceForA, processingFails, closingFails);
+
+        var processing = () => donorUpdateProcessor.ApplyDifferentialDonorUpdatesDuringRefresh(DatabaseA, "hla-version");
+
+        await AssertCompletion(processing, processingFails);
+        await messageProcessorServiceForA.Received(1).DisposeAsync();
+    }
+
+    private static void ConfigureMockMessageProcessorToFail(
+        IMessageProcessor<SearchableDonorUpdate> messageProcessorMock,
+        bool processingFails,
+        bool closingFails)
+    {
+        if (processingFails)
+        {
+            // Otherwise configuring the call runs the pass-through action with no processing function.
+            messageProcessorMock.ClearSubstitute(ClearOptions.CallActions);
+            messageProcessorMock
+                .ProcessAllMessagesInBatches_Async(default, default)
+                .ReturnsForAnyArgs(Task.FromException(new InvalidOperationException()));
+        }
+
+        if (closingFails)
+        {
+            messageProcessorMock.DisposeAsync().Returns(ValueTask.FromException(new TimeoutException()));
+        }
+    }
+
+    /// <summary>
+    /// Only the processing decides the outcome: a failure to close the receiver neither fails the run nor replaces its error.
+    /// </summary>
+    private static async Task AssertCompletion(Func<Task> processing, bool processingFails)
+    {
+        if (processingFails)
+        {
+            await processing.Should().ThrowAsync<InvalidOperationException>();
+        }
+        else
+        {
+            await processing.Should().NotThrowAsync();
+        }
     }
 
     [Test]

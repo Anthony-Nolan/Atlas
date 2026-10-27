@@ -7,11 +7,9 @@ using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Matching.Services;
 using Atlas.Common.Notifications;
 using Atlas.Common.ServiceBus;
-using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.Common.ServiceBus.DependencyInjection;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.DependencyInjection;
-using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Services.DonorUpdates;
 using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
@@ -435,30 +433,15 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 connectionStringAccessor: sp => fetchMessagingServiceBusSettings(sp).ConnectionString
                 );
 
-            services.AddScoped<IMessageProcessorForDbADonorUpdates, DonorUpdateMessageProcessor>(sp =>
+            services.AddScoped<IDonorUpdateMessageProcessorFactory, DonorUpdateMessageProcessorFactory>(sp =>
             {
-                var messagingSettings = fetchMessagingServiceBusSettings(sp);
-                var donorManagementSettings = fetchDonorManagementSettings(sp);
                 var factory = sp.GetRequiredKeyedService<IMessageReceiverFactory>(serviceKey);
-                var messageReceiver = new ServiceBusMessageReceiver<SearchableDonorUpdate>(
-                    factory, donorManagementSettings.Topic, donorManagementSettings.SubscriptionForDbA);
-                return new DonorUpdateMessageProcessor(messageReceiver);
-            });
-
-            services.AddScoped<IMessageProcessorForDbBDonorUpdates, DonorUpdateMessageProcessor>(sp =>
-            {
-                var messagingSettings = fetchMessagingServiceBusSettings(sp);
-                var donorManagementSettings = fetchDonorManagementSettings(sp);
-                var factory = sp.GetRequiredKeyedService<IMessageReceiverFactory>(serviceKey);
-                var messageReceiver = new ServiceBusMessageReceiver<SearchableDonorUpdate>(
-                    factory, donorManagementSettings.Topic, donorManagementSettings.SubscriptionForDbB);
-                return new DonorUpdateMessageProcessor(messageReceiver);
+                return new DonorUpdateMessageProcessorFactory(factory, fetchDonorManagementSettings(sp));
             });
 
             services.AddScoped<IDonorUpdateProcessor, DonorUpdateProcessor>(sp =>
             {
-                var messageReceiverServiceForDbA = sp.GetService<IMessageProcessorForDbADonorUpdates>();
-                var messageReceiverServiceForDbB = sp.GetService<IMessageProcessorForDbBDonorUpdates>();
+                var messageProcessorFactory = sp.GetService<IDonorUpdateMessageProcessorFactory>();
                 var refreshHistory = sp.GetService<IDataRefreshHistoryRepository>();
                 var managementService = sp.GetService<IDonorManagementService>();
                 var updateConverter = sp.GetService<ISearchableDonorUpdateConverter>();
@@ -470,8 +453,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 var donorUpdatesSaver = sp.GetService<IDonorUpdatesSaver>();
 
                 return new DonorUpdateProcessor(
-                    messageReceiverServiceForDbA,
-                    messageReceiverServiceForDbB,
+                    messageProcessorFactory,
                     refreshHistory,
                     managementService,
                     updateConverter,

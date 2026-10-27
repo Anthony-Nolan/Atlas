@@ -397,6 +397,7 @@ stages:
         Atlas.DonorImport.Test.Integration
         Atlas.MatchPrediction.Test.Integration
         Atlas.MultipleAlleleCodeDictionary.Test.Integration
+        Atlas.Common.Test.Integration
     steps:
     - checkout: self
       fetchDepth: 1
@@ -473,7 +474,7 @@ stages:
         searchFolder: '$(Agent.TempDirectory)/TestResults'
         testRunTitle: 'Unit Tests'
 
-# Each job runs its tests against its own SQL Server, or Azurite, as it needs (see build-pipeline-run-tests.yml).
+# Each job runs its tests against its own SQL Server, Azurite, or the Service Bus emulator, as it needs (see build-pipeline-run-tests.yml).
 # Connection strings are passed as environment variables, which override the local defaults in each project's appsettings.json.
 # To also run the performance tests, define a RUN_CI_PERF_TESTS variable (see IgnoreExceptOnCiPerfTestAttribute.cs).
 # The jobs are sized to take about 4 minutes each,
@@ -545,6 +546,21 @@ stages:
             ConnectionStrings__MatchPredictionSql: '$(sqlServerConnection)Initial Catalog=AtlasMatchPredictionIntegrationTests;'
         - project: Atlas.MultipleAlleleCodeDictionary.Test.Integration
           testRunTitle: 'MAC Dictionary Integration Tests'
+
+  # The tests do not use SQL. The Service Bus emulator does: it keeps its entities in a SQL Server container.
+  - job: Service_Bus_Emulator_Tests
+    displayName: 'Service Bus Emulator Tests'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - template: build-pipeline-run-tests.yml
+      parameters:
+        serviceBusEmulator: true
+        tests:
+        - project: Atlas.Common.Test.Integration
+          testRunTitle: 'Service Bus Emulator Tests'
+          env:
+            RUN_SERVICE_BUS_EMULATOR_TESTS: '1'
 
 # The images are built from the sources, in Docker, so this stage needs nothing from the Build stage.
 - stage: Publish
