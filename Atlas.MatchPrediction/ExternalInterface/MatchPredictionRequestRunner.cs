@@ -82,7 +82,9 @@ public class MatchPredictionRequestRunner : IMatchPredictionRequestRunner
             {
                 var result = await matchPredictionAlgorithm.RunMatchPredictionAlgorithm(request.SingleDonorMatchProbabilityInput);
 
-                return await resultUploader.UploadMatchPredictionRequestResult(request.Id, result);
+                var location = await resultUploader.UploadMatchPredictionRequestResult(request.Id, result);
+                location.SearchRequestId = request.SingleDonorMatchProbabilityInput?.SearchRequestId;
+                return location;
             }
             catch (ValidationException ex)
             {
