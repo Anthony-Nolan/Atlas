@@ -5,8 +5,8 @@
         public string MatchPredictionRequestId { get; set; }
 
         /// <summary>
-        /// Set when this result is published via the parallel ACA Worker path.
-        /// Used by the aggregator to correlate results back to the originating search and to set the Service Bus session ID.
+        /// Copied from the request's <c>SingleDonorMatchProbabilityInput.SearchRequestId</c>, so it can be stamped as a Service Bus
+        /// application property on the result message. Null when the request has no search request id.
         /// </summary>
         public string SearchRequestId { get; set; }
 
