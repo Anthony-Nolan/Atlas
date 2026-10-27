@@ -19,6 +19,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Services.Donors;
+using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
@@ -91,7 +92,8 @@ public class DonorImportPrecomputeTests
             new SubjectGenotypeSetPrecomputeService(
                 new SubjectGenotypeSetValueService(failingUpsertRepositoryFactory, genotypeSetService),
                 failingUpsertRepositoryFactory),
-            Injection.Provider.GetService<IMatchingAlgorithmImportLogger>());
+            Injection.Provider.GetService<IMatchingAlgorithmImportLogger>(),
+            new DonorGenotypePrecomputationSwitchSettings());
 
         service = new DonorManagementService(
             repositoryFactory,

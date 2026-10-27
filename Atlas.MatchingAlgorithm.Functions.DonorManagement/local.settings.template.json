@@ -7,6 +7,7 @@
     "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "DistributedCache:ConnectionString": "",
     "DistributedCache:ManagedIdentityClientId": "",
+    "DonorGenotypePrecomputation:Enabled": true,
     "GenotypeImputation:MaximumExpandedGenotypesPerInput": 2000,
     "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes": 5,
     "HaplotypeFrequencySetCache:MaxCachedFrequencySets": 10,
