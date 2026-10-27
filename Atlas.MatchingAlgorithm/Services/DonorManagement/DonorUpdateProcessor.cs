@@ -269,9 +269,11 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             }
             catch (Exception ex)
             {
-                logger.SendTrace(
-                    $"{TraceMessagePrefix}: Failed to close the donor update receiver for '{targetDatabase.GetStringValue()}': {ex.Message}",
-                    LogLevel.Warn);
+                logger.SendException(ex, LogLevel.Warn, new Dictionary<string, string>
+                {
+                    { "EventName", $"{TraceMessagePrefix}: Failed to close the donor update receiver" },
+                    { "TargetDatabase", targetDatabase.GetStringValue() },
+                });
             }
         }
 
