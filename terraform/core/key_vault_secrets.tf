@@ -39,13 +39,13 @@ locals {
 }
 
 locals {
-  // Everything a component module needs to declare its own secrets and to let its function apps resolve references.
+  // Everything a component module needs to declare its own secrets and to reference them in app settings. The apps
+  // resolve the references as function_apps_identity, which is passed to the modules separately.
   // Passing the references pre-built keeps the choice of a versioned SecretUri in one place, and makes each module's
   // app settings implicitly depend on the secrets existing.
   key_vault_module_handoff = {
-    id                        = azurerm_key_vault.atlas.id
-    function_apps_identity_id = azurerm_user_assigned_identity.function_apps_identity.id
-    secret_refs               = merge(local.kv_ref, { "azure-client-secret" = local.azure_client_secret_kv_ref })
+    id          = azurerm_key_vault.atlas.id
+    secret_refs = merge(local.kv_ref, { "azure-client-secret" = local.azure_client_secret_kv_ref })
 
     // Container Apps take a Key Vault secret ID rather than an "@Microsoft.KeyVault(...)" string. Versioned, for the same
     // reason as local.kv_ref. Modules whose key_vault variable does not declare this attribute simply drop it.

@@ -6,6 +6,9 @@ locals {
 
     "AzureStorage:ConnectionString" = var.key_vault.secret_refs["azure-storage-connection-string"]
 
+    "DistributedCache:ConnectionString"        = var.distributed_cache.connection_string
+    "DistributedCache:ManagedIdentityClientId" = var.function_apps_identity.client_id
+
     "HlaMetadataDictionary:AzureStorageConnectionString" = var.key_vault.secret_refs["azure-storage-connection-string"],
 
     "MacDictionary:AzureStorageConnectionString" = var.key_vault.secret_refs["azure-storage-connection-string"]
@@ -47,10 +50,10 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_donor_manageme
   // this identity read the vault lives in the root module, so it is ordered by the depends_on on the module block.
   identity {
     type         = "UserAssigned"
-    identity_ids = [var.key_vault.function_apps_identity_id]
+    identity_ids = [var.function_apps_identity.id]
   }
 
-  key_vault_reference_identity_id = var.key_vault.function_apps_identity_id
+  key_vault_reference_identity_id = var.function_apps_identity.id
 
   site_config {
     application_insights_key = var.application_insights.instrumentation_key

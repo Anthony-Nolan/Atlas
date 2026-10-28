@@ -27,16 +27,7 @@ resource "azurerm_key_vault" "atlas" {
   }
 }
 
-// Identity shared by all function apps, used solely to resolve their @Microsoft.KeyVault app settings.
-// Deliberately separate from azurerm_user_assigned_identity.aca_identity, which exists for ACR pull and
-// Service Bus data-plane receive on the match prediction container app and should not gain secret-read rights.
-resource "azurerm_user_assigned_identity" "function_apps_identity" {
-  name                = lower("${local.environment}-ATLAS-ID-FUNCTIONS")
-  resource_group_name = azurerm_resource_group.atlas_resource_group.name
-  location            = local.location
-  tags                = local.common_tags
-}
-
+// Lets the apps resolve their @Microsoft.KeyVault app settings and container app secrets.
 resource "azurerm_role_assignment" "function_apps_identity_kv_secrets_user" {
   scope                = azurerm_key_vault.atlas.id
   role_definition_name = "Key Vault Secrets User"

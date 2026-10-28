@@ -49,3 +49,13 @@ variable "sql_server" {
     fully_qualified_domain_name = string
   })
 }
+
+// The identity of the Atlas apps (identity.tf in the root module), with which they resolve Key Vault references and
+// sign in to other resources with Microsoft Entra ID.
+variable "function_apps_identity" {
+  type = object({
+    id           = string
+    client_id    = string
+    principal_id = string
+  })
+}

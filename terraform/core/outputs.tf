@@ -23,14 +23,21 @@ output "multiple_allele_code_lookup" {
   value = module.multiple_allele_code_lookup
 }
 
-// Holds no secret values - just the identifiers each component module needs to declare its own secrets and to let its
-// function apps resolve them.
+// Holds no secret values - just the identifiers each component module needs to declare its own secrets.
 output "key_vault" {
   value = {
-    id                        = azurerm_key_vault.atlas.id
-    name                      = azurerm_key_vault.atlas.name
-    vault_uri                 = azurerm_key_vault.atlas.vault_uri
-    function_apps_identity_id = azurerm_user_assigned_identity.function_apps_identity.id
+    id        = azurerm_key_vault.atlas.id
+    name      = azurerm_key_vault.atlas.name
+    vault_uri = azurerm_key_vault.atlas.vault_uri
+  }
+}
+
+// The identity of the Atlas apps, for granting it access to further resources.
+output "function_apps_identity" {
+  value = {
+    id           = azurerm_user_assigned_identity.function_apps_identity.id
+    client_id    = azurerm_user_assigned_identity.function_apps_identity.client_id
+    principal_id = azurerm_user_assigned_identity.function_apps_identity.principal_id
   }
 }
 

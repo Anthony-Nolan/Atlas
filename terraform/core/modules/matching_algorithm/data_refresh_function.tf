@@ -57,6 +57,9 @@ locals {
     "DataRefresh:WatchdogCronSchedule"                                                      = var.DATA_REFRESH_WATCHDOG_CRON_SCHEDULE
     "DataRefresh:WatchdogGraceDurationMinutes"                                              = var.DATA_REFRESH_WATCHDOG_GRACE_DURATION_MINUTES
 
+    "DistributedCache:ConnectionString"        = var.distributed_cache.connection_string
+    "DistributedCache:ManagedIdentityClientId" = var.function_apps_identity.client_id
+
     "Debug:AllowPrecomputeWrites" = var.DEBUG_ALLOW_PRECOMPUTE_WRITES
 
     "HlaMetadataDictionary:AzureStorageConnectionString"                          = var.key_vault.secret_refs["azure-storage-connection-string"]
@@ -97,10 +100,10 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_data_refresh_f
   // this identity read the vault lives in the root module, so it is ordered by the depends_on on the module block.
   identity {
     type         = "UserAssigned"
-    identity_ids = [var.key_vault.function_apps_identity_id]
+    identity_ids = [var.function_apps_identity.id]
   }
 
-  key_vault_reference_identity_id = var.key_vault.function_apps_identity_id
+  key_vault_reference_identity_id = var.function_apps_identity.id
 
   site_config {
     application_insights_key = var.application_insights.instrumentation_key
