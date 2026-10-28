@@ -60,6 +60,11 @@ columns, so the precomputation workers all insert on the last page of each table
 under that contention. It changes only metadata (no index rebuild), so it is quick even on a full table. Run the
 migration on both transient databases.
 
+Migration `20261028090000_Turn_Off_Optimize_For_Sequential_Key_On_Genotype_Set_Values_Primary_Key` (ATL-491) sets the
+option back to `OFF` on `PK_SubjectGenotypeSetValues`. With it on, the value inserts ran one at a time
+(`BTREE_INSERT_FLOW_CONTROL`), and that capped the speed of the precomputation stage. `PK_DonorSubjectGenotypeSets` keeps
+the option. Run the migration on both transient databases.
+
 ### Donors that are unambiguous at small g group
 
 The precomputation stores no genotype set, and no `DonorSubjectGenotypeSets` row, for a donor and `AllowedLociKey` at
