@@ -68,6 +68,9 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Migrations
                     b.Property<DateTime?>("IndexRecreationCompleted")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("JustPrecompute")
+                        .HasColumnType("bit");
+
                     b.Property<int?>("LastSafelyProcessedDonor")
                         .HasColumnType("int");
 

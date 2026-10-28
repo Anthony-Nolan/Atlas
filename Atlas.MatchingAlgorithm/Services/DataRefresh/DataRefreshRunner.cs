@@ -178,7 +178,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 : HlaMetadataDictionaryConstants.NoActiveVersionValue;
 
             activeVersionHlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaVersionOrDefault);
+            activeHlaNomenclatureVersion = hlaVersionOrDefault;
         }
+
+        /// <summary>ATL-491 experiment only: the version that a <c>JustPrecompute</c> refresh uses.</summary>
+        private readonly string activeHlaNomenclatureVersion;
 
         public async Task<DataRefreshRunResult> RefreshData(int refreshRecordId, CancellationToken cancellationToken)
         {
@@ -246,6 +250,12 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
             manualDecisionEvents.Resumed(refreshRecord.Id, decision);
 
+            if (refreshRecord.JustPrecompute)
+            {
+                await ApplyExperimentDecision(refreshRecord, decision);
+                return;
+            }
+
             switch (decision)
             {
                 case DataRefreshManualDecision.Complete:
@@ -265,6 +275,29 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     throw new InvalidOperationException(
                         $"Record {refreshRecord.Id} has the pending manual decision {decision}, which a refresh cannot apply.");
             }
+        }
+
+        /// <summary>
+        /// ATL-491 experiment only. <see cref="DataRefreshManualDecision.RetryFailedBatches"/> runs the donor genotype
+        /// precomputation stage again from the start: the precomputed data is removed first, and the decision cleared after
+        /// it, so an attempt that stops between the two removes the data again. No other decision resumes such a refresh.
+        /// </summary>
+        private async Task ApplyExperimentDecision(DataRefreshRecord refreshRecord, DataRefreshManualDecision decision)
+        {
+            if (decision != DataRefreshManualDecision.RetryFailedBatches)
+            {
+                throw new InvalidOperationException(
+                    $"Data refresh record {refreshRecord.Id} is a JustPrecompute refresh, and cannot resume with the manual decision " +
+                    $"{decision}. Only {DataRefreshManualDecision.RetryFailedBatches} (run the stage again) and " +
+                    $"{DataRefreshManualDecision.Fail} (end the refresh) are allowed.");
+            }
+
+            await donorImportRepository.RemoveAllPrecomputedGenotypeSets();
+            await dataRefreshHistoryRepository.ClearPendingManualDecision(refreshRecord);
+            logger.SendTrace(
+                $"{LoggingPrefix} ATL-491 experiment: record {refreshRecord.Id} resumes after the manual decision {decision}: the " +
+                $"precomputed data is removed, and stage {DataRefreshStage.DonorGenotypePrecomputation} runs again from the start.",
+                LogLevel.Warn);
         }
 
         /// <summary>
@@ -381,7 +414,30 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
             AvoidScalingDbUpAndImmediatelyBackDown(modes);
 
+            if (refreshRecord.JustPrecompute)
+            {
+                SkipAllButThePrecomputation(modes);
+            }
+
             return modes;
+        }
+
+        /// <summary>
+        /// ATL-491 experiment only. A <c>JustPrecompute</c> refresh keeps the donors and the HLA of the dormant database, and its
+        /// indexes. <see cref="DataRefreshStage.DataDeletion"/> removes only the precomputed data, once per record. The stage
+        /// always pauses when its run is complete, so the stages after it never run.
+        /// </summary>
+        private static void SkipAllButThePrecomputation(Dictionary<DataRefreshStage, DataRefreshStageExecutionMode> modes)
+        {
+            modes[DataRefreshStage.IndexRemoval] = DataRefreshStageExecutionMode.Skip;
+            modes[DataRefreshStage.DonorImport] = DataRefreshStageExecutionMode.Skip;
+            modes[DataRefreshStage.DonorHlaProcessing] = DataRefreshStageExecutionMode.Skip;
+            modes[DataRefreshStage.IndexRecreation] = DataRefreshStageExecutionMode.Skip;
+            modes[DataRefreshStage.DatabaseScalingSetup] = DataRefreshStageExecutionMode.FromScratch;
+            if (modes[DataRefreshStage.DonorGenotypePrecomputation] == DataRefreshStageExecutionMode.Skip)
+            {
+                modes[DataRefreshStage.DonorGenotypePrecomputation] = DataRefreshStageExecutionMode.FromScratch;
+            }
         }
 
         /// <summary>
@@ -415,12 +471,21 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         {
             if (string.IsNullOrEmpty(refreshRecord.HlaNomenclatureVersion))
             {
-                var latestHlaNomenclatureVersion = activeVersionHlaMetadataDictionary.GetLatestStableHlaNomenclatureVersion();
+                var latestHlaNomenclatureVersion = refreshRecord.JustPrecompute
+                    ? activeHlaNomenclatureVersion
+                    : activeVersionHlaMetadataDictionary.GetLatestStableHlaNomenclatureVersion();
                 refreshRecord.HlaNomenclatureVersion = latestHlaNomenclatureVersion; //Later steps will make use of this value.
                 await dataRefreshHistoryRepository.UpdateExecutionDetails(refreshRecord.Id, latestHlaNomenclatureVersion);
             }
 
             loggingContext.HlaNomenclatureVersion = refreshRecord.HlaNomenclatureVersion;
+
+            if (refreshRecord.JustPrecompute)
+            {
+                // ATL-491 experiment only: the dormant database keeps its donors and their HLA, so the run uses the active
+                // version and dictionary as they are.
+                return;
+            }
 
             if (refreshRecord.IsStageComplete(DataRefreshStage.MetadataDictionaryRefresh))
             {
@@ -480,6 +545,12 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     await donorImportRepository.RemoveHlaTableIndexes();
                     break;
                 case DataRefreshStage.DataDeletion:
+                    if (refreshRecord.JustPrecompute)
+                    {
+                        await donorImportRepository.RemoveAllPrecomputedGenotypeSets();
+                        break;
+                    }
+
                     await donorImportRepository.RemoveAllDonorInformation();
                     break;
                 case DataRefreshStage.DatabaseScalingSetup:

@@ -40,6 +40,12 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         Task RemoveAllDonorInformation();
 
         /// <summary>
+        /// ATL-491 experiment only. Removes the precomputed subject genotype sets, and the run, batch and staging tables of
+        /// the donor genotype precomputation stage. The donors and their processed HLA stay.
+        /// </summary>
+        Task RemoveAllPrecomputedGenotypeSets();
+
+        /// <summary>
         /// Removes all donor pre-processed data, without removing donors themselves.
         /// </summary>
         Task RemoveAllProcessedDonorHla();
@@ -254,6 +260,16 @@ END
                 await conn.ExecuteAsync(BuildDropAllPreProcessedDonorHlaSql(), commandTimeout: 300);
                 await conn.ExecuteAsync(DropAllDonorsSql, commandTimeout: 300);
                 await conn.ExecuteAsync(DropAllDonorManagementLogsSql, commandTimeout: 300);
+                await conn.ExecuteAsync(DropAllSubjectGenotypeSetsSql, commandTimeout: 300);
+                await conn.ExecuteAsync(DropAllDonorGenotypePrecomputationRunsSql, commandTimeout: 300);
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task RemoveAllPrecomputedGenotypeSets()
+        {
+            await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            {
                 await conn.ExecuteAsync(DropAllSubjectGenotypeSetsSql, commandTimeout: 300);
                 await conn.ExecuteAsync(DropAllDonorGenotypePrecomputationRunsSql, commandTimeout: 300);
             }

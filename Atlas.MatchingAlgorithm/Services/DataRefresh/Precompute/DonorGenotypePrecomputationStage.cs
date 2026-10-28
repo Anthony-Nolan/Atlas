@@ -153,6 +153,7 @@ internal class DonorGenotypePrecomputationStage : IDonorGenotypePrecomputationSt
         if (settings.GroupsPerBatch < 1
             || settings.PollIntervalSeconds < 1
             || settings.StallAlertMinutes < 1
+            || settings.JustPrecomputeDonorCount < 1
             || settings.MaxFailedDonorFraction is not (>= 0 and <= 1))
         {
             throw new InvalidDataRefreshConfigurationException(
@@ -246,7 +247,16 @@ internal class DonorGenotypePrecomputationStage : IDonorGenotypePrecomputationSt
             "{GroupsPerBatch} groups per batch.",
             run.Id, refreshRecord.Id, database, run.GroupsPerBatch);
 
-        var result = await repository.BuildRun(run.Id, cancellationToken);
+        var maxDonorCount = refreshRecord.JustPrecompute ? settings.JustPrecomputeDonorCount : (int?)null;
+        if (maxDonorCount != null)
+        {
+            logger.LogWarning(
+                LoggingPrefix + " ATL-491 experiment: run {RunId} of data refresh record {DataRefreshRecordId} ({TargetDatabase}) is " +
+                "built from about {MaxDonorCount} donors only.",
+                run.Id, refreshRecord.Id, database, maxDonorCount);
+        }
+
+        var result = await repository.BuildRun(run.Id, cancellationToken, maxDonorCount);
         logger.LogInformation(
             LoggingPrefix + " Run {RunId} of data refresh record {DataRefreshRecordId} ({TargetDatabase}) is built: {RunStatus}. " +
             "{DonorCount} donors, {GroupCount} groups, {BatchCount} batches, {DonorAssignmentCount} group-donor rows. Steps: {BuildSteps}",
@@ -386,6 +396,11 @@ internal class DonorGenotypePrecomputationStage : IDonorGenotypePrecomputationSt
         Run run,
         IDonorGenotypePrecomputationRepository repository)
     {
+        if (refreshRecord.JustPrecompute)
+        {
+            return await PauseAfterTheExperimentRun(refreshRecord, database, run, repository);
+        }
+
         if (!await repository.HasStagingData())
         {
             logger.LogInformation(
@@ -434,6 +449,29 @@ internal class DonorGenotypePrecomputationStage : IDonorGenotypePrecomputationSt
 
         await repository.TruncateStagingTables();
         return DonorGenotypePrecomputationStageResult.Complete;
+    }
+
+    /// <summary>
+    /// ATL-491 experiment only. A <c>JustPrecompute</c> refresh always pauses when its run is complete, with or without
+    /// failures, so that it never swaps the databases. The staging data stays for the failure summary of the paused alert.
+    /// </summary>
+    private async Task<DonorGenotypePrecomputationStageResult> PauseAfterTheExperimentRun(
+        DataRefreshRecord refreshRecord,
+        TransientDatabase database,
+        Run run,
+        IDonorGenotypePrecomputationRepository repository)
+    {
+        var summary = await repository.GetFailureSummary(run.Id)
+                      ?? throw new InvalidOperationException($"Run {run.Id} of data refresh record {refreshRecord.Id} is gone.");
+
+        logger.LogWarning(
+            LoggingPrefix + " ATL-491 experiment: run {RunId} of data refresh record {DataRefreshRecordId} ({TargetDatabase}) is " +
+            "{RunStatus}: {FailedDonorCount} of {TotalDonorCount} donors failed. The data refresh pauses. Send RetryFailedBatches " +
+            "to run the stage again from the start, or Fail to end the refresh.",
+            run.Id, refreshRecord.Id, database, run.Status, summary.FailedDonorCount, summary.TotalDonorCount);
+
+        return DonorGenotypePrecomputationStageResult.AwaitingManualDecision(
+            new DonorGenotypePrecomputationFailureReport(run.Id, summary, settings.MaxFailedDonorFraction, run.ManualRetryCount));
     }
 
     private void LogProgress(DataRefreshRecord refreshRecord, TransientDatabase database, int runId, DonorGenotypePrecomputationBatchCounts counts) =>
