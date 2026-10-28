@@ -46,6 +46,8 @@ locals {
     "DataRefresh:LeaseRenewalIntervalSeconds"                                               = var.DATA_REFRESH_LEASE_RENEWAL_INTERVAL_SECONDS
     "DataRefresh:Precompute:AbandonBatchesCronSchedule"                                     = var.DATA_REFRESH_PRECOMPUTE_ABANDON_BATCHES_CRON_SCHEDULE
     "DataRefresh:Precompute:FinaliseRunsCronSchedule"                                       = var.DATA_REFRESH_PRECOMPUTE_FINALISE_RUNS_CRON_SCHEDULE
+    "DataRefresh:Precompute:GroupsPerBatch"                                                 = var.DATA_REFRESH_PRECOMPUTE_GROUPS_PER_BATCH
+    "DataRefresh:Precompute:JustPrecomputeDonorCount"                                       = var.DATA_REFRESH_PRECOMPUTE_JUST_PRECOMPUTE_DONOR_COUNT
     "DataRefresh:Precompute:MaxBatchRetries"                                                = var.DATA_REFRESH_PRECOMPUTE_MAX_BATCH_RETRIES
     "DataRefresh:Precompute:MaxFailedDonorFraction"                                         = var.DATA_REFRESH_PRECOMPUTE_MAX_FAILED_DONOR_FRACTION
     "DataRefresh:Precompute:RequestsSubscription"                                           = azurerm_servicebus_subscription.precomputation-worker.name

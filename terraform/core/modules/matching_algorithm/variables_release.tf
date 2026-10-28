@@ -121,6 +121,14 @@ variable "DATA_REFRESH_PRECOMPUTE_FINALISE_RUNS_CRON_SCHEDULE" {
   type = string
 }
 
+variable "DATA_REFRESH_PRECOMPUTE_GROUPS_PER_BATCH" {
+  type = number
+}
+
+variable "DATA_REFRESH_PRECOMPUTE_JUST_PRECOMPUTE_DONOR_COUNT" {
+  type = number
+}
+
 variable "DATA_REFRESH_PRECOMPUTE_MAX_BATCH_RETRIES" {
   type = number
 }

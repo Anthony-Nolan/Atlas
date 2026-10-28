@@ -497,6 +497,18 @@ variable "MATCHING_DATA_REFRESH_PRECOMPUTE_FINALISE_RUNS_CRON_SCHEDULE" {
   description = "CRON schedule (six-field NCrontab) for the sweep that finalises donor genotype precomputation runs whose batches have all finished. Must be set: without it the function fails to index and the precomputation stage can wait forever."
 }
 
+variable "MATCHING_DATA_REFRESH_PRECOMPUTE_GROUPS_PER_BATCH" {
+  type        = number
+  default     = 1000
+  description = "The groups of one donor genotype precomputation batch: the work of one message for a precompute worker. A run keeps the value that it was created with."
+}
+
+variable "MATCHING_DATA_REFRESH_PRECOMPUTE_JUST_PRECOMPUTE_DONOR_COUNT" {
+  type        = number
+  default     = 2000000
+  description = "ATL-491 experiment only: the donors that a JustPrecompute data refresh builds its donor genotype precomputation run from."
+}
+
 variable "MATCHING_DATA_REFRESH_PRECOMPUTE_MAX_BATCH_RETRIES" {
   type        = number
   default     = 3
