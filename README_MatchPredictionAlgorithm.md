@@ -254,6 +254,12 @@ content from SQL once at a time, with the rows of one of its sets. There is no l
 cannot work while Redis is down, which is when the processes read SQL. An empty distributed cache gives at most the SQL
 reads that each scale-out gave before it.
 
+**The SQL read has no MARS.** The read of the frequencies of a set opens a connection with MARS (Multiple Active Result
+Sets) off, also when the connection string turns MARS on, as the connection strings that Terraform builds do. With MARS,
+SQL Server sends a few packets and then waits for the client to acknowledge them, so a read of many rows waits for many
+network round trips. On a copy of WMDA LIVE (October 2026), a read of the largest set from a developer machine took
+24.7 s with MARS and 0.5 s without it.
+
 **Sizes**, measured on the 208 active sets of a copy of WMDA LIVE (18,540,779 haplotypes, October 2026):
 - The 208 sets have 42 contents, with 2,262,873 haplotypes in all: 87.8% of the haplotypes are copies. The largest group
   of sets with one content has 63 sets.
@@ -262,7 +268,8 @@ reads that each scale-out gave before it.
 - In a process: 233 bytes for each haplotype on average, with the consolidated frequencies. The largest set takes 59 MiB.
   All 42 contents take about 508 MiB, and 604 MiB as the memory limit counts them: less than the default limit. (All
   208 sets, each with an entry of its own, would take about 4.1 GiB.)
-- A load of the largest set: 24 s for the SQL read from a developer machine; 0.3 s to decode it and build its entry.
+- A load of the largest set: 0.5 s for the SQL read from a developer machine (24.7 s with MARS); 0.3 s to decode it and
+  build its entry.
 
 **Logs and metrics.**
 - The timed logs `Get All Frequencies from HF set - from SQL database` (the SQL read and the build of the entry) and

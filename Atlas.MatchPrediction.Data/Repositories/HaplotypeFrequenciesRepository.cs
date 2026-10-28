@@ -112,9 +112,12 @@ namespace Atlas.MatchPrediction.Data.Repositories
 
         /// <inheritdoc />
         /// <remarks>
+        /// <para>
         /// <c>ORDER BY Id</c> fixes the order: without it, a plan on another index, or a parallel plan, could give the rows in
         /// another order. It costs no sort: the index on the set id also has the id in its key, as SQL Server adds the
         /// clustered key to a non-unique index.
+        /// </para>
+        /// <para>The read uses a connection without MARS: see <see cref="WithoutMultipleActiveResultSets"/>.</para>
         /// </remarks>
         public async Task<List<LightweightHaplotypeFrequencyRecord>> GetAllHaplotypeFrequencies(int setId)
         {
@@ -130,15 +133,29 @@ SELECT {nameof(HaplotypeFrequency.A)},
 FROM {HaplotypeFrequency.QualifiedTableName}
 WHERE {HaplotypeFrequency.SetIdColumnName} = @setId
 ORDER BY {nameof(HaplotypeFrequency.Id)}";
+            var readConnectionString = WithoutMultipleActiveResultSets(connectionString);
 
             return await RetryConfig.AsyncRetryPolicy.ExecuteAsync(async () =>
             {
-                await using (var conn = new SqlConnection(connectionString))
+                await using (var conn = new SqlConnection(readConnectionString))
                 {
                     var frequencyModels = await conn.QueryAsync<LightweightHaplotypeFrequencyRecord>(sql, new {setId}, commandTimeout: 600);
                     return frequencyModels.ToList();
                 }
             });
         }
+
+        /// <summary>
+        /// The connection string with MARS (Multiple Active Result Sets) off. With MARS, SQL Server sends a few packets and then
+        /// waits for the client to acknowledge them (https://github.com/dotnet/SqlClient/issues/1283), so a read of many rows
+        /// waits for one network round trip for each few packets. The read of a whole set needs no MARS: it opens its own
+        /// connection, and runs one query. As this connection string differs from that of the other connections, the read
+        /// must not run in a transaction scope with them: the transaction would become a distributed one. An empty connection
+        /// string stays empty, so that a host without one fails as before.
+        /// </summary>
+        internal static string WithoutMultipleActiveResultSets(string connectionString) =>
+            string.IsNullOrEmpty(connectionString)
+                ? connectionString
+                : new SqlConnectionStringBuilder(connectionString) { MultipleActiveResultSets = false }.ConnectionString;
     }
 }
