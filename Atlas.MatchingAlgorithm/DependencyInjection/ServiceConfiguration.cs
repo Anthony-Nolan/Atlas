@@ -109,6 +109,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, AzureDatabaseManagementSettings> fetchAzureDatabaseManagementSettings,
             Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings,
             Func<IServiceProvider, DonorGenotypePrecomputationSettings> fetchDonorGenotypePrecomputationSettings,
+            Func<IServiceProvider, DonorGenotypePrecomputationSwitchSettings> fetchDonorGenotypePrecomputationSwitchSettings,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
@@ -142,6 +143,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchAzureDatabaseManagementSettings,
                 fetchDataRefreshSettings,
                 fetchDonorGenotypePrecomputationSettings,
+                fetchDonorGenotypePrecomputationSwitchSettings,
                 fetchDonorManagementSettings,
                 fetchMessagingServiceBusSettings,
                 fetchDonorImportSqlConnectionString
@@ -236,6 +238,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, AzureDatabaseManagementSettings> fetchAzureDatabaseManagementSettings,
             Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings,
             Func<IServiceProvider, DonorGenotypePrecomputationSettings> fetchDonorGenotypePrecomputationSettings,
+            Func<IServiceProvider, DonorGenotypePrecomputationSwitchSettings> fetchDonorGenotypePrecomputationSwitchSettings,
             Func<IServiceProvider, DonorManagementSettings> fetchDonorManagementSettings,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, string> fetchDonorImportSqlConnectionString)
@@ -248,6 +251,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchAzureDatabaseManagementSettings,
                 fetchDataRefreshSettings,
                 fetchDonorGenotypePrecomputationSettings,
+                fetchDonorGenotypePrecomputationSwitchSettings,
                 fetchMessagingServiceBusSettings
             );
 
@@ -325,6 +329,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         /// SQL connection string (haplotype frequency sets), <see cref="GenotypeImputationSettings"/>, and
         /// <c>IOptions&lt;HaplotypeFrequencySetCacheSettings&gt;</c> and the distributed cache
         /// (<c>RegisterDistributedCacheTypes</c>), which the host registers itself.
+        /// The precomputer does nothing when <see cref="DonorGenotypePrecomputationSwitchSettings.Enabled"/> is false.
         /// </remarks>
         public static void RegisterDonorImportGenotypeSetPrecompute(
             this IServiceCollection services,
@@ -332,8 +337,11 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
             Func<IServiceProvider, GenotypeImputationSettings> fetchGenotypeImputationSettings,
+            Func<IServiceProvider, DonorGenotypePrecomputationSwitchSettings> fetchDonorGenotypePrecomputationSwitchSettings,
             Func<IServiceProvider, string> fetchMatchPredictionSqlConnectionString)
         {
+            services.MakeSettingsAvailableForUse(fetchDonorGenotypePrecomputationSwitchSettings);
+
             services.RegisterGenotypeSetPipeline(
                 fetchApplicationInsightsSettings,
                 fetchHlaMetadataDictionarySettings,
@@ -668,12 +676,14 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, AzureDatabaseManagementSettings> fetchAzureDatabaseManagementSettings,
             Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings,
             Func<IServiceProvider, DonorGenotypePrecomputationSettings> fetchDonorGenotypePrecomputationSettings,
+            Func<IServiceProvider, DonorGenotypePrecomputationSwitchSettings> fetchDonorGenotypePrecomputationSwitchSettings,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
         {
             services.MakeSettingsAvailableForUse(fetchAzureAuthenticationSettings);
             services.MakeSettingsAvailableForUse(fetchAzureDatabaseManagementSettings);
             services.MakeSettingsAvailableForUse(fetchDataRefreshSettings);
             services.MakeSettingsAvailableForUse(fetchDonorGenotypePrecomputationSettings);
+            services.MakeSettingsAvailableForUse(fetchDonorGenotypePrecomputationSwitchSettings);
             services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
         }
 

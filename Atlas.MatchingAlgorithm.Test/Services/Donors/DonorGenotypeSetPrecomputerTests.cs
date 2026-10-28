@@ -15,6 +15,7 @@ using Atlas.MatchingAlgorithm.Data.Repositories.Precompute;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 using Atlas.MatchingAlgorithm.Services.Donors;
+using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
@@ -35,6 +36,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
         private IHaplotypeFrequencyLookupService frequencyLookupService;
         private ISubjectGenotypeSetPrecomputeService precomputeService;
         private IMatchingAlgorithmImportLogger logger;
+        private DonorGenotypePrecomputationSwitchSettings switchSettings;
 
         private IDonorGenotypeSetPrecomputer precomputer;
 
@@ -47,8 +49,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
 
             precomputeService = Substitute.For<ISubjectGenotypeSetPrecomputeService>();
             logger = Substitute.For<IMatchingAlgorithmImportLogger>();
+            switchSettings = new DonorGenotypePrecomputationSwitchSettings();
 
-            precomputer = new DonorGenotypeSetPrecomputer(frequencyLookupService, precomputeService, logger);
+            precomputer = new DonorGenotypeSetPrecomputer(frequencyLookupService, precomputeService, logger, switchSettings);
         }
 
         [Test]
@@ -102,6 +105,18 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
 
             await precomputeService.DidNotReceiveWithAnyArgs().Precompute(default, default, default);
             await frequencyLookupService.DidNotReceiveWithAnyArgs().GetSingleHaplotypeFrequencySet(default);
+        }
+
+        [Test]
+        public async Task PrecomputeBestEffort_WhenPrecomputationIsTurnedOff_DoesNothing()
+        {
+            switchSettings.Enabled = false;
+
+            await precomputer.PrecomputeBestEffort(new[] { Donor(1), Donor(2) }, TargetDatabase, HlaVersion);
+
+            await precomputeService.DidNotReceiveWithAnyArgs().Precompute(default, default, default);
+            await frequencyLookupService.DidNotReceiveWithAnyArgs().GetSingleHaplotypeFrequencySet(default);
+            logger.DidNotReceiveWithAnyArgs().SendEvent(default, default, default, default);
         }
 
         [Test]
@@ -240,7 +255,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
                 new SubjectGenotypeSetPrecomputeService(
                     new SubjectGenotypeSetValueService(repositoryFactory, genotypeSetService),
                     repositoryFactory),
-                logger);
+                logger,
+                switchSettings);
 
             var donors = new[]
             {
