@@ -55,7 +55,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute;
 internal class PrecomputedDonorGenotypeSetSearchTests
 {
     private const AllowedLociKey Key = AllowedLociKey.ABCDrb1Dqb1;
-    private const int FrequencySetId = 456;
+    private const int DonorFrequencySetId = 456;
+
+    /// <summary>Not the donor's: a set stored with the patient's frequency set would never be used for the donor.</summary>
+    private const int PatientFrequencySetId = 789;
+
     private const int ReplacedFrequencySetId = 123;
     private const string RegistryCode = "reg";
     private const string EthnicityCode = "eth";
@@ -122,8 +126,8 @@ internal class PrecomputedDonorGenotypeSetSearchTests
         var haplotypeFrequencyService = Substitute.For<IHaplotypeFrequencyService>();
         haplotypeFrequencyService.GetHaplotypeFrequencySets(default, default).ReturnsForAnyArgs(new HaplotypeFrequencySetResponse
         {
-            PatientSet = new HaplotypeFrequencySet { Id = FrequencySetId },
-            DonorSet = new HaplotypeFrequencySet { Id = FrequencySetId }
+            PatientSet = new HaplotypeFrequencySet { Id = PatientFrequencySetId },
+            DonorSet = new HaplotypeFrequencySet { Id = DonorFrequencySetId }
         });
 
         // Like the real matcher: uses the supplied donor set, or "computes" the live one.
@@ -210,7 +214,7 @@ internal class PrecomputedDonorGenotypeSetSearchTests
         {
             // All of the key search checks before it uses a row, so that the next search uses this one.
             rowAfterTheBatch.HlaTypingKey.Should().Be(TypingKey(searchTyping));
-            rowAfterTheBatch.HaplotypeFrequencySetId.Should().Be(FrequencySetId);
+            rowAfterTheBatch.HaplotypeFrequencySetId.Should().Be(DonorFrequencySetId);
             rowAfterTheBatch.IsUnrepresented.Should().BeFalse();
             rowAfterTheBatch.SubjectGenotypeSetData.Should().Equal(SubjectGenotypeSetPayload.Encode(liveSet));
         }
@@ -316,7 +320,7 @@ internal class PrecomputedDonorGenotypeSetSearchTests
         (await StoredRow(updatedDonorId)).Should().BeEquivalentTo(updatedDonorRowBeforeTheBatch);
         var storedRow = await StoredRow(donorIdWithNoRow);
         storedRow.HlaTypingKey.Should().Be(TypingKey(searchTyping));
-        storedRow.HaplotypeFrequencySetId.Should().Be(FrequencySetId);
+        storedRow.HaplotypeFrequencySetId.Should().Be(DonorFrequencySetId);
         storedRow.SubjectGenotypeSetData.Should().Equal(SubjectGenotypeSetPayload.Encode(liveSet));
     }
 
@@ -408,7 +412,7 @@ internal class PrecomputedDonorGenotypeSetSearchTests
     }
 
     /// <summary>Stores the set for the donor through the writer that search stores live sets with.</summary>
-    private async Task Store(int donorId, PhenotypeInfo<string> typing, SubjectGenotypeSet set, int frequencySetId = FrequencySetId)
+    private async Task Store(int donorId, PhenotypeInfo<string> typing, SubjectGenotypeSet set, int frequencySetId = DonorFrequencySetId)
     {
         var storeResult = await writer.Store(
             [new DonorGenotypeSetToStore(
