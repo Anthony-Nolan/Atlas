@@ -223,8 +223,10 @@ public class DonorImportPrecomputeTests
         public Task<IReadOnlyDictionary<SubjectGenotypeSetKey, int>> GetExistingValueIds(IReadOnlyCollection<SubjectGenotypeSetKey> keys) =>
             inner.GetExistingValueIds(keys);
 
-        public Task<IReadOnlyDictionary<SubjectGenotypeSetKey, int>> GetOrCreateValueIds(IReadOnlyCollection<SubjectGenotypeSetValueToStore> values) =>
-            inner.GetOrCreateValueIds(values);
+        public Task<IReadOnlyDictionary<SubjectGenotypeSetKey, int>> GetOrCreateValueIds(
+            IReadOnlyCollection<SubjectGenotypeSetValueToStore> values,
+            SubjectGenotypeSetValueInsertMode insertMode = SubjectGenotypeSetValueInsertMode.KeyRangeLocked) =>
+            inner.GetOrCreateValueIds(values, insertMode);
 
         public Task UpsertDonorAssignments(IReadOnlyCollection<DonorSubjectGenotypeSetAssignment> assignments) =>
             shouldFail() ? Task.FromException(new Exception("assignment write failed")) : inner.UpsertDonorAssignments(assignments);

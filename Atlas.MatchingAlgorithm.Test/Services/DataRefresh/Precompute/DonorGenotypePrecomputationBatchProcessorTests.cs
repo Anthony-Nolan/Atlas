@@ -174,7 +174,24 @@ public class DonorGenotypePrecomputationBatchProcessorTests
                 && requests.Single().HlaTyping.Equals(group.HlaTyping)
                 && requests.Single().AllowedLociKey == group.AllowedLociKey),
             claimedBatch.HlaNomenclatureVersion,
-            database);
+            database,
+            Arg.Any<SubjectGenotypeSetValueInsertMode>());
+    }
+
+    [Test]
+    public async Task ProcessBatch_StoresTheValuesWithoutKeyRangeLocks()
+    {
+        // The batches of the stage almost never share a key, and the key-range locks made many writers of new keys wait
+        // for each other and deadlock (ATL-473).
+        GivenGroups(1);
+
+        await processor.ProcessBatch(request, database, false);
+
+        await valueService.Received(1).GetOrComputeValueIds(
+            Arg.Any<IReadOnlyList<SubjectGenotypeSetValueRequest>>(),
+            Arg.Any<string>(),
+            Arg.Any<TransientDatabase>(),
+            SubjectGenotypeSetValueInsertMode.RetryOnDuplicate);
     }
 
     [Test]
@@ -204,7 +221,8 @@ public class DonorGenotypePrecomputationBatchProcessorTests
             Arg.Is<IReadOnlyList<SubjectGenotypeSetValueRequest>>(requests =>
                 requests.Select(r => r.FrequencySet.Id).SequenceEqual(new[] { 1, 1, 2, 2 })),
             Arg.Any<string>(),
-            Arg.Any<TransientDatabase>());
+            Arg.Any<TransientDatabase>(),
+            Arg.Any<SubjectGenotypeSetValueInsertMode>());
     }
 
     [Test]
@@ -292,7 +310,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
         RecordedOutcomes().Should().ContainSingle().Which.Should().Match<Outcome>(outcome =>
             outcome.GroupId == group.GroupId && outcome.FailureMessage.Contains(group.RepresentativeDonorId.ToString()));
         await valueService.Received(1).GetOrComputeValueIds(
-            Arg.Is<IReadOnlyList<SubjectGenotypeSetValueRequest>>(requests => requests.Count == 0), Arg.Any<string>(), Arg.Any<TransientDatabase>());
+            Arg.Is<IReadOnlyList<SubjectGenotypeSetValueRequest>>(requests => requests.Count == 0), Arg.Any<string>(), Arg.Any<TransientDatabase>(), Arg.Any<SubjectGenotypeSetValueInsertMode>());
     }
 
     [Test]
@@ -320,7 +338,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
         var groups = GivenGroups(2, NewPair());
         var firstComputed = groups.MinBy(group => group.GroupId);
         var stop = new TimeoutException(fixture.Create<string>());
-        valueService.GetOrComputeValueIds(default, default, default).ReturnsForAnyArgs(new SubjectGenotypeSetValueResults(
+        valueService.GetOrComputeValueIds(default, default, default, default).ReturnsForAnyArgs(new SubjectGenotypeSetValueResults(
             [new SubjectGenotypeSetValueOutcome(nextValueId, null), new SubjectGenotypeSetValueOutcome(null, null)],
             stop));
 
@@ -375,7 +393,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
         var result = await processor.ProcessBatch(request, database, false);
 
         result.Should().Be(BatchResult.Failed);
-        await valueService.DidNotReceiveWithAnyArgs().GetOrComputeValueIds(default, default, default);
+        await valueService.DidNotReceiveWithAnyArgs().GetOrComputeValueIds(default, default, default, default);
         await repository.Received(1).TryMarkBatchFailed(claimedBatch.BatchId, Arg.Any<Guid>(),
             Arg.Is<DonorGenotypePrecomputationBatchFailure>(batchFailure => batchFailure.FailureMessage.Contains(stop.Message)));
     }
@@ -461,7 +479,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
 
     /// <remarks>The requests are null only when a test sets up the value service again.</remarks>
     private void EveryValueIsStored() =>
-        valueService.GetOrComputeValueIds(default, default, default).ReturnsForAnyArgs(callInfo =>
+        valueService.GetOrComputeValueIds(default, default, default, default).ReturnsForAnyArgs(callInfo =>
             new SubjectGenotypeSetValueResults(
                 callInfo.Arg<IReadOnlyList<SubjectGenotypeSetValueRequest>>()?
                     .Select(valueRequest => outcomesByTyping.GetValueOrDefault(valueRequest.HlaTyping) ?? new SubjectGenotypeSetValueOutcome(nextValueId++, null))

@@ -21,6 +21,31 @@ public readonly record struct SubjectGenotypeSetKey(string HlaTypingKey, int Hap
 /// </summary>
 public sealed record SubjectGenotypeSetValueToStore(SubjectGenotypeSetKey Key, bool IsUnrepresented, byte[] SubjectGenotypeSetData);
 
+/// <summary>
+/// How a write of values makes sure that each key is stored once. The unique index on the key is what guarantees it in
+/// both modes; the modes differ in how a race of two writers on one new key ends.
+/// </summary>
+public enum SubjectGenotypeSetValueInsertMode
+{
+    /// <summary>
+    /// The insert first looks for each key under <c>UPDLOCK, HOLDLOCK</c>, so a racing writer waits rather than inserts
+    /// the same key. For writers that often share keys: the donor import, search and the debug endpoint.
+    /// </summary>
+    /// <remarks>
+    /// The locks are key-range locks on the unique index, and a writer of a new key also locks the gap around it. So it
+    /// does not suit many writers of different new keys at once: they wait for each other, and can deadlock (ATL-473).
+    /// </remarks>
+    KeyRangeLocked,
+
+    /// <summary>
+    /// The insert looks for each key without lock hints, and inserts the keys it did not find. A writer that loses a race
+    /// on a new key gets a unique index violation, and runs the insert again, which then finds the key. No key-range
+    /// locks. For the donor genotype precomputation stage of a data refresh, whose writers almost never share a key: each
+    /// batch has its own groups.
+    /// </summary>
+    RetryOnDuplicate
+}
+
 /// <summary>One <c>DonorSubjectGenotypeSets</c> row: which stored value this donor uses at this locus combination.</summary>
 public sealed record DonorSubjectGenotypeSetAssignment(int DonorId, AllowedLociKey AllowedLociKey, int SubjectGenotypeSetValueId);
 
