@@ -39,28 +39,58 @@ using SearchAlgorithmContext = Atlas.MatchingAlgorithm.Data.Context.SearchAlgori
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute;
 
 /// <summary>
-/// How search uses a donor's stored genotype set (ATL-221) when the row is good, missing, for another typing, or cannot be
-/// decoded (ATL-493). The stored rows are real rows in the active matching database, and the batch runs through the real
-/// path: the source resolver and reader, the match probability service, and the batch completer with the real writer.
-/// Only the Match Prediction engine (the genotype matcher and the frequency set lookup) is substituted: this project has
-/// no Match Prediction database.
+/// How search uses a donor's stored genotype set (ATL-221) when the row is good, missing, for another typing or frequency
+/// set, or cannot be decoded, and when the batch cannot use stored rows at all (ATL-493). The stored rows are real rows
+/// in the active matching database, and the batch runs through the real path: the source resolver and reader, the match
+/// probability service, and the batch completer with the real writer. Only the Match Prediction engine (the genotype
+/// matcher, the frequency set lookup and the small g group check) is substituted: this project has no Match Prediction
+/// database.
 /// </summary>
+/// <remarks>
+/// <see cref="DonorGenotypeSetSource.UncoveredAllowedLoci"/> is not here: every set of loci the input validator accepts
+/// is one of the four precomputed keys. <see cref="DonorGenotypeSetSource.ReadFailed"/> is not here either: it needs a
+/// failing read, which the unit tests of the resolver cover.
+/// </remarks>
 [TestFixture]
 internal class PrecomputedDonorGenotypeSetSearchTests
 {
     private const AllowedLociKey Key = AllowedLociKey.ABCDrb1Dqb1;
     private const int FrequencySetId = 456;
+    private const int ReplacedFrequencySetId = 123;
     private const string RegistryCode = "reg";
     private const string EthnicityCode = "eth";
 
+    /// <summary>The donor's stored row when the batch runs.</summary>
+    internal enum RowState
+    {
+        Good,
+        Unrepresented,
+        None,
+        NoneAsUnambiguous,
+        OtherFrequencySet,
+        OtherTyping,
+        Undecodable
+    }
+
+    /// <summary>The transient database the request says matching used.</summary>
+    internal enum MatchedDatabase
+    {
+        Active,
+        Unknown,
+        NoLongerActive
+    }
+
     private ActiveDataRefreshRecord activeRecord;
     private StaticallyChosenTransientSqlConnectionStringProviderFactory connectionStringFactory;
+    private SubjectGenotypeSetRepositoryFactory repositoryFactory;
     private ISubjectGenotypeSetRepository repository;
     private PrecomputedDonorGenotypeSetWriter writer;
+    private IAtlasLogger logger;
     private IDonorGenotypeSetSourceResolver resolver;
     private IMatchProbabilityService matchProbabilityService;
     private IDonorGenotypeSetBatchCompleter completer;
     private IGenotypeMatcher genotypeMatcher;
+    private IGenotypeSetService genotypeSetService;
     private Dictionary<string, double> usageMetrics;
     private SubjectGenotypeSet storedSet;
     private SubjectGenotypeSet liveSet;
@@ -71,22 +101,19 @@ internal class PrecomputedDonorGenotypeSetSearchTests
         var historyRepository = Injection.Provider.GetService<IDataRefreshHistoryRepository>();
         activeRecord = historyRepository.GetActiveRecord();
         connectionStringFactory = Injection.Provider.GetService<StaticallyChosenTransientSqlConnectionStringProviderFactory>();
-        var repositoryFactory = new SubjectGenotypeSetRepositoryFactory(connectionStringFactory);
+        repositoryFactory = new SubjectGenotypeSetRepositoryFactory(connectionStringFactory);
         repository = repositoryFactory.GetForDatabase(activeRecord.Database);
         await TruncatePrecomputeTables();
 
         writer = new PrecomputedDonorGenotypeSetWriter(historyRepository, repositoryFactory);
-        var logger = Substitute.For<IAtlasLogger>();
+        logger = Substitute.For<IAtlasLogger>();
         logger.When(l => l.SendEvent(
                 DonorGenotypeSetBatchCompleter.UsageEventName,
                 Arg.Any<LogLevel>(),
                 Arg.Any<Dictionary<string, string>>(),
                 Arg.Any<Dictionary<string, double>>()))
             .Do(call => usageMetrics = call.ArgAt<Dictionary<string, double>>(3));
-        resolver = new DonorGenotypeSetSourceResolver(
-            new PrecomputedGenotypeSetSettings { Mode = PrecomputedGenotypeSetMode.DefaultPrecomputed },
-            new PrecomputedDonorGenotypeSetReader(historyRepository, repositoryFactory),
-            logger);
+        resolver = Resolver(PrecomputedGenotypeSetMode.DefaultPrecomputed);
         completer = new DonorGenotypeSetBatchCompleter(writer, logger);
 
         storedSet = SetWithGenotypes(2, 0.5m);
@@ -116,26 +143,32 @@ internal class PrecomputedDonorGenotypeSetSearchTests
         var calculator = Substitute.For<IMatchProbabilityCalculator>();
         calculator.CalculateMatchProbability(default, default, default, default).ReturnsForAnyArgs(new MatchProbabilityResponse());
 
-        // The genotype set service is only asked whether a donor with no row is unambiguous: the substitute says it is not.
+        // Only asked whether a donor with no row is unambiguous at small g group. False, as for most donors, unless a
+        // test says otherwise.
+        genotypeSetService = Substitute.For<IGenotypeSetService>();
+
         matchProbabilityService = new MatchProbabilityService(
             calculator,
             haplotypeFrequencyService,
             genotypeMatcher,
-            Substitute.For<IGenotypeSetService>(),
+            genotypeSetService,
             Substitute.For<IMatchPredictionLogger<MatchProbabilityLoggingContext>>(),
             new MatchProbabilityLoggingContext());
     }
 
-    /// <param name="storedRow">
-    /// The state of the donor's stored row when the batch runs, named by the source search should give for it.
-    /// </param>
+    /// <param name="storedRow">The state of the donor's stored row when the batch runs.</param>
+    /// <param name="expectedSource">The source search should give for it.</param>
     /// <param name="isStoredBack">True when the live set is stored, so that the next search can use it.</param>
-    [TestCase(DonorGenotypeSetSource.Precomputed, false)]
-    [TestCase(DonorGenotypeSetSource.NoRow, true)]
-    [TestCase(DonorGenotypeSetSource.TypingChanged, false)]
-    [TestCase(DonorGenotypeSetSource.DecodeFailed, false)]
-    public async Task MatchPredictionBatch_ForTheDonorsStoredRow_UsesItOrComputesLive_AndStoresOnlyWhenTheRowIsMissing(
-        DonorGenotypeSetSource storedRow,
+    [TestCase(RowState.Good, DonorGenotypeSetSource.Precomputed, false)]
+    [TestCase(RowState.Unrepresented, DonorGenotypeSetSource.Precomputed, false)]
+    [TestCase(RowState.None, DonorGenotypeSetSource.NoRow, true)]
+    [TestCase(RowState.NoneAsUnambiguous, DonorGenotypeSetSource.NotStoredUnambiguous, false)]
+    [TestCase(RowState.OtherFrequencySet, DonorGenotypeSetSource.StaleFrequencySet, true)]
+    [TestCase(RowState.OtherTyping, DonorGenotypeSetSource.TypingChanged, false)]
+    [TestCase(RowState.Undecodable, DonorGenotypeSetSource.DecodeFailed, false)]
+    public async Task MatchPredictionBatch_ForTheDonorsStoredRow_UsesItOrComputesLive_AndStoresOnlyAMissingOrStaleRow(
+        RowState storedRow,
+        DonorGenotypeSetSource expectedSource,
         bool isStoredBack)
     {
         var searchTyping = Typing("search");
@@ -144,27 +177,41 @@ internal class PrecomputedDonorGenotypeSetSearchTests
         await SetUpTheStoredRow(storedRow, donorId);
         var rowBeforeTheBatch = await StoredRow(donorId);
 
-        var result = await RunBatch(donorId, searchTyping);
+        var result = await RunBatch(Input(searchTyping, donorId));
 
-        result.GenotypeSetSource.Should().Be(storedRow);
+        result.GenotypeSetSource.Should().Be(expectedSource);
         var matcherInput = (GenotypeMatcherInput)genotypeMatcher.ReceivedCalls().Single().GetArguments().Single();
-        if (storedRow == DonorGenotypeSetSource.Precomputed)
+        switch (storedRow)
         {
-            SubjectGenotypeSetPayload.Encode(matcherInput.DonorGenotypeSet).Should().Equal(SubjectGenotypeSetPayload.Encode(storedSet));
-        }
-        else
-        {
-            matcherInput.DonorGenotypeSet.Should().BeNull("the donor is computed live");
+            case RowState.Good:
+                SubjectGenotypeSetPayload.Encode(matcherInput.DonorGenotypeSet).Should().Equal(SubjectGenotypeSetPayload.Encode(storedSet));
+                break;
+            case RowState.Unrepresented:
+                matcherInput.DonorGenotypeSet.IsUnrepresented.Should().BeTrue();
+                matcherInput.DonorGenotypeSet.Genotypes.Should().BeEmpty();
+                break;
+            default:
+                matcherInput.DonorGenotypeSet.Should().BeNull("the donor is computed live");
+                break;
         }
 
-        var usageMetric = storedRow == DonorGenotypeSetSource.Precomputed ? "PrecomputedCount" : storedRow.ToString();
+        // Checked on the result too, not only in the database: the writer would skip a set stored for a changed
+        // donor, and a row that is already there would hide one stored for a bad row.
+        (result.GenotypeSetToStore != null).Should().Be(isStoredBack);
+
+        var usageMetric = expectedSource == DonorGenotypeSetSource.Precomputed ? "PrecomputedCount" : expectedSource.ToString();
         usageMetrics[usageMetric].Should().Be(1);
         usageMetrics["StoredCount"].Should().Be(isStoredBack ? 1 : 0);
+        usageMetrics["StoreSkippedDonorChanged"].Should().Be(0);
+        usageMetrics["StoreSkippedDatabaseChanged"].Should().Be(0);
 
         var rowAfterTheBatch = await StoredRow(donorId);
         if (isStoredBack)
         {
+            // All of the key search checks before it uses a row, so that the next search uses this one.
             rowAfterTheBatch.HlaTypingKey.Should().Be(TypingKey(searchTyping));
+            rowAfterTheBatch.HaplotypeFrequencySetId.Should().Be(FrequencySetId);
+            rowAfterTheBatch.IsUnrepresented.Should().BeFalse();
             rowAfterTheBatch.SubjectGenotypeSetData.Should().Equal(SubjectGenotypeSetPayload.Encode(liveSet));
         }
         else
@@ -173,27 +220,140 @@ internal class PrecomputedDonorGenotypeSetSearchTests
         }
     }
 
+    [TestCase(PrecomputedGenotypeSetMode.ForceLive, true, MatchedDatabase.Active, DonorGenotypeSetSource.PrecomputeDisabled)]
+    [TestCase(PrecomputedGenotypeSetMode.DefaultLive, null, MatchedDatabase.Active, DonorGenotypeSetSource.PrecomputeDisabled)]
+    [TestCase(PrecomputedGenotypeSetMode.DefaultPrecomputed, false, MatchedDatabase.Active, DonorGenotypeSetSource.PrecomputeDisabled)]
+    [TestCase(PrecomputedGenotypeSetMode.DefaultPrecomputed, null, MatchedDatabase.Unknown, DonorGenotypeSetSource.ActiveDatabaseUnknown)]
+    [TestCase(PrecomputedGenotypeSetMode.DefaultPrecomputed, null, MatchedDatabase.NoLongerActive, DonorGenotypeSetSource.ActiveDatabaseChanged)]
+    public async Task MatchPredictionBatch_WhenTheBatchCannotUseStoredRows_ComputesTheDonorLive_AndStoresNothing(
+        PrecomputedGenotypeSetMode mode,
+        bool? usePrecomputedGenotypeSets,
+        MatchedDatabase matchedDatabase,
+        DonorGenotypeSetSource expectedSource)
+    {
+        resolver = Resolver(mode);
+        var searchTyping = Typing("search");
+        var donorId = await InsertDonor(searchTyping);
+        await Store(donorId, searchTyping, storedSet);
+        var rowBeforeTheBatch = await StoredRow(donorId);
+        var input = Input(searchTyping, donorId);
+        input.UsePrecomputedGenotypeSets = usePrecomputedGenotypeSets;
+        input.MatchingAlgorithmDataRefreshRecordId = matchedDatabase switch
+        {
+            MatchedDatabase.Active => activeRecord.Id,
+            MatchedDatabase.Unknown => null,
+            MatchedDatabase.NoLongerActive => activeRecord.Id + 1,
+            _ => throw new ArgumentOutOfRangeException(nameof(matchedDatabase), matchedDatabase, null)
+        };
+
+        var result = await RunBatch(input);
+
+        result.GenotypeSetSource.Should().Be(expectedSource);
+        var matcherInput = (GenotypeMatcherInput)genotypeMatcher.ReceivedCalls().Single().GetArguments().Single();
+        matcherInput.DonorGenotypeSet.Should().BeNull("the good stored row must not be used");
+        result.GenotypeSetToStore.Should().BeNull();
+        usageMetrics[expectedSource.ToString()].Should().Be(1);
+        usageMetrics["StoredCount"].Should().Be(0);
+        (await StoredRow(donorId)).Should().BeEquivalentTo(rowBeforeTheBatch);
+    }
+
+    [Test]
+    public async Task MatchPredictionBatch_WhenTheDonorIsUpdatedBeforeTheStore_SkipsTheDonor()
+    {
+        var searchTyping = Typing("search");
+        var donorId = await InsertDonor(searchTyping);
+
+        // As an import that runs while the batch computes the donor live.
+        var result = await RunBatch(Input(searchTyping, donorId), beforeTheStore: () => UpdateDonorTyping(donorId, Typing("imported")));
+
+        result.GenotypeSetSource.Should().Be(DonorGenotypeSetSource.NoRow);
+        result.GenotypeSetToStore.Should().NotBeNull();
+        usageMetrics["StoredCount"].Should().Be(0);
+        usageMetrics["StoreSkippedDonorChanged"].Should().Be(1);
+        (await StoredRow(donorId)).Should().BeNull();
+    }
+
+    [Test]
+    public async Task MatchPredictionBatch_WhenTheActiveDatabaseChangesBeforeTheStore_StoresNothing()
+    {
+        var searchTyping = Typing("search");
+        var donorId = await InsertDonor(searchTyping);
+
+        // As a data refresh that completes while the batch computes the donor live.
+        var historyAfterTheRefresh = Substitute.For<IDataRefreshHistoryRepository>();
+        historyAfterTheRefresh.GetActiveRecord().Returns(activeRecord with { Id = activeRecord.Id + 1 });
+        completer = new DonorGenotypeSetBatchCompleter(new PrecomputedDonorGenotypeSetWriter(historyAfterTheRefresh, repositoryFactory), logger);
+
+        var result = await RunBatch(Input(searchTyping, donorId));
+
+        result.GenotypeSetSource.Should().Be(DonorGenotypeSetSource.NoRow);
+        result.GenotypeSetToStore.Should().NotBeNull();
+        usageMetrics["StoredCount"].Should().Be(0);
+        usageMetrics["StoreSkippedDatabaseChanged"].Should().Be(1);
+        (await StoredRow(donorId)).Should().BeNull();
+    }
+
     /// <summary>
-    /// Changes the donor's row, stored for the search's typing, into the state that gives <paramref name="storedRow"/>.
+    /// Donors with the same typing share one donor input. One that was updated after matching must not keep the search
+    /// from storing the set for the other.
     /// </summary>
-    private async Task SetUpTheStoredRow(DonorGenotypeSetSource storedRow, int donorId)
+    [Test]
+    public async Task MatchPredictionBatch_ForAnInputWithAnUpdatedDonorAndADonorWithNoRow_StoresForTheDonorWithNoRowOnly()
+    {
+        var searchTyping = Typing("search");
+        var updatedDonorId = await InsertDonor(searchTyping);
+        var donorIdWithNoRow = await InsertDonor(searchTyping);
+        var newTyping = Typing("imported");
+        await UpdateDonorTyping(updatedDonorId, newTyping);
+        await Store(updatedDonorId, newTyping, storedSet);
+        var updatedDonorRowBeforeTheBatch = await StoredRow(updatedDonorId);
+
+        var result = await RunBatch(Input(searchTyping, updatedDonorId, donorIdWithNoRow));
+
+        result.GenotypeSetSource.Should().Be(DonorGenotypeSetSource.NoRow);
+        usageMetrics["StoredCount"].Should().Be(1);
+        usageMetrics["StoreSkippedDonorChanged"].Should().Be(1);
+        (await StoredRow(updatedDonorId)).Should().BeEquivalentTo(updatedDonorRowBeforeTheBatch);
+        var storedRow = await StoredRow(donorIdWithNoRow);
+        storedRow.HlaTypingKey.Should().Be(TypingKey(searchTyping));
+        storedRow.HaplotypeFrequencySetId.Should().Be(FrequencySetId);
+        storedRow.SubjectGenotypeSetData.Should().Equal(SubjectGenotypeSetPayload.Encode(liveSet));
+    }
+
+    /// <summary>
+    /// Changes the donor's row, stored for the search's typing, into <paramref name="storedRow"/>.
+    /// </summary>
+    private async Task SetUpTheStoredRow(RowState storedRow, int donorId)
     {
         switch (storedRow)
         {
-            case DonorGenotypeSetSource.Precomputed:
+            case RowState.Good:
                 break;
-            case DonorGenotypeSetSource.NoRow:
+            case RowState.Unrepresented:
+                await TruncatePrecomputeTables();
+                await Store(donorId, Typing("search"), new SubjectGenotypeSet(true, new List<GenotypeAtDesiredResolutions>(), 0m));
+                break;
+            case RowState.None:
                 // A donor that was never precomputed: no link row and no value row. A value row of the same key would be
                 // kept by the store back, as value rows are keyed by content.
                 await TruncatePrecomputeTables();
                 break;
-            case DonorGenotypeSetSource.TypingChanged:
+            case RowState.NoneAsUnambiguous:
+                await TruncatePrecomputeTables();
+                genotypeSetService.IsUnambiguousAtSmallGGroup(default, default).ReturnsForAnyArgs(true);
+                break;
+            case RowState.OtherFrequencySet:
+                // Precomputed before the frequency set search now uses was activated.
+                await TruncatePrecomputeTables();
+                await Store(donorId, Typing("search"), storedSet, ReplacedFrequencySetId);
+                break;
+            case RowState.OtherTyping:
                 // As an import after matching does: the donor gets a new typing, and the set of the new typing is stored.
                 var newTyping = Typing("imported");
                 await UpdateDonorTyping(donorId, newTyping);
                 await Store(donorId, newTyping, SetWithGenotypes(4, 0.7m));
                 break;
-            case DonorGenotypeSetSource.DecodeFailed:
+            case RowState.Undecodable:
                 await UpdateStoredPayload(donorId, [1, 2, 3]);
                 break;
             default:
@@ -201,43 +361,64 @@ internal class PrecomputedDonorGenotypeSetSearchTests
         }
     }
 
-    /// <summary>One batch of one donor, as the match prediction algorithm runs it: resolve, calculate, complete.</summary>
-    private async Task<MatchProbabilityResult> RunBatch(int donorId, PhenotypeInfo<string> searchTyping)
-    {
-        var donor = new DonorInput
-        {
-            DonorIds = [donorId],
-            DonorHla = searchTyping.ToPhenotypeInfoTransfer(),
-            DonorFrequencySetMetadata = new FrequencySetMetadata { RegistryCode = RegistryCode, EthnicityCode = EthnicityCode }
-        };
-        var input = new SingleDonorMatchProbabilityInput
+    private IDonorGenotypeSetSourceResolver Resolver(PrecomputedGenotypeSetMode mode) =>
+        new DonorGenotypeSetSourceResolver(
+            new PrecomputedGenotypeSetSettings { Mode = mode },
+            new PrecomputedDonorGenotypeSetReader(Injection.Provider.GetService<IDataRefreshHistoryRepository>(), repositoryFactory),
+            logger);
+
+    /// <summary>The input of one donor input, with the ids that share its typing, matched on the active database.</summary>
+    private SingleDonorMatchProbabilityInput Input(PhenotypeInfo<string> searchTyping, params int[] donorIds) =>
+        new()
         {
             SearchRequestId = Guid.NewGuid().ToString(),
             MatchingAlgorithmHlaNomenclatureVersion = activeRecord.HlaNomenclatureVersion,
             MatchingAlgorithmDataRefreshRecordId = activeRecord.Id,
             PatientHla = Typing("patient").ToPhenotypeInfoTransfer(),
-            Donor = donor
+            Donor = new DonorInput
+            {
+                DonorIds = donorIds.ToList(),
+                DonorHla = searchTyping.ToPhenotypeInfoTransfer(),
+                DonorFrequencySetMetadata = new FrequencySetMetadata { RegistryCode = RegistryCode, EthnicityCode = EthnicityCode }
+            }
         };
 
-        var batchContext = await resolver.Resolve(input, [donor]);
+    /// <summary>One batch of one donor input, as the match prediction algorithm runs it: resolve, calculate, complete.</summary>
+    /// <param name="input">The batch's one donor input.</param>
+    /// <param name="beforeTheStore">What happens in the database after the donor is calculated and before the batch stores it.</param>
+    private async Task<MatchProbabilityResult> RunBatch(SingleDonorMatchProbabilityInput input, Func<Task> beforeTheStore = null)
+    {
+        var batchContext = await resolver.Resolve(input, [input.Donor]);
         var result = await matchProbabilityService.CalculateMatchProbability(
             input,
             new SubjectGenotypeSet(false, new List<GenotypeAtDesiredResolutions>(), 0.1m),
             batchContext);
+        if (beforeTheStore != null)
+        {
+            await beforeTheStore();
+        }
+
         await completer.Complete(
             input,
             batchContext,
-            [new DonorGenotypeSetBatchOutcome(donor.DonorIds.Count, result.GenotypeSetSource, result.GenotypeSetToStore)],
+            [new DonorGenotypeSetBatchOutcome(input.Donor.DonorIds.Count, result.GenotypeSetSource, result.GenotypeSetToStore)],
             PatientGenotypeSetSource.NoKey);
 
         return result;
     }
 
     /// <summary>Stores the set for the donor through the writer that search stores live sets with.</summary>
-    private async Task Store(int donorId, PhenotypeInfo<string> typing, SubjectGenotypeSet set)
+    private async Task Store(int donorId, PhenotypeInfo<string> typing, SubjectGenotypeSet set, int frequencySetId = FrequencySetId)
     {
         var storeResult = await writer.Store(
-            [new DonorGenotypeSetToStore([donorId], typing, RegistryCode, EthnicityCode, FrequencySetId, false, SubjectGenotypeSetPayload.Encode(set))],
+            [new DonorGenotypeSetToStore(
+                [donorId],
+                typing,
+                RegistryCode,
+                EthnicityCode,
+                frequencySetId,
+                set.IsUnrepresented,
+                set.IsUnrepresented ? null : SubjectGenotypeSetPayload.Encode(set))],
             Key.ToLoci(),
             activeRecord.Id);
         storeResult.StoredCount.Should().Be(1);
