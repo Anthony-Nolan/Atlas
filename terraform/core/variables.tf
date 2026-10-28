@@ -868,7 +868,7 @@ variable "MATCHING_PRECOMPUTE_WORKER_CONTAINER_MEMORY" {
 
 variable "MATCHING_PRECOMPUTE_WORKER_CONTAINER_MAX_REPLICAS" {
   type        = number
-  default     = 10
+  default     = 20
   description = "Maximum replica count for the donor genotype precompute worker container app. The minimum is always 0. Keep MATCHING_PRECOMPUTE_WORKER_MAX_CONCURRENT_CALLS times this within the worker and session limits of the transient database being refreshed."
 }
 
@@ -886,7 +886,7 @@ variable "MATCHING_PRECOMPUTE_WORKER_CONTAINER_SCALE_RULE_POLLING_INTERVAL_SECON
 
 variable "MATCHING_PRECOMPUTE_WORKER_MAX_CONCURRENT_CALLS" {
   type        = number
-  default     = 3
+  default     = 4
   description = "Maximum number of batches each donor genotype precompute worker replica processes concurrently. A batch spends most of its time waiting on the database, so one batch per replica leaves most of the replica's CPU idle. The limit is the transient database at the refresh size: raise this only while its CPU and log write stay below about 80%."
 }
 
