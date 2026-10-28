@@ -499,7 +499,7 @@ variable "MATCHING_DATA_REFRESH_PRECOMPUTE_FINALISE_RUNS_CRON_SCHEDULE" {
 
 variable "MATCHING_DATA_REFRESH_PRECOMPUTE_GROUPS_PER_BATCH" {
   type        = number
-  default     = 1000
+  default     = 2000
   description = "The groups of one donor genotype precomputation batch: the work of one message for a precompute worker. A run keeps the value that it was created with."
 }
 
