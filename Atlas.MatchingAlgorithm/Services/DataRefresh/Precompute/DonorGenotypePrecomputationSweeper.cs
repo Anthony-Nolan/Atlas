@@ -257,7 +257,8 @@ internal class DonorGenotypePrecomputationSweeper : IDonorGenotypePrecomputation
     {
         // Outside the stage, the database can be scaled down, and a read would keep it awake.
         var records = dataRefreshHistoryRepository.GetIncompleteRefreshJobs()
-            .Where(record => record.IsStageComplete(DataRefreshStage.IndexRecreation)
+            // EXPERIMENT (ATL-491): a JustPrecompute refresh skips index recreation, so its stage 65 is swept without it.
+            .Where(record => (record.IsStageComplete(DataRefreshStage.IndexRecreation) || record.JustPrecompute)
                              && !record.IsStageComplete(DataRefreshStage.DonorGenotypePrecomputation)
                              && record.AwaitingManualDecisionSinceUtc == null
                              && record.PendingManualDecision == null)

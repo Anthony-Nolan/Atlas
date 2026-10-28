@@ -140,6 +140,21 @@ public class DonorGenotypePrecomputationSweeperTests
         repositoryFactory.DidNotReceiveWithAnyArgs().GetDonorGenotypePrecomputationRepositoryForDatabase(default);
     }
 
+    [TestCase(Finalise)]
+    [TestCase(Abandon)]
+    [TestCase(Requeue)]
+    public async Task Sweep_WhenAJustPrecomputeRefreshSkippedIndexRecreation_SweepsItsRun(string sweep)
+    {
+        // EXPERIMENT (ATL-491): a JustPrecompute refresh never marks index recreation complete.
+        var (record, run) = GivenAnOpenRefreshWithARun();
+        record.IndexRecreationCompleted = null;
+        record.JustPrecompute = true;
+
+        await RunSweep(sweep);
+
+        await ShouldHaveSwept(sweep, Repository(record), run);
+    }
+
     [Test]
     public async Task Sweep_WhenTheRunIsNotRunning_ChangesNothing(
         [Values(Finalise, Abandon, Requeue)] string sweep,
