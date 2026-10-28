@@ -357,7 +357,7 @@ Precomputation worker (`PrecomputeWorker:*`):
 
 | Setting | Default | Description |
 |---|---|---|
-| `MaxConcurrentCalls` | 1 | The batches that one replica processes at the same time. Terraform sets 3 (`MATCHING_PRECOMPUTE_WORKER_MAX_CONCURRENT_CALLS`). |
+| `MaxConcurrentCalls` | 1 | The batches that one replica processes at the same time. Terraform sets 4 (`MATCHING_PRECOMPUTE_WORKER_MAX_CONCURRENT_CALLS`), with at most 20 replicas (`MATCHING_PRECOMPUTE_WORKER_CONTAINER_MAX_REPLICAS`). |
 | `PrefetchCount` | 0 | The messages that one replica fetches before it needs them. |
 | `BatchLeaseMinutes` | 60 | How long the claim of a batch holds. After that, a timer can mark the batch as abandoned. |
 | `MaxAutoLockRenewalMinutes` | 60 | How long the worker renews the lock of a message. |
@@ -374,6 +374,15 @@ the same memory per replica (about 1.6 GiB with 1, about 1.7 GiB with 3, of 4 Gi
 went from about 35% to about 80%. So at 3, a P4 refresh database is the limit: a faster stage there needs a larger
 `MATCHING_DATA_REFRESH_DB_SIZE_REFRESH`, not more workers. A larger refresh database (for example P6) may have room for
 more: raise `MaxConcurrentCalls` only while the database CPU and log write stay below about 80%.
+
+On a P6 refresh database, the next limit was the inserts into `SubjectGenotypeSetValues`. Its primary key is on an
+identity column, so every insert goes to the last page of the index. With `OPTIMIZE_FOR_SEQUENTIAL_KEY` on, SQL Server
+let these inserts in one at a time, and the stage stayed at about 400 to 480 batches per minute at 20 replicas, with
+either 4 or 6 batches per replica. With the option off (see `CHANGELOG_Data.md`), 20 replicas with 4 batches each
+reached about 600 to 630 batches per minute on a sample of about 2 M DEV donors, with the log write at about 80% to
+97%. The inserts still wait on the last page, but for a shorter time. `GroupsPerBatch` 1000 was the fastest: 500 and 2000
+were both slower, because smaller batches make more inserts wait on the last page at the same time, and larger batches
+hold the page for longer.
 
 The worker also reads the `HaplotypeFrequencySetCache:*` settings. Set `AwaitConsolidatedFrequencyWarm` to `true` (see
 [the Match Prediction README](README_MatchPredictionAlgorithm.md#haplotypefrequencysetcacheawaitconsolidatedfrequencywarm)),
