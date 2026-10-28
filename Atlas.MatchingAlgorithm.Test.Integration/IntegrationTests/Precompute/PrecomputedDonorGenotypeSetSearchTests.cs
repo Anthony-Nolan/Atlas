@@ -56,11 +56,11 @@ internal class PrecomputedDonorGenotypeSetSearchTests
 {
     private const AllowedLociKey Key = AllowedLociKey.ABCDrb1Dqb1;
     private const int DonorFrequencySetId = 456;
+    private const int ReplacedFrequencySetId = 123;
 
     /// <summary>Not the donor's: a set stored with the patient's frequency set would never be used for the donor.</summary>
     private const int PatientFrequencySetId = 789;
 
-    private const int ReplacedFrequencySetId = 123;
     private const string RegistryCode = "reg";
     private const string EthnicityCode = "eth";
 
@@ -84,6 +84,7 @@ internal class PrecomputedDonorGenotypeSetSearchTests
         NoLongerActive
     }
 
+    private IDataRefreshHistoryRepository historyRepository;
     private ActiveDataRefreshRecord activeRecord;
     private StaticallyChosenTransientSqlConnectionStringProviderFactory connectionStringFactory;
     private SubjectGenotypeSetRepositoryFactory repositoryFactory;
@@ -102,7 +103,7 @@ internal class PrecomputedDonorGenotypeSetSearchTests
     [SetUp]
     public async Task SetUp()
     {
-        var historyRepository = Injection.Provider.GetService<IDataRefreshHistoryRepository>();
+        historyRepository = Injection.Provider.GetService<IDataRefreshHistoryRepository>();
         activeRecord = historyRepository.GetActiveRecord();
         connectionStringFactory = Injection.Provider.GetService<StaticallyChosenTransientSqlConnectionStringProviderFactory>();
         repositoryFactory = new SubjectGenotypeSetRepositoryFactory(connectionStringFactory);
@@ -110,6 +111,9 @@ internal class PrecomputedDonorGenotypeSetSearchTests
         await TruncatePrecomputeTables();
 
         writer = new PrecomputedDonorGenotypeSetWriter(historyRepository, repositoryFactory);
+        // The fixture is one instance for all its tests: a batch that sends no usage event must not be checked against
+        // the previous test's metrics.
+        usageMetrics = null;
         logger = Substitute.For<IAtlasLogger>();
         logger.When(l => l.SendEvent(
                 DonorGenotypeSetBatchCompleter.UsageEventName,
@@ -368,10 +372,10 @@ internal class PrecomputedDonorGenotypeSetSearchTests
     private IDonorGenotypeSetSourceResolver Resolver(PrecomputedGenotypeSetMode mode) =>
         new DonorGenotypeSetSourceResolver(
             new PrecomputedGenotypeSetSettings { Mode = mode },
-            new PrecomputedDonorGenotypeSetReader(Injection.Provider.GetService<IDataRefreshHistoryRepository>(), repositoryFactory),
+            new PrecomputedDonorGenotypeSetReader(historyRepository, repositoryFactory),
             logger);
 
-    /// <summary>The input of one donor input, with the ids that share its typing, matched on the active database.</summary>
+    /// <summary>One donor input, with the ids that share its typing, matched on the active database.</summary>
     private SingleDonorMatchProbabilityInput Input(PhenotypeInfo<string> searchTyping, params int[] donorIds) =>
         new()
         {
