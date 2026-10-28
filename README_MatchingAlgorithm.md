@@ -244,6 +244,24 @@ Stage 65 (`DonorGenotypePrecomputation`) runs after the index recreation (stage 
 database (stage 70). So the database is still at the refresh size while the stage runs. The stage writes only to the
 dormant database: the database that the refresh fills.
 
+#### Turning the precomputation off
+
+An installation that does not use match prediction does not need the stored sets. `DonorGenotypePrecomputation:Enabled`
+(default `true`) turns the precomputation on or off for the installation. The Data Refresh app and the Donor Management
+app read it. Terraform: `MATCHING_DONOR_GENOTYPE_PRECOMPUTATION_ENABLED` (ATL-488).
+
+When it is `false`:
+
+- Stage 65 does no work. It sends no batches and does not wait for the workers. The refresh marks the stage as complete,
+  and continues with stage 70.
+- A donor import does not precompute the donors that it writes: the Donor Management app, and the queued donor updates
+  of stage 80.
+- Search imputes every donor live. Keep `MatchPrediction:Precompute:Mode` at `ForceLive`.
+
+A change of the setting does not delete the stored sets. They are deleted as before, whatever the value: the data
+deletion (stage 20) removes all the sets of the refreshed database, and a donor update removes the sets of that donor.
+So after the first refresh with the setting off, the refreshed database has no stored sets.
+
 #### How the stage works
 
 1. **Build.** The stage groups the donors with set-based SQL, over all donors at once. A group holds the donors that
@@ -363,7 +381,7 @@ Precomputation worker (`PrecomputeWorker:*`):
 
 | Setting | Default | Description |
 |---|---|---|
-| `MaxConcurrentCalls` | 1 | The batches that one replica processes at the same time. Terraform sets 3 (`MATCHING_PRECOMPUTE_WORKER_MAX_CONCURRENT_CALLS`). |
+| `MaxConcurrentCalls` | 1 | The batches that one replica processes at the same time. Terraform sets 4 (`MATCHING_PRECOMPUTE_WORKER_MAX_CONCURRENT_CALLS`), with at most 20 replicas (`MATCHING_PRECOMPUTE_WORKER_CONTAINER_MAX_REPLICAS`). |
 | `PrefetchCount` | 0 | The messages that one replica fetches before it needs them. |
 | `BatchLeaseMinutes` | 60 | How long the claim of a batch holds. After that, a timer can mark the batch as abandoned. |
 | `MaxAutoLockRenewalMinutes` | 60 | How long the worker renews the lock of a message. |
@@ -380,6 +398,15 @@ the same memory per replica (about 1.6 GiB with 1, about 1.7 GiB with 3, of 4 Gi
 went from about 35% to about 80%. So at 3, a P4 refresh database is the limit: a faster stage there needs a larger
 `MATCHING_DATA_REFRESH_DB_SIZE_REFRESH`, not more workers. A larger refresh database (for example P6) may have room for
 more: raise `MaxConcurrentCalls` only while the database CPU and log write stay below about 80%.
+
+On a P6 refresh database, the next limit was the inserts into `SubjectGenotypeSetValues`. Its primary key is on an
+identity column, so every insert goes to the last page of the index. With `OPTIMIZE_FOR_SEQUENTIAL_KEY` on, SQL Server
+let these inserts in one at a time, and the stage stayed at about 400 to 480 batches per minute at 20 replicas, with
+either 4 or 6 batches per replica. With the option off (see `CHANGELOG_Data.md`), 20 replicas with 4 batches each
+reached about 600 to 630 batches per minute on a sample of about 2 M DEV donors, with the log write at about 80% to
+97%. The inserts still wait on the last page, but for a shorter time. `GroupsPerBatch` 1000 was the fastest: 500 and 2000
+were both slower, because smaller batches make more inserts wait on the last page at the same time, and larger batches
+hold the page for longer.
 
 The worker also reads the `HaplotypeFrequencySetCache:*` settings. Set `AwaitConsolidatedFrequencyWarm` to `true` (see
 [the Match Prediction README](README_MatchPredictionAlgorithm.md#haplotypefrequencysetcacheawaitconsolidatedfrequencywarm)).

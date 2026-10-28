@@ -49,6 +49,7 @@
     "Debug:AllowPrecomputeWrites": false,
     "DistributedCache:ConnectionString": "",
     "DistributedCache:ManagedIdentityClientId": "",
+    "DonorGenotypePrecomputation:Enabled": true,
     "GenotypeImputation:MaximumExpandedGenotypesPerInput": 2000,
     "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes": 1,
     "HaplotypeFrequencySetCache:MaxCachedFrequencySetMegabytes": 768,

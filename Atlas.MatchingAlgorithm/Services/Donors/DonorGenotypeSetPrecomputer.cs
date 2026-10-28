@@ -10,6 +10,7 @@ using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
+using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using EnumStringValues;
@@ -66,21 +67,26 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
         private readonly IHaplotypeFrequencyLookupService haplotypeFrequencyLookupService;
         private readonly ISubjectGenotypeSetPrecomputeService precomputeService;
         private readonly IMatchingAlgorithmImportLogger logger;
+        private readonly DonorGenotypePrecomputationSwitchSettings switchSettings;
 
         public DonorGenotypeSetPrecomputer(
             IHaplotypeFrequencyLookupService haplotypeFrequencyLookupService,
             ISubjectGenotypeSetPrecomputeService precomputeService,
-            IMatchingAlgorithmImportLogger logger)
+            IMatchingAlgorithmImportLogger logger,
+            DonorGenotypePrecomputationSwitchSettings switchSettings)
         {
             this.haplotypeFrequencyLookupService = haplotypeFrequencyLookupService;
             this.precomputeService = precomputeService;
             this.logger = logger;
+            this.switchSettings = switchSettings;
         }
 
         /// <inheritdoc />
         public async Task PrecomputeBestEffort(IReadOnlyCollection<DonorInfo> donors, TransientDatabase targetDatabase, string hlaNomenclatureVersion)
         {
-            if (donors == null || donors.Count == 0)
+            // When turned off, as with the no-op precomputer: the donor service still deletes an updated donor's old rows, so
+            // these donors have no rows and search imputes them live.
+            if (!switchSettings.Enabled || donors == null || donors.Count == 0)
             {
                 return;
             }

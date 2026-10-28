@@ -33,7 +33,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         /// - Recreates HlaMetadata Dictionary
         /// - Imports all donors
         /// - Processes HLA for imported donors
-        /// - Precomputes the genotype sets of all donors
+        /// - Precomputes the genotype sets of all donors, unless <see cref="DonorGenotypePrecomputationSwitchSettings.Enabled"/> is false
         /// - Scales down target database
         /// </summary>
         /// <remarks>
@@ -69,6 +69,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
     public class DataRefreshRunner : IDataRefreshRunner
     {
         private readonly DataRefreshSettings dataRefreshSettings;
+        private readonly DonorGenotypePrecomputationSwitchSettings precomputationSwitchSettings;
         private readonly IActiveDatabaseProvider activeDatabaseProvider;
         private readonly IAzureDatabaseNameProvider azureDatabaseNameProvider;
         private readonly IAzureDatabaseManager azureDatabaseManager;
@@ -151,9 +152,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IDataRefreshSupportNotificationSender dataRefreshNotificationSender,
             IDataRefreshHistoryRepository dataRefreshHistoryRepository,
             MatchingAlgorithmImportLoggingContext loggingContext,
-            IDataRefreshManualDecisionEvents manualDecisionEvents)
+            IDataRefreshManualDecisionEvents manualDecisionEvents,
+            DonorGenotypePrecomputationSwitchSettings precomputationSwitchSettings)
         {
             this.manualDecisionEvents = manualDecisionEvents;
+            this.precomputationSwitchSettings = precomputationSwitchSettings;
             this.activeDatabaseProvider = activeDatabaseProvider;
             this.azureDatabaseNameProvider = azureDatabaseNameProvider;
             this.azureDatabaseManager = azureDatabaseManager;
@@ -511,6 +514,16 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     await donorImportRepository.CreateHlaTableIndexes();
                     break;
                 case DataRefreshStage.DonorGenotypePrecomputation:
+                    if (!precomputationSwitchSettings.Enabled)
+                    {
+                        // Marked as complete, so the later stages and the timers of the stage treat it as done. The genotype
+                        // sets of the database were removed with its donor data, so search imputes every donor live.
+                        logger.SendTrace(
+                            $"{LoggingPrefix} Stage {dataRefreshStage} is turned off (DonorGenotypePrecomputation:Enabled is false). " +
+                            "No genotype sets are precomputed. The stage is marked as complete.");
+                        break;
+                    }
+
                     var precomputationResult = await donorGenotypePrecomputationStage.Run(refreshRecord, executionMode, cancellationToken);
                     if (precomputationResult.IsAwaitingManualDecision)
                     {

@@ -108,6 +108,7 @@ namespace Atlas.MatchingAlgorithm.Test.DependencyInjection
                 _ => new HlaMetadataDictionarySettings { AzureStorageConnectionString = DevelopmentStorage },
                 _ => new MacDictionarySettings { AzureStorageConnectionString = DevelopmentStorage, TableName = "mac" },
                 _ => new GenotypeImputationSettings(),
+                _ => new DonorGenotypePrecomputationSwitchSettings(),
                 _ => "match-prediction-sql");
     }
 }

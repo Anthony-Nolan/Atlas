@@ -49,6 +49,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         private IDataRefreshSupportNotificationSender dataRefreshNotificationSender;
         private IDataRefreshHistoryRepository dataRefreshHistoryRepository;
         private IDataRefreshManualDecisionEvents manualDecisionEvents;
+        private DonorGenotypePrecomputationSwitchSettings precomputationSwitchSettings;
 
         private IDataRefreshRunner dataRefreshRunner;
         private IMatchingAlgorithmImportLogger logger;
@@ -73,6 +74,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             dataRefreshNotificationSender = Substitute.For<IDataRefreshSupportNotificationSender>();
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
             manualDecisionEvents = Substitute.For<IDataRefreshManualDecisionEvents>();
+            precomputationSwitchSettings = new DonorGenotypePrecomputationSwitchSettings();
 
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(DataRefreshRecordBuilder.New.Build());
             transientRepositoryFactory.GetDonorImportRepository().Returns(donorImportRepository);
@@ -251,6 +253,34 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         }
 
         [Test]
+        public async Task RefreshData_WhenPrecomputationIsTurnedOff_DoesNotRunTheDonorGenotypePrecomputation_AndMarksItComplete()
+        {
+            precomputationSwitchSettings.Enabled = false;
+            var record = DataRefreshRecordBuilder.New.Build();
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(record);
+
+            var result = await dataRefreshRunner.RefreshData(record.Id);
+
+            await donorGenotypePrecomputationStage.DidNotReceiveWithAnyArgs().Run(default, default, default);
+            await dataRefreshHistoryRepository.Received(1).MarkStageAsComplete(record, DataRefreshStage.DonorGenotypePrecomputation);
+            result.Should().Be(DataRefreshRunResult.Completed(LatestHlaVersion));
+        }
+
+        [Test]
+        public async Task RefreshData_WhenPrecomputationIsTurnedOff_StillRemovesAllDonorInformationAndRunsTheLaterStages()
+        {
+            precomputationSwitchSettings.Enabled = false;
+
+            await dataRefreshRunner.RefreshData(default);
+
+            // The removal also truncates the genotype set tables, so the stored sets are still deleted.
+            await donorImportRepository.Received().RemoveAllDonorInformation();
+            await dataRefreshHistoryRepository.Received(1)
+                .MarkStageAsComplete(Arg.Any<DataRefreshRecord>(), DataRefreshStage.DatabaseScalingTearDown);
+            await donorUpdateProcessor.ReceivedWithAnyArgs(1).ApplyDifferentialDonorUpdatesDuringRefresh(default, default);
+        }
+
+        [Test]
         public async Task RefreshData_WhenTheDonorGenotypePrecomputationFails_DoesNotMarkItCompleteAndScalesTheDatabaseToDormantSize()
         {
             var settings = DataRefreshSettingsBuilder.New
@@ -312,7 +342,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
                 dataRefreshNotificationSender,
                 dataRefreshHistoryRepository,
                 new MatchingAlgorithmImportLoggingContext(),
-                manualDecisionEvents
+                manualDecisionEvents,
+                precomputationSwitchSettings
             );
         }
     }

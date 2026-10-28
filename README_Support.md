@@ -227,6 +227,10 @@ Stage 65 stores the imputed genotype sets of all donors. It sends the work to th
 until they have done it. On a full donor set, the stage can run for many hours. For how the stage works and its
 settings, see [the Matching Algorithm README](README_MatchingAlgorithm.md#donor-genotype-precomputation-data-refresh-stage-65).
 
+When `DonorGenotypePrecomputation:Enabled` is `false`, the stage does no work. It logs `DATA REFRESH: Stage
+DonorGenotypePrecomputation is turned off`, and `DonorGenotypePrecomputationCompleted` gets a value at once. No
+worker runs, and no alert of this section is sent.
+
 #### Normal progress
 
 - The stage, the timers and the workers log to Application Insights with the prefix `DONOR GENOTYPE PRECOMPUTATION:`.
