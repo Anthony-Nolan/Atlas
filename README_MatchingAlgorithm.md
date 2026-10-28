@@ -244,6 +244,24 @@ Stage 65 (`DonorGenotypePrecomputation`) runs after the index recreation (stage 
 database (stage 70). So the database is still at the refresh size while the stage runs. The stage writes only to the
 dormant database: the database that the refresh fills.
 
+#### Turning the precomputation off
+
+An installation that does not use match prediction does not need the stored sets. `DonorGenotypePrecomputation:Enabled`
+(default `true`) turns the precomputation on or off for the installation. The Data Refresh app and the Donor Management
+app read it. Terraform: `MATCHING_DONOR_GENOTYPE_PRECOMPUTATION_ENABLED` (ATL-488).
+
+When it is `false`:
+
+- Stage 65 does no work. It sends no batches and does not wait for the workers. The refresh marks the stage as complete,
+  and continues with stage 70.
+- A donor import does not precompute the donors that it writes: the Donor Management app, and the queued donor updates
+  of stage 80.
+- Search imputes every donor live. Keep `MatchPrediction:Precompute:Mode` at `ForceLive`.
+
+A change of the setting does not delete the stored sets. They are deleted as before, whatever the value: the data
+deletion (stage 20) removes all the sets of the refreshed database, and a donor update removes the sets of that donor.
+So after the first refresh with the setting off, the refreshed database has no stored sets.
+
 #### How the stage works
 
 1. **Build.** The stage groups the donors with set-based SQL, over all donors at once. A group holds the donors that

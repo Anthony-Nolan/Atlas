@@ -47,6 +47,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<GenotypeImputationSettings>(),
+                OptionsReaderFor<DonorGenotypePrecomputationSwitchSettings>(),
                 ConnectionStringReader("MatchPredictionSql")
             );
 
@@ -58,6 +59,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
             services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
             services.RegisterAsOptions<DistributedCacheSettings>("DistributedCache");
+            services.RegisterAsOptions<DonorGenotypePrecomputationSwitchSettings>("DonorGenotypePrecomputation");
             services.RegisterAsOptions<DonorManagementSettings>("MessagingServiceBus:DonorManagement");
             services.RegisterAsOptions<GenotypeImputationSettings>("GenotypeImputation");
             services.RegisterAsOptions<HaplotypeFrequencySetCacheSettings>("HaplotypeFrequencySetCache");

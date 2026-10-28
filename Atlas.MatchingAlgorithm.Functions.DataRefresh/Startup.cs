@@ -27,6 +27,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DataRefresh
                 OptionsReaderFor<AzureDatabaseManagementSettings>(),
                 OptionsReaderFor<DataRefreshSettings>(),
                 OptionsReaderFor<DonorGenotypePrecomputationSettings>(),
+                OptionsReaderFor<DonorGenotypePrecomputationSwitchSettings>(),
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
@@ -50,6 +51,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DataRefresh
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<GenotypeImputationSettings>(),
+                OptionsReaderFor<DonorGenotypePrecomputationSwitchSettings>(),
                 ConnectionStringReader("MatchPredictionSql"));
 
             // The genotype set compute debug endpoint. Here rather than in the matching algorithm app, so that its imputations
@@ -75,6 +77,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DataRefresh
             services.RegisterAsOptions<DebugSettings>("Debug");
             services.RegisterAsOptions<DistributedCacheSettings>("DistributedCache");
             services.RegisterAsOptions<DonorGenotypePrecomputationSettings>("DataRefresh:Precompute");
+            services.RegisterAsOptions<DonorGenotypePrecomputationSwitchSettings>("DonorGenotypePrecomputation");
             services.RegisterAsOptions<DonorManagementSettings>("DataRefresh:DonorManagement");
             services.RegisterAsOptions<GenotypeImputationSettings>("GenotypeImputation");
             services.RegisterAsOptions<HaplotypeFrequencySetCacheSettings>("HaplotypeFrequencySetCache");

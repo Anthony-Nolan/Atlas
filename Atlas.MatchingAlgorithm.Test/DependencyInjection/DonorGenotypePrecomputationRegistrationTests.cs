@@ -94,6 +94,7 @@ public class DonorGenotypePrecomputationRegistrationTests
             _ => new HlaMetadataDictionarySettings { AzureStorageConnectionString = DevelopmentStorage },
             _ => new MacDictionarySettings { AzureStorageConnectionString = DevelopmentStorage, TableName = fixture.Create<string>() },
             _ => new GenotypeImputationSettings(),
+            _ => new DonorGenotypePrecomputationSwitchSettings(),
             _ => SqlConnectionString);
 
         services.Single(d => d.ServiceType == typeof(IDonorGenotypeSetPrecomputer))
@@ -119,6 +120,7 @@ public class DonorGenotypePrecomputationRegistrationTests
             _ => new AzureDatabaseManagementSettings(),
             _ => fixture.Create<DataRefreshSettings>(),
             _ => settings,
+            _ => new DonorGenotypePrecomputationSwitchSettings(),
             _ => new ApplicationInsightsSettings { LogLevel = nameof(LogLevel.Info) },
             _ => new AzureStorageSettings { ConnectionString = DevelopmentStorage },
             _ => new HlaMetadataDictionarySettings { AzureStorageConnectionString = DevelopmentStorage },
