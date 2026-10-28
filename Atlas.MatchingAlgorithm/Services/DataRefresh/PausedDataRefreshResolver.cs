@@ -121,6 +121,17 @@ internal class PausedDataRefreshResolver : IPausedDataRefreshResolver
                 PausedDataRefreshResolutionOutcome.NotFound, $"There is no data refresh record {recordId}.", recordId, decision);
         }
 
+        if (record.JustPrecompute && decision == DataRefreshManualDecision.Complete)
+        {
+            // ATL-491 experiment only: Complete would swap in a database with the precomputed data of a sample of the donors.
+            return new PausedDataRefreshResolution(
+                PausedDataRefreshResolutionOutcome.InvalidRequest,
+                $"Data refresh record {recordId} is a JustPrecompute refresh, so it cannot be completed. Send " +
+                $"{DataRefreshManualDecision.RetryFailedBatches} to run the stage again, or {DataRefreshManualDecision.Fail} to end it.",
+                recordId,
+                decision);
+        }
+
         var decidedBy = CleanDecidedBy(request.DecidedBy);
         var nowUtc = timeProvider.GetUtcNow().UtcDateTime;
         if (!await dataRefreshHistoryRepository.TryTakeManualDecision(recordId, decision, nowUtc, SupportComment(decision, decidedBy, nowUtc)))

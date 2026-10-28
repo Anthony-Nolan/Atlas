@@ -112,6 +112,12 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
         /// </remarks>
         public DataRefreshManualDecision? PendingManualDecision { get; set; }
 
+        /// <summary>
+        /// ATL-491 experiment only, not for release. The refresh runs only the donor genotype precomputation stage, on a
+        /// sample of the donors that the dormant database has already, and then pauses: it never swaps the databases.
+        /// </summary>
+        public bool JustPrecompute { get; set; }
+
         public bool IsStageComplete(DataRefreshStage stage) => GetStageCompletionTime(stage) != null;
 
         internal DateTime? GetStageCompletionTime(DataRefreshStage stage) =>

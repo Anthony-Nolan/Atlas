@@ -50,7 +50,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DataRefresh.Functions
         {
             try
             {
-                var request = await ReadRequestBody<DataRefreshRequest>(httpRequest);
+                var request = await ReadRequestBody<ManualDataRefreshRequest>(httpRequest);
                 var result = await dataRefreshRequester.RequestDataRefresh(request, true);
                 return new JsonResult(result);
             }

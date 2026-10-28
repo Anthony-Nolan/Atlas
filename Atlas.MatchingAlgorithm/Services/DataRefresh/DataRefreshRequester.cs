@@ -78,6 +78,14 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     $"Send the decision to the {ResolvePausedDataRefreshRequest.EndpointName} endpoint first. Data Refresh not started.");
             }
 
+            var justPrecompute = request is ManualDataRefreshRequest { JustPrecompute: true };
+            if (justPrecompute && !request.ForceDataRefresh)
+            {
+                throw new InvalidDataRefreshRequestHttpException(
+                    $"{nameof(ManualDataRefreshRequest.JustPrecompute)} needs {nameof(DataRefreshRequest.ForceDataRefresh)} to be true. " +
+                    "Data Refresh not started.");
+            }
+
             if (dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Any())
             {
                 throw new InvalidDataRefreshRequestHttpException("Data refresh seems to already be in progress. Data Refresh not started.");
@@ -98,7 +106,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 return new DataRefreshResponse { WasRefreshRun = false };
             }
 
-            var recordId = await CreateNewDataRefreshRecord();
+            var recordId = await CreateNewDataRefreshRecord(justPrecompute);
 
             await serviceBusClient.PublishToRequestTopic(new ValidatedDataRefreshRequest {DataRefreshRecordId = recordId});
             await supportNotificationSender.SendInitialisationNotification(recordId);
@@ -114,10 +122,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             return !(activeVersionHlaMetadataDictionary?.IsActiveVersionDifferentFromLatestVersion() ?? true);
         }
 
-        private async Task<int> CreateNewDataRefreshRecord()
+        private async Task<int> CreateNewDataRefreshRecord(bool justPrecompute)
         {
             var dataRefreshRecord = new DataRefreshRecord
             {
+                JustPrecompute = justPrecompute,
                 Database = activeDatabaseProvider.GetDormantDatabase().ToString(),
                 RefreshRequestedUtc = DateTime.UtcNow,
                 HlaNomenclatureVersion = null, //We don't know the version when initially creating the record.,

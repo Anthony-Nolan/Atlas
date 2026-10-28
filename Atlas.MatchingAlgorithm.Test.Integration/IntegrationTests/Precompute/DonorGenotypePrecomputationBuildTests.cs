@@ -566,6 +566,33 @@ public class DonorGenotypePrecomputationBuildTests
 
     #endregion
 
+    #region BuildRun: ATL-491 experiment donor sample
+
+    [Test]
+    public async Task BuildRun_WithAMaxDonorCount_BuildsOnlyTheDonorsWhoseIdIsAMultipleOfTheSampleModulus()
+    {
+        // 10 donors and a sample of 3: the modulus is 10 / 3 rounded up, 4, so donors 4 and 8.
+        await InsertDonors(Enumerable.Range(0, 10).Select(_ => NewDonor()).ToList());
+        var run = await StartBuild();
+
+        var result = await repository.BuildRun(run.Id, CancellationToken.None, maxDonorCount: 3);
+
+        result.TotalDonorCount.Should().Be(2);
+        (await StoredGroupIds()).Keys.Select(key => key.DonorId).Distinct().Should().BeEquivalentTo([4, 8]);
+    }
+
+    [Test]
+    public async Task BuildRun_WithNoMaxDonorCount_BuildsEveryDonor()
+    {
+        await InsertDonors(Enumerable.Range(0, 10).Select(_ => NewDonor()).ToList());
+
+        var result = await Build();
+
+        result.TotalDonorCount.Should().Be(10);
+    }
+
+    #endregion
+
     private async Task<DonorGenotypePrecomputationBuildResult> Build()
     {
         var run = await StartBuild();

@@ -68,4 +68,10 @@ public class DonorGenotypePrecomputationSettings
     /// down, sends a high-priority alert, and waits for a decision on the <c>ResolvePausedDataRefresh</c> endpoint.
     /// </remarks>
     public double MaxFailedDonorFraction { get; set; } = 0.001;
+
+    /// <summary>
+    /// ATL-491 experiment only. The donors that a <c>JustPrecompute</c> data refresh builds its run from: about this many,
+    /// spread over all donor ids.
+    /// </summary>
+    public int JustPrecomputeDonorCount { get; set; } = 2_000_000;
 }

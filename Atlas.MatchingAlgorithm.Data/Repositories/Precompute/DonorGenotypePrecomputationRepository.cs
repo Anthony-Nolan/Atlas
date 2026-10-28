@@ -85,7 +85,11 @@ public interface IDonorGenotypePrecomputationRepository
     /// <exception cref="InvalidOperationException">
     /// The run is not building, or it has batches or staging data; or the build lost a donor.
     /// </exception>
-    Task<DonorGenotypePrecomputationBuildResult> BuildRun(int runId, CancellationToken cancellationToken);
+    /// <param name="maxDonorCount">
+    /// ATL-491 experiment only. When set, the build takes about this many donors: every donor whose id is a multiple of
+    /// the donor count divided by this number, rounded up. Null takes every donor.
+    /// </param>
+    Task<DonorGenotypePrecomputationBuildResult> BuildRun(int runId, CancellationToken cancellationToken, int? maxDonorCount = null);
 
     /// <summary>
     /// Moves the batch to <see cref="DonorGenotypePrecomputationBatchStatus.InProgress"/> under a new lease, and returns
@@ -859,6 +863,7 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
                                                        d.{nameof(Donor.RegistryCode)} AS RegistryCode,
                                                        d.{nameof(Donor.EthnicityCode)} AS EthnicityCode
                                                    FROM {DonorsTableName} d
+                                                   WHERE {DonorSampleConditionSql}
                                                ) keyed
                                                GROUP BY keyed.PairKey
                                            ) pairs
@@ -876,6 +881,7 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
                                                                {string.Join(", ", BuildKeys.Select(TypingHashSql))}
                                                            FROM {DonorsTableName} d
                                                            INNER JOIN {BuildPairsTableName} p ON p.PairKey = {DonorPairKeySql}
+                                                           WHERE {DonorSampleConditionSql}
                                                            """;
 
     /// <summary>
@@ -976,7 +982,15 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
                                              AND {nameof(Run.Status)} = '{nameof(RunStatus.Building)}'
                                            """;
 
-    private const string CountDonorsSql = $"SELECT COUNT(*) FROM {DonorsTableName}";
+    /// <summary>
+    /// ATL-491 experiment only. The donors of the build: every donor whose id is a multiple of
+    /// <c>@DonorSampleModulus</c>. A modulus of 1 takes every donor.
+    /// </summary>
+    private const string DonorSampleConditionSql = $"d.{nameof(Donor.DonorId)} % @DonorSampleModulus = 0";
+
+    private const string CountAllDonorsSql = $"SELECT COUNT(*) FROM {DonorsTableName}";
+
+    private const string CountDonorsSql = $"SELECT COUNT(*) FROM {DonorsTableName} d WHERE {DonorSampleConditionSql}";
 
     private const string CountRangeGroupsSql = $"SELECT ISNULL(SUM(GroupCount), 0) FROM {BuildGroupRangesTableName}";
 
@@ -1086,7 +1100,7 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
     }
 
     /// <inheritdoc />
-    public async Task<DonorGenotypePrecomputationBuildResult> BuildRun(int runId, CancellationToken cancellationToken)
+    public async Task<DonorGenotypePrecomputationBuildResult> BuildRun(int runId, CancellationToken cancellationToken, int? maxDonorCount = null)
     {
         // One connection for the whole build: a temp table is visible only to the session that made it.
         await using var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString());
@@ -1108,11 +1122,13 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
 
         try
         {
-            await build.Execute(CreateBuildTablesSql);
-            await build.Step("Pairs", InsertPairsSql);
+            var donorSample = new { DonorSampleModulus = await DonorSampleModulus(build, maxDonorCount) };
 
-            var donorCount = await build.Step("Donor typings", InsertDonorTypingsSql);
-            var donorsInTable = await build.Scalar<int>(CountDonorsSql);
+            await build.Execute(CreateBuildTablesSql);
+            await build.Step("Pairs", InsertPairsSql, donorSample);
+
+            var donorCount = await build.Step("Donor typings", InsertDonorTypingsSql, donorSample);
+            var donorsInTable = await build.Scalar<int>(CountDonorsSql, donorSample);
             if (donorCount != donorsInTable)
             {
                 throw new InvalidOperationException(
@@ -1168,6 +1184,23 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
         {
             await build.DropTables();
         }
+    }
+
+    /// <summary>ATL-491 experiment only: 1 takes every donor.</summary>
+    private static async Task<int> DonorSampleModulus(BuildSession build, int? maxDonorCount)
+    {
+        if (maxDonorCount is not { } max)
+        {
+            return 1;
+        }
+
+        if (max < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxDonorCount), maxDonorCount, "The donor sample must have 1 donor or more.");
+        }
+
+        var allDonors = await build.Scalar<int>(CountAllDonorsSql);
+        return Math.Max(1, (allDonors + max - 1) / max);
     }
 
     /// <inheritdoc />
@@ -1727,7 +1760,7 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
 
         public Task<int> Execute(string sql, object? parameters = null) => connection.ExecuteAsync(Command(sql, parameters));
 
-        public Task<T?> Scalar<T>(string sql) => connection.ExecuteScalarAsync<T>(Command(sql));
+        public Task<T?> Scalar<T>(string sql, object? parameters = null) => connection.ExecuteScalarAsync<T>(Command(sql, parameters));
 
         /// <summary>
         /// Drops the temp tables of the build: for a full donor set they take a few GB of tempdb. A closed connection goes back
