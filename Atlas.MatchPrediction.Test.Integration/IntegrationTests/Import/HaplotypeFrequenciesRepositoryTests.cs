@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
 {
@@ -65,36 +66,25 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         }
 
         /// <summary>
-        /// The read of a set uses this connection string, so that a connection string with MARS on does not slow it down.
+        /// The connection strings that Terraform builds turn MARS on. The read of a set must still open its connection with
+        /// MARS off, as a read of many rows with MARS waits for many network round trips. The set does not need rows: the
+        /// read opens its connection for any set.
         /// </summary>
         [Test]
-        public void WithoutMultipleActiveResultSets_TurnsOffMultipleActiveResultSets_AndKeepsTheOtherSettings()
+        public async Task GetAllHaplotypeFrequencies_WithMultipleActiveResultSetsOn_ReadsOnAConnectionWithThemOff()
         {
-            var settings = new SqlConnectionStringBuilder
+            var connectionString = new SqlConnectionStringBuilder(ConnectionStringReader("MatchPredictionSql")(DependencyInjection.DependencyInjection.Provider))
             {
-                DataSource = fixture.Create<string>(),
-                InitialCatalog = fixture.Create<string>(),
-                UserID = fixture.Create<string>(),
-                Password = fixture.Create<string>(),
-                ConnectTimeout = fixture.Create<int>(),
                 MultipleActiveResultSets = true
-            };
+            }.ConnectionString;
+            var repositoryWithMultipleActiveResultSets = new HaplotypeFrequenciesRepository(connectionString);
+            using var sqlCommands = new SqlCommandRecorder();
 
-            var result = new SqlConnectionStringBuilder(HaplotypeFrequenciesRepository.WithoutMultipleActiveResultSets(settings.ConnectionString));
+            await repositoryWithMultipleActiveResultSets.GetAllHaplotypeFrequencies(fixture.Create<int>());
 
-            result.MultipleActiveResultSets.Should().BeFalse();
-            result.DataSource.Should().Be(settings.DataSource);
-            result.InitialCatalog.Should().Be(settings.InitialCatalog);
-            result.UserID.Should().Be(settings.UserID);
-            result.Password.Should().Be(settings.Password);
-            result.ConnectTimeout.Should().Be(settings.ConnectTimeout);
-        }
-
-        [TestCase(null)]
-        [TestCase("")]
-        public void WithoutMultipleActiveResultSets_WithNoConnectionString_ReturnsItUnchanged(string connectionString)
-        {
-            HaplotypeFrequenciesRepository.WithoutMultipleActiveResultSets(connectionString).Should().Be(connectionString);
+            sqlCommands.ConnectionStringsOfCommandsThatContain(HaplotypeFrequency.QualifiedTableName)
+                .Select(readConnectionString => new SqlConnectionStringBuilder(readConnectionString).MultipleActiveResultSets)
+                .Should().Equal(false);
         }
 
         [Test]
