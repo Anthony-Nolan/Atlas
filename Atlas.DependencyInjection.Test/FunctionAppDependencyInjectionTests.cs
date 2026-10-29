@@ -1,6 +1,8 @@
 using System.Reflection;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
+using Atlas.SearchTracking.Common.ApplicationInsights;
 using AwesomeAssertions;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -130,6 +132,20 @@ internal class FunctionAppDependencyInjectionTests
 
         validate.Should().Throw<OptionsValidationException>()
             .Which.OptionsType.Should().Be<HaplotypeFrequencySetCacheSettings>();
+    }
+
+    /// <summary>
+    /// The public API sends a search tracking event for each search request. Without the initializer, sampling can drop these events,
+    /// and nothing else shows it.
+    /// </summary>
+    [Test]
+    public void TelemetryConfiguration_OfPublicApi_HasTheSearchTrackingEventInitializer()
+    {
+        using var host = BuildHost(new FunctionApp("PublicApi", global::Atlas.Functions.PublicApi.Startup.Configure));
+
+        var initializers = host.Services.GetRequiredService<TelemetryConfiguration>().TelemetryInitializers;
+
+        initializers.Should().ContainSingle(initializer => initializer is SearchTrackingEventTelemetryInitializer);
     }
 
     private static IHost BuildHost(FunctionApp app, Action<Dictionary<string, string?>>? changeSettings = null) =>

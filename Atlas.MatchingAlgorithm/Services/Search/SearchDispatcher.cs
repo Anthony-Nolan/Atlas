@@ -1,10 +1,12 @@
 using System;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
+using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Helpers;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
+using Atlas.SearchTracking.Common.ApplicationInsights;
 using Atlas.SearchTracking.Common.Clients;
 using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
@@ -24,11 +26,16 @@ namespace Atlas.MatchingAlgorithm.Services.Search
     {
         private readonly ISearchServiceBusClient searchServiceBusClient;
         private readonly ISearchTrackingServiceBusClient searchTrackingServiceBusClient;
+        private readonly IAtlasLogger logger;
 
-        public SearchDispatcher(ISearchServiceBusClient searchServiceBusClient, ISearchTrackingServiceBusClient searchTrackingServiceBusClient)
+        public SearchDispatcher(
+            ISearchServiceBusClient searchServiceBusClient,
+            ISearchTrackingServiceBusClient searchTrackingServiceBusClient,
+            IAtlasLogger logger)
         {
             this.searchServiceBusClient = searchServiceBusClient;
             this.searchTrackingServiceBusClient = searchTrackingServiceBusClient;
+            this.logger = logger;
         }
 
         /// <returns>A unique identifier for the dispatched search request</returns>
@@ -64,6 +71,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 DonorRegistryCodes = searchRequest.DonorRegistryCodes
             };
 
+            // Sent before the Service Bus message: the publish can fail after its retries, and the search is in the queue already.
+            logger.SendSearchTrackingEvent(searchRequestedEvent, SearchTrackingEventType.SearchRequested);
             await searchTrackingServiceBusClient.PublishSearchTrackingEvent(searchRequestedEvent, SearchTrackingEventType.SearchRequested);
         }
     }

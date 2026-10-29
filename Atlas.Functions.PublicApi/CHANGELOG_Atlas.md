@@ -61,6 +61,13 @@ Feature flags permit greater control over the release of new features (see this 
   * This is a new paid resource: by default `Balanced_B1` without high availability. Two new Terraform variables size it: `DISTRIBUTED_CACHE_SKU_NAME` (default `Balanced_B1`) and `DISTRIBUTED_CACHE_HIGH_AVAILABILITY_ENABLED` (default `false`).
   * In a production environment, set `DISTRIBUTED_CACHE_HIGH_AVAILABILITY_ENABLED` to `true` before you deploy this version. Changing it later recreates the cache.
 
+#### Search Tracking
+* E: The public API also sends each search request and repeat search request to Application Insights, as a custom event named `SearchRequested` (`customEvents | where name == "SearchRequested"`). This is the first step to move search tracking from SQL to Application Insights. The Service Bus message and the SQL row do not change.
+  * The properties of the event are the fields of the search tracking event, with the same names and the same values as the Service Bus message: for example `SearchIdentifier`, `OriginalSearchIdentifier` and `DonorType`. A field without a value has no property.
+  * Search tracking events are not sampled, also when the app samples its other telemetry.
+  * The event is sent at the `Info` level: an API app whose `ApplicationInsights:LogLevel` is above `Info` does not send it.
+  * The `RequestJson` property is the search request, with the patient's HLA typing. So Application Insights now holds this data too, for the retention period of the resource. Application Insights keeps the first 8,192 characters of a property value.
+
 ### 4.1.0
 
 #### Debug

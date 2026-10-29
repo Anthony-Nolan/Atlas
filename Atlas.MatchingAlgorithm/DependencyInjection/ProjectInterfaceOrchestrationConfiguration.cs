@@ -53,6 +53,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
             services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>();
             services.RegisterSearchTrackingServiceBusClient();
+            services.RegisterSearchTrackingEventTelemetry();
             services.AddScoped<ISearchDispatcher, SearchDispatcher>();
         }
     }
