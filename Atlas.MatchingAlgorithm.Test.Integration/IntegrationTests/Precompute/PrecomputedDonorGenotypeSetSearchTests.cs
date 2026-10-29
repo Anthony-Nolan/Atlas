@@ -392,6 +392,11 @@ internal class PrecomputedDonorGenotypeSetSearchTests
         };
 
     /// <summary>One batch of one donor input, as the match prediction algorithm runs it: resolve, calculate, complete.</summary>
+    /// <remarks>
+    /// A copy of the steps in <c>MatchPredictionAlgorithm.RunBatch</c> and <c>ParallelMatchPredictionAlgorithm.RunBatch</c>,
+    /// without the cache warm-up, the patient set provider and the result upload. A change to those steps does not fail
+    /// these tests, so keep this copy the same as them.
+    /// </remarks>
     /// <param name="input">The batch's one donor input.</param>
     /// <param name="beforeTheStore">What happens in the database after the donor is calculated and before the batch stores it.</param>
     private async Task<MatchProbabilityResult> RunBatch(SingleDonorMatchProbabilityInput input, Func<Task> beforeTheStore = null)
@@ -411,6 +416,7 @@ internal class PrecomputedDonorGenotypeSetSearchTests
             batchContext,
             [new DonorGenotypeSetBatchOutcome(input.Donor.DonorIds.Count, result.GenotypeSetSource, result.GenotypeSetToStore)],
             PatientGenotypeSetSource.NoKey);
+        usageMetrics.Should().NotBeNull("the completer sends one usage event per batch");
 
         return result;
     }
