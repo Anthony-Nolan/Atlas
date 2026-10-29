@@ -4,12 +4,14 @@ using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using AutoFixture;
 using AwesomeAssertions;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
 {
@@ -61,6 +63,28 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
 
             rows.Select(row => (row.A, row.B, row.C, row.DQB1, row.DRB1))
                 .Should().Equal(frequencies.Select(frequency => (frequency.A, frequency.B, frequency.C, frequency.DQB1, frequency.DRB1)));
+        }
+
+        /// <summary>
+        /// The connection strings that Terraform builds turn MARS on. The read of a set must still open its connection with
+        /// MARS off, as a read of many rows with MARS waits for many network round trips. The set does not need rows: the
+        /// read opens its connection for any set.
+        /// </summary>
+        [Test]
+        public async Task GetAllHaplotypeFrequencies_WithMultipleActiveResultSetsOn_ReadsOnAConnectionWithThemOff()
+        {
+            var connectionString = new SqlConnectionStringBuilder(ConnectionStringReader("MatchPredictionSql")(DependencyInjection.DependencyInjection.Provider))
+            {
+                MultipleActiveResultSets = true
+            }.ConnectionString;
+            var repositoryWithMultipleActiveResultSets = new HaplotypeFrequenciesRepository(connectionString);
+            using var sqlCommands = new SqlCommandRecorder();
+
+            await repositoryWithMultipleActiveResultSets.GetAllHaplotypeFrequencies(fixture.Create<int>());
+
+            sqlCommands.ConnectionStringsOfCommandsThatContain(HaplotypeFrequency.QualifiedTableName)
+                .Select(readConnectionString => new SqlConnectionStringBuilder(readConnectionString).MultipleActiveResultSets)
+                .Should().Equal(false);
         }
 
         [Test]
