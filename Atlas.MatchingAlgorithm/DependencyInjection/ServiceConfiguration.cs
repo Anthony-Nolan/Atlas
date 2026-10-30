@@ -520,6 +520,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             // Also used for dispatching searches, registered independently in ProjectInterfaceOrchestrationConfiguration.cs
             services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>();
             services.RegisterSearchTrackingServiceBusClient();
+            services.RegisterSearchTrackingEventTelemetry();
             services.AddScoped<ISearchDispatcher, SearchDispatcher>();
             services.AddScoped<ISearchRunner, SearchRunner>();
 

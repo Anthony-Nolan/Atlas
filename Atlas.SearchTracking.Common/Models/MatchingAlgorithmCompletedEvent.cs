@@ -25,7 +25,10 @@ namespace Atlas.SearchTracking.Common.Models
 
     public class MatchingAlgorithmFailureInfo
     {
+        // The message of an HLA lookup error names the patient's HLA, and the stack trace has the message.
+        [PatientInformation]
         public string? Message { get; set; }
+        [PatientInformation]
         public string? ExceptionStacktrace { get; set; }
         public MatchingAlgorithmFailureType? Type { get; set; }
     }

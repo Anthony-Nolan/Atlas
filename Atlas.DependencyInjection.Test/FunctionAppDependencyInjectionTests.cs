@@ -49,6 +49,10 @@ internal class FunctionAppDependencyInjectionTests
     private static IEnumerable<TestCaseData> FrequencySetApps() =>
         FunctionApps().Where(testCase => testCase.Arguments[0] is FunctionApp { Name: "Functions" or "MatchPrediction" or "DataRefresh" or "DonorManagement" });
 
+    /// <summary>The apps that send search tracking events to Application Insights.</summary>
+    private static IEnumerable<TestCaseData> SearchTrackingApps() =>
+        FunctionApps().Where(testCase => testCase.Arguments[0] is FunctionApp { Name: "PublicApi" or "MatchingAlgorithm" or "RepeatSearch" });
+
     [TestCaseSource(nameof(FunctionApps))]
     public void ServiceProvider_IsValid(FunctionApp app)
     {
@@ -135,13 +139,12 @@ internal class FunctionAppDependencyInjectionTests
     }
 
     /// <summary>
-    /// The public API sends a search tracking event for each search request. Without the initializer, sampling can drop these events,
-    /// and nothing else shows it.
+    /// Without the initializer, sampling can drop the search tracking events that the app sends, and nothing else shows it.
     /// </summary>
-    [Test]
-    public void TelemetryConfiguration_OfPublicApi_HasTheSearchTrackingEventInitializer()
+    [TestCaseSource(nameof(SearchTrackingApps))]
+    public void TelemetryConfiguration_OfSearchTrackingApp_HasTheSearchTrackingEventInitializer(FunctionApp app)
     {
-        using var host = BuildHost(new FunctionApp("PublicApi", global::Atlas.Functions.PublicApi.Startup.Configure));
+        using var host = BuildHost(app);
 
         var initializers = host.Services.GetRequiredService<TelemetryConfiguration>().TelemetryInitializers;
 

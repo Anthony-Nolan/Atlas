@@ -90,4 +90,45 @@ public class SearchTrackingEventLoggerExtensionsTests
 
         sentProperties.Should().NotContainKey(nameof(SearchRequestedEvent.RequestJson));
     }
+
+    [Test]
+    public void SendSearchTrackingEvent_SendsFieldsOfNestedObjectsWithDottedNames()
+    {
+        logger.SendSearchTrackingEvent(fixture.Create<MatchingAlgorithmCompletedEvent>(), SearchTrackingEventType.MatchingAlgorithmCompleted);
+
+        sentProperties!.Keys.Should().BeEquivalentTo(
+            "SearchIdentifier",
+            "OriginalSearchIdentifier",
+            "AttemptNumber",
+            "CompletionTimeUtc",
+            "CompletionDetails.IsSuccessful",
+            "CompletionDetails.FailureInfo.Type",
+            "CompletionDetails.TotalAttemptsNumber",
+            "CompletionDetails.NumberOfResults",
+            "CompletionDetails.RepeatSearchResultsDetails.AddedResultCount",
+            "CompletionDetails.RepeatSearchResultsDetails.RemovedResultCount",
+            "CompletionDetails.RepeatSearchResultsDetails.UpdatedResultCount",
+            "HlaNomenclatureVersion",
+            "ResultsSent",
+            "ResultsSentTimeUtc");
+    }
+
+    [Test]
+    public void SendSearchTrackingEvent_SendsEnumValuesAsNames()
+    {
+        var completedEvent = fixture.Create<MatchingAlgorithmCompletedEvent>();
+
+        logger.SendSearchTrackingEvent(completedEvent, SearchTrackingEventType.MatchingAlgorithmCompleted);
+
+        sentProperties.Should().Contain("CompletionDetails.FailureInfo.Type", completedEvent.CompletionDetails.FailureInfo!.Type!.Value.ToString());
+    }
+
+    [Test]
+    public void SendSearchTrackingEvent_LeavesOutFailureMessageAndStacktrace()
+    {
+        logger.SendSearchTrackingEvent(fixture.Create<MatchingAlgorithmCompletedEvent>(), SearchTrackingEventType.MatchingAlgorithmCompleted);
+
+        sentProperties.Should().ContainKey("CompletionDetails.FailureInfo.Type")
+            .And.NotContainKeys("CompletionDetails.FailureInfo.Message", "CompletionDetails.FailureInfo.ExceptionStacktrace");
+    }
 }
