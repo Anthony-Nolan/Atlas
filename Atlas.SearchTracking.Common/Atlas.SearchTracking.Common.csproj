@@ -15,4 +15,9 @@
     <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Atlas.SearchTracking.Test" />
+    <InternalsVisibleTo Include="Atlas.DependencyInjection.Test" />
+  </ItemGroup>
+
 </Project>

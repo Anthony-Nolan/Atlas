@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System.Collections.Generic;
 using Atlas.Client.Models.Search.Requests;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
 using Atlas.SearchTracking.Common.Clients;
@@ -27,8 +28,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         {
             var searchServiceBusClient = DependencyInjection.DependencyInjection.Provider.GetService<ISearchServiceBusClient>();
             var searchTrackingServiceBusClient = DependencyInjection.DependencyInjection.Provider.GetService<ISearchTrackingServiceBusClient>();
+            var logger = DependencyInjection.DependencyInjection.Provider.GetService<IAtlasLogger>();
 
-            searchDispatcher = new SearchDispatcher(searchServiceBusClient, searchTrackingServiceBusClient);
+            searchDispatcher = new SearchDispatcher(searchServiceBusClient, searchTrackingServiceBusClient, logger);
 
             defaultSearchRequestBuilder = new SearchRequestBuilder()
                 .WithSearchType(DonorType.Adult)

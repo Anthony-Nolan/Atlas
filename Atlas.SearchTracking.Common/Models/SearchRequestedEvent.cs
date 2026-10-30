@@ -6,6 +6,7 @@
         public bool IsRepeatSearch { get; set; }
         public Guid? OriginalSearchIdentifier { get; set; }
         public DateTime? RepeatSearchCutOffDate { get; set; }
+        [PatientInformation]
         public string RequestJson { get; set; }
         public string SearchCriteria { get; set; }
         public string DonorType { get; set; }

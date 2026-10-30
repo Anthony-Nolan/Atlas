@@ -53,6 +53,7 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
 
             services.AddScoped<IRepeatSearchServiceBusClient, RepeatSearchServiceBusClient>();
             services.RegisterSearchTrackingServiceBusClient();
+            services.RegisterSearchTrackingEventTelemetry();
             services.AddScoped<IRepeatSearchDispatcher, RepeatSearchDispatcher>();
         }
     }
