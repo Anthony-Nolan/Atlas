@@ -50,6 +50,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         private IDataRefreshHistoryRepository dataRefreshHistoryRepository;
         private IDataRefreshManualDecisionEvents manualDecisionEvents;
         private DonorGenotypePrecomputationSwitchSettings precomputationSwitchSettings;
+        private DonorGenotypePrecomputationSettings precomputationSettings;
 
         private IDataRefreshRunner dataRefreshRunner;
         private IMatchingAlgorithmImportLogger logger;
@@ -75,6 +76,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
             manualDecisionEvents = Substitute.For<IDataRefreshManualDecisionEvents>();
             precomputationSwitchSettings = new DonorGenotypePrecomputationSwitchSettings();
+            precomputationSettings = new DonorGenotypePrecomputationSettings();
 
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(DataRefreshRecordBuilder.New.Build());
             transientRepositoryFactory.GetDonorImportRepository().Returns(donorImportRepository);
@@ -343,7 +345,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
                 dataRefreshHistoryRepository,
                 new MatchingAlgorithmImportLoggingContext(),
                 manualDecisionEvents,
-                precomputationSwitchSettings
+                precomputationSwitchSettings,
+                precomputationSettings
             );
         }
     }

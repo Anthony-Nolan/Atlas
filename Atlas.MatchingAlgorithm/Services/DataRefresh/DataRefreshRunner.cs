@@ -70,6 +70,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
     {
         private readonly DataRefreshSettings dataRefreshSettings;
         private readonly DonorGenotypePrecomputationSwitchSettings precomputationSwitchSettings;
+        private readonly DonorGenotypePrecomputationSettings precomputationSettings;
         private readonly IActiveDatabaseProvider activeDatabaseProvider;
         private readonly IAzureDatabaseNameProvider azureDatabaseNameProvider;
         private readonly IAzureDatabaseManager azureDatabaseManager;
@@ -153,8 +154,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IDataRefreshHistoryRepository dataRefreshHistoryRepository,
             MatchingAlgorithmImportLoggingContext loggingContext,
             IDataRefreshManualDecisionEvents manualDecisionEvents,
-            DonorGenotypePrecomputationSwitchSettings precomputationSwitchSettings)
+            DonorGenotypePrecomputationSwitchSettings precomputationSwitchSettings,
+            DonorGenotypePrecomputationSettings precomputationSettings)
         {
+            this.precomputationSettings = precomputationSettings;
             this.manualDecisionEvents = manualDecisionEvents;
             this.precomputationSwitchSettings = precomputationSwitchSettings;
             this.activeDatabaseProvider = activeDatabaseProvider;
@@ -292,7 +295,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     $"{DataRefreshManualDecision.Fail} (end the refresh) are allowed.");
             }
 
-            await donorImportRepository.RemoveAllPrecomputedGenotypeSets();
+            await donorImportRepository.RemoveAllPrecomputedGenotypeSets(precomputationSettings.JustPrecomputeBucketCount);
             await dataRefreshHistoryRepository.ClearPendingManualDecision(refreshRecord);
             logger.SendTrace(
                 $"{LoggingPrefix} ATL-491 experiment: record {refreshRecord.Id} resumes after the manual decision {decision}: the " +
@@ -547,7 +550,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 case DataRefreshStage.DataDeletion:
                     if (refreshRecord.JustPrecompute)
                     {
-                        await donorImportRepository.RemoveAllPrecomputedGenotypeSets();
+                        await donorImportRepository.RemoveAllPrecomputedGenotypeSets(precomputationSettings.JustPrecomputeBucketCount);
                         break;
                     }
 

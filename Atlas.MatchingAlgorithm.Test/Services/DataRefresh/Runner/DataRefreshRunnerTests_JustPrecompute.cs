@@ -29,7 +29,7 @@ public partial class DataRefreshRunnerTests
 
         Received.InOrder(() =>
         {
-            donorImportRepository.RemoveAllPrecomputedGenotypeSets();
+            donorImportRepository.RemoveAllPrecomputedGenotypeSets(Arg.Any<int>());
             azureDatabaseManager.UpdateDatabaseSize(Arg.Any<string>(), RefreshSize, Arg.Any<int?>());
             donorGenotypePrecomputationStage.Run(record, Arg.Any<DataRefreshStageExecutionMode>(), Arg.Any<CancellationToken>());
         });
@@ -48,7 +48,7 @@ public partial class DataRefreshRunnerTests
 
         await dataRefreshRunner.RefreshData(record.Id);
 
-        await donorImportRepository.DidNotReceive().RemoveAllPrecomputedGenotypeSets();
+        await donorImportRepository.DidNotReceiveWithAnyArgs().RemoveAllPrecomputedGenotypeSets(default);
         await donorGenotypePrecomputationStage.Received(1).Run(record, Arg.Any<DataRefreshStageExecutionMode>(), Arg.Any<CancellationToken>());
     }
 
@@ -62,10 +62,29 @@ public partial class DataRefreshRunnerTests
 
         Received.InOrder(() =>
         {
-            donorImportRepository.RemoveAllPrecomputedGenotypeSets();
+            donorImportRepository.RemoveAllPrecomputedGenotypeSets(Arg.Any<int>());
             dataRefreshHistoryRepository.ClearPendingManualDecision(record);
             donorGenotypePrecomputationStage.Run(record, Arg.Any<DataRefreshStageExecutionMode>(), Arg.Any<CancellationToken>());
         });
+    }
+
+    [TestCase(false)]
+    [TestCase(true)]
+    public async Task RefreshData_JustPrecompute_RemovesThePrecomputedDataWithTheBucketCountOfTheSettings(bool afterRetryDecision)
+    {
+        // ATL-495 experiment only.
+        precomputationSettings.JustPrecomputeBucketCount = 8;
+        var record = afterRetryDecision
+            ? GivenAJustPrecomputeRecord(DataRefreshStage.DataDeletion, DataRefreshStage.DatabaseScalingSetup)
+            : GivenAJustPrecomputeRecord();
+        if (afterRetryDecision)
+        {
+            record.PendingManualDecision = DataRefreshManualDecision.RetryFailedBatches;
+        }
+
+        await dataRefreshRunner.RefreshData(record.Id);
+
+        await donorImportRepository.Received(1).RemoveAllPrecomputedGenotypeSets(8);
     }
 
     [Test]

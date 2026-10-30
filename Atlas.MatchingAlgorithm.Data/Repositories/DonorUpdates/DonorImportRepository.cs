@@ -42,8 +42,12 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         /// <summary>
         /// ATL-491 experiment only. Removes the precomputed subject genotype sets, and the run, batch and staging tables of
         /// the donor genotype precomputation stage. The donors and their processed HLA stay.
+        /// <para>
+        /// ATL-495 experiment only: then rebuilds the empty <c>SubjectGenotypeSetValues</c> table with
+        /// <paramref name="bucketCount"/> hash partitions - see <c>DonorImportRepository.BuildReshapeSubjectGenotypeSetValuesSql</c>.
+        /// </para>
         /// </summary>
-        Task RemoveAllPrecomputedGenotypeSets();
+        Task RemoveAllPrecomputedGenotypeSets(int bucketCount);
 
         /// <summary>
         /// Removes all donor pre-processed data, without removing donors themselves.
@@ -266,13 +270,77 @@ END
         }
 
         /// <inheritdoc />
-        public async Task RemoveAllPrecomputedGenotypeSets()
+        public async Task RemoveAllPrecomputedGenotypeSets(int bucketCount)
         {
+            var reshapeSql = BuildReshapeSubjectGenotypeSetValuesSql(bucketCount);
+
             await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 await conn.ExecuteAsync(DropAllSubjectGenotypeSetsSql, commandTimeout: 300);
+                await conn.ExecuteAsync(reshapeSql, commandTimeout: 300);
                 await conn.ExecuteAsync(DropAllDonorGenotypePrecomputationRunsSql, commandTimeout: 300);
             }
+        }
+
+        /// <summary>ATL-495 experiment only: the bucket of a row is <c>Id % MaxBucketCount</c>.</summary>
+        internal const int MaxBucketCount = 32;
+
+        /// <summary>
+        /// ATL-495 experiment only. Rebuilds the empty <c>SubjectGenotypeSetValues</c> table, so that the inserts of the
+        /// precomputation go to <paramref name="bucketCount"/> ends of the clustered key, not one.
+        ///
+        /// <para>
+        /// A persisted column <c>Bucket = Id % 32</c>. The clustered primary key becomes <c>(Id, Bucket)</c>, partitioned on
+        /// <c>Bucket</c>: buckets 0-31 go to <paramref name="bucketCount"/> partitions, each its own B-tree. The ids of one
+        /// partition still go up, so each partition is filled at its end, as before. The unique index on the hash key is not
+        /// partitioned, so it still makes the key unique over the whole table. <paramref name="bucketCount"/> 1 puts back the
+        /// shape of the migrations: a clustered key on <c>Id</c> only, and no <c>Bucket</c> column.
+        /// </para>
+        ///
+        /// <para>
+        /// The reads by <c>Id</c> do not change: without a <c>Bucket</c> predicate, a read seeks every partition. This is
+        /// correct but not the fastest, which is good enough for the experiment.
+        /// </para>
+        ///
+        /// <para>
+        /// One transaction: if a statement fails, the table keeps its old shape. Dropping the clustered key moves the heap
+        /// to <c>PRIMARY</c>, because a heap keeps the partition scheme otherwise, and the scheme cannot be dropped.
+        /// </para>
+        /// </summary>
+        internal static string BuildReshapeSubjectGenotypeSetValuesSql(int bucketCount)
+        {
+            if (bucketCount < 1 || bucketCount > MaxBucketCount || MaxBucketCount % bucketCount != 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(bucketCount), bucketCount,
+                    $"The bucket count must divide {MaxBucketCount}: 1, 2, 4, 8, 16 or 32.");
+            }
+
+            const string table = "[dbo].[SubjectGenotypeSetValues]";
+            const string primaryKey = "PK_SubjectGenotypeSetValues";
+            const string uniqueIndex = "IX_SubjectGenotypeSetValues_HlaTypingKey_HaplotypeFrequencySetId_AllowedLociKey";
+            const string partitionFunction = "PF_SubjectGenotypeSetValues_Bucket";
+            const string partitionScheme = "PS_SubjectGenotypeSetValues_Bucket";
+
+            var boundaries = string.Join(", ", Enumerable.Range(1, bucketCount - 1).Select(k => k * MaxBucketCount / bucketCount));
+            var newShapeSql = bucketCount == 1
+                ? $@"
+ALTER TABLE {table} ADD CONSTRAINT {primaryKey} PRIMARY KEY CLUSTERED (Id) WITH (OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY];"
+                : $@"
+ALTER TABLE {table} ADD Bucket AS CAST(Id % {MaxBucketCount} AS tinyint) PERSISTED NOT NULL;
+CREATE PARTITION FUNCTION {partitionFunction} (tinyint) AS RANGE RIGHT FOR VALUES ({boundaries});
+CREATE PARTITION SCHEME {partitionScheme} AS PARTITION {partitionFunction} ALL TO ([PRIMARY]);
+ALTER TABLE {table} ADD CONSTRAINT {primaryKey} PRIMARY KEY CLUSTERED (Id, Bucket) WITH (OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON {partitionScheme} (Bucket);";
+
+            return $@"
+SET XACT_ABORT ON;
+BEGIN TRANSACTION;
+DROP INDEX IF EXISTS {uniqueIndex} ON {table};
+ALTER TABLE {table} DROP CONSTRAINT IF EXISTS {primaryKey} WITH (MOVE TO [PRIMARY]);
+IF EXISTS (SELECT 1 FROM sys.partition_schemes WHERE name = '{partitionScheme}') DROP PARTITION SCHEME {partitionScheme};
+IF EXISTS (SELECT 1 FROM sys.partition_functions WHERE name = '{partitionFunction}') DROP PARTITION FUNCTION {partitionFunction};
+ALTER TABLE {table} DROP COLUMN IF EXISTS Bucket;{newShapeSql}
+CREATE UNIQUE NONCLUSTERED INDEX {uniqueIndex} ON {table} (HlaTypingKey, HaplotypeFrequencySetId, AllowedLociKey) ON [PRIMARY];
+COMMIT TRANSACTION;";
         }
 
         /// <inheritdoc />

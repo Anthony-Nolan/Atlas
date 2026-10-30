@@ -129,6 +129,10 @@ variable "DATA_REFRESH_PRECOMPUTE_JUST_PRECOMPUTE_DONOR_COUNT" {
   type = number
 }
 
+variable "DATA_REFRESH_PRECOMPUTE_JUST_PRECOMPUTE_BUCKET_COUNT" {
+  type = number
+}
+
 variable "DATA_REFRESH_PRECOMPUTE_MAX_BATCH_RETRIES" {
   type = number
 }

@@ -74,4 +74,10 @@ public class DonorGenotypePrecomputationSettings
     /// spread over all donor ids.
     /// </summary>
     public int JustPrecomputeDonorCount { get; set; } = 2_000_000;
+
+    /// <summary>
+    /// ATL-495 experiment only. The hash partitions of <c>SubjectGenotypeSetValues</c> that a <c>JustPrecompute</c> data
+    /// refresh builds when it removes the precomputed data: 1, 2, 4, 8, 16 or 32. 1 is the shape of the migrations.
+    /// </summary>
+    public int JustPrecomputeBucketCount { get; set; } = 16;
 }

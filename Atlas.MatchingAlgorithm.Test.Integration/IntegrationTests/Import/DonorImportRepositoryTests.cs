@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
@@ -7,6 +8,8 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using AutoFixture;
 using AwesomeAssertions;
+using Dapper;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -84,6 +87,77 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             (await CountRows<DonorGenotypePrecomputationGroupDonor>(activeConnectionString)).Should().Be(1);
         }
 
+        // ATL-495 experiment only: the hash partitions of SubjectGenotypeSetValues.
+
+        [TestCase(8)]
+        [TestCase(16)]
+        [TestCase(32)]
+        public async Task RemoveAllPrecomputedGenotypeSets_WithBuckets_PartitionsTheValuesTable_AndKeepsTheHashKeyUnique(int bucketCount)
+        {
+            try
+            {
+                await InsertSubjectGenotypeSetRows(dormantConnectionString);
+
+                await donorImportRepository.RemoveAllPrecomputedGenotypeSets(bucketCount);
+
+                (await CountRows<SubjectGenotypeSetValue>(dormantConnectionString)).Should().Be(0);
+                (await CountPartitions(dormantConnectionString, "PK_SubjectGenotypeSetValues")).Should().Be(bucketCount);
+                (await CountPartitions(dormantConnectionString, UniqueIndexName)).Should().Be(1);
+
+                var valueId = await InsertSubjectGenotypeSetRows(dormantConnectionString);
+                await using var context = new ContextFactory().Create(dormantConnectionString);
+                (await context.SubjectGenotypeSetValues.SingleAsync(v => v.Id == valueId)).HlaTypingKey.Should().Be("typing-key");
+
+                var insertTheSameKeyAgain = () => InsertSubjectGenotypeSetRows(dormantConnectionString);
+                await insertTheSameKeyAgain.Should().ThrowAsync<DbUpdateException>();
+            }
+            finally
+            {
+                await donorImportRepository.RemoveAllPrecomputedGenotypeSets(1);
+            }
+        }
+
+        [Test]
+        public async Task RemoveAllPrecomputedGenotypeSets_WithOneBucket_PutsBackTheShapeOfTheMigrations()
+        {
+            await donorImportRepository.RemoveAllPrecomputedGenotypeSets(16);
+
+            await donorImportRepository.RemoveAllPrecomputedGenotypeSets(1);
+
+            await using var connection = new SqlConnection(dormantConnectionString);
+            (await CountPartitions(dormantConnectionString, "PK_SubjectGenotypeSetValues")).Should().Be(1);
+            (await connection.ExecuteScalarAsync<int?>("SELECT COL_LENGTH('dbo.SubjectGenotypeSetValues', 'Bucket')")).Should().BeNull();
+            (await connection.QueryAsync<string>(@"
+                SELECT c.name FROM sys.index_columns ic
+                JOIN sys.indexes i ON i.object_id = ic.object_id AND i.index_id = ic.index_id
+                JOIN sys.columns c ON c.object_id = ic.object_id AND c.column_id = ic.column_id
+                WHERE i.object_id = OBJECT_ID('dbo.SubjectGenotypeSetValues') AND i.is_primary_key = 1"))
+                .Should().BeEquivalentTo("Id");
+            (await connection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM sys.partition_schemes WHERE name = 'PS_SubjectGenotypeSetValues_Bucket'"))
+                .Should().Be(0);
+        }
+
+        [TestCase(0)]
+        [TestCase(3)]
+        [TestCase(64)]
+        public void BuildReshapeSubjectGenotypeSetValuesSql_WithABucketCountThatDoesNotDivide32_Throws(int bucketCount)
+        {
+            var act = () => DonorImportRepository.BuildReshapeSubjectGenotypeSetValuesSql(bucketCount);
+
+            act.Should().Throw<ArgumentOutOfRangeException>();
+        }
+
+        private const string UniqueIndexName = "IX_SubjectGenotypeSetValues_HlaTypingKey_HaplotypeFrequencySetId_AllowedLociKey";
+
+        private static async Task<int> CountPartitions(string connectionString, string indexName)
+        {
+            await using var connection = new SqlConnection(connectionString);
+            return await connection.ExecuteScalarAsync<int>(@"
+                SELECT COUNT(*) FROM sys.partitions p
+                JOIN sys.indexes i ON i.object_id = p.object_id AND i.index_id = p.index_id
+                WHERE i.object_id = OBJECT_ID('dbo.SubjectGenotypeSetValues') AND i.name = @indexName", new { indexName });
+        }
+
         private async Task InsertDonorGenotypePrecomputationRows(string connectionString)
         {
             await using var context = new ContextFactory().Create(connectionString);
@@ -129,7 +203,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             await context.SaveChangesAsync();
         }
 
-        private static async Task InsertSubjectGenotypeSetRows(string connectionString)
+        private static async Task<int> InsertSubjectGenotypeSetRows(string connectionString)
         {
             await using var context = new ContextFactory().Create(connectionString);
 
@@ -151,6 +225,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
                 SubjectGenotypeSetValueId = value.Id
             });
             await context.SaveChangesAsync();
+            return value.Id;
         }
 
         private static async Task<int> CountRows<T>(string connectionString) where T : class

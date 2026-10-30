@@ -526,6 +526,12 @@ variable "MATCHING_DATA_REFRESH_PRECOMPUTE_JUST_PRECOMPUTE_DONOR_COUNT" {
   description = "ATL-491 experiment only: the donors that a JustPrecompute data refresh builds its donor genotype precomputation run from."
 }
 
+variable "MATCHING_DATA_REFRESH_PRECOMPUTE_JUST_PRECOMPUTE_BUCKET_COUNT" {
+  type        = number
+  default     = 16
+  description = "ATL-495 experiment only: the hash partitions of SubjectGenotypeSetValues that a JustPrecompute data refresh builds when it removes the precomputed data: 1, 2, 4, 8, 16 or 32. 1 is the shape of the migrations."
+}
+
 variable "MATCHING_DATA_REFRESH_PRECOMPUTE_MAX_BATCH_RETRIES" {
   type        = number
   default     = 3
