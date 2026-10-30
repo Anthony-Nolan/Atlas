@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
@@ -129,10 +130,12 @@ namespace Atlas.RepeatSearch.Test.Services.Search
 
             await repeatSearchDispatcher.DispatchSearchTrackingEvent(repeatSearchRequest, id);
 
-            sentProperties.Should().Contain(nameof(SearchRequestedEvent.SearchIdentifier), id)
+            var sentCutOffDate = sentProperties.Should().Contain(nameof(SearchRequestedEvent.SearchIdentifier), id)
                 .And.Contain(nameof(SearchRequestedEvent.IsRepeatSearch), "true")
                 .And.Contain(nameof(SearchRequestedEvent.OriginalSearchIdentifier), repeatSearchRequest.OriginalSearchId)
-                .And.ContainKey(nameof(SearchRequestedEvent.RepeatSearchCutOffDate));
+                .And.NotContainKey(nameof(SearchRequestedEvent.RequestJson))
+                .And.ContainKey(nameof(SearchRequestedEvent.RepeatSearchCutOffDate)).WhoseValue;
+            DateTimeOffset.Parse(sentCutOffDate, CultureInfo.InvariantCulture).Should().Be(repeatSearchRequest.SearchCutoffDate);
         }
 
         [Test]

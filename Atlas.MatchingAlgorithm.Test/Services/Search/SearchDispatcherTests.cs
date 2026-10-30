@@ -115,7 +115,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             sentProperties.Should().Contain(nameof(SearchRequestedEvent.SearchIdentifier), id)
                 .And.Contain(nameof(SearchRequestedEvent.IsRepeatSearch), "false")
-                .And.NotContainKeys(nameof(SearchRequestedEvent.OriginalSearchIdentifier), nameof(SearchRequestedEvent.RepeatSearchCutOffDate));
+                .And.NotContainKeys(nameof(SearchRequestedEvent.OriginalSearchIdentifier), nameof(SearchRequestedEvent.RepeatSearchCutOffDate))
+                .And.NotContainKey(nameof(SearchRequestedEvent.RequestJson));
         }
 
         [Test]

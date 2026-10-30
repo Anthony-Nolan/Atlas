@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Reflection;
 using Atlas.Common.ApplicationInsights;
 using Atlas.SearchTracking.Common.ApplicationInsights;
 using Atlas.SearchTracking.Common.Enums;
@@ -40,18 +41,19 @@ public class SearchTrackingEventLoggerExtensionsTests
     }
 
     [Test]
-    public void SendSearchTrackingEvent_SendsOnePropertyForEachFieldOfTheEvent()
+    public void SendSearchTrackingEvent_SendsOnePropertyForEachFieldWithoutPatientInformation()
     {
         logger.SendSearchTrackingEvent(fixture.Create<SearchRequestedEvent>(), SearchTrackingEventType.SearchRequested);
 
-        sentProperties!.Keys.Should().BeEquivalentTo(typeof(SearchRequestedEvent).GetProperties().Select(property => property.Name));
+        sentProperties!.Keys.Should().BeEquivalentTo(typeof(SearchRequestedEvent).GetProperties()
+            .Where(property => !property.IsDefined(typeof(PatientInformationAttribute)))
+            .Select(property => property.Name));
     }
 
     [Test]
     public void SendSearchTrackingEvent_SendsValuesAsTheServiceBusMessageHasThem()
     {
         var searchRequestedEvent = fixture.Build<SearchRequestedEvent>()
-            .With(e => e.RequestJson, JsonConvert.SerializeObject(fixture.Create<Dictionary<string, string>>()))
             .With(e => e.RequestTimeUtc, fixture.Create<DateTime>().ToUniversalTime())
             .Create();
 
@@ -61,7 +63,7 @@ public class SearchTrackingEventLoggerExtensionsTests
         sentProperties[nameof(SearchRequestedEvent.IsRepeatSearch)].Should().Be(searchRequestedEvent.IsRepeatSearch.ToString().ToLowerInvariant());
         DateTime.Parse(sentProperties[nameof(SearchRequestedEvent.RequestTimeUtc)], CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)
             .Should().Be(searchRequestedEvent.RequestTimeUtc).And.BeIn(DateTimeKind.Utc);
-        sentProperties[nameof(SearchRequestedEvent.RequestJson)].Should().Be(searchRequestedEvent.RequestJson);
+        sentProperties[nameof(SearchRequestedEvent.SearchCriteria)].Should().Be(searchRequestedEvent.SearchCriteria);
         JsonConvert.DeserializeObject<List<string>>(sentProperties[nameof(SearchRequestedEvent.DonorRegistryCodes)])
             .Should().Equal(searchRequestedEvent.DonorRegistryCodes);
     }
@@ -79,5 +81,13 @@ public class SearchTrackingEventLoggerExtensionsTests
         sentProperties.Should().NotContainKeys(
             nameof(SearchRequestedEvent.OriginalSearchIdentifier),
             nameof(SearchRequestedEvent.RepeatSearchCutOffDate));
+    }
+
+    [Test]
+    public void SendSearchTrackingEvent_LeavesOutRequestJson()
+    {
+        logger.SendSearchTrackingEvent(fixture.Create<SearchRequestedEvent>(), SearchTrackingEventType.SearchRequested);
+
+        sentProperties.Should().NotContainKey(nameof(SearchRequestedEvent.RequestJson));
     }
 }
