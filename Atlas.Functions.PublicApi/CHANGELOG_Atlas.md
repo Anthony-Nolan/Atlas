@@ -62,11 +62,13 @@ Feature flags permit greater control over the release of new features (see this 
   * In a production environment, set `DISTRIBUTED_CACHE_HIGH_AVAILABILITY_ENABLED` to `true` before you deploy this version. Changing it later recreates the cache.
 
 #### Search Tracking
-* E: The public API also sends each search request and repeat search request to Application Insights, as a custom event named `SearchRequested` (`customEvents | where name == "SearchRequested"`). This is the first step to build search tracking metrics in Application Insights. Search tracking keeps its SQL database, and the Service Bus message and the SQL row do not change.
-  * The properties of the event are the fields of the search tracking event, with the same names and the same values as the Service Bus message: for example `SearchIdentifier`, `OriginalSearchIdentifier` and `DonorType`. A field without a value has no property. `AtlasLogger` also adds a `LogLevel` property, with the value `Info`.
-  * The event has no patient information: it has no `RequestJson` property. The search request, with the patient's HLA typing, ethnicity code and registry code, stays only in the Service Bus message and the SQL row.
+* E: The apps also send their search tracking events to Application Insights, as custom events (`customEvents | where name == "<event>"`), next to the Service Bus messages from which the search tracking functions write SQL. This is the first step to build search tracking metrics in Application Insights. Search tracking keeps its SQL database, and the Service Bus messages and the SQL rows do not change.
+  * The public API sends `SearchRequested` for each search request and repeat search request.
+  * The matching algorithm sends the events of each attempt of a search or a repeat search: `MatchingAlgorithmAttemptStarted`, `MatchingAlgorithmCoreMatchingStarted`, `MatchingAlgorithmCoreMatchingEnded`, `MatchingAlgorithmCoreScoringStarted`, `MatchingAlgorithmCoreScoringEnded`, `MatchingAlgorithmPersistingResultsStarted`, `MatchingAlgorithmPersistingResultsEnded` and `MatchingAlgorithmCompleted`.
+  * The properties of an event are the fields of the search tracking event, with the same names and the values of the Service Bus message: for example `SearchIdentifier`, `OriginalSearchIdentifier` and `AttemptNumber`. The fields of a nested object have their path as the name, for example `CompletionDetails.FailureInfo.Type` (in KQL, `customDimensions["CompletionDetails.FailureInfo.Type"]`). An enum value is its name, not the number that the message has. A field without a value has no property. `AtlasLogger` also adds a `LogLevel` property, with the value `Info`.
+  * The events have no patient information. `SearchRequested` has no `RequestJson` property: the search request, with the patient's HLA typing, ethnicity code and registry code, stays only in the Service Bus message and the SQL row. `MatchingAlgorithmCompleted` has the type of a failure, but not its message or stack trace (`FailureInfo.Message` and `FailureInfo.ExceptionStacktrace`): the message of an HLA lookup error names the patient's HLA. These also stay only in the Service Bus message and the SQL row.
   * Search tracking events are not sampled, also when the app samples its other telemetry.
-  * The event is sent at the `Info` level: an API app whose `ApplicationInsights:LogLevel` is above `Info` does not send it.
+  * The events are sent at the `Info` level: an app whose `ApplicationInsights:LogLevel` is above `Info` does not send them.
 
 ### 4.1.0
 

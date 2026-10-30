@@ -3,6 +3,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
@@ -10,9 +11,10 @@ namespace Atlas.SearchTracking.Common.ApplicationInsights;
 
 public static class SearchTrackingEventLoggerExtensions
 {
-    private static readonly JsonSerializerSettings WithoutPatientInformation = new()
+    private static readonly JsonSerializerSettings SerializerSettings = new()
     {
-        ContractResolver = new PatientInformationIgnoringContractResolver()
+        ContractResolver = new PatientInformationIgnoringContractResolver(),
+        Converters = { new StringEnumConverter() }
     };
 
     /// <summary>
@@ -20,9 +22,13 @@ public static class SearchTrackingEventLoggerExtensions
     /// <list type="bullet">
     /// <item>The event name is <paramref name="eventType"/>, the value of the <c>EventType</c> property of the Service Bus message.</item>
     /// <item>
-    /// Each top-level field of <paramref name="searchTrackingEvent"/> is a property with the name of the field. Its value is the value
-    /// in the Service Bus message body: a string without quotes (so identifiers and dates are as the message has them), <c>true</c> or
-    /// <c>false</c>, a number, or an array or object as JSON.
+    /// Each field of <paramref name="searchTrackingEvent"/> is a property with the name of the field. The fields of a nested object are
+    /// properties too, with the path of the field as the name, for example <c>CompletionDetails.FailureInfo.Type</c>.
+    /// </item>
+    /// <item>
+    /// The value of a property is the value in the Service Bus message body: a string without quotes (so identifiers and dates are as the
+    /// message has them), <c>true</c> or <c>false</c>, a number, or an array as JSON. An enum value is its name, not the number that the
+    /// message has.
     /// </item>
     /// <item>A field without a value has no property: Application Insights does not keep empty values.</item>
     /// <item>
@@ -41,16 +47,20 @@ public static class SearchTrackingEventLoggerExtensions
 
     private static Dictionary<string, string> ToProperties<TEvent>(TEvent searchTrackingEvent) where TEvent : ISearchTrackingEvent
     {
-        using var messageBody = new JsonTextReader(new StringReader(JsonConvert.SerializeObject(searchTrackingEvent, WithoutPatientInformation)));
+        using var messageBody = new JsonTextReader(new StringReader(JsonConvert.SerializeObject(searchTrackingEvent, SerializerSettings)));
         // Keeps the dates as the text that the message has.
         messageBody.DateParseHandling = DateParseHandling.None;
 
-        return JObject.Load(messageBody).Properties()
-            .Where(field => field.Value.Type != JTokenType.Null)
-            .ToDictionary(
-                field => field.Name,
-                field => field.Value.Type == JTokenType.String ? field.Value.Value<string>()! : field.Value.ToString(Formatting.None));
+        return Fields(JObject.Load(messageBody)).ToDictionary(
+            field => field.Path,
+            field => field.Value.Type == JTokenType.String ? field.Value.Value<string>()! : field.Value.ToString(Formatting.None));
     }
+
+    /// <summary>The fields that have a property, with the fields of a nested object in place of the object.</summary>
+    private static IEnumerable<JProperty> Fields(JObject fields) =>
+        fields.Properties()
+            .Where(field => field.Value.Type != JTokenType.Null)
+            .SelectMany(field => field.Value is JObject nestedFields ? Fields(nestedFields) : [field]);
 
     /// <summary>
     /// Leaves out the fields that are marked with <see cref="PatientInformationAttribute"/>. <c>[JsonIgnore]</c> cannot do this, because it
