@@ -18,7 +18,10 @@ public enum DonorGenotypeSetSource
     /// <summary>The stored set was decoded and used. No imputation, truncation or conversion ran for this donor.</summary>
     Precomputed,
 
-    /// <summary>None of the donor's ids has a stored row for the search's allowed loci.</summary>
+    /// <summary>
+    /// No stored value has the key of the donor input: the typing the search has, the frequency set the search uses for
+    /// it, and the search's allowed loci.
+    /// </summary>
     NoRow,
 
     /// <summary>
@@ -29,16 +32,11 @@ public enum DonorGenotypeSetSource
     NotStoredUnambiguous,
 
     /// <summary>
-    /// A stored row exists for the donor's typing, but it was computed with a different haplotype frequency set from
-    /// the one search now uses.
+    /// The batch read the stored value for the frequency set that it chose when it started, but the donor's run chose
+    /// another set: a new set was activated during the batch. Rare. The value is not used, and the donor's set is stored
+    /// back for the new set.
     /// </summary>
     StaleFrequencySet,
-
-    /// <summary>
-    /// The only stored rows were computed from a different typing from the one the search has: the donor was updated
-    /// after matching read it. Never stored back, because the donor's current typing is not the one computed here.
-    /// </summary>
-    TypingChanged,
 
     /// <summary>
     /// A stored row could not be decoded. Not stored back: the bad row has the same key as the live set, so the next
@@ -128,18 +126,14 @@ public enum UsePrecomputedGenotypeSetsSource
 }
 
 /// <summary>
-/// One donor's stored genotype set, as read from the transient database. <see cref="SubjectGenotypeSetData"/> is null
-/// exactly when <see cref="IsUnrepresented"/> is true.
+/// A donor input's stored genotype set, as read from the transient database by its key. <see cref="SubjectGenotypeSetData"/>
+/// is null exactly when <see cref="IsUnrepresented"/> is true.
 /// </summary>
-/// <param name="ComputedFromSearchTyping">
-/// True when the row's typing key is the key of the typing the search has for this donor. A row for any other typing
-/// must not be used: the stored set follows the donor's current typing, which an import can change after matching.
-/// </param>
+/// <param name="HaplotypeFrequencySetId">The frequency set of the key: the set the batch chose for the donor input when it started.</param>
 public sealed record PrecomputedDonorGenotypeSetRow(
     int HaplotypeFrequencySetId,
     bool IsUnrepresented,
-    byte[] SubjectGenotypeSetData,
-    bool ComputedFromSearchTyping);
+    byte[] SubjectGenotypeSetData);
 
 /// <summary>
 /// The stored genotype sets of a batch of donors, or the batch-wide reason there are none to use.
@@ -150,7 +144,10 @@ public sealed record PrecomputedDonorGenotypeSetRow(
 /// <see cref="DonorGenotypeSetSource.ActiveDatabaseChanged"/> or <see cref="DonorGenotypeSetSource.ActiveDatabaseUnknown"/>,
 /// and <paramref name="Rows"/> is empty.
 /// </param>
-/// <param name="Rows">Stored rows by Atlas donor id. Donors with no row are absent.</param>
+/// <param name="Rows">
+/// The stored row of each donor input, by each of its Atlas donor ids: the ids of one input share one row. The ids of an
+/// input with no stored value are absent.
+/// </param>
 /// <param name="PatientRow">
 /// The stored row of the patient key that was asked for; null when no key was asked for, when it has no row, or when
 /// the key is for a different allowed-loci key from <paramref name="AllowedLociKey"/>.
@@ -184,14 +181,22 @@ public sealed record PatientGenotypeSetLookup(PatientGenotypeSetKey Key, bool Ex
 }
 
 /// <summary>
+/// A donor input of a batch, with the frequency set that the search uses for it.
+/// </summary>
+/// <param name="Donor">The donor input: its ids share its typing and frequency set metadata.</param>
+/// <param name="HaplotypeFrequencySetId">The donor frequency set chosen from the input's metadata, as the live path chooses it.</param>
+public sealed record DonorGenotypeSetToRead(DonorInput Donor, int HaplotypeFrequencySetId);
+
+/// <summary>
 /// Reads stored donor genotype sets for search. Implemented by the matching algorithm, which owns the transient
 /// databases and the typing key (<c>Atlas.MatchingAlgorithm</c>, registered by <c>RegisterPrecomputedDonorGenotypeSetAccess</c>).
 /// </summary>
 public interface IPrecomputedDonorGenotypeSetReader
 {
     /// <param name="donors">
-    /// The batch's donor inputs. Each row is checked against the typing of the input its donor id belongs to, which is
-    /// the typing that matching read.
+    /// The batch's donor inputs, each with its frequency set. The set of an input is read by its key: the typing that
+    /// matching read, that frequency set, and the allowed loci. It is read once, whatever the number of ids that share it
+    /// (ATL-424).
     /// </param>
     /// <param name="allowedLoci">The loci match prediction runs on for this request.</param>
     /// <param name="matchingAlgorithmDataRefreshRecordId">
@@ -203,7 +208,7 @@ public interface IPrecomputedDonorGenotypeSetReader
     /// <see cref="PrecomputedDonorGenotypeSetLookup.PatientRow"/>.
     /// </param>
     Task<PrecomputedDonorGenotypeSetLookup> GetDonorGenotypeSets(
-        IReadOnlyCollection<DonorInput> donors,
+        IReadOnlyCollection<DonorGenotypeSetToRead> donors,
         IReadOnlySet<Locus> allowedLoci,
         int? matchingAlgorithmDataRefreshRecordId,
         PatientGenotypeSetKey patientGenotypeSetKey);
@@ -296,7 +301,7 @@ public interface IPrecomputedDonorGenotypeSetWriter
 internal class NoOpPrecomputedDonorGenotypeSetReader : IPrecomputedDonorGenotypeSetReader
 {
     public Task<PrecomputedDonorGenotypeSetLookup> GetDonorGenotypeSets(
-        IReadOnlyCollection<DonorInput> donors,
+        IReadOnlyCollection<DonorGenotypeSetToRead> donors,
         IReadOnlySet<Locus> allowedLoci,
         int? matchingAlgorithmDataRefreshRecordId,
         PatientGenotypeSetKey patientGenotypeSetKey) =>

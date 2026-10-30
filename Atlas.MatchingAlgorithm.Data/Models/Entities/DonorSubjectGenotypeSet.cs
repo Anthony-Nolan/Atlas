@@ -3,7 +3,8 @@ namespace Atlas.MatchingAlgorithm.Data.Models.Entities
     /// <summary>
     /// Thin per-donor mapping row: points a donor's (<see cref="DonorId"/>, <see cref="AllowedLociKey"/>) at the
     /// de-duplicated <see cref="SubjectGenotypeSetValue"/> it resolves to. One row per (DonorId, AllowedLociKey) —
-    /// at most 4 rows per donor. Populated by the precompute service; no caller reads it yet.
+    /// at most 4 rows per donor. Written by the pre-computation, the donor import, search and the debug endpoint. Search
+    /// does not read it: it reads each value by its key (ATL-424).
     /// </summary>
     public class DonorSubjectGenotypeSet
     {

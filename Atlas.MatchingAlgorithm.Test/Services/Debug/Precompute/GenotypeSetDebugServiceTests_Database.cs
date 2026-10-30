@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
@@ -26,7 +27,7 @@ internal partial class GenotypeSetDebugServiceTests
         var donor = NewDonor();
         GivenDonors(donor);
         var live = GivenTheLiveSet();
-        GivenStoredDonorRows((_, allowedLociKey) => PrecomputedRow(donor, allowedLociKey, live));
+        GivenStoredRows(_ => Value(live));
 
         var result = await service.Compute(new GenotypeSetDebugRequest
         {
@@ -65,7 +66,7 @@ internal partial class GenotypeSetDebugServiceTests
         result.Database.Should().Be(dormantDatabase);
         result.HlaNomenclatureVersion.Should().Be(dormantRecord.HlaNomenclatureVersion);
         repositoryFactory.Received().GetSubjectGenotypeSetRepositoryForDatabase(dormantDatabase);
-        await genotypeSetRepository.Received(1).GetSubjectGenotypeSetValue(Arg.Any<SubjectGenotypeSetKey>());
+        await genotypeSetRepository.Received(1).GetSubjectGenotypeSetValues(Arg.Any<IReadOnlyCollection<SubjectGenotypeSetKey>>());
     }
 
     [Test]

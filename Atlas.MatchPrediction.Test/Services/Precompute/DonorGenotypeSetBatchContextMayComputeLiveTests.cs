@@ -18,7 +18,7 @@ internal class DonorGenotypeSetBatchContextMayComputeLiveTests
     [Test]
     public void MayComputeLive_WhenEveryDonorInputAndThePatientHaveARow_IsFalse()
     {
-        var context = Context(new() { { 1, Row(true) }, { 3, Row(true) } }, PatientRow);
+        var context = Context(new() { { 1, Row() }, { 3, Row() } }, PatientRow);
 
         context.MayComputeLive([Donor(1, 2), Donor(3)]).Should().BeFalse();
     }
@@ -26,15 +26,7 @@ internal class DonorGenotypeSetBatchContextMayComputeLiveTests
     [Test]
     public void MayComputeLive_WhenADonorInputHasNoRow_IsTrue()
     {
-        var context = Context(new() { { 1, Row(true) } }, PatientRow);
-
-        context.MayComputeLive([Donor(1), Donor(2)]).Should().BeTrue();
-    }
-
-    [Test]
-    public void MayComputeLive_WhenADonorInputOnlyHasARowForAnotherTyping_IsTrue()
-    {
-        var context = Context(new() { { 1, Row(true) }, { 2, Row(false) } }, PatientRow);
+        var context = Context(new() { { 1, Row() } }, PatientRow);
 
         context.MayComputeLive([Donor(1), Donor(2)]).Should().BeTrue();
     }
@@ -42,7 +34,7 @@ internal class DonorGenotypeSetBatchContextMayComputeLiveTests
     [Test]
     public void MayComputeLive_WhenThePatientHasNoRow_IsTrue()
     {
-        var context = Context(new() { { 1, Row(true) } }, patientRow: null);
+        var context = Context(new() { { 1, Row() } }, patientRow: null);
 
         context.MayComputeLive([Donor(1)]).Should().BeTrue();
     }
@@ -76,7 +68,7 @@ internal class DonorGenotypeSetBatchContextMayComputeLiveTests
             42,
             new PrecomputedDonorGenotypeSetLookup("ABCDrb1Dqb1", null, rows, patientRow));
 
-    private static PrecomputedDonorGenotypeSetRow Row(bool computedFromSearchTyping) => new(7, false, [1, 2, 3], computedFromSearchTyping);
+    private static PrecomputedDonorGenotypeSetRow Row() => new(7, false, [1, 2, 3]);
 
     private static DonorInput Donor(params int[] donorIds) => new() { DonorIds = [.. donorIds] };
 }

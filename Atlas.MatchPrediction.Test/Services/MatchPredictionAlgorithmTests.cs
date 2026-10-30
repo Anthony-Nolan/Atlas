@@ -247,7 +247,7 @@ namespace Atlas.MatchPrediction.Test.Services
                 new PrecomputedDonorGenotypeSetLookup(
                     "ABCDrb1Dqb1",
                     null,
-                    new Dictionary<int, PrecomputedDonorGenotypeSetRow> { { 1, new PrecomputedDonorGenotypeSetRow(7, false, [1], true) } },
+                    new Dictionary<int, PrecomputedDonorGenotypeSetRow> { { 1, new PrecomputedDonorGenotypeSetRow(7, false, [1]) } },
                     new PrecomputedPatientGenotypeSetRow(false, [1])));
             genotypeSetSourceResolver.Resolve(default, default).ReturnsForAnyArgs(coveringContext);
             var input = new MultipleDonorMatchProbabilityInput(new IdentifiedMatchProbabilityRequest { SearchRequestId = "search-request-id" })

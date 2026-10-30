@@ -187,10 +187,10 @@ when the distributed cache misses or cannot be reached, each process reads SQL a
 across processes: a lock in Redis cannot work while Redis is down, which is when the processes read SQL.
 
 **Long operations.** A set can change while a donor import or a data refresh (stage 65) computes genotype sets. These
-operations do not keep one list of active sets for their whole run: each batch looks up its sets once. Each stored
-genotype set records its frequency set, and search does not use a stored set of a replaced frequency set
-(`StaleFrequencySet`, see [When a donor is computed live](#when-a-donor-is-computed-live)). See also the stage 65
-[failures](README_MatchingAlgorithm.md#failures).
+operations do not keep one list of active sets for their whole run: each batch looks up its sets once. The key of each
+stored genotype set has its frequency set, and search reads the key of the set that it uses, so it does not find a stored
+set of a replaced frequency set (see [How search finds a donor's stored set](#how-search-finds-a-donors-stored-set)). See
+also the stage 65 [failures](README_MatchingAlgorithm.md#failures).
 
 ## The frequency set cache
 Imputation reads a frequency set from its cache entry (`FrequencySetCacheEntry`): the frequencies, the projected pool,
@@ -342,26 +342,38 @@ Match prediction reads stored sets only from that record's database, and only wh
 Data Refresh has swapped the active database since matching ran, the batch is computed live. The old (dormant)
 database is never read or written: it is scaled down, can be paused, and is wiped by the next refresh.
 
-### When a donor is computed live
-A stored set is used only when it was computed from the typing the search has for the donor (the typing matching read)
-and with the frequency set the search uses. The stored row follows the donor's current typing and codes, and a donor
-import can change them after matching.
+### How search finds a donor's stored set
+A stored set (a `SubjectGenotypeSetValues` row) is fully defined by its key: the typing key, the frequency set and the
+locus combination. Search has all three for each donor input (one per distinct phenotype and frequency set metadata), so
+it reads each set by its key (ATL-424):
+1. Before the read, the batch chooses the frequency set of each donor input with the lookup that the live path uses: one
+   lookup for each registry and ethnicity code of the batch.
+2. It makes the key of each input from the typing that matching read, that frequency set and the search's loci.
+3. It reads the distinct keys of the batch, and the patient's key, in one read. The donor ids of an input, and inputs
+   with the same key, share one read of the set.
 
-Each donor input (one per distinct phenotype and frequency set metadata) has one of these outcomes. The names are the
-metric names of the logging event below.
+Search does not read the donors' link rows (`DonorSubjectGenotypeSets`). So the set that it uses is always the set of
+the typing that it has and of the frequency set that it uses:
+- A donor that a donor import updated after matching uses the stored set of the typing that matching read, if one is
+  stored.
+- A donor with no link row uses the stored set of its key, if one is stored: for example, by another donor or a patient
+  with the same typing and frequency set.
+- A stored set of a replaced frequency set is not found: the key has the frequency set that search uses now.
+
+### When a donor is computed live
+Each donor input has one of these outcomes. The names are the metric names of the logging event below.
 
 | Outcome | Applies to | Meaning |
 |---|---|---|
-| `Precomputed` | donor | A stored set for the search's typing, allowed loci and frequency set was decoded and used. |
-| `NoRow` | donor | No stored set for any of the donor's ids. For example: the donor was added or updated before pre-computation existed, or recently; or pre-computation failed for the donor during donor import. |
+| `Precomputed` | donor | The stored set with the key of the search's typing, frequency set and allowed loci was decoded and used. |
+| `NoRow` | donor | No stored set has the key of the donor input. For example: the donor was added or updated before pre-computation existed, or recently; pre-computation failed for the donor during donor import; or the frequency set that search uses was activated after the set was stored. |
 | `NotStoredUnambiguous` | donor | No stored set, by design: the donor's typing is unambiguous at small g group for the search's loci (see [Donors that are not precomputed](#donors-that-are-not-precomputed)). Computed live without the frequency set, and not stored back. Checked only for a donor with no row. |
-| `StaleFrequencySet` | donor | A stored set for the search's typing exists, but it was computed with a different haplotype frequency set from the one the search now uses (for example, a new frequency set was imported). Neither its payload nor its "unrepresented" flag is used. |
-| `TypingChanged` | donor | The only stored sets were computed from a different typing: a donor import changed the donor after matching read it. |
+| `StaleFrequencySet` | donor | The batch read a stored set with the frequency set that it chose when it started, but a new frequency set was activated for the donor before the donor ran. Rare. Neither its payload nor its "unrepresented" flag is used. |
 | `DecodeFailed` | donor | A stored set exists but could not be decoded. |
 | `UncoveredAllowedLoci` | batch | The search's loci are not one of the four precomputed combinations: `{A,B,C,DRB1,DQB1}`, `{A,B,C,DRB1}`, `{A,B,DRB1,DQB1}`, `{A,B,DRB1}`. |
 | `ActiveDatabaseChanged` | batch | A Data Refresh swapped the active database after matching ran (see above). |
 | `ActiveDatabaseUnknown` | batch | The search was matched before matching recorded its data refresh record. |
-| `ReadFailed` | batch | Reading the stored sets failed. This is logged as an exception, and the batch is computed live rather than failed. |
+| `ReadFailed` | batch | Reading the stored sets, or choosing the donors' frequency sets before the read, failed. This is logged as an exception, and the batch is computed live rather than failed. |
 | `PrecomputeDisabled` | batch | The precomputed path is off for the search (see the mode table). |
 
 ### Storing donors computed live
@@ -370,7 +382,7 @@ it. The stored set is the same as the pre-computation would store: the same geno
 nomenclature version and key. Nothing is stored for the other outcomes:
 - `NotStoredUnambiguous`: such a set is not precomputed, by design. If the check itself fails, the donor counts as
   `NoRow`, and its set may be stored: correct data, only not needed.
-- `TypingChanged`: the donor's current typing is not the one computed here.
+- `Precomputed`: search does not add a link row for a donor whose set it read, because it does not need one.
 - `DecodeFailed`: the bad row has the same key as the live set, so a store would find it and change nothing. The next
   Data Refresh, which rebuilds the tables, repairs it.
 
@@ -378,8 +390,9 @@ The store is best effort: a failure is logged (event `Precomputed genotype set s
 search. It runs after the batch's results are uploaded, but the batch ends only when it returns, so it does delay the
 end of the batch and of the search. Its lock timeout keeps that delay short. Guards:
 - Nothing is written unless the database matching used is still the active one. This is checked again just before writing.
-- A donor's set is written only while the donor's typing, registry code and ethnicity code in the database are still the
-  ones the set was computed from. A donor import can change a donor between matching and match prediction.
+- A donor's link row is written only while the donor's typing, registry code and ethnicity code in the database are still
+  the ones the set was computed from. A donor import can change a donor between matching and match prediction. The value
+  row is written in any case: it is defined by its key, so it is right for every donor and patient with that key.
 - The write takes the table lock on `DonorSubjectGenotypeSets` before it reads `Donors`. The donor import deletes a
   donor's rows first in its transaction, before it writes `Donors`, so the two take their locks in the same order.
   Whichever goes first wins safely.
@@ -388,9 +401,9 @@ end of the batch and of the search. Its lock timeout keeps that delay short. Gua
   logged store instead of a long delay.
 - One case is not covered: when `OngoingDifferentialDonorUpdatesShouldBeFullyTransactional` is `false`, the import
   deletes a donor's rows and writes the donor's new typing as two separate commits. A write between them can store a
-  set for the old typing. The import's own pre-computation, which runs straight after, then replaces it. Only if that
-  also fails does the old set stay, until the next Data Refresh. Search does not use it either way: the typing check
-  above reports `TypingChanged` for it.
+  link row for the old typing. The import's own pre-computation, which runs straight after, then replaces it. Only if
+  that also fails does the old link row stay, until the next Data Refresh. Search does not use it either way: it does not
+  read link rows.
 
 ### Logging
 Each donor batch sends one Application Insights event, `Precomputed genotype sets used`.
@@ -495,19 +508,20 @@ pipeline and its settings, and it is the app that writes the stored sets (stage 
   value row as `Created` or `AlreadyExisted`. Then it writes the link rows of each donor whose requested values are all
   stored, for the requested combinations only. It replaces the link rows that the donor has for these combinations. In
   two cases, the result is not what the pre-computation stores:
-  - With `HaplotypeFrequencySetId`, the donor's link rows point at that set, also when search would not choose it. Use
-    this to make a `StaleFrequencySet` case. Search then computes the donor live. If the search uses stored sets, it
-    then stores the donor's set for the frequency set that it chose. So usually only the first such search reports
-    `StaleFrequencySet`. To go back, save again without `HaplotypeFrequencySetId`.
-  - With only some `AllowedLociKeys`, the donor keeps its link rows for the other combinations. Search checks each link
-    row on its own typing key and frequency set, so this does not change the search results.
+  - With `HaplotypeFrequencySetId`, the value rows have that set, and the donor's link rows point at them, also when
+    search would not choose the set. Search reads the key of the set that it chooses, so it does not use these rows. If
+    no row of its own set is stored, it computes the donor live (`NoRow`) and stores the set for its own set. To go
+    back, save again without `HaplotypeFrequencySetId`.
+  - With only some `AllowedLociKeys`, the donor keeps its link rows for the other combinations. Search does not read
+    link rows, so this does not change the search results.
 
   Save does not check if a donor changed after the endpoint read it. If a donor import changes the donor's typing
-  during the request, the link rows can point at the old typing. Search then computes the donor live (`TypingChanged`),
-  and does not store it. To repair the rows, save again.
+  during the request, the link rows can point at the old typing. Search does not read link rows, so this does not change
+  the search results. To repair the rows, save again.
 
   Saving is allowed only when the app setting `Debug:AllowPrecomputeWrites` is `true` (Terraform variable
-  `MATCHING_DEBUG_ALLOW_PRECOMPUTE_WRITES`). Turn it on in test environments only, because search reads these rows.
+  `MATCHING_DEBUG_ALLOW_PRECOMPUTE_WRITES`). Turn it on in test environments only, because search reads the value rows
+  that it stores.
   When it is off, a request that saves gets `403` and changes nothing. A save never writes to the dormant database.
 - **Errors.** An error of one donor or of one combination is given in its entry and does not fail the request. If the
   donors cannot be read, each donor code gives that error, with `Found` false. A request that is not valid gets `400`.
@@ -528,14 +542,11 @@ pipeline and its settings, and it is the app that writes the stored sets (stage 
 ### Parity check (`CompareWithStored`)
 With `CompareWithStored`, each computed set is compared with its stored row, as search reads it. It only reads, so it
 can also check the stored rows of LIVE. It cannot be used with `Save`, because a save changes the rows that it reads.
-- **Which row.** For a donor: the value row that the donor's link row points to. For a typing, for example a patient's
-  row that the warm step of search stored: the value row with the key of the live set. The key includes the frequency
-  set, so a row of an older set is not found. To check such a row, give its `HaplotypeFrequencySetId`. For a donor,
-  `HaplotypeFrequencySetId` changes only the set of the live computation, not the row that is read. So give it only to
-  check a row that was stored with that set, for example after a save with an older set. If search has stored the row
-  again with the set that it uses (see Save, above), send the request without it. For that row, a request with it gives
-  `Mismatch`, and the first difference is `HaplotypeFrequencySet`, with the two set ids. If the row has another set than
-  the set that search uses, the result is `StaleFrequencySet`.
+- **Which row.** The value row with the key of the live set, for a donor as for a typing (for example, a patient's row
+  that the warm step of search stored). Search reads the same row (ATL-424). A donor's link rows are not read. The key
+  includes the frequency set, so a row of an older set is not found. To check such a row, give its
+  `HaplotypeFrequencySetId`: the live set and the key then have that set. For a donor, if search would not use that set
+  now, the result is `StaleFrequencySet`.
 - **What is compared.** The stored data is decoded and compared with the live set: the frequency set of the row,
   `IsUnrepresented`, the genotype count, the sum of likelihoods, and each genotype (its two resolutions and its
   likelihood). The order of the genotypes does not matter. The two positions of a locus are compared as they are: the
@@ -547,17 +558,14 @@ can also check the stored rows of LIVE. It cannot be used with `Save`, because a
 | `Result` | Meaning |
 |---|---|
 | `Error` | The live computation failed, or the stored row could not be read. `Error` gives the text. |
-| `NoStoredRow` | No row is stored. |
+| `NoStoredRow` | No row has the key of the live set. |
 | `NotStoredUnambiguous` | No row is stored, by design: the typing is unambiguous at small g group for the combination, so the pre-computation does not store it (see [Donors that are not precomputed](#donors-that-are-not-precomputed)). Each computed set also gives `IsUnambiguousAtSmallGGroup`. A row that is stored anyway, for example by `Save`, is compared as usual. |
-| `TypingChanged` | Donors only. The stored row was computed from another typing (`StoredHlaTypingKey`) than the donor's typing now (`HlaTypingKey`). Search does not use the row. |
-| `StaleFrequencySet` | Donors only. The stored row has another frequency set (`StoredHaplotypeFrequencySetId`) than the set that search would use now (`SearchHaplotypeFrequencySetId`). Search computes the donor live. |
+| `StaleFrequencySet` | Donors only. The request names a frequency set (`StoredHaplotypeFrequencySetId`) that is not the set that search would use for the donor now (`SearchHaplotypeFrequencySetId`). Search reads the row of its own set instead. |
 | `DecodeFailed` | The stored data cannot be decoded. `DecodeError` gives the text. |
 | `Mismatch` | The stored set is not the same as the live set. |
 | `Match` | The stored set is the same as the live set. |
 
-- **Differences.** The comparison also runs for `TypingChanged` and `StaleFrequencySet`, to show the effect. When the
-  row has another frequency set than the live set, the first difference is `HaplotypeFrequencySet`: the other
-  differences then come from the two sets, not from the stored data.
+- **Differences.** The comparison also runs for `StaleFrequencySet`, to show the effect.
   `DifferenceCount` gives the number of differences, and `Differences` gives the first `MaxDifferencesPerRow` of them
   (10 by default, from 1 to 1,000). Each difference gives the live and the stored value as text with all their digits,
   because a client that reads a JSON number as a double can round two different likelihoods to the same number.
@@ -567,8 +575,8 @@ can also check the stored rows of LIVE. It cannot be used with `Save`, because a
   `ParityCounts` except `Match` must be 0, and so must `DonorsNotFound` and `SubjectErrors`.
 - **After a frequency set import.** Each app keeps the active frequency sets for
   `HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes` (1 minute by default). So for that time, this app and search
-  can still choose the old set (see [The active set cache](#the-active-set-cache)). Wait that long before you check for
-  `StaleFrequencySet`.
+  can still choose the old set (see [The active set cache](#the-active-set-cache)). Wait that long before you check the
+  rows of the new set.
 
 ### The dormant database (`Database`)
 With `Database` set to `Dormant`, the endpoint reads the other matching database, which Data Refresh writes to: its

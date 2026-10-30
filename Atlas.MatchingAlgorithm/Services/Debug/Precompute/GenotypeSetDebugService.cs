@@ -71,10 +71,10 @@ public interface IGenotypeSetDebugService
 /// </para>
 ///
 /// <para>
-/// <b>The parity check reads the rows that search reads.</b> For a donor: its link row and the value row that it points
-/// to, with the read of search. For a typing, for example a patient's: the value row with the key of the live set. The
-/// result follows the order of the checks of search (see <see cref="ParityResult"/>). Unlike search, the check still
-/// compares a row whose typing or frequency set is out of date, to show the effect.
+/// <b>The parity check reads the rows that search reads.</b> For a donor and for a typing, for example a patient's, it
+/// reads the value row with the key of the live set, as search does (ATL-424). It does not read the donor's link rows.
+/// The result follows the order of the checks of search (see <see cref="ParityResult"/>). Unlike search, the check
+/// still compares a row of a frequency set that search would not use now, to show the effect.
 /// </para>
 ///
 /// <para>
@@ -431,8 +431,7 @@ internal class GenotypeSetDebugService : IGenotypeSetDebugService
     /// <summary>Reads the stored row of each computed set from <paramref name="database"/>, and compares the two.</summary>
     private async Task<List<ComputedSubject>> CompareWithStored(List<ComputedSubject> subjects, TransientDatabase database, int maxDifferences)
     {
-        var repository = repositoryFactory.GetSubjectGenotypeSetRepositoryForDatabase(database);
-        var donorRows = await ReadDonorRows(repository, subjects);
+        var rows = await ReadRows(repositoryFactory.GetSubjectGenotypeSetRepositoryForDatabase(database), subjects);
 
         var compared = new List<ComputedSubject>(subjects.Count);
         foreach (var subject in subjects)
@@ -440,10 +439,7 @@ internal class GenotypeSetDebugService : IGenotypeSetDebugService
             var items = new List<ComputedItem>(subject.Items.Count);
             foreach (var item in subject.Items)
             {
-                var (stored, readError) = subject.Donor != null
-                    ? donorRows[item.Key.AllowedLociKey].Find(subject.Donor.DonorId)
-                    : await ReadTypingRow(repository, item.Key);
-
+                var (stored, readError) = rows[item.Key.AllowedLociKey].Find(item.Key);
                 items.Add(item with { ParityCheck = Check(item, stored, readError, subject.SearchFrequencySetId, maxDifferences) });
             }
 
@@ -454,51 +450,33 @@ internal class GenotypeSetDebugService : IGenotypeSetDebugService
     }
 
     /// <summary>
-    /// The stored rows of the donors, through their link rows, as search reads them: one read for each locus combination.
+    /// The value rows with the keys of the live sets, as search reads them: one read for each locus combination. The key
+    /// includes the frequency set, so a row of an older set is not found.
     /// </summary>
-    private static async Task<Dictionary<AllowedLociKey, DonorRowsRead>> ReadDonorRows(
+    private static async Task<Dictionary<AllowedLociKey, RowsRead>> ReadRows(
         ISubjectGenotypeSetRepository repository,
         IReadOnlyCollection<ComputedSubject> subjects)
     {
-        var donorIdsByAllowedLociKey = subjects
-            .Where(subject => subject.Donor != null)
-            .SelectMany(subject => subject.Items.Select(item => (item.Key.AllowedLociKey, subject.Donor!.DonorId)))
-            .GroupBy(pair => pair.AllowedLociKey, pair => pair.DonorId);
+        var keysByAllowedLociKey = subjects
+            .SelectMany(subject => subject.Items.Select(item => item.Key))
+            .GroupBy(key => key.AllowedLociKey);
 
-        var reads = new Dictionary<AllowedLociKey, DonorRowsRead>();
-        foreach (var donorIds in donorIdsByAllowedLociKey)
+        var reads = new Dictionary<AllowedLociKey, RowsRead>();
+        foreach (var keys in keysByAllowedLociKey)
         {
             try
             {
-                var rows = await repository.GetDonorSubjectGenotypeSets(donorIds.Distinct().ToList(), donorIds.Key);
-                reads[donorIds.Key] = new DonorRowsRead(rows, null);
+                var rows = await repository.GetSubjectGenotypeSetValues(keys.Distinct().ToList());
+                reads[keys.Key] = new RowsRead(rows, null);
             }
             catch (Exception exception)
             {
                 // For example, the first read of a paused serverless database starts it again, but fails (SQL error 40613).
-                reads[donorIds.Key] = new DonorRowsRead(null, Describe(exception));
+                reads[keys.Key] = new RowsRead(null, Describe(exception));
             }
         }
 
         return reads;
-    }
-
-    /// <summary>The value row with the key of the live set. The key includes the frequency set, so a row of an older set is not found.</summary>
-    private static async Task<(StoredRow? Row, string? ReadError)> ReadTypingRow(ISubjectGenotypeSetRepository repository, SubjectGenotypeSetKey key)
-    {
-        try
-        {
-            var value = await repository.GetSubjectGenotypeSetValue(key);
-            var row = value == null
-                ? null
-                : new StoredRow(key.HlaTypingKey, key.HaplotypeFrequencySetId, value.IsUnrepresented, value.SubjectGenotypeSetData);
-
-            return (row, null);
-        }
-        catch (Exception exception)
-        {
-            return (null, Describe(exception));
-        }
     }
 
     /// <summary>The parity check of one computed set, in the order that search checks a stored row.</summary>
@@ -525,12 +503,10 @@ internal class GenotypeSetDebugService : IGenotypeSetDebugService
             };
         }
 
-        // A typing's row is read by the key of its live set, so these can differ only for a donor.
-        var typingChanged = stored.HlaTypingKey != item.Key.HlaTypingKey;
+        // The row has the key of the live set, so its set is the set of the request when the request names one. For a
+        // donor, that can be a set that search would not use now.
         var staleFrequencySet = searchFrequencySetId != null && stored.HaplotypeFrequencySetId != searchFrequencySetId;
 
-        // The live set has the frequency set of the request when the request names one. So for a donor, the live set and
-        // the row can have different sets also when search would use the row: the comparison then gives the sets first.
         var (storedSet, decodeError) = Decode(stored);
         var comparison = storedSet == null
             ? null
@@ -543,12 +519,10 @@ internal class GenotypeSetDebugService : IGenotypeSetDebugService
 
         return new GenotypeSetParityCheck
         {
-            Result = typingChanged ? ParityResult.TypingChanged
-                : staleFrequencySet ? ParityResult.StaleFrequencySet
+            Result = staleFrequencySet ? ParityResult.StaleFrequencySet
                 : comparison == null ? ParityResult.DecodeFailed
                 : comparison.DifferenceCount > 0 ? ParityResult.Mismatch
                 : ParityResult.Match,
-            StoredHlaTypingKey = stored.HlaTypingKey,
             StoredHaplotypeFrequencySetId = stored.HaplotypeFrequencySetId,
             SearchHaplotypeFrequencySetId = searchFrequencySetId,
             DecodeError = decodeError,
@@ -637,15 +611,15 @@ internal class GenotypeSetDebugService : IGenotypeSetDebugService
     }
 
     /// <summary>A stored row, as the parity check reads it.</summary>
-    private sealed record StoredRow(string HlaTypingKey, int HaplotypeFrequencySetId, bool IsUnrepresented, byte[]? SubjectGenotypeSetData);
+    private sealed record StoredRow(int HaplotypeFrequencySetId, bool IsUnrepresented, byte[]? SubjectGenotypeSetData);
 
-    /// <summary>The read of the donors' stored rows at one locus combination: the rows by donor id, or the error of the read.</summary>
-    private sealed record DonorRowsRead(IReadOnlyDictionary<int, StoredDonorSubjectGenotypeSet>? Rows, string? ReadError)
+    /// <summary>The read of the value rows at one locus combination: the rows by key, or the error of the read.</summary>
+    private sealed record RowsRead(IReadOnlyDictionary<SubjectGenotypeSetKey, StoredSubjectGenotypeSetValue>? Rows, string? ReadError)
     {
-        public (StoredRow? Row, string? ReadError) Find(int donorId) =>
-            ReadError != null || !Rows!.TryGetValue(donorId, out var row)
+        public (StoredRow? Row, string? ReadError) Find(SubjectGenotypeSetKey key) =>
+            ReadError != null || !Rows!.TryGetValue(key, out var value)
                 ? (null, ReadError)
-                : (new StoredRow(row.HlaTypingKey, row.HaplotypeFrequencySetId, row.IsUnrepresented, row.SubjectGenotypeSetData), null);
+                : (new StoredRow(key.HaplotypeFrequencySetId, value.IsUnrepresented, value.SubjectGenotypeSetData), null);
     }
 
     private sealed record ComputedItem(

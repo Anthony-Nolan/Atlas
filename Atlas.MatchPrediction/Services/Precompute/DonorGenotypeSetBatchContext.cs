@@ -50,19 +50,19 @@ public sealed class DonorGenotypeSetBatchContext
     public bool CanStore => BatchFallbackReason == null && MatchingAlgorithmDataRefreshRecordId != null;
 
     /// <summary>
-    /// False only when the batch has a stored row for the patient and, for every donor input, one computed from the
-    /// search's typing - so it should impute nothing live, and has no need to warm the caches live imputation reads (ATL-476).
+    /// False only when the batch has a stored row for the patient and for every donor input - so it should impute
+    /// nothing live, and has no need to warm the caches live imputation reads (ATL-476).
     /// </summary>
     /// <remarks>
     /// A cheap check, not <see cref="TryGetPrecomputedGenotypeSet"/>: it does not compare frequency sets or decode. So it
-    /// can say false for a batch that then computes a donor live after all (a row for a since-replaced frequency set, or
-    /// a row that cannot be decoded - both rare). That donor's lookups then fall back to single-row reads, as they did
-    /// before the warm-up existed. Whenever a donor input or the patient has no usable row at all, it says true.
+    /// can say false for a batch that then computes a donor live after all (a frequency set activated during the batch,
+    /// or a row that cannot be decoded - both rare). That donor's lookups then fall back to single-row reads, as they did
+    /// before the warm-up existed. Whenever a donor input or the patient has no row at all, it says true.
     /// </remarks>
     public bool MayComputeLive(IReadOnlyCollection<DonorInput> donors) =>
         BatchFallbackReason != null
         || patientRow == null
-        || donors.Any(donor => !donor.DonorIds.Any(id => rows.TryGetValue(id, out var row) && row.ComputedFromSearchTyping));
+        || donors.Any(donor => !donor.DonorIds.Any(rows.ContainsKey));
 
     private DonorGenotypeSetBatchContext(
         bool usePrecomputedGenotypeSets,
@@ -111,18 +111,15 @@ public sealed class DonorGenotypeSetBatchContext
     /// <param name="genotypeSet">The decoded set when the result is <see cref="DonorGenotypeSetSource.Precomputed"/>; otherwise null.</param>
     /// <remarks>
     /// <para>
-    /// A row is used only when it was computed from the typing the search has (<see cref="PrecomputedDonorGenotypeSetRow.ComputedFromSearchTyping"/>)
-    /// and with the frequency set the search uses. The stored row follows the donor's current typing and frequency set,
-    /// and an import can change either after matching read the donor. A row that fails either check is never used -
-    /// not its payload and not its <c>IsUnrepresented</c> flag.
+    /// The ids of a donor input share one row: the stored value with the key of the input's typing (the typing that
+    /// matching read), frequency set and allowed loci (ATL-424). So the row is right for the typing the search has,
+    /// whatever an import did to the donor after matching.
     /// </para>
     ///
     /// <para>
-    /// Any one of the ids with such a row is enough: they share the input's typing, and the row was computed from that
-    /// typing and that frequency set. When none has one, the reason is the most useful for the write-back:
-    /// <see cref="DonorGenotypeSetSource.StaleFrequencySet"/> or <see cref="DonorGenotypeSetSource.NoRow"/> when some id
-    /// still has the search's typing and can be stored, and <see cref="DonorGenotypeSetSource.TypingChanged"/> only when
-    /// every id with a row has a different typing.
+    /// The row is used only while its frequency set is the one the search uses for the donor now. The batch chose the
+    /// set when it started, and a new set can be activated before the donor runs. A row that fails this check is never
+    /// used - not its payload and not its <c>IsUnrepresented</c> flag.
     /// </para>
     /// </remarks>
     public DonorGenotypeSetSource TryGetPrecomputedGenotypeSet(
@@ -137,64 +134,39 @@ public sealed class DonorGenotypeSetBatchContext
             return BatchFallbackReason.Value;
         }
 
-        var foundStaleFrequencySet = false;
-        var foundMissingRow = false;
-        var foundTypingChanged = false;
-        foreach (var donorId in donorIds)
+        var row = donorIds.Select(rows.GetValueOrDefault).FirstOrDefault(found => found != null);
+        if (row == null)
         {
-            if (!rows.TryGetValue(donorId, out var row))
-            {
-                foundMissingRow = true;
-                continue;
-            }
-
-            if (!row.ComputedFromSearchTyping)
-            {
-                foundTypingChanged = true;
-                continue;
-            }
-
-            if (row.HaplotypeFrequencySetId != donorFrequencySetId)
-            {
-                foundStaleFrequencySet = true;
-                continue;
-            }
-
-            if (row.IsUnrepresented)
-            {
-                genotypeSet = new SubjectGenotypeSet(true, new List<GenotypeAtDesiredResolutions>(), 0m);
-                return DonorGenotypeSetSource.Precomputed;
-            }
-
-            if (row.SubjectGenotypeSetData == null)
-            {
-                return DonorGenotypeSetSource.DecodeFailed;
-            }
-
-            try
-            {
-                genotypeSet = SubjectGenotypeSetPayload.Decode(row.SubjectGenotypeSetData);
-                return DonorGenotypeSetSource.Precomputed;
-            }
-            catch (InvalidDataException)
-            {
-                // Rare by construction - the payload is versioned and the decoder is the encoder's tested inverse -
-                // but one bad row must cost one live imputation, not the search.
-                return DonorGenotypeSetSource.DecodeFailed;
-            }
+            return DonorGenotypeSetSource.NoRow;
         }
 
-        if (foundStaleFrequencySet)
+        if (row.HaplotypeFrequencySetId != donorFrequencySetId)
         {
             return DonorGenotypeSetSource.StaleFrequencySet;
         }
 
-        if (foundTypingChanged && !foundMissingRow)
+        if (row.IsUnrepresented)
         {
-            return DonorGenotypeSetSource.TypingChanged;
+            genotypeSet = new SubjectGenotypeSet(true, new List<GenotypeAtDesiredResolutions>(), 0m);
+            return DonorGenotypeSetSource.Precomputed;
         }
 
-        return DonorGenotypeSetSource.NoRow;
+        if (row.SubjectGenotypeSetData == null)
+        {
+            return DonorGenotypeSetSource.DecodeFailed;
+        }
+
+        try
+        {
+            genotypeSet = SubjectGenotypeSetPayload.Decode(row.SubjectGenotypeSetData);
+            return DonorGenotypeSetSource.Precomputed;
+        }
+        catch (InvalidDataException)
+        {
+            // Rare by construction - the payload is versioned and the decoder is the encoder's tested inverse -
+            // but one bad row must cost one live imputation, not the search.
+            return DonorGenotypeSetSource.DecodeFailed;
+        }
     }
 
     /// <summary>

@@ -317,9 +317,10 @@ So after the first refresh with the setting off, the refreshed database has no s
 - A frequency set import during the stage changes the set that some groups use: the batches before the change use the
   old set, and the batches after it use the new set (within 1 minute, see
   [the active set cache](README_MatchPredictionAlgorithm.md#the-active-set-cache)). The stage does not keep one list of
-  active sets for its whole run. Each stored row records its frequency set, and search does not use a row of a replaced
-  set: it computes the donor live, and stores the set again (`StaleFrequencySet`). With one list for the whole run, every
-  row of that population would be stale, not only the rows from before the change.
+  active sets for its whole run. The key of each stored row has its frequency set, and search reads the key of the set
+  that it uses, so it does not find a row of a replaced set: it computes the donor live, and stores the set again
+  (`NoRow`). With one list for the whole run, every row of that population would be stale, not only the rows from before
+  the change.
 - A batch that fails more than `MaxGroupFailuresPerBatch` groups fails as a whole, and is sent again.
 
 #### Continuation
@@ -411,8 +412,8 @@ hold the page for longer.
 ATL-495 removed the last two waits on the writes (see `CHANGELOG_Data.md`):
 
 * Both `SubjectGenotypeSetValues` and `DonorSubjectGenotypeSets` are split into 16 hash partitions on
-  `Bucket = Id % 16`, so the inserts go to 16 ends of each table, not one. A read by value id gives the bucket too, so
-  it reads one partition.
+  `Bucket = Id % 16`, so the inserts go to 16 ends of each table, not one. The unique key indexes are not partitioned.
+  Search reads the values by key on that index (ATL-424), so the read does not need the bucket.
 * The stage writes its donor rows with a plain insert of the missing rows, not the upsert with a table lock, so the
   batches no longer write them one at a time. Every other writer of `DonorSubjectGenotypeSets` still uses the upsert.
 

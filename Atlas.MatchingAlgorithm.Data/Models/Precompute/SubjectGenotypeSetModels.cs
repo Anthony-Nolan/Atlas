@@ -50,22 +50,10 @@ public enum SubjectGenotypeSetValueInsertMode
 public sealed record DonorSubjectGenotypeSetAssignment(int DonorId, AllowedLociKey AllowedLociKey, int SubjectGenotypeSetValueId);
 
 /// <summary>
-/// A stored value read by its key, with no donor: a patient's set (ATL-426). <see cref="SubjectGenotypeSetData"/> is
-/// null exactly when <see cref="IsUnrepresented"/> is true.
+/// A stored value, read by its key with no donor link: a donor input's set (ATL-424) or a patient's set (ATL-426).
+/// <see cref="SubjectGenotypeSetData"/> is null exactly when <see cref="IsUnrepresented"/> is true.
 /// </summary>
 public sealed record StoredSubjectGenotypeSetValue(bool IsUnrepresented, byte[] SubjectGenotypeSetData);
-
-/// <summary>
-/// A donor's stored genotype set at one locus combination, as search reads it. <see cref="SubjectGenotypeSetData"/> is
-/// null exactly when <see cref="IsUnrepresented"/> is true.
-/// </summary>
-/// <param name="HlaTypingKey">The typing key of the stored value, so the reader can check it was computed from the typing the search has.</param>
-public sealed record StoredDonorSubjectGenotypeSet(
-    int DonorId,
-    string HlaTypingKey,
-    int HaplotypeFrequencySetId,
-    bool IsUnrepresented,
-    byte[] SubjectGenotypeSetData);
 
 /// <summary>
 /// An assignment to write only while the donor in <c>Donors</c> still has the typing, registry code and ethnicity code

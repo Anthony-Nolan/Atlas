@@ -110,7 +110,7 @@ internal class MatchProbabilityServicePrecomputeTests
         var stored = SetWithGenotypes(2, 0.25m);
         var context = EnabledContext(new Dictionary<int, PrecomputedDonorGenotypeSetRow>
         {
-            { DonorId, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, false, SubjectGenotypeSetPayload.Encode(stored), true) }
+            { DonorId, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, false, SubjectGenotypeSetPayload.Encode(stored)) }
         });
 
         var result = await matchProbabilityService.CalculateMatchProbability(Input(), patientGenotypeSet, context);
@@ -127,7 +127,7 @@ internal class MatchProbabilityServicePrecomputeTests
     {
         var context = EnabledContext(new Dictionary<int, PrecomputedDonorGenotypeSetRow>
         {
-            { DonorId, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, true, null, true) }
+            { DonorId, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, true, null) }
         });
 
         var result = await matchProbabilityService.CalculateMatchProbability(Input(), patientGenotypeSet, context);
@@ -144,7 +144,7 @@ internal class MatchProbabilityServicePrecomputeTests
         input.Donor.DonorIds = [DonorId, 2, 3];
         var context = EnabledContext(new Dictionary<int, PrecomputedDonorGenotypeSetRow>
         {
-            { 3, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, false, SubjectGenotypeSetPayload.Encode(SetWithGenotypes(1, 1m)), true) }
+            { 3, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, false, SubjectGenotypeSetPayload.Encode(SetWithGenotypes(1, 1m))) }
         });
 
         var result = await matchProbabilityService.CalculateMatchProbability(input, patientGenotypeSet, context);
@@ -228,7 +228,7 @@ internal class MatchProbabilityServicePrecomputeTests
         var payload = SubjectGenotypeSetPayload.Encode(SetWithGenotypes(1, 1m));
         var context = EnabledContext(new Dictionary<int, PrecomputedDonorGenotypeSetRow>
         {
-            { DonorId, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, false, payload, true) }
+            { DonorId, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, false, payload) }
         });
 
         await matchProbabilityService.CalculateMatchProbability(Input(), patientGenotypeSet, context);
@@ -236,13 +236,17 @@ internal class MatchProbabilityServicePrecomputeTests
         await genotypeSetService.DidNotReceiveWithAnyArgs().IsUnambiguousAtSmallGGroup(default, default);
     }
 
+    /// <summary>
+    /// The batch read the row with the frequency set it chose when it started, and a new set was activated before the
+    /// donor ran.
+    /// </summary>
     [Test]
     public async Task CalculateMatchProbability_WithRowForAnotherFrequencySet_ComputesLiveAndReturnsSetToStore()
     {
         var context = EnabledContext(new Dictionary<int, PrecomputedDonorGenotypeSetRow>
         {
             // Unrepresented under the old set: that flag must not be trusted either.
-            { DonorId, new PrecomputedDonorGenotypeSetRow(OtherFrequencySetId, true, null, true) }
+            { DonorId, new PrecomputedDonorGenotypeSetRow(OtherFrequencySetId, true, null) }
         });
 
         var result = await matchProbabilityService.CalculateMatchProbability(Input(), patientGenotypeSet, context);
@@ -258,7 +262,7 @@ internal class MatchProbabilityServicePrecomputeTests
     {
         var context = EnabledContext(new Dictionary<int, PrecomputedDonorGenotypeSetRow>
         {
-            { DonorId, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, false, [1, 2, 3], true) }
+            { DonorId, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, false, [1, 2, 3]) }
         });
 
         var result = await matchProbabilityService.CalculateMatchProbability(Input(), patientGenotypeSet, context);
@@ -267,69 +271,6 @@ internal class MatchProbabilityServicePrecomputeTests
         // The bad row has the same key as the live set, so a store could not repair it; the next Data Refresh does.
         result.GenotypeSetToStore.Should().BeNull();
         await genotypeMatcher.Received(1).MatchPatientDonorGenotypes(Arg.Is<GenotypeMatcherInput>(x => x.DonorGenotypeSet == null));
-    }
-
-    /// <summary>
-    /// The donor was updated to a new typing after matching read it, and the import stored a set for the new typing. The
-    /// frequency set is the same, so only the typing check stops the new typing's set being used for the old typing.
-    /// </summary>
-    [Test]
-    public async Task CalculateMatchProbability_WithRowOnlyForAnotherTyping_ComputesLiveAndStoresNothing()
-    {
-        var context = EnabledContext(new Dictionary<int, PrecomputedDonorGenotypeSetRow>
-        {
-            { DonorId, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, false, SubjectGenotypeSetPayload.Encode(SetWithGenotypes(2, 1m)), false) }
-        });
-
-        var result = await matchProbabilityService.CalculateMatchProbability(Input(), patientGenotypeSet, context);
-
-        result.GenotypeSetSource.Should().Be(DonorGenotypeSetSource.TypingChanged);
-        result.GenotypeSetToStore.Should().BeNull();
-        await genotypeMatcher.Received(1).MatchPatientDonorGenotypes(Arg.Is<GenotypeMatcherInput>(x => x.DonorGenotypeSet == null));
-    }
-
-    /// <summary>
-    /// A grouped input: donor 1 changed typing after matching (its row is for the new typing), donor 2 did not and has
-    /// no row. Donor 1's row must not be used for the group, and the group is still stored, for donor 2's sake - the
-    /// writer's guard skips donor 1.
-    /// </summary>
-    [Test]
-    public async Task CalculateMatchProbability_ForGroupWithOneChangedDonorAndOneMissingRow_ComputesLiveAndReturnsSetToStore()
-    {
-        var input = Input();
-        input.Donor.DonorIds = [DonorId, 2];
-        var context = EnabledContext(new Dictionary<int, PrecomputedDonorGenotypeSetRow>
-        {
-            { DonorId, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, false, SubjectGenotypeSetPayload.Encode(SetWithGenotypes(2, 1m)), false) }
-        });
-
-        var result = await matchProbabilityService.CalculateMatchProbability(input, patientGenotypeSet, context);
-
-        result.GenotypeSetSource.Should().Be(DonorGenotypeSetSource.NoRow);
-        result.GenotypeSetToStore.DonorIds.Should().BeEquivalentTo([DonorId, 2]);
-        await genotypeMatcher.Received(1).MatchPatientDonorGenotypes(Arg.Is<GenotypeMatcherInput>(x => x.DonorGenotypeSet == null));
-    }
-
-    /// <summary>
-    /// A grouped input where the changed donor comes first: the unchanged donor's row, for the search's typing, is used,
-    /// and the changed donor's row is not.
-    /// </summary>
-    [Test]
-    public async Task CalculateMatchProbability_ForGroupWithOneChangedDonorFirst_UsesTheUnchangedDonorsRow()
-    {
-        var input = Input();
-        input.Donor.DonorIds = [DonorId, 2];
-        var context = EnabledContext(new Dictionary<int, PrecomputedDonorGenotypeSetRow>
-        {
-            { DonorId, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, false, SubjectGenotypeSetPayload.Encode(SetWithGenotypes(5, 1m)), false) },
-            { 2, new PrecomputedDonorGenotypeSetRow(DonorFrequencySetId, false, SubjectGenotypeSetPayload.Encode(SetWithGenotypes(2, 0.5m)), true) }
-        });
-
-        var result = await matchProbabilityService.CalculateMatchProbability(input, patientGenotypeSet, context);
-
-        result.GenotypeSetSource.Should().Be(DonorGenotypeSetSource.Precomputed);
-        await genotypeMatcher.Received(1).MatchPatientDonorGenotypes(Arg.Is<GenotypeMatcherInput>(x =>
-            x.DonorGenotypeSet != null && x.DonorGenotypeSet.Genotypes.Count == 2 && x.DonorGenotypeSet.SumOfLikelihoods == 0.5m));
     }
 
     [Test]

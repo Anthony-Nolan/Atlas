@@ -4,17 +4,20 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 
 namespace Atlas.MatchPrediction.Services.Precompute;
 
 public interface IDonorGenotypeSetSourceResolver
 {
     /// <summary>
-    /// Decides whether a donor batch uses precomputed genotype sets and, if it does, reads the stored rows of all its
-    /// donors at once, and the patient's row when the batch has a patient key.
+    /// Decides whether a donor batch uses precomputed genotype sets and, if it does, chooses the frequency set of each
+    /// donor input and reads the stored rows of all its donor inputs at once, and the patient's row when the batch has a
+    /// patient key.
     /// </summary>
     /// <remarks>
     /// Call once per batch, before its donors run, and pass the result down. Not once per donor: the parallel path
@@ -29,15 +32,18 @@ internal class DonorGenotypeSetSourceResolver : IDonorGenotypeSetSourceResolver
 
     private readonly PrecomputedGenotypeSetSettings settings;
     private readonly IPrecomputedDonorGenotypeSetReader reader;
+    private readonly IHaplotypeFrequencyLookupService frequencySetLookup;
     private readonly IAtlasLogger logger;
 
     public DonorGenotypeSetSourceResolver(
         PrecomputedGenotypeSetSettings settings,
         IPrecomputedDonorGenotypeSetReader reader,
+        IHaplotypeFrequencyLookupService frequencySetLookup,
         IAtlasLogger logger)
     {
         this.settings = settings;
         this.reader = reader;
+        this.frequencySetLookup = frequencySetLookup;
         this.logger = logger;
     }
 
@@ -58,8 +64,10 @@ internal class DonorGenotypeSetSourceResolver : IDonorGenotypeSetSourceResolver
         PrecomputedDonorGenotypeSetLookup lookup;
         try
         {
+            // A stored set's key holds its frequency set, so the set must be chosen before the read.
+            var donorsToRead = await WithFrequencySets(donors);
             lookup = await reader.GetDonorGenotypeSets(
-                donors, AllowedLoci(request), request.MatchingAlgorithmDataRefreshRecordId, request.PatientGenotypeSetKey);
+                donorsToRead, AllowedLoci(request), request.MatchingAlgorithmDataRefreshRecordId, request.PatientGenotypeSetKey);
         }
         catch (Exception exception)
         {
@@ -86,6 +94,32 @@ internal class DonorGenotypeSetSourceResolver : IDonorGenotypeSetSourceResolver
             PrecomputedGenotypeSetMode.DefaultPrecomputed => (true, UsePrecomputedGenotypeSetsSource.FeatureFlag),
             _ => (false, UsePrecomputedGenotypeSetsSource.FeatureFlag)
         };
+
+    /// <summary>
+    /// Each donor input with the frequency set that the live path chooses for it (<c>MatchProbabilityService</c>), with
+    /// the same lookup. One lookup for each registry and ethnicity: the batch's inputs are sorted by them (ATL-476), and
+    /// each lookup reads the cached list of active sets.
+    /// </summary>
+    private async Task<IReadOnlyCollection<DonorGenotypeSetToRead>> WithFrequencySets(IReadOnlyCollection<DonorInput> donors)
+    {
+        var setIdsByCodes = new Dictionary<(string RegistryCode, string EthnicityCode), int>();
+        var donorsToRead = new List<DonorGenotypeSetToRead>(donors.Count);
+        foreach (var donor in donors)
+        {
+            // As HaplotypeFrequencyLookupService.GetHaplotypeFrequencySets does for the live path.
+            var metadata = donor.DonorFrequencySetMetadata ?? new FrequencySetMetadata();
+            var codes = (metadata.RegistryCode, metadata.EthnicityCode);
+            if (!setIdsByCodes.TryGetValue(codes, out var setId))
+            {
+                setId = (await frequencySetLookup.GetSingleHaplotypeFrequencySet(metadata)).Id;
+                setIdsByCodes[codes] = setId;
+            }
+
+            donorsToRead.Add(new DonorGenotypeSetToRead(donor, setId));
+        }
+
+        return donorsToRead;
+    }
 
     private void LogReadFailure(IdentifiedMatchProbabilityRequest request, Exception exception)
     {

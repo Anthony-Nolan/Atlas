@@ -8,7 +8,6 @@ using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Models.Precompute;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
-using Atlas.MatchingAlgorithm.Data.Repositories.Precompute;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.Precompute;
@@ -21,6 +20,13 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Precompute;
 /// (ATL-433).
 /// </summary>
 /// <remarks>
+/// <para>
+/// <b>By key, not through the donors' link rows</b> (ATL-424). A value is fully defined by its key: the typing, the
+/// frequency set and the loci. Search has all three for each donor input, so it reads each distinct key of the batch
+/// once, and every id of the input uses that value. A link row follows the donor's current typing, which an import can
+/// change after matching; the key follows the typing that matching read.
+/// </para>
+///
 /// <para>
 /// <b>Pinned, not "the active database now".</b> A data refresh can swap the active database between matching and
 /// match prediction. The new database can be at a different HLA nomenclature version, so its stored P groups would not
@@ -53,7 +59,7 @@ public class PrecomputedDonorGenotypeSetReader : IPrecomputedDonorGenotypeSetRea
 
     /// <inheritdoc />
     public async Task<PrecomputedDonorGenotypeSetLookup> GetDonorGenotypeSets(
-        IReadOnlyCollection<DonorInput> donors,
+        IReadOnlyCollection<DonorGenotypeSetToRead> donors,
         IReadOnlySet<Locus> allowedLoci,
         int? matchingAlgorithmDataRefreshRecordId,
         PatientGenotypeSetKey patientGenotypeSetKey)
@@ -66,32 +72,46 @@ public class PrecomputedDonorGenotypeSetReader : IPrecomputedDonorGenotypeSetRea
                 unavailableReason == DonorGenotypeSetSource.UncoveredAllowedLoci ? null : allowedLociKey.ToString());
         }
 
-        var repository = repositoryFactory.GetForDatabase(activeRecord.Database);
+        // The key of each donor input, for every id in it. A donor id in two inputs keeps the key of the first.
+        var keyByDonorId = new Dictionary<int, SubjectGenotypeSetKey>();
+        foreach (var donor in donors)
+        {
+            var key = new SubjectGenotypeSetKey(
+                SubjectGenotypeSetKeyGenerator.GenerateHlaTypingKey(donor.Donor.DonorHla.ToPhenotypeInfo(), allowedLociKey),
+                donor.HaplotypeFrequencySetId,
+                allowedLociKey);
 
-        // The key of the typing the search has for each donor id: the typing matching read, shared by every id in its
-        // donor input. A stored row follows the donor's CURRENT typing, which an import can change after matching.
-        var searchTypingKeyByDonorId = donors
-            .SelectMany(donor =>
+            foreach (var donorId in donor.Donor.DonorIds)
             {
-                var typingKey = SubjectGenotypeSetKeyGenerator.GenerateHlaTypingKey(donor.DonorHla.ToPhenotypeInfo(), allowedLociKey);
-                return donor.DonorIds.Select(donorId => (DonorId: donorId, TypingKey: typingKey));
-            })
-            .GroupBy(x => x.DonorId)
-            .ToDictionary(g => g.Key, g => g.First().TypingKey);
+                keyByDonorId.TryAdd(donorId, key);
+            }
+        }
 
-        var stored = await repository.GetDonorSubjectGenotypeSets(searchTypingKeyByDonorId.Keys.ToList(), allowedLociKey);
+        // One read for the batch, of each distinct key once: inputs with the same key share it, and so does the patient
+        // when its key is a donor input's.
+        var patientKey = PatientKey(patientGenotypeSetKey, allowedLociKey);
+        var keys = keyByDonorId.Values.ToHashSet();
+        if (patientKey != null)
+        {
+            keys.Add(patientKey.Value);
+        }
+
+        var values = await repositoryFactory.GetForDatabase(activeRecord.Database).GetSubjectGenotypeSetValues(keys);
+
+        var rowByKey = values.ToDictionary(
+            value => value.Key,
+            value => new PrecomputedDonorGenotypeSetRow(
+                value.Key.HaplotypeFrequencySetId, value.Value.IsUnrepresented, value.Value.SubjectGenotypeSetData));
 
         return new PrecomputedDonorGenotypeSetLookup(
             allowedLociKey.ToString(),
             null,
-            stored.ToDictionary(
-                s => s.Key,
-                s => new PrecomputedDonorGenotypeSetRow(
-                    s.Value.HaplotypeFrequencySetId,
-                    s.Value.IsUnrepresented,
-                    s.Value.SubjectGenotypeSetData,
-                    ComputedFromSearchTyping: s.Value.HlaTypingKey == searchTypingKeyByDonorId[s.Key])),
-            await ReadPatientRow(repository, patientGenotypeSetKey, allowedLociKey));
+            keyByDonorId
+                .Where(donorKey => rowByKey.ContainsKey(donorKey.Value))
+                .ToDictionary(donorKey => donorKey.Key, donorKey => rowByKey[donorKey.Value]),
+            patientKey != null && values.TryGetValue(patientKey.Value, out var patientValue)
+                ? new PrecomputedPatientGenotypeSetRow(patientValue.IsUnrepresented, patientValue.SubjectGenotypeSetData)
+                : null);
     }
 
     /// <inheritdoc />
@@ -154,22 +174,11 @@ public class PrecomputedDonorGenotypeSetReader : IPrecomputedDonorGenotypeSetRea
     }
 
     /// <summary>
-    /// The patient's stored row, read under the same pinning as the donors' rows. A key for other loci (not possible
-    /// within one search) is not read, and the patient is then computed live.
+    /// The key of the patient's stored row, read with the donors' rows under the same pinning. Null when the batch has no
+    /// patient key, or a key for other loci (not possible within one search): the patient is then computed live.
     /// </summary>
-    private static async Task<PrecomputedPatientGenotypeSetRow> ReadPatientRow(
-        ISubjectGenotypeSetRepository repository,
-        PatientGenotypeSetKey patientGenotypeSetKey,
-        AllowedLociKey allowedLociKey)
-    {
-        if (patientGenotypeSetKey == null || patientGenotypeSetKey.AllowedLociKey != allowedLociKey.ToString())
-        {
-            return null;
-        }
-
-        var stored = await repository.GetSubjectGenotypeSetValue(
-            new SubjectGenotypeSetKey(patientGenotypeSetKey.HlaTypingKey, patientGenotypeSetKey.HaplotypeFrequencySetId, allowedLociKey));
-
-        return stored == null ? null : new PrecomputedPatientGenotypeSetRow(stored.IsUnrepresented, stored.SubjectGenotypeSetData);
-    }
+    private static SubjectGenotypeSetKey? PatientKey(PatientGenotypeSetKey patientGenotypeSetKey, AllowedLociKey allowedLociKey) =>
+        patientGenotypeSetKey == null || patientGenotypeSetKey.AllowedLociKey != allowedLociKey.ToString()
+            ? null
+            : new SubjectGenotypeSetKey(patientGenotypeSetKey.HlaTypingKey, patientGenotypeSetKey.HaplotypeFrequencySetId, allowedLociKey);
 }
