@@ -522,7 +522,7 @@ variable "MATCHING_DATA_REFRESH_PRECOMPUTE_GROUPS_PER_BATCH" {
 
 variable "MATCHING_DATA_REFRESH_PRECOMPUTE_JUST_PRECOMPUTE_DONOR_COUNT" {
   type        = number
-  default     = 2000000
+  default     = 44000000
   description = "ATL-491 experiment only: the donors that a JustPrecompute data refresh builds its donor genotype precomputation run from."
 }
 
