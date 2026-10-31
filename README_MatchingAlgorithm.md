@@ -402,6 +402,19 @@ reached about 600 to 630 batches per minute on a sample of about 2 M DEV donors,
 were both slower, because smaller batches make more inserts wait on the last page at the same time, and larger batches
 hold the page for longer.
 
+ATL-495 removed the last two waits on the writes (see `CHANGELOG_Data.md`):
+
+* Both `SubjectGenotypeSetValues` and `DonorSubjectGenotypeSets` are split into 16 hash partitions on
+  `Bucket = Id % 16`, so the inserts go to 16 ends of each table, not one. A read by value id gives the bucket too, so
+  it reads one partition.
+* The stage writes its donor rows with a plain insert of the missing rows, not the upsert with a table lock, so the
+  batches no longer write them one at a time. Every other writer of `DonorSubjectGenotypeSets` still uses the upsert.
+
+On the full DEV corpus (43.9 M donors, 139,570 batches, P6, 20 replicas with 4 batches each), the stage computed in
+about 3 hours at about 780 batches per minute, with no lock waits. The limit is now the log rate of the database: the
+log write was 90% to 98%, at about 3.2 MB of log per batch. A faster stage needs fewer log bytes per batch, or a
+refresh database with a higher log rate.
+
 The worker also reads the `HaplotypeFrequencySetCache:*` settings. Set `AwaitConsolidatedFrequencyWarm` to `true` (see
 [the Match Prediction README](README_MatchPredictionAlgorithm.md#haplotypefrequencysetcacheawaitconsolidatedfrequencywarm)),
 and set a long `SetCacheExpiryMinutes` (the worker `appsettings.json` uses 1440). The workers move through the

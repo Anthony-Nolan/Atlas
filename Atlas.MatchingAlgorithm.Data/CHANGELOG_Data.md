@@ -65,6 +65,22 @@ option back to `OFF` on `PK_SubjectGenotypeSetValues`. With it on, the value ins
 (`BTREE_INSERT_FLOW_CONTROL`), and that capped the speed of the precomputation stage. `PK_DonorSubjectGenotypeSets` keeps
 the option. Run the migration on both transient databases.
 
+### Hash partitions of SubjectGenotypeSetValues and DonorSubjectGenotypeSets
+
+Migration `20261101090000_Hash_Partition_Genotype_Set_Tables` (ATL-495) splits both tables into 16 hash partitions, so
+that the precomputation workers insert at 16 ends of each table, not one.
+
+* New persisted computed column `Bucket` = `Id % 16` (`tinyint`) on both tables.
+* The clustered primary keys `PK_SubjectGenotypeSetValues` and `PK_DonorSubjectGenotypeSets` become (`Id`, `Bucket`),
+  partitioned on `Bucket` by partition function `PF_GenotypeSetBucket` and scheme `PS_GenotypeSetBucket`.
+  `OPTIMIZE_FOR_SEQUENTIAL_KEY` is `OFF` on both.
+* The unique indexes are not partitioned, so each key stays unique over the whole table.
+* **The migration empties both tables first** (`TRUNCATE`), so it is quick on a full table. The rows are computed
+  results: each data refresh wipes and refills them, and search computes a donor with no row live. Before 4.1.0 nothing
+  writes to these tables.
+
+Run the migration on both transient databases.
+
 ### Donors that are unambiguous at small g group
 
 The precomputation stores no genotype set, and no `DonorSubjectGenotypeSets` row, for a donor and `AllowedLociKey` at
