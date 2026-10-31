@@ -231,6 +231,9 @@ public class DonorImportPrecomputeTests
         public Task UpsertDonorAssignments(IReadOnlyCollection<DonorSubjectGenotypeSetAssignment> assignments) =>
             shouldFail() ? Task.FromException(new Exception("assignment write failed")) : inner.UpsertDonorAssignments(assignments);
 
+        public Task InsertMissingDonorAssignments(IReadOnlyCollection<DonorSubjectGenotypeSetAssignment> assignments) =>
+            inner.InsertMissingDonorAssignments(assignments);
+
         public Task DeleteDonorAssignments(IReadOnlyCollection<int> donorIds) => inner.DeleteDonorAssignments(donorIds);
 
         public Task<IReadOnlyDictionary<int, StoredDonorSubjectGenotypeSet>> GetDonorSubjectGenotypeSets(

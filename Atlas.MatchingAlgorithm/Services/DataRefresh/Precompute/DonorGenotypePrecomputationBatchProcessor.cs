@@ -86,8 +86,8 @@ public class DonorGenotypePrecomputationBatchProcessor : IDonorGenotypePrecomput
     private const string LoggingPrefix = "DONOR GENOTYPE PRECOMPUTATION:";
 
     /// <summary>
-    /// Donor rows per upsert: 2,000 donors times the four locus combinations, the size of the upserts of the donor
-    /// import. The upsert takes an exclusive table lock, so a smaller one waits less.
+    /// Donor rows per write: 2,000 donors times the four locus combinations, the size of the upserts of the donor
+    /// import. (ATL-495 experiment: the insert splits it into statements that stay below lock escalation.)
     /// </summary>
     internal const int DonorAssignmentChunkSize = 8000;
 
@@ -278,9 +278,12 @@ public class DonorGenotypePrecomputationBatchProcessor : IDonorGenotypePrecomput
         var assignments = await repository.GetDonorAssignments(batch.RunId, batch.FirstGroupId, batch.LastGroupId);
 
         var subjectGenotypeSetRepository = repositoryFactory.GetSubjectGenotypeSetRepositoryForDatabase(database);
+        // ATL-495 experiment: an insert of the missing rows, not the upsert, which takes an exclusive table lock and so
+        // makes the batches write their donor rows one at a time. The table starts empty in this stage, and a batch
+        // that runs again writes the same rows.
         foreach (var chunk in assignments.Chunk(DonorAssignmentChunkSize))
         {
-            await subjectGenotypeSetRepository.UpsertDonorAssignments(chunk);
+            await subjectGenotypeSetRepository.InsertMissingDonorAssignments(chunk);
         }
     }
 

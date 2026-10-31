@@ -70,6 +70,26 @@ public interface ISubjectGenotypeSetRepository
     Task UpsertDonorAssignments(IReadOnlyCollection<DonorSubjectGenotypeSetAssignment> assignments);
 
     /// <summary>
+    /// ATL-495 experiment only. Inserts the assignments whose (donor, combination) has no row yet, without a table lock,
+    /// so that many writers insert at the same time. A row that is already there is left alone, also when it points at a
+    /// different value.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// For the donor genotype precomputation stage only: its table starts empty, each donor is in one batch, and a batch
+    /// that runs again stores the same value ids. So a row that is already there is the row this call would write.
+    /// </para>
+    ///
+    /// <para>
+    /// <b>Safe to repeat.</b> Two writers of the same row (a batch that runs twice at the same time) race: the second
+    /// fails the unique index, and its retry finds the row. Each statement is all or nothing, but a call is not: it
+    /// inserts <see cref="SubjectGenotypeSetRepository.DonorAssignmentInsertChunkSize"/> rows per statement, and a failed call can keep the rows of
+    /// its earlier statements. A repeated call inserts the rest.
+    /// </para>
+    /// </remarks>
+    Task InsertMissingDonorAssignments(IReadOnlyCollection<DonorSubjectGenotypeSetAssignment> assignments);
+
+    /// <summary>
     /// Deletes every <c>DonorSubjectGenotypeSets</c> row of the given donors, at all locus combinations.
     /// </summary>
     /// <remarks>
@@ -390,6 +410,37 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
         """;
 
     /// <summary>
+    /// ATL-495 experiment only. Rows per insert statement of
+    /// <see cref="ISubjectGenotypeSetRepository.InsertMissingDonorAssignments"/>. Below 5,000, the number of locks on one
+    /// index at which SQL Server escalates a statement's row locks to a table lock - which would make the writers wait
+    /// for each other again.
+    /// </summary>
+    internal const int DonorAssignmentInsertChunkSize = 4000;
+
+    /// <summary>
+    /// ATL-495 experiment only. Inserts the staged assignments that have no row, with no lock hint: row locks, and no
+    /// key-range locks, so that writers of different donors do not wait for each other. Two writers of the same row both
+    /// pass the check; the second fails the unique index (error 2601), and the retry finds the row.
+    /// </summary>
+    private const string InsertMissingStagedAssignmentsSql = $"""
+        INSERT INTO {AssignmentsTableName} (
+            {nameof(DonorSubjectGenotypeSet.DonorId)},
+            {nameof(DonorSubjectGenotypeSet.AllowedLociKey)},
+            {nameof(DonorSubjectGenotypeSet.SubjectGenotypeSetValueId)})
+        SELECT
+            s.{nameof(DonorSubjectGenotypeSet.DonorId)},
+            s.{nameof(DonorSubjectGenotypeSet.AllowedLociKey)},
+            s.{nameof(DonorSubjectGenotypeSet.SubjectGenotypeSetValueId)}
+        FROM {AssignmentStagingTableName} AS s
+        WHERE NOT EXISTS (
+            SELECT 1 FROM {AssignmentsTableName} AS t
+            WHERE t.{nameof(DonorSubjectGenotypeSet.DonorId)} = s.{nameof(DonorSubjectGenotypeSet.DonorId)}
+              AND t.{nameof(DonorSubjectGenotypeSet.AllowedLociKey)} = s.{nameof(DonorSubjectGenotypeSet.AllowedLociKey)})
+        """;
+
+    private const string TruncateAssignmentStagingTableSql = $"TRUNCATE TABLE {AssignmentStagingTableName}";
+
+    /// <summary>
     /// <c>COLLATE DATABASE_DEFAULT</c> is not optional: a temp table otherwise takes tempdb's collation, and joining
     /// an <c>nvarchar</c> column across two collations is an error rather than a slow query.
     /// </summary>
@@ -596,6 +647,38 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
         else
         {
             await connection.ExecuteAsync(UpsertStagedAssignmentsSql, commandTimeout: CommandTimeoutInSeconds);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task InsertMissingDonorAssignments(IReadOnlyCollection<DonorSubjectGenotypeSetAssignment> assignments)
+    {
+        if (assignments == null || assignments.Count == 0)
+        {
+            return;
+        }
+
+        var distinctAssignments = DistinctAssignments(assignments);
+
+        // Read committed, as in OverStagedChunks: under SERIALIZABLE left on a pooled connection, the NOT EXISTS check
+        // would take key-range locks without any hint, and the writers would wait for each other again.
+        await using var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString());
+        await connection.OpenAsync();
+        await connection.ExecuteAsync("SET TRANSACTION ISOLATION LEVEL READ COMMITTED", commandTimeout: CommandTimeoutInSeconds);
+        await connection.ExecuteAsync(CreateAssignmentStagingTableSql, commandTimeout: CommandTimeoutInSeconds);
+
+        var isFirstChunk = true;
+        foreach (var chunk in distinctAssignments.Chunk(DonorAssignmentInsertChunkSize))
+        {
+            if (!isFirstChunk)
+            {
+                await connection.ExecuteAsync(TruncateAssignmentStagingTableSql, commandTimeout: CommandTimeoutInSeconds);
+            }
+
+            isFirstChunk = false;
+
+            await StageAssignments(connection, chunk);
+            await WithRetries(() => connection.ExecuteAsync(InsertMissingStagedAssignmentsSql, commandTimeout: CommandTimeoutInSeconds));
         }
     }
 

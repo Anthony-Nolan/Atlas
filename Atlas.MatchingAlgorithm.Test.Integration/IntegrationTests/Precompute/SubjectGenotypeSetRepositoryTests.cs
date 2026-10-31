@@ -597,6 +597,79 @@ public class SubjectGenotypeSetRepositoryTests
         (await StoredAssignments()).Should().BeEquivalentTo(AsRows(assignments));
     }
 
+    // ATL-495 experiment only: the insert that the donor genotype precomputation stage uses instead of the upsert.
+
+    [Test]
+    public async Task InsertMissingDonorAssignments_ForNewAssignments_WritesOneRowPerDonorAndCombination()
+    {
+        var assignments = AssignmentsFor([1, 2], fixture.Create<int>());
+
+        await repository.InsertMissingDonorAssignments(assignments);
+
+        (await StoredAssignments()).Should().BeEquivalentTo(AsRows(assignments));
+    }
+
+    [Test]
+    public async Task InsertMissingDonorAssignments_WithTheSameAssignmentsTwice_DoesNotThrowAndKeepsOneRowEach()
+    {
+        var assignments = AssignmentsFor([1, 2], fixture.Create<int>());
+        await repository.InsertMissingDonorAssignments(assignments);
+
+        var act = () => NewRepository().InsertMissingDonorAssignments(assignments);
+
+        await act.Should().NotThrowAsync();
+        (await StoredAssignments()).Should().BeEquivalentTo(AsRows(assignments));
+    }
+
+    [Test]
+    public async Task InsertMissingDonorAssignments_ForAnExistingPairWithADifferentValue_KeepsTheExistingRow()
+    {
+        var valueId = fixture.Create<int>();
+        var existing = AssignmentsFor([1], valueId);
+        await repository.InsertMissingDonorAssignments(existing);
+
+        await repository.InsertMissingDonorAssignments([..AssignmentsFor([1], valueId + 1), ..AssignmentsFor([2], valueId)]);
+
+        (await StoredAssignments()).Should().BeEquivalentTo(AsRows([..existing, ..AssignmentsFor([2], valueId)]));
+    }
+
+    [Test]
+    public async Task InsertMissingDonorAssignments_ForMoreRowsThanOneStatement_WritesThemAll()
+    {
+        // A full chunk of the stage: 2,000 donors x 4 combinations, two insert statements.
+        var assignments = AssignmentsFor(Enumerable.Range(1, 2_000).ToArray(), fixture.Create<int>());
+
+        await repository.InsertMissingDonorAssignments(assignments);
+
+        (await StoredAssignmentCount()).Should().Be(assignments.Count);
+    }
+
+    [Test]
+    public async Task InsertMissingDonorAssignments_ConcurrentlyForDifferentDonors_WritesThemAll()
+    {
+        // The normal case of the stage: many batches, each with its own donors, at the same time.
+        var batches = Enumerable.Range(0, 8)
+            .Select(i => AssignmentsFor(Enumerable.Range(i * 1_000 + 1, 1_000).ToArray(), fixture.Create<int>()))
+            .ToList();
+
+        await Task.WhenAll(batches.Select(batch => NewRepository().InsertMissingDonorAssignments(batch)));
+
+        // Sorted and compared in order: BeEquivalentTo compares each row with every other, which takes hours for 32,000.
+        (await StoredAssignments()).Order().Should().Equal(AsRows(batches.SelectMany(batch => batch)).Order());
+    }
+
+    [Test]
+    public async Task InsertMissingDonorAssignments_ConcurrentlyForTheSameDonor_DoesNotThrowAndKeepsOneRowEach()
+    {
+        // A batch that runs twice at the same time, after a lost lease.
+        var assignments = AssignmentsFor([1], fixture.Create<int>());
+
+        var act = () => Task.WhenAll(Enumerable.Range(0, 2).Select(_ => NewRepository().InsertMissingDonorAssignments(assignments)));
+
+        await act.Should().NotThrowAsync();
+        (await StoredAssignments()).Should().BeEquivalentTo(AsRows(assignments));
+    }
+
     private static List<DonorSubjectGenotypeSetAssignment> AssignmentsFor(int[] donorIds, int valueId) =>
         donorIds
             .SelectMany(donorId => AllowedLociKeyExtensions.All

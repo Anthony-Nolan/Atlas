@@ -234,7 +234,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
         await processor.ProcessBatch(request, database, false);
 
         var upserts = subjectGenotypeSetRepository.ReceivedCalls()
-            .Where(call => call.GetMethodInfo().Name == nameof(ISubjectGenotypeSetRepository.UpsertDonorAssignments))
+            .Where(call => call.GetMethodInfo().Name == nameof(ISubjectGenotypeSetRepository.InsertMissingDonorAssignments))
             .Select(call => (IReadOnlyCollection<DonorSubjectGenotypeSetAssignment>)call.GetArguments()[0])
             .ToList();
         upserts.Select(chunk => chunk.Count).Should().Equal(DonorGenotypePrecomputationBatchProcessor.DonorAssignmentChunkSize, 1);
@@ -252,7 +252,7 @@ public class DonorGenotypePrecomputationBatchProcessorTests
         Received.InOrder(() =>
         {
             repository.RecordGroupOutcomes(claimedBatch.RunId, Arg.Any<IReadOnlyCollection<Outcome>>());
-            subjectGenotypeSetRepository.UpsertDonorAssignments(Arg.Any<IReadOnlyCollection<DonorSubjectGenotypeSetAssignment>>());
+            subjectGenotypeSetRepository.InsertMissingDonorAssignments(Arg.Any<IReadOnlyCollection<DonorSubjectGenotypeSetAssignment>>());
             repository.TryMarkBatchResultsReceived(claimedBatch.BatchId, Arg.Any<Guid>(), Arg.Any<int>());
         });
     }
