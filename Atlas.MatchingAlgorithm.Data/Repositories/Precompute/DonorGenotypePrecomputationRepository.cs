@@ -869,7 +869,13 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
                                            ) pairs
                                            """;
 
-    /// <summary>Each donor, with its pair and the hash of its typing at each key.</summary>
+    /// <summary>
+    /// Each donor, with its pair and the hash of its typing at each key.
+    /// <para>
+    /// ATL-495 experiment: the hint asks for a parallel plan. The optimizer gives <c>HASHBYTES</c> almost no cost, so without
+    /// the hint it picks a serial plan, and the six hashes of every donor run on one CPU (864-1,900 s on DEV).
+    /// </para>
+    /// </summary>
     private static readonly string InsertDonorTypingsSql = $"""
                                                            INSERT INTO {BuildDonorTypingsTableName} WITH (TABLOCK) (
                                                                DonorId,
@@ -882,6 +888,7 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
                                                            FROM {DonorsTableName} d
                                                            INNER JOIN {BuildPairsTableName} p ON p.PairKey = {DonorPairKeySql}
                                                            WHERE {DonorSampleConditionSql}
+                                                           OPTION (USE HINT('ENABLE_PARALLEL_PLAN_PREFERENCE'))
                                                            """;
 
     /// <summary>
@@ -1026,17 +1033,23 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
                                                                     """;
 
     /// <summary>
-    /// The donors of the groups of one key. Within a pair, the rank of a typing among the distinct typings of the pair is
-    /// the place of its group in the range of the pair and the key.
+    /// The donors of the groups of every key. Within a pair and a key, the rank of a typing among the distinct typings of the
+    /// pair is the place of its group in the range of the pair and the key.
+    /// <para>
+    /// ATL-495 experiment: one statement for all keys, so the insert loads an empty table. The group ids go pair by pair,
+    /// then key by key, so with one statement per key the second key onwards inserted into the middle of a full B-tree:
+    /// ~4 page reads a row and 3.4x the log of the first key.
+    /// </para>
     /// </summary>
-    private static string InsertGroupDonorsSql(int keyOrdinal) => $"""
-                                                                    INSERT INTO {GroupDonorsTableName} WITH (TABLOCK) ({nameof(GroupDonor.GroupId)}, {nameof(GroupDonor.DonorId)})
-                                                                    SELECT
-                                                                        r.FirstGroupId - 1 + DENSE_RANK() OVER (PARTITION BY t.PairId ORDER BY t.{TypingHashColumn(keyOrdinal)}),
-                                                                        t.DonorId
-                                                                    FROM {BuildDonorTypingsTableName} t
-                                                                    INNER JOIN {BuildGroupRangesTableName} r ON r.PairId = t.PairId AND r.KeyOrdinal = {keyOrdinal}
-                                                                    """;
+    private static readonly string InsertGroupDonorsSql = $"""
+                                                           INSERT INTO {GroupDonorsTableName} WITH (TABLOCK) ({nameof(GroupDonor.GroupId)}, {nameof(GroupDonor.DonorId)})
+                                                           SELECT
+                                                               r.FirstGroupId - 1 + DENSE_RANK() OVER (PARTITION BY t.PairId, k.KeyOrdinal ORDER BY k.TypingHash),
+                                                               t.DonorId
+                                                           FROM {BuildDonorTypingsTableName} t
+                                                           CROSS APPLY (VALUES {string.Join(", ", BuildKeyOrdinals.Select(ordinal => $"(CAST({ordinal} AS tinyint), t.{TypingHashColumn(ordinal)})"))}) k (KeyOrdinal, TypingHash)
+                                                           INNER JOIN {BuildGroupRangesTableName} r ON r.PairId = t.PairId AND r.KeyOrdinal = k.KeyOrdinal
+                                                           """;
 
     public DonorGenotypePrecomputationRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
     {
@@ -1142,17 +1155,12 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
 
             await build.Step("Group ids", SetFirstGroupIdsSql);
 
-            var donorAssignmentCount = 0;
-            foreach (var keyOrdinal in BuildKeyOrdinals)
+            // Each donor has one row at each key: the ranges have one row for each pair and key, and every pair of the donors.
+            var donorAssignmentCount = await build.Step("Group donors", InsertGroupDonorsSql);
+            if (donorAssignmentCount != donorCount * BuildKeys.Count)
             {
-                var key = BuildKeys[keyOrdinal - 1];
-                var rowCount = await build.Step($"Group donors {key}", InsertGroupDonorsSql(keyOrdinal));
-                if (rowCount != donorCount)
-                {
-                    throw new InvalidOperationException($"The build of run {runId} put {rowCount} of the {donorCount} donors in a group of {key}.");
-                }
-
-                donorAssignmentCount += rowCount;
+                throw new InvalidOperationException(
+                    $"The build of run {runId} put {donorAssignmentCount} group-donor rows, not {BuildKeys.Count} for each of the {donorCount} donors.");
             }
 
             var groupCount = await build.Step("Groups", InsertGroupsSql, new { RunId = runId });
