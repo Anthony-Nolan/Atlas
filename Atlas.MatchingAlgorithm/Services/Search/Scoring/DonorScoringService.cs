@@ -22,6 +22,7 @@ using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Ranking;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -85,7 +86,12 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             PhenotypeInfo<string> patientHla,
             ScoringCriteria scoringCriteria)
         {
-            var patientMetadata = await GetHlaScoringMetadata(patientHla, scoringCriteria.LociToScore);
+            PhenotypeInfo<IHlaScoringMetadata> patientMetadata;
+            using (ScoringStageTimings.Time(ScoringStage.PatientMetadataLookup))
+            {
+                patientMetadata = await GetHlaScoringMetadata(patientHla, scoringCriteria.LociToScore);
+            }
+
             logger.SendTrace($"Received patient scoring HLA result", LogLevel.Info);
 
             var scoringResultsPerDonorsHla = new Dictionary<PhenotypeInfo<string>, ScoreResult>();
@@ -119,35 +125,65 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             ScoringCriteria scoringCriteria,
             PhenotypeInfo<IHlaScoringMetadata> patientScoringMetadata)
         {
-            var donorScoringInfo = await CalculateDonorScoringInfo(donorHla, scoringCriteria, patientScoringMetadata);
+            var donorStart = Stopwatch.GetTimestamp();
 
-            var dpb1TceGroupMatchType = await dpb1TceGroupMatchCalculator.CalculateDpb1TceGroupMatchType(
-                patientScoringMetadata.Dpb1.Map(x => x?.LookupName),
-                donorHla.Dpb1);
+            PhenotypeInfo<IHlaScoringMetadata> donorScoringMetadata;
+            using (ScoringStageTimings.Time(ScoringStage.DonorMetadataLookup))
+            {
+                donorScoringMetadata = await GetHlaScoringMetadata(donorHla, scoringCriteria.LociToScore);
+            }
 
-            return BuildScoreResult(scoringCriteria, donorScoringInfo, dpb1TceGroupMatchType);
+            var donorScoringInfo = CalculateDonorScoringInfo(donorHla, scoringCriteria, patientScoringMetadata, donorScoringMetadata);
+
+            Dpb1TceGroupMatchType dpb1TceGroupMatchType;
+            using (ScoringStageTimings.Time(ScoringStage.Dpb1TceGroup))
+            {
+                dpb1TceGroupMatchType = await dpb1TceGroupMatchCalculator.CalculateDpb1TceGroupMatchType(
+                    patientScoringMetadata.Dpb1.Map(x => x?.LookupName),
+                    donorHla.Dpb1);
+            }
+
+            ScoreResult scoreResult;
+            using (ScoringStageTimings.Time(ScoringStage.BuildResult))
+            {
+                scoreResult = BuildScoreResult(scoringCriteria, donorScoringInfo, dpb1TceGroupMatchType);
+            }
+
+            ScoringStageTimings.RecordDonor(donorScoringMetadata, Stopwatch.GetElapsedTime(donorStart));
+            return scoreResult;
         }
 
-        private async Task<PhenotypeInfo<DonorScoringInfo>> CalculateDonorScoringInfo(
+        private PhenotypeInfo<DonorScoringInfo> CalculateDonorScoringInfo(
             PhenotypeInfo<string> donorHla,
             ScoringCriteria scoringCriteria,
-            PhenotypeInfo<IHlaScoringMetadata> patientScoringMetadata)
+            PhenotypeInfo<IHlaScoringMetadata> patientScoringMetadata,
+            PhenotypeInfo<IHlaScoringMetadata> donorScoringMetadata)
         {
-            var donorScoringMetadata = await GetHlaScoringMetadata(donorHla, scoringCriteria.LociToScore);
-
             // Grading should be called first and calculated for both orientations,
             // as all remaining score types should be calculated in the orientations that lead to the best possible match grades.
-            var grades = gradingService.Score(
-                new LociInfo<IEnumerable<MatchOrientation>>(new[] { MatchOrientation.Direct, MatchOrientation.Cross }),
-                patientScoringMetadata,
-                donorScoringMetadata);
+            LociInfo<LocusScoreResult<MatchGrade>> grades;
+            using (ScoringStageTimings.Time(ScoringStage.Grading))
+            {
+                grades = gradingService.Score(
+                    new LociInfo<IEnumerable<MatchOrientation>>(new[] { MatchOrientation.Direct, MatchOrientation.Cross }),
+                    patientScoringMetadata,
+                    donorScoringMetadata);
+            }
 
-            var confidences = confidenceService.Score(
-                grades.GetMatchOrientations(), patientScoringMetadata, donorScoringMetadata);
+            LociInfo<LocusScoreResult<MatchConfidence>> confidences;
+            using (ScoringStageTimings.Time(ScoringStage.Confidence))
+            {
+                confidences = confidenceService.Score(
+                    grades.GetMatchOrientations(), patientScoringMetadata, donorScoringMetadata);
+            }
 
             // Confidence service may have further refined the best orientations, so its output is passed in here.
-            var antigenMatches = antigenMatchingService.Score(
-                confidences.GetMatchOrientations(), patientScoringMetadata, donorScoringMetadata);
+            LociInfo<LocusScoreResult<bool?>> antigenMatches;
+            using (ScoringStageTimings.Time(ScoringStage.AntigenMatching))
+            {
+                antigenMatches = antigenMatchingService.Score(
+                    confidences.GetMatchOrientations(), patientScoringMetadata, donorScoringMetadata);
+            }
 
             return donorHla.Map((locus, position, hlaName) => scoringCriteria.LociToScore.Contains(locus) ?
                 new DonorScoringInfo
@@ -170,7 +206,10 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
                         return default;
                     }
                    
-                    return await hlaMetadataDictionary.GetHlaScoringMetadata(locus, hla);
+                    var lookupStart = Stopwatch.GetTimestamp();
+                    var metadata = await hlaMetadataDictionary.GetHlaScoringMetadata(locus, hla);
+                    ScoringStageTimings.RecordLookup(locus, Stopwatch.GetElapsedTime(lookupStart));
+                    return metadata;
                 });
         }
 

@@ -37,6 +37,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
         public async Task<List<DonorScoringResult>> ScoreBatch(BatchScoringRequest batchScoringRequest)
         {
             logger.SendTrace("Received ScoreBatch request");
+            using var collection = ScoringStageTimings.Begin();
             var patientPhenotypeInfo = batchScoringRequest.PatientHla.ToPhenotypeInfo();
             var donorPhenotypeMapping = batchScoringRequest.DonorsHla
                 .Select(d => (DonorId: d.DonorId, DonorPhenotype: d.ToPhenotypeInfo()))
@@ -49,18 +50,22 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
                 distinctDonorPhenotypes,
                 patientPhenotypeInfo,
                 batchScoringRequest.ScoringCriteria);
-            var donorScoringResults = donorPhenotypeMapping
-                .Select(
-                    donor =>
-                    {
-                        var scoringResult = scoringResults.Single(s => s.Key == donor.DonorPhenotype).Value;
-                        return new DonorScoringResult()
+            List<DonorScoringResult> donorScoringResults;
+            using (ScoringStageTimings.Time(ScoringStage.ResultMapping))
+            {
+                donorScoringResults = donorPhenotypeMapping
+                    .Select(
+                        donor =>
                         {
-                            DonorId = donor.DonorId,
-                            ScoringResult = mapper.Map<ScoringResult>(scoringResult)
-                        };
-                    })
-                .ToList();
+                            var scoringResult = scoringResults.Single(s => s.Key == donor.DonorPhenotype).Value;
+                            return new DonorScoringResult()
+                            {
+                                DonorId = donor.DonorId,
+                                ScoringResult = mapper.Map<ScoringResult>(scoringResult)
+                            };
+                        })
+                    .ToList();
+            }
 
             var donorIdsWithNullScoringResults = donorScoringResults.Where(s => s.ScoringResult == null).Select(s => s.DonorId).ToList();
             if (donorIdsWithNullScoringResults.Any())
@@ -69,6 +74,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             }
 
             logger.SendTrace($"Scoring a batch of {donorPhenotypeMapping.Count} donors has finished", LogLevel.Info);
+            collection.Timings.Send(logger, "Batch", distinctDonorPhenotypes.Count, batchScoringRequest.ScoringCriteria.LociToScore);
 
             return donorScoringResults;
         }

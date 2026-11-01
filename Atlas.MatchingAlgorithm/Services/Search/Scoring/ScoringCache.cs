@@ -36,7 +36,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
         public MatchGrade GetOrAddMatchGrade(Locus locus, string patientHlaName, string donorHlaName, Func<ICacheEntry, MatchGrade> func)
         {
             var cacheKey = $"MatchGrade:v{hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion()};l{locus};d{donorHlaName};p{patientHlaName}";
-            return cache.GetOrAdd(cacheKey, func);
+            return cache.GetOrAdd(cacheKey, e => Calculate(ScoringStage.GradeCalculation, ScoringStageTimings.CountGradeCalculation, func, e));
         }
 
         public MatchConfidence GetOrAddMatchConfidence(
@@ -46,7 +46,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             Func<ICacheEntry, MatchConfidence> func)
         {
             var cacheKey = $"MatchConfidence:v{hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion()};l{locus};d{donorHlaName};p{patientHlaName}";
-            return cache.GetOrAdd(cacheKey, func);
+            return cache.GetOrAdd(cacheKey, e => Calculate(ScoringStage.ConfidenceCalculation, ScoringStageTimings.CountConfidenceCalculation, func, e));
         }
 
         /// <inheritdoc />
@@ -57,7 +57,17 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             Func<ICacheEntry, bool?> func)
         {
             var cacheKey = $"IsAntigenMatch:v{hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion()};l{locus};d{donorHlaName};p{patientHlaName}";
-            return cache.GetOrAdd(cacheKey, func);
+            return cache.GetOrAdd(cacheKey, e => Calculate(ScoringStage.AntigenMatchCalculation, ScoringStageTimings.CountAntigenMatchCalculation, func, e));
+        }
+
+        /// <summary>Runs a cache miss's calculation, counted and timed for the ATL-446 scoring telemetry.</summary>
+        private static T Calculate<T>(ScoringStage stage, Action count, Func<ICacheEntry, T> func, ICacheEntry entry)
+        {
+            count();
+            using (ScoringStageTimings.Time(stage))
+            {
+                return func(entry);
+            }
         }
     }
 }

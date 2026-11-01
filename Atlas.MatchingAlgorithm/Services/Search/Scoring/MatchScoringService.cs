@@ -3,9 +3,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
+using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
@@ -65,9 +67,20 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
         {
             using (searchLogger.RunTimed("Scoring"))
             {
-                var scoredResults = StreamScoringUnranked(request);
+                using var collection = ScoringStageTimings.Begin();
+                var distinctDonorPhenotypes = new HashSet<PhenotypeInfo<string>>();
+
+                var scoredResults = StreamScoringUnranked(request, distinctDonorPhenotypes);
                 var reifiedScoredResults = await scoredResults.ToListAsync();
-                return rankingService.RankSearchResults(reifiedScoredResults);
+
+                IEnumerable<MatchAndScoreResult> ranked;
+                using (ScoringStageTimings.Time(ScoringStage.Ranking))
+                {
+                    ranked = rankingService.RankSearchResults(reifiedScoredResults).ToList();
+                }
+
+                collection.Timings.Send(searchLogger, "Search", distinctDonorPhenotypes.Count, request.ScoringCriteria.LociToScore);
+                return ranked;
             }
         }
 
@@ -93,7 +106,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             return rankingService.RankSearchResults(matchAndScoreResults);
         }
 
-        private async IAsyncEnumerable<MatchAndScoreResult> StreamScoringUnranked(StreamingMatchResultsScoringRequest request)
+        private async IAsyncEnumerable<MatchAndScoreResult> StreamScoringUnranked(
+            StreamingMatchResultsScoringRequest request,
+            HashSet<PhenotypeInfo<string>> distinctDonorPhenotypes)
         {
             if (request.ScoringCriteria.LociToScore.IsNullOrEmpty())
             {
@@ -104,11 +119,40 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             }
             else
             {
-                var patientScoringMetadata = await GetHlaScoringMetadata(request.PatientHla.ToPhenotypeInfo(), request.ScoringCriteria.LociToScore);
-                var matchResultsCount = await request.MatchResults.CountAsync();
-                await foreach (var matchResult in request.MatchResults)
+                PhenotypeInfo<IHlaScoringMetadata> patientScoringMetadata;
+                using (ScoringStageTimings.Time(ScoringStage.PatientMetadataLookup))
                 {
-                    await searchTrackingEventPublisher.ProcessCoreScoringOneDonorStarted();
+                    patientScoringMetadata = await GetHlaScoringMetadata(request.PatientHla.ToPhenotypeInfo(), request.ScoringCriteria.LociToScore);
+                }
+
+                int matchResultsCount;
+                using (ScoringStageTimings.Time(ScoringStage.DuplicateMatchCount))
+                {
+                    matchResultsCount = await request.MatchResults.CountAsync();
+                }
+
+                // A hand-written loop instead of await foreach, so the wait for the next match (matching time) is timed apart from scoring.
+                await using var matches = request.MatchResults.GetAsyncEnumerator();
+                while (true)
+                {
+                    bool hasNext;
+                    using (ScoringStageTimings.Time(ScoringStage.MatchStreamWait))
+                    {
+                        hasNext = await matches.MoveNextAsync();
+                    }
+
+                    if (!hasNext)
+                    {
+                        break;
+                    }
+
+                    var matchResult = matches.Current;
+                    using (ScoringStageTimings.Time(ScoringStage.SearchTrackingPublish))
+                    {
+                        await searchTrackingEventPublisher.ProcessCoreScoringOneDonorStarted();
+                    }
+
+                    distinctDonorPhenotypes.Add(matchResult.DonorInfo.HlaNames);
 
                     yield return new MatchAndScoreResult
                     {
