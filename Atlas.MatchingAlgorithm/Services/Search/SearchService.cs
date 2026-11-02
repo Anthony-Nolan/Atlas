@@ -8,6 +8,7 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
@@ -58,6 +59,10 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var splitSearch = MatchCriteriaSimplifier.SplitSearch(criteria);
             searchLogger.SendTrace(
                 $"Split into {splitSearch.Count} sub-searches: {splitSearch.Select(s => $"{s.LocusCriteria.A?.MismatchCount}{s.LocusCriteria.B?.MismatchCount}{s.LocusCriteria.Drb1?.MismatchCount}{s.LocusCriteria.C?.MismatchCount}{s.LocusCriteria.Dqb1?.MismatchCount}").StringJoin("|")}");
+
+            // ATL-510 experiment: collects a "Matching timings" event per sub-search run. Set here, in the method that awaits
+            // the whole search, so it flows into the matching iterators that scoring pulls.
+            using var matchingTimings = MatchingStageTimings.Begin(splitSearch.Count);
 
             var matches = RunSubSearches(splitSearch, cutOffDate, new NonHlaFilteringCriteria { RegistryCodes = matchingRequest.DonorRegistryCodes});
 

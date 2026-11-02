@@ -45,6 +45,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         {
             using (searchLogger.RunTimed("Matching"))
             {
+                var run = MatchingStageTimings.StartRun();
                 foreach (var (locus, c) in criteria.AlleleLevelMatchCriteria.LocusCriteria.Map((l, c) => (l, c)).ToEnumerable().Where(x => x.Item2 != null))
                 {
                     searchLogger.SendTrace(
@@ -58,10 +59,13 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                 await foreach (var match in matches)
                 {
                     matchCount++;
+                    var consumerStart = MatchingRunTimings.Now();
                     yield return match;
+                    run?.AddConsumer(consumerStart);
                 }
 
                 searchLogger.SendTrace($"Matched {matchCount} donors");
+                run?.Send(searchLogger, DescribeCriteria(criteria, cutOffDate));
             }
         }
 
@@ -82,6 +86,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                 }
 
                 searchLogger.SendTrace($"Matching Phase 1: Found {count} donors.");
+                MatchingStageTimings.Run?.SetPhase1Donors(count);
             }
         }
 
@@ -96,9 +101,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             using (searchLogger.RunTimed("Matching timing: Phase 2 complete"))
             {
                 var count = 0;
+                var run = MatchingStageTimings.Run;
                 await foreach (var resultBatch in matches.Chunk(matchingConfigurationSettings.MatchingBatchSize))
                 {
+                    var donorLoadStart = MatchingRunTimings.Now();
                     var matchesWithDonorInfoPopulated = await PopulateDonorData(resultBatch.ToDictionary(x => x.DonorId, x => x));
+                    run?.AddDonorLoad(donorLoadStart, matchesWithDonorInfoPopulated.Count);
+
+                    var filterStart = MatchingRunTimings.Now();
                     var filteredMatchesByDonorInformation = matchesWithDonorInfoPopulated
                         .Where(m => matchFilteringService.IsAvailableForSearch(m.Value))
                         .Where(m => matchFilteringService.FulfilsSearchTypeCriteria(m.Value, criteria))
@@ -106,6 +116,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                         .ToList();
                     // Once finished populating match data, mark data as populated (so that null locus match data can be accessed for mapping to the api model)
                     filteredMatchesByDonorInformation.ForEach(m => m.Value.MarkMatchingDataFullyPopulated());
+                    run?.AddPhase2Filter(filterStart);
                     foreach (var result in filteredMatchesByDonorInformation)
                     {
                         count++;
@@ -114,7 +125,27 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                 }
 
                 searchLogger.SendTrace($"Matching Phase 2: Found {count} donors.");
+                run?.SetPhase2Donors(count);
             }
+        }
+
+        /// <summary>ATL-510 experiment: the shape of one sub-search, as properties of the "Matching timings" event. No patient HLA.</summary>
+        private static Dictionary<string, string> DescribeCriteria(MatchCriteria criteria, DateTimeOffset? cutOffDate)
+        {
+            var alleleLevel = criteria.AlleleLevelMatchCriteria;
+            var mismatches = alleleLevel.LocusCriteria
+                .Map((locus, c) => c == null ? null : $"{locus}{c.MismatchCount}")
+                .ToEnumerable()
+                .Where(x => x != null);
+
+            return new Dictionary<string, string>
+            {
+                ["Mismatches"] = string.Join(",", mismatches),
+                ["DonorMismatchCount"] = alleleLevel.DonorMismatchCount.ToString(),
+                ["SearchType"] = alleleLevel.SearchType.ToString(),
+                ["HasCutOffDate"] = (cutOffDate != null).ToString(),
+                ["RegistryCodeCount"] = (criteria.NonHlaFilteringCriteria?.RegistryCodes?.Count() ?? 0).ToString(),
+            };
         }
 
         private async Task<IDictionary<int, MatchResult>> PopulateDonorData(Dictionary<int, MatchResult> filteredMatchesByMatchCriteria)
