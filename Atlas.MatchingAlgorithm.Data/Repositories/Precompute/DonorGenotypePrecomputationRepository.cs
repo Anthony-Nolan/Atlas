@@ -909,20 +909,8 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
                                                 """;
 
     /// <summary>
-    /// The four typing hashes of the donor <c>t</c> as rows: one for each key, with its ordinal.
-    /// </summary>
-    private static readonly string KeyTypingHashesApplySql =
-        $"CROSS APPLY (VALUES {string.Join(", ", BuildKeyOrdinals.Select(ordinal => $"(CAST({ordinal} AS tinyint), t.{TypingHashColumn(ordinal)})"))}) k (KeyOrdinal, TypingHash)";
-
-    /// <summary>
-    /// The groups: one for each distinct typing of a pair at a key. The lowest donor id of a group is its representative:
-    /// the worker reads the typing and the codes of that donor. The id is the rank of the typing in the pair and the key,
-    /// as in <see cref="InsertGroupDonorsSql"/>, so the two agree.
-    /// <para>
-    /// ATL-495 experiment: read from <c>#BuildDonorTypings</c>, not from the 175 M group-donor rows. The old statement joined
-    /// each group range to those rows, so the optimizer guessed about 326 thousand groups (there are 139.6 M), and its sort
-    /// ran with too little memory.
-    /// </para>
+    /// The groups, from their donors. The lowest donor id of a group is its representative: the worker reads the typing and
+    /// the codes of that donor.
     /// </summary>
     private static readonly string InsertGroupsSql = $"""
                                                      INSERT INTO {GroupsTableName} WITH (TABLOCK) (
@@ -932,20 +920,17 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
                                                          {nameof(Group.RepresentativeDonorId)},
                                                          {nameof(Group.DonorCount)})
                                                      SELECT
-                                                         r.FirstGroupId - 1 + ROW_NUMBER() OVER (PARTITION BY g.PairId, g.KeyOrdinal ORDER BY g.TypingHash),
+                                                         gd.{nameof(GroupDonor.GroupId)},
                                                          @RunId,
                                                          lociKeys.AllowedLociKey,
-                                                         g.RepresentativeDonorId,
-                                                         g.DonorCount
-                                                     FROM (
-                                                         SELECT t.PairId, k.KeyOrdinal, k.TypingHash, MIN(t.DonorId) AS RepresentativeDonorId, COUNT(*) AS DonorCount
-                                                         FROM {BuildDonorTypingsTableName} t
-                                                         {KeyTypingHashesApplySql}
-                                                         GROUP BY t.PairId, k.KeyOrdinal, k.TypingHash
-                                                     ) g
-                                                     INNER JOIN {BuildGroupRangesTableName} r ON r.PairId = g.PairId AND r.KeyOrdinal = g.KeyOrdinal
-                                                     INNER JOIN (VALUES {string.Join(", ", BuildKeyOrdinals.Select(ordinal => $"(CAST({ordinal} AS tinyint), N'{BuildKeys[ordinal - 1]}')"))}) lociKeys (KeyOrdinal, AllowedLociKey)
-                                                         ON lociKeys.KeyOrdinal = g.KeyOrdinal
+                                                         MIN(gd.{nameof(GroupDonor.DonorId)}),
+                                                         COUNT(*)
+                                                     FROM {BuildGroupRangesTableName} r
+                                                     INNER JOIN (VALUES {string.Join(", ", BuildKeyOrdinals.Select(ordinal => $"({ordinal}, N'{BuildKeys[ordinal - 1]}')"))}) lociKeys (KeyOrdinal, AllowedLociKey)
+                                                         ON lociKeys.KeyOrdinal = r.KeyOrdinal
+                                                     INNER JOIN {GroupDonorsTableName} gd
+                                                         ON gd.{nameof(GroupDonor.GroupId)} BETWEEN r.FirstGroupId AND r.FirstGroupId + r.GroupCount - 1
+                                                     GROUP BY gd.{nameof(GroupDonor.GroupId)}, lociKeys.AllowedLociKey
                                                      """;
 
     /// <summary>The batches: up to <c>GroupsPerBatch</c> groups each, in id order, so the groups of a batch are one range.</summary>
@@ -1062,7 +1047,7 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
                                                                r.FirstGroupId - 1 + DENSE_RANK() OVER (PARTITION BY t.PairId, k.KeyOrdinal ORDER BY k.TypingHash),
                                                                t.DonorId
                                                            FROM {BuildDonorTypingsTableName} t
-                                                           {KeyTypingHashesApplySql}
+                                                           CROSS APPLY (VALUES {string.Join(", ", BuildKeyOrdinals.Select(ordinal => $"(CAST({ordinal} AS tinyint), t.{TypingHashColumn(ordinal)})"))}) k (KeyOrdinal, TypingHash)
                                                            INNER JOIN {BuildGroupRangesTableName} r ON r.PairId = t.PairId AND r.KeyOrdinal = k.KeyOrdinal
                                                            """;
 
