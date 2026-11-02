@@ -87,6 +87,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
         private readonly List<Locus> lociOrder = new();
 
         private readonly long[] sqlCalls = new long[LocusCount];
+        private readonly long[] forcedOrderCalls = new long[LocusCount];
         private readonly long[] connectionOpenTicks = new long[LocusCount];
         private readonly long[] tempTableTicks = new long[LocusCount];
         private readonly long[] sqlExecTicks = new long[LocusCount];
@@ -123,9 +124,14 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
         public void AddConnectionOpen(Locus locus, long start) => connectionOpenTicks[(int)locus] += Since(start);
         public void AddTempTables(Locus locus, long start) => tempTableTicks[(int)locus] += Since(start);
 
-        public void AddSqlExec(Locus locus, long start, int donorIds)
+        public void AddSqlExec(Locus locus, long start, int donorIds, bool forcedOrder = false)
         {
             sqlCalls[(int)locus]++;
+            if (forcedOrder)
+            {
+                forcedOrderCalls[(int)locus]++;
+            }
+
             sqlExecTicks[(int)locus] += Since(start);
             donorIdsSent[(int)locus] += donorIds;
         }
@@ -192,6 +198,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                 ["PGroupIdMs"] = Ms(pGroupIdTicks.Sum()),
                 ["UntypedMs"] = Ms(untypedTicks.Sum()),
                 ["SqlCalls"] = sqlCalls.Sum(),
+                ["ForcedOrderCalls"] = forcedOrderCalls.Sum(),
+                ["ForcedOrderMinDonorIds"] = DonorSearchRepository.ForcedOrderMinDonorIds,
                 ["Rows"] = rows.Sum(),
                 ["AllocatedMb"] = (GC.GetTotalAllocatedBytes() - allocatedBytesAtStart) / 1024d / 1024d,
                 ["Gen2Collections"] = GC.CollectionCount(2) - gen2AtStart,
@@ -202,6 +210,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             {
                 var i = (int)locus;
                 metrics[$"{locus}SqlCalls"] = sqlCalls[i];
+                metrics[$"{locus}ForcedOrderCalls"] = forcedOrderCalls[i];
                 metrics[$"{locus}ConnectionOpenMs"] = Ms(connectionOpenTicks[i]);
                 metrics[$"{locus}TempTableMs"] = Ms(tempTableTicks[i]);
                 metrics[$"{locus}SqlExecMs"] = Ms(sqlExecTicks[i]);
