@@ -908,40 +908,6 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
                                                 ) numbered ON numbered.PairId = r.PairId AND numbered.KeyOrdinal = r.KeyOrdinal
                                                 """;
 
-    private const string GroupDonorsPrimaryKeyName = $"PK_{GroupDonorsTableName}";
-
-    private const string GroupDonorsPrimaryKeyExistsCondition =
-        $"EXISTS (SELECT 1 FROM sys.key_constraints WHERE name = '{GroupDonorsPrimaryKeyName}' AND parent_object_id = OBJECT_ID('{GroupDonorsTableName}'))";
-
-    /// <summary>
-    /// ATL-495 experiment: the group donors go into a heap, and the clustered key is added after. An insert into a
-    /// clustered index runs on one thread (about 500 thousand rows a second on DEV, 367 s for 175 M rows); an insert
-    /// into a heap with <c>TABLOCK</c> runs on all of them. The table is empty here: the start of the build truncates it.
-    /// </summary>
-    private const string DropGroupDonorsPrimaryKeySql = $"""
-                                                         IF {GroupDonorsPrimaryKeyExistsCondition}
-                                                             ALTER TABLE {GroupDonorsTableName} DROP CONSTRAINT {GroupDonorsPrimaryKeyName};
-                                                         """;
-
-    private const string AddGroupDonorsPrimaryKeySql = $"""
-                                                        ALTER TABLE {GroupDonorsTableName}
-                                                        ADD CONSTRAINT {GroupDonorsPrimaryKeyName}
-                                                        PRIMARY KEY CLUSTERED ({nameof(GroupDonor.GroupId)}, {nameof(GroupDonor.DonorId)})
-                                                        WITH (SORT_IN_TEMPDB = ON, MAXDOP = 8);
-                                                        """;
-
-    /// <summary>
-    /// For a build that stopped between the drop and the add of the key: its rows are no use (the next build truncates
-    /// them), so empty the table, which makes the add instant.
-    /// </summary>
-    private const string RestoreGroupDonorsPrimaryKeySql = $"""
-                                                            IF NOT {GroupDonorsPrimaryKeyExistsCondition}
-                                                            BEGIN
-                                                                TRUNCATE TABLE {GroupDonorsTableName};
-                                                                {AddGroupDonorsPrimaryKeySql}
-                                                            END
-                                                            """;
-
     /// <summary>
     /// The four typing hashes of the donor <c>t</c> as rows: one for each key, with its ordinal.
     /// </summary>
@@ -1205,9 +1171,7 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
             await build.Step("Group ids", SetFirstGroupIdsSql);
 
             // Each donor has one row at each key: the ranges have one row for each pair and key, and every pair of the donors.
-            await build.Execute(DropGroupDonorsPrimaryKeySql);
             var donorAssignmentCount = await build.Step("Group donors", InsertGroupDonorsSql);
-            await build.Step("Group donors key", AddGroupDonorsPrimaryKeySql);
             if (donorAssignmentCount != donorCount * BuildKeys.Count)
             {
                 throw new InvalidOperationException(
@@ -1242,7 +1206,6 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
         finally
         {
             await build.DropTables();
-            await build.RestoreGroupDonorsPrimaryKey(RestoreGroupDonorsPrimaryKeySql);
         }
     }
 
@@ -1840,27 +1803,6 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
             try
             {
                 await connection.ExecuteAsync(DropBuildTablesSql, commandTimeout: CommandTimeoutInSeconds);
-            }
-            catch (Exception exception) when (exception is SqlException or InvalidOperationException)
-            {
-                // The error that stopped the build, if there was one, is the error to report.
-            }
-        }
-
-        /// <summary>
-        /// ATL-495 experiment: puts the key of the group donors back if the build stopped without it. Like
-        /// <see cref="DropTables"/>, it does not throw; the next build drops and adds the key anyway.
-        /// </summary>
-        public async Task RestoreGroupDonorsPrimaryKey(string sql)
-        {
-            if (connection.State != ConnectionState.Open)
-            {
-                return;
-            }
-
-            try
-            {
-                await connection.ExecuteAsync(sql, commandTimeout: CommandTimeoutInSeconds);
             }
             catch (Exception exception) when (exception is SqlException or InvalidOperationException)
             {

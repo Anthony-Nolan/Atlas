@@ -593,62 +593,6 @@ public class DonorGenotypePrecomputationBuildTests
 
     #endregion
 
-    #region BuildRun: ATL-495 experiment heap insert of the group donors
-
-    [Test]
-    public async Task BuildRun_PutsTheClusteredKeyOfTheGroupDonorsBack()
-    {
-        await InsertDonors(DonorsOfSeveralPairsWithSharedTypings());
-
-        await Build();
-
-        (await GroupDonorsClusteredKeyColumns()).Should().Equal("GroupId", "DonorId");
-    }
-
-    [Test]
-    public async Task BuildRun_WhenTheBuildFailsAfterTheKeyIsDropped_PutsTheKeyBackOnAnEmptyTable()
-    {
-        await InsertDonors(DonorsOfSeveralPairsWithSharedTypings());
-        var run = await StartBuild();
-        // A group donor row that the insert of the build repeats: the key cannot be added, so the build fails after the drop.
-        await using (var context = NewContext())
-        {
-            await context.Database.ExecuteSqlRawAsync(
-                "CREATE TRIGGER DuplicateGroupDonors ON DonorGenotypePrecomputationGroupDonors AFTER INSERT AS " +
-                "INSERT INTO DonorGenotypePrecomputationGroupDonors (GroupId, DonorId) SELECT TOP 1 GroupId, DonorId FROM inserted");
-        }
-
-        try
-        {
-            var build = () => repository.BuildRun(run.Id, CancellationToken.None);
-            await build.Should().ThrowAsync<Exception>();
-        }
-        finally
-        {
-            await using var context = NewContext();
-            await context.Database.ExecuteSqlRawAsync("DROP TRIGGER IF EXISTS DuplicateGroupDonors");
-        }
-
-        (await GroupDonorsClusteredKeyColumns()).Should().Equal("GroupId", "DonorId");
-        (await repository.HasStagingData()).Should().BeFalse();
-    }
-
-    private async Task<List<string>> GroupDonorsClusteredKeyColumns()
-    {
-        await using var context = NewContext();
-        return await context.Database.SqlQueryRaw<string>("""
-                                                          SELECT c.name AS Value
-                                                          FROM sys.key_constraints k
-                                                          JOIN sys.index_columns ic ON ic.object_id = k.parent_object_id AND ic.index_id = k.unique_index_id
-                                                          JOIN sys.columns c ON c.object_id = ic.object_id AND c.column_id = ic.column_id
-                                                          JOIN sys.indexes i ON i.object_id = k.parent_object_id AND i.index_id = k.unique_index_id
-                                                          WHERE k.name = 'PK_DonorGenotypePrecomputationGroupDonors' AND i.type_desc = 'CLUSTERED'
-                                                          ORDER BY ic.key_ordinal
-                                                          """).ToListAsync();
-    }
-
-    #endregion
-
     private async Task<DonorGenotypePrecomputationBuildResult> Build()
     {
         var run = await StartBuild();
