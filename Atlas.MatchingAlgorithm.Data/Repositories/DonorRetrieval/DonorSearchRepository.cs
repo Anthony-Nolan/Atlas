@@ -42,6 +42,14 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
     {
         private readonly IAtlasLogger logger;
 
+        /// <summary>
+        /// ATL-510 experiment: the smallest donor id filter that uses the forced join order. Read from the environment
+        /// variable (app setting) <c>ATL510_FORCE_ORDER_MIN_DONOR_IDS</c>, so it can be changed on DEV without a deploy.
+        /// Default 10,000. A negative value turns the forced order off (the old SQL for every call).
+        /// </summary>
+        internal static int ForcedOrderMinDonorIds =>
+            int.TryParse(Environment.GetEnvironmentVariable("ATL510_FORCE_ORDER_MIN_DONOR_IDS"), out var value) ? value : 10_000;
+
         public DonorSearchRepository(IConnectionStringProvider connectionStringProvider, IAtlasLogger logger) : base(connectionStringProvider)
         {
             this.logger = logger;
@@ -180,30 +188,45 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 
                     var joinType = mustBeDoubleMatch ? "INNER" : "FULL OUTER";
 
-                    var sql = $@"
-SELECT * INTO #Pos1 FROM 
+                    // ATL-510 experiment: with a large donor id filter, SQL Server sometimes starts the plan from #Donors and
+                    // seeks every donor's HLA names and their P groups (43-121M logical reads). Writing the joins in the
+                    // order of the good plan (P groups -> HLA names -> matching HLA -> donor ids) and forcing that order
+                    // keeps the good plan. Small donor id lists keep the old SQL, as starting from the donors is best there.
+                    var useForcedOrder = filteringOptions.ShouldFilterOnDonorIds
+                                         && ForcedOrderMinDonorIds >= 0
+                                         && filteringOptions.DonorIds.Count >= ForcedOrderMinDonorIds;
+
+                    string PositionSelect(int position, TempTableFilterDetails pGroupsTempTable) => useForcedOrder
+                        ? $@"
+SELECT * INTO #Pos{position} FROM
 (
-SELECT DISTINCT m.DonorId as DonorId1, TypePosition as TypePosition1
-FROM {hlaPGroupRelationTableName} hlaPGroupRelations
-{pGroups1TempTableJoinConfig.FilteredJoinQueryString}
+SELECT DISTINCT m.DonorId as DonorId{position}, TypePosition as TypePosition{position}
+FROM {pGroupsTempTable.TempTableName} pGroups
+INNER JOIN {hlaPGroupRelationTableName} hlaPGroupRelations ON hlaPGroupRelations.PGroupId = pGroups.id
 JOIN {matchingHlaTableName} m ON m.HlaNameId = hlaPGroupRelations.HlaNameId
 {donorIdTempTableJoin}
 {donorUpdatedJoin}
 {donorTypeFilteredJoin}
-) as m_1; 
+) as m_{position}
+OPTION (FORCE ORDER);"
+                        : $@"
+SELECT * INTO #Pos{position} FROM
+(
+SELECT DISTINCT m.DonorId as DonorId{position}, TypePosition as TypePosition{position}
+FROM {hlaPGroupRelationTableName} hlaPGroupRelations
+{pGroupsTempTable.FilteredJoinQueryString}
+JOIN {matchingHlaTableName} m ON m.HlaNameId = hlaPGroupRelations.HlaNameId
+{donorIdTempTableJoin}
+{donorUpdatedJoin}
+{donorTypeFilteredJoin}
+) as m_{position};";
+
+                    var sql = $@"
+{PositionSelect(1, pGroups1TempTableJoinConfig)}
 
 CREATE INDEX IX_Temp_Position1 ON #Pos1(DonorId1);
 
-SELECT * INTO #Pos2 FROM 
-(
-SELECT DISTINCT m.DonorId as DonorId2, TypePosition as TypePosition2
-FROM {hlaPGroupRelationTableName} hlaPGroupRelations
-{pGroups2TempTableJoinConfig.FilteredJoinQueryString}
-JOIN {matchingHlaTableName} m ON m.HlaNameId = hlaPGroupRelations.HlaNameId
-{donorIdTempTableJoin}
-{donorUpdatedJoin}
-{donorTypeFilteredJoin}
-) as m_2;
+{PositionSelect(2, pGroups2TempTableJoinConfig)}
 
 CREATE INDEX IX_Temp_Position2 ON #Pos2(DonorId2);
 
@@ -246,7 +269,7 @@ ORDER BY DonorId
 
                         var execStart = MatchingRunTimings.Now();
                         var matches = await conn.QueryAsync<DonorLocusMatch>(commandDefinition);
-                        run?.AddSqlExec(locus, execStart, filteringOptions.DonorIds?.Count ?? 0);
+                        run?.AddSqlExec(locus, execStart, filteringOptions.DonorIds?.Count ?? 0, useForcedOrder);
 
                         // A hand-written loop, so the time reading rows is timed apart from the time the caller spends between rows.
                         long readTicks = 0;
