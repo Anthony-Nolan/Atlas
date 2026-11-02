@@ -11,6 +11,7 @@ using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Helpers;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Settings;
@@ -98,6 +99,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         {
             using (searchLogger.RunTimed($"Matching at Locus {locus}. (Timing cumulative across loci.)"))
             {
+                var run = MatchingStageTimings.Run;
+                run?.StartLocus(locus);
                 var alleleLevelCriteria = matchCriteria.AlleleLevelMatchCriteria;
                 var locusCriteria = alleleLevelCriteria.LocusCriteria.GetLocus(locus);
                 if (!CanFilterByDonorIds(alleleLevelCriteria, matchedLoci))
@@ -108,12 +111,17 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                         // Loads all results from previous loci into memory. This is expected to be very memory intensive, and is only necessary for searches that allow two mismatches at all required loci, e.g. 8/10, 4/8
                         // If this still causes OutOfMemory exceptions, we may need to look into Zipping multiple ordered streams from different loci.
                         : (await System.Linq.AsyncEnumerable.ToListAsync(previousLociResultStream)).ToDictionary(x => x.DonorId, x => x);
+                    if (results != null)
+                    {
+                        run?.AddMaterialised(locus, results.Count);
+                    }
 
                     var locusStream = perLocusDonorMatchingService.FindMatchesAtLocus(locus, locusCriteria, alleleLevelCriteria.SearchType, cutOffDate, donorRegistryCodes: matchCriteria.NonHlaFilteringCriteria.RegistryCodes);
 
                     var filteredResults = await ConsolidateAndFilterResults(alleleLevelCriteria, matchedLoci, locus, locusStream, results);
                     await foreach (var result in filteredResults)
                     {
+                        run?.CountDonorOut(locus);
                         yield return result;
                     }
                 }
@@ -132,6 +140,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                         var filteredResults = await ConsolidateAndFilterResults(alleleLevelCriteria, matchedLoci, locus, locusBatchStream, donorBatch);
                         await foreach (var result in filteredResults)
                         {
+                            run?.CountDonorOut(locus);
                             yield return result;
                         }
                     }

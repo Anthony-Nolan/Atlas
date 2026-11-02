@@ -74,7 +74,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 
             if (donorIds != null && !TypingIsRequiredAtLocus(locus))
             {
-                var untypedResults = await GetResultsForDonorsUntypedAtLocus(locus, donorIds);
+                var untypedStart = MatchingRunTimings.Now();
+                var untypedResults = (await GetResultsForDonorsUntypedAtLocus(locus, donorIds)).ToList();
+                MatchingStageTimings.Run?.AddUntyped(locus, untypedStart, untypedResults.Count / 2);
                 foreach (var untypedResult in untypedResults)
                 {
                     yield return untypedResult;
@@ -212,6 +214,13 @@ ORDER BY DonorId
 ";
                     await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
                     {
+                        // ATL-510 experiment: open explicitly so connection open time is timed apart from the temp tables.
+                        var run = MatchingStageTimings.Run;
+                        var openStart = MatchingRunTimings.Now();
+                        await conn.OpenAsync();
+                        run?.AddConnectionOpen(locus, openStart);
+
+                        var tempTableStart = MatchingRunTimings.Now();
                         if (filteringOptions.ShouldFilterOnDonorIds)
                         {
                             await donorIdTempTableJoinConfig.BuildTempTableFactory(conn);
@@ -219,6 +228,7 @@ ORDER BY DonorId
 
                         await pGroups1TempTableJoinConfig.BuildTempTableFactory(conn);
                         await pGroups2TempTableJoinConfig.BuildTempTableFactory(conn);
+                        run?.AddTempTables(locus, tempTableStart);
 
 
                         var parameters = filteringOptions.ShouldFilterOnRegistryCodes
@@ -234,10 +244,33 @@ ORDER BY DonorId
                             parameters: parameters
                         );
 
+                        var execStart = MatchingRunTimings.Now();
                         var matches = await conn.QueryAsync<DonorLocusMatch>(commandDefinition);
-                        foreach (var match in matches)
+                        run?.AddSqlExec(locus, execStart, filteringOptions.DonorIds?.Count ?? 0);
+
+                        // A hand-written loop, so the time reading rows is timed apart from the time the caller spends between rows.
+                        long readTicks = 0;
+                        long rowCount = 0;
+                        try
                         {
-                            yield return match;
+                            using var enumerator = matches.GetEnumerator();
+                            while (true)
+                            {
+                                var readStart = MatchingRunTimings.Now();
+                                var hasNext = enumerator.MoveNext();
+                                readTicks += System.Diagnostics.Stopwatch.GetElapsedTime(readStart).Ticks;
+                                if (!hasNext)
+                                {
+                                    break;
+                                }
+
+                                rowCount++;
+                                yield return enumerator.Current;
+                            }
+                        }
+                        finally
+                        {
+                            run?.AddSqlRead(locus, readTicks, rowCount);
                         }
                     }
                 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
@@ -56,13 +57,19 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             ICollection<int> donorIds = null,
             ICollection<string> donorRegistryCodes = null)
         {
+            var pGroupIdStart = MatchingRunTimings.Now();
             var repoCriteria = new LocusSearchCriteria
             {
                 SearchDonorType = searchType,
-                PGroupIdsToMatchInPositionOne = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionOne),
-                PGroupIdsToMatchInPositionTwo = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionTwo),
+                PGroupIdsToMatchInPositionOne = (await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionOne)).ToList(),
+                PGroupIdsToMatchInPositionTwo = (await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionTwo)).ToList(),
                 MismatchCount = criteria.MismatchCount,
             };
+            MatchingStageTimings.Run?.AddPGroupIds(
+                locus,
+                pGroupIdStart,
+                repoCriteria.PGroupIdsToMatchInPositionOne.Count(),
+                repoCriteria.PGroupIdsToMatchInPositionTwo.Count());
 
             var filteringOptions = new MatchingFilteringOptions
             {
