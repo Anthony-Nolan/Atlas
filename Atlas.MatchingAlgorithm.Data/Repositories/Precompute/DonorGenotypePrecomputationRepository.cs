@@ -867,9 +867,7 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
     /// <summary>
     /// Each donor, with its pair and the hash of its typing at each key.
     /// <para>
-    /// The hint asks for a parallel plan. The optimizer gives <c>HASHBYTES</c> almost no cost, so without the hint it picks a
-    /// serial plan, and the six hashes of every donor run on one CPU: 864-1,900 s for 44 M donors on DEV (P6), and 289-361 s
-    /// with the hint (ATL-495).
+    /// The hint asks for a parallel plan: the optimizer gives <c>HASHBYTES</c> almost no cost, so without it the plan is serial.
     /// </para>
     /// </summary>
     private static readonly string InsertDonorTypingsSql = $"""
@@ -1023,10 +1021,7 @@ public class DonorGenotypePrecomputationRepository : Repository, IDonorGenotypeP
     /// The donors of the groups of every key. Within a pair and a key, the rank of a typing among the distinct typings of the
     /// pair is the place of its group in the range of the pair and the key.
     /// <para>
-    /// One statement for all keys, so the insert loads an empty table. The group ids go pair by pair, then key by key, so with
-    /// one statement per key the second key onwards inserted into the middle of a full B-tree: ~4 page reads a row and 3.4x
-    /// the log of the first key. On DEV (44 M donors, P6) the four statements took ~460 s on the faster of the two
-    /// databases, and this one takes 367-407 s on the slower one (ATL-495).
+    /// One statement for all keys, so that no key inserts into the middle of the clustered index of the keys before it.
     /// </para>
     /// </summary>
     private static readonly string InsertGroupDonorsSql = $"""
