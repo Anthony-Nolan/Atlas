@@ -86,6 +86,34 @@ public class SubjectGenotypeSetSearchRepositoryTests
         stored.Should().HaveCount(donorIds.Count);
     }
 
+    /// <summary>
+    /// ATL-495: the read gives the bucket of each value id, so that the seek reads one partition. A wrong bucket would
+    /// find no row, so values in every bucket must come back.
+    /// </summary>
+    [Test]
+    public async Task GetDonorSubjectGenotypeSets_ForValuesInEveryBucket_ReturnsTheValueOfEachDonor()
+    {
+        var valueCount = SubjectGenotypeSetRepository.BucketCount * 3;
+        var valueIds = await repository.GetOrCreateValueIds(Enumerable.Range(1, valueCount)
+            .Select(i => new SubjectGenotypeSetValueToStore(NewKey(frequencySetId: i), false, [(byte) i]))
+            .ToList());
+        var valueIdByDonorId = valueIds.ToDictionary(kv => kv.Key.HaplotypeFrequencySetId, kv => kv.Value);
+        await repository.UpsertDonorAssignments(valueIdByDonorId
+            .Select(kv => new DonorSubjectGenotypeSetAssignment(kv.Key, Key, kv.Value))
+            .ToList());
+
+        var stored = await repository.GetDonorSubjectGenotypeSets(valueIdByDonorId.Keys.ToList(), Key);
+
+        valueIdByDonorId.Values.Select(id => id % SubjectGenotypeSetRepository.BucketCount).Distinct()
+            .Should().HaveCount(SubjectGenotypeSetRepository.BucketCount);
+        stored.Should().HaveCount(valueCount);
+        foreach (var donorId in valueIdByDonorId.Keys)
+        {
+            stored[donorId].HaplotypeFrequencySetId.Should().Be(donorId);
+            stored[donorId].SubjectGenotypeSetData.Should().Equal((byte) donorId);
+        }
+    }
+
     [Test]
     public async Task GetDonorSubjectGenotypeSets_ForNoDonors_ReturnsNothing()
     {
