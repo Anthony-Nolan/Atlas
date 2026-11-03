@@ -14,6 +14,17 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
     [TestFixture]
     public class MatchingStageTimingsTests
     {
+        // ATL-510 run 3 cases, with the default settings (10,000 ids, 1,000 ids per P group).
+        [TestCase(9_999, 1, false, TestName = "ShouldForceOrder_WhenFewerIdsThanMinimum_ReturnsFalse")]
+        [TestCase(268_291, 1, true, TestName = "ShouldForceOrder_WhenManyIdsAndOnePGroup_ReturnsTrue")]
+        [TestCase(1_376_765, 434, true, TestName = "ShouldForceOrder_WhenSerologyLocusHasEnoughIdsPerPGroup_ReturnsTrue")]
+        [TestCase(64_893, 957, false, TestName = "ShouldForceOrder_WhenSerologyLocusHasTooFewIdsPerPGroup_ReturnsFalse")]
+        [TestCase(12_295, 248, false, TestName = "ShouldForceOrder_WhenModerateIdsAndHundredsOfPGroups_ReturnsFalse")]
+        public void ShouldForceOrder_WithDefaultSettings(int donorIds, int pGroups, bool expected)
+        {
+            DonorSearchRepository.ShouldForceOrder(donorIds, pGroups).Should().Be(expected);
+        }
+
         [Test]
         public async Task Begin_WhenStreamIsCountedThenEnumerated_SendsOneEventPerSubSearchRunWithRunNumbers()
         {
