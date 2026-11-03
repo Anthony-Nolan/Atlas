@@ -50,6 +50,21 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
         internal static int ForcedOrderMinDonorIds =>
             int.TryParse(Environment.GetEnvironmentVariable("ATL510_FORCE_ORDER_MIN_DONOR_IDS"), out var value) ? value : 10_000;
 
+        /// <summary>
+        /// ATL-510 experiment: the forced order is used at a position only when the donor id filter has at least this many
+        /// ids per P group at that position. The forced plan reads every donor with one of the P groups' HLA names, so with
+        /// hundreds of P groups (serology) and a moderate donor list it reads millions of rows (run 3: one call 507 s,
+        /// 35 GB tempdb), and starting from the donors is better. Read from the environment variable (app setting)
+        /// <c>ATL510_FORCE_ORDER_MIN_IDS_PER_PGROUP</c>. Default 1,000. 0 = no P group limit.
+        /// </summary>
+        internal static int ForcedOrderMinIdsPerPGroup =>
+            int.TryParse(Environment.GetEnvironmentVariable("ATL510_FORCE_ORDER_MIN_IDS_PER_PGROUP"), out var value) ? value : 1_000;
+
+        internal static bool ShouldForceOrder(int donorIdCount, int pGroupCount) =>
+            ForcedOrderMinDonorIds >= 0
+            && donorIdCount >= ForcedOrderMinDonorIds
+            && (long)donorIdCount >= (long)ForcedOrderMinIdsPerPGroup * pGroupCount;
+
         public DonorSearchRepository(IConnectionStringProvider connectionStringProvider, IAtlasLogger logger) : base(connectionStringProvider)
         {
             this.logger = logger;
@@ -191,12 +206,13 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                     // ATL-510 experiment: with a large donor id filter, SQL Server sometimes starts the plan from #Donors and
                     // seeks every donor's HLA names and their P groups (43-121M logical reads). Writing the joins in the
                     // order of the good plan (P groups -> HLA names -> matching HLA -> donor ids) and forcing that order
-                    // keeps the good plan. Small donor id lists keep the old SQL, as starting from the donors is best there.
-                    var useForcedOrder = filteringOptions.ShouldFilterOnDonorIds
-                                         && ForcedOrderMinDonorIds >= 0
-                                         && filteringOptions.DonorIds.Count >= ForcedOrderMinDonorIds;
+                    // keeps the good plan. Small donor id lists, or many P groups for the size of the list, keep the old
+                    // SQL, as starting from the donors is best there. Decided per position (each has its own P groups).
+                    var donorIdCount = filteringOptions.ShouldFilterOnDonorIds ? filteringOptions.DonorIds.Count : 0;
+                    var forcePosition1 = filteringOptions.ShouldFilterOnDonorIds && ShouldForceOrder(donorIdCount, pGroups.Position1.Count());
+                    var forcePosition2 = filteringOptions.ShouldFilterOnDonorIds && ShouldForceOrder(donorIdCount, pGroups.Position2.Count());
 
-                    string PositionSelect(int position, TempTableFilterDetails pGroupsTempTable) => useForcedOrder
+                    string PositionSelect(int position, TempTableFilterDetails pGroupsTempTable, bool useForcedOrder) => useForcedOrder
                         ? $@"
 SELECT * INTO #Pos{position} FROM
 (
@@ -222,11 +238,11 @@ JOIN {matchingHlaTableName} m ON m.HlaNameId = hlaPGroupRelations.HlaNameId
 ) as m_{position};";
 
                     var sql = $@"
-{PositionSelect(1, pGroups1TempTableJoinConfig)}
+{PositionSelect(1, pGroups1TempTableJoinConfig, forcePosition1)}
 
 CREATE INDEX IX_Temp_Position1 ON #Pos1(DonorId1);
 
-{PositionSelect(2, pGroups2TempTableJoinConfig)}
+{PositionSelect(2, pGroups2TempTableJoinConfig, forcePosition2)}
 
 CREATE INDEX IX_Temp_Position2 ON #Pos2(DonorId2);
 
@@ -269,7 +285,8 @@ ORDER BY DonorId
 
                         var execStart = MatchingRunTimings.Now();
                         var matches = await conn.QueryAsync<DonorLocusMatch>(commandDefinition);
-                        run?.AddSqlExec(locus, execStart, filteringOptions.DonorIds?.Count ?? 0, useForcedOrder);
+                        run?.AddSqlExec(locus, execStart, filteringOptions.DonorIds?.Count ?? 0,
+                            (forcePosition1 ? 1 : 0) + (forcePosition2 ? 1 : 0));
 
                         // A hand-written loop, so the time reading rows is timed apart from the time the caller spends between rows.
                         long readTicks = 0;
