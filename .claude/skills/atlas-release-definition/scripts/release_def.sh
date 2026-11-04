@@ -123,6 +123,11 @@ build_candidate() {
   finish_candidate "$workdir"
 }
 
+# SHA-256 of the base and the candidate together: what a dry run shows the user.
+fingerprint() {
+  cat "$1/base.json" "$1/candidate.json" | shasum -a 256 | cut -d' ' -f1
+}
+
 finish_candidate() {
   local workdir=$1
   if jq -n -e --slurpfile b "$workdir/base.json" --slurpfile c "$workdir/candidate.json" '$b[0] == $c[0]' >/dev/null; then
@@ -131,6 +136,8 @@ finish_candidate() {
   fi
   check_guards "$workdir/base.json" "$workdir/candidate.json"
   KEEP_DIR=$workdir
+  # Record what the user is shown, so apply can refuse files changed after this preview.
+  fingerprint "$workdir" > "$workdir/reviewed.sha256"
   echo "Base revision: $(jq -r .revision "$workdir/base.json")"
   echo "Work dir:      $workdir"
   echo
@@ -259,7 +266,10 @@ cmd_apply() {
   [[ -f "$workdir/base.json" && -f "$workdir/candidate.json" ]] || die "'$workdir' is not a work dir from a dry run."
   KEEP_DIR=$workdir
 
-  # Check again, in case the candidate was edited after the dry run.
+  # Save only what the dry run showed: refuse a base or candidate changed since the preview.
+  [[ -f "$workdir/reviewed.sha256" ]] || die "'$workdir' has no dry-run fingerprint. Run the dry run again."
+  [[ "$(fingerprint "$workdir")" == "$(cat "$workdir/reviewed.sha256")" ]] \
+    || die "The files in '$workdir' changed after the dry run, so this is not what was reviewed. Run the dry run again."
   check_guards "$workdir/base.json" "$workdir/candidate.json"
 
   jq --arg c "$comment" '.comment = $c' "$workdir/candidate.json" > "$workdir/body.json"

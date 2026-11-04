@@ -52,7 +52,10 @@ Before any write, the script refuses a candidate that:
 - adds, changes or removes a **secret** variable. Secrets are changed in the ADO UI by the user, so a secret value
   never passes through Claude;
 - changes the definition's id, name or path, or adds, removes or renumbers a stage;
-- has no change, or comes with an empty comment.
+- has no change, or comes with an empty comment;
+- differs from what the dry run showed. The dry run records a fingerprint of `base.json` and `candidate.json`, and
+  `apply` refuses if either has changed since. Never edit the files in a work dir: to change the candidate, run a
+  new dry run and show the user its diff.
 
 ## Procedure
 
