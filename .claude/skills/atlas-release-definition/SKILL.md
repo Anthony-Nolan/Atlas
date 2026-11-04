@@ -87,9 +87,18 @@ Before any write, the script refuses a candidate that:
    - "the saved definition matches the reviewed candidate";
    - "secret variables unchanged".
 
-   If the save fails because the definition changed in the meantime, run the dry run again, and show the new diff
-   if it differs. Never force or retry the save blindly. If the check after the save reports a difference, show it
-   to the user. The work dir is kept so it can be inspected.
+   If the save call fails, the script reads the definition again. The save can commit before the connection
+   drops, so a failed call doesn't prove that nothing was saved. The script then reports one of these:
+   - nothing was saved (the revision is unchanged);
+   - the change was saved anyway (a new revision with exactly this change and comment), and it carries on with the
+     checks;
+   - someone else saved after the dry run;
+   - the outcome is unknown, because the definition can't be read either. Run `$S history 3` and look for the comment
+     before you try again.
+
+   If someone else saved, run the dry run again, and show the new diff if it differs. Never force or retry the save
+   blindly. If the check after the save reports a difference, show it to the user. The work dir is kept so it can be
+   inspected.
 8. **Mirror `TF_VAR_` changes in the local tfvars**, so local plans match. These files are gitignored local copies:
 
    | Stage | File |

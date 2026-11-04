@@ -264,20 +264,51 @@ cmd_apply() {
 
   jq --arg c "$comment" '.comment = $c' "$workdir/candidate.json" > "$workdir/body.json"
 
+  local base_rev put_failed=false
+  base_rev=$(jq -r .revision "$workdir/base.json")
+
   # The body carries the base revision, so ADO rejects the save if someone saved in the meantime.
-  if ! invoke --area release --resource definitions --route-parameters project="$PROJECT" \
+  if invoke --area release --resource definitions --route-parameters project="$PROJECT" \
       --http-method PUT --in-file "$workdir/body.json" > "$workdir/put.json"; then
-    auth_hint
-    echo "The save failed. If the definition was changed by someone else since the dry run, run the dry run again." >&2
-    die "Nothing was saved. Work dir kept: $workdir"
+    echo "Saved revision $(jq -r .revision "$workdir/put.json") (was $base_rev)."
+  else
+    # A failed call does not prove that nothing was saved: ADO may have committed the PUT before the connection
+    # dropped. Read the definition again to find out what happened.
+    put_failed=true
+    echo "The save call failed. Reading the definition again to find out whether it was saved..." >&2
   fi
-  echo "Saved revision $(jq -r .revision "$workdir/put.json") (was $(jq -r .revision "$workdir/base.json"))."
 
   # Read it back and compare with what was reviewed.
-  fetch_definition "$workdir/after.json"
+  if ! invoke --area release --resource definitions \
+      --route-parameters project="$PROJECT" definitionId="$DEFINITION_ID" > "$workdir/after.json"; then
+    auth_hint
+    if $put_failed; then
+      die "The outcome is unknown: the save call failed, and the definition could not be read again. Run '$0 history 3' and check for this comment before trying again. Work dir kept: $workdir"
+    fi
+    die "Saved, but the definition could not be read again to check it. Run '$0 history 3' and check the change in the ADO UI. Work dir kept: $workdir"
+  fi
+
+  local after_rev saved_comment matches=false
+  after_rev=$(jq -r .revision "$workdir/after.json")
+  saved_comment=$(jq -r '.comment // ""' "$workdir/after.json")
   if diff -u --label candidate --label saved \
       <(jq -S "$SERVER_MANAGED_FILTER" "$workdir/candidate.json") \
       <(jq -S "$SERVER_MANAGED_FILTER" "$workdir/after.json") > "$workdir/verify.diff"; then
+    matches=true
+  fi
+
+  if $put_failed; then
+    if [[ "$after_rev" == "$base_rev" ]]; then
+      auth_hint
+      die "Nothing was saved: the definition is still at revision $base_rev. Work dir kept: $workdir"
+    elif $matches && [[ "$saved_comment" == "$comment" ]]; then
+      echo "The save call failed, but revision $after_rev has exactly this change and comment: it was saved." >&2
+    else
+      die "The definition is now at revision $after_rev, which is not this change: someone else saved it after the dry run. Run the dry run again, and check '$0 history 3'. Work dir kept: $workdir"
+    fi
+  fi
+
+  if $matches; then
     echo "Check: the saved definition matches the reviewed candidate."
   else
     cat "$workdir/verify.diff"
