@@ -165,6 +165,12 @@ availability recreates the instance**, so for a production environment set `DIST
 to `true` *before* the first release that creates the cache. A recreated cache starts empty; the apps then read from
 SQL and refill it.
 
+**Kill switch.** The app setting `DistributedCache:Enabled` (default `true`) turns the cache off when it is `false`,
+whatever the connection string is. No app then connects to Redis: every read misses, the apps read from SQL, and
+nothing is stored. The Redis instance is not changed, so the cache can be turned on again with no infrastructure change.
+Each app reads the setting when it starts; a change of an app setting restarts the app. Set it to the same value on all
+six apps. When the setting is missing, the cache is on.
+
 ### Manual Azure Configuration (Post-terraform)
 
 Once terraform has created ATLAS resources for the first time, certain actions must be performed manually on these resources, as they are either not available or not recommended as part of the terraform scripting.

@@ -47,6 +47,7 @@
     "DataRefresh:DonorManagement:SubscriptionForDbB": "matching-transient-b",
     "DataRefresh:DonorManagement:OngoingDifferentialDonorUpdatesShouldBeFullyTransactional": true,
     "Debug:AllowPrecomputeWrites": false,
+    "DistributedCache:Enabled": "true",
     "DistributedCache:ConnectionString": "",
     "DistributedCache:ManagedIdentityClientId": "",
     "DonorGenotypePrecomputation:Enabled": true,

@@ -44,6 +44,7 @@
 
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
 
+    "DistributedCache:Enabled": "true",
     "DistributedCache:ConnectionString": "",
     "DistributedCache:ManagedIdentityClientId": "",
 

@@ -161,7 +161,7 @@ kept in two caches:
 - **In each process**, for `HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes` (1 minute). The expiry is absolute:
   a process that reads the list all the time still reads it again each minute.
 - **In the distributed cache** (Redis), which all processes share, for 24 hours. When no Redis is configured
-  (`DistributedCache:ConnectionString` is empty), each process reads the list from SQL instead.
+  (`DistributedCache:ConnectionString` is empty) or the cache is turned off (`DistributedCache:Enabled` is `false`), each process reads the list from SQL instead.
 
 **After an import.** Before the import sends its success notification, it reads the new list from SQL and writes it to
 the distributed cache. The importing process uses the new set at once. The other processes use it when their own copy
@@ -200,7 +200,7 @@ the allele index and the consolidated frequencies of the set. The entry is kept 
   The expiry is sliding: a set that is not used for `HaplotypeFrequencySetCache:SetCacheExpiryMinutes` (60 minutes) is
   removed, and a set in use stays. See [the settings](#haplotypefrequencysetcachemaxcachedfrequencysetmegabytes--haplotypefrequencysetcachesetcacheexpiryminutes).
 - **In the distributed cache** (Redis), which all processes share, for 30 days. When no Redis is configured
-  (`DistributedCache:ConnectionString` is empty), each process reads each set from SQL instead.
+  (`DistributedCache:ConnectionString` is empty) or the cache is turned off (`DistributedCache:Enabled` is `false`), each process reads each set from SQL instead.
 
 **Sets with the same rows share one entry.** An import makes one set for each registry and ethnicity pair of its file,
 and each of these sets gets the same rows. Before the import activates its sets, it reads the rows of one of them back

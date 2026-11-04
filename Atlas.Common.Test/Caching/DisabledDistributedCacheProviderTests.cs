@@ -50,11 +50,15 @@ namespace Atlas.Common.Test.Caching
         }
 
         [Test]
-        public void Constructor_LogsThatNoCacheIsConfigured()
+        public void Constructor_LogsWhyThereIsNoCache()
         {
-            NewProvider();
+            var reason = fixture.Create<string>();
 
-            logger.Collector.GetSnapshot().Should().ContainSingle().Which.Level.Should().Be(LogLevel.Information);
+            NewProvider(reason);
+
+            var log = logger.Collector.GetSnapshot().Should().ContainSingle().Which;
+            log.Level.Should().Be(LogLevel.Information);
+            log.Message.Should().Contain(reason);
         }
 
         /// <summary>The same checks as the cache in Redis, so that a caller's mistake shows in an app with no Redis too.</summary>
@@ -74,7 +78,7 @@ namespace Atlas.Common.Test.Caching
             await get.Should().ThrowAsync<ArgumentException>();
         }
 
-        private DisabledDistributedCacheProvider NewProvider() => new(logger);
+        private DisabledDistributedCacheProvider NewProvider(string reason = "No distributed cache is configured.") => new(logger, reason);
 
         private DistributedCacheKey NewKey() => new(fixture.Create<string>(), fixture.Create<string>());
 
