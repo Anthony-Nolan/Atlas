@@ -6,6 +6,8 @@ locals {
 
     "AzureStorage:ConnectionString" = var.key_vault.secret_refs["azure-storage-connection-string"]
 
+    "DonorGenotypePrecomputation:Enabled" = var.DONOR_GENOTYPE_PRECOMPUTATION_ENABLED
+
     "HlaMetadataDictionary:AzureStorageConnectionString" = var.key_vault.secret_refs["azure-storage-connection-string"],
 
     "MacDictionary:AzureStorageConnectionString" = var.key_vault.secret_refs["azure-storage-connection-string"]

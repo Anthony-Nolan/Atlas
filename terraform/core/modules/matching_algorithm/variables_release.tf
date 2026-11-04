@@ -73,6 +73,10 @@ variable "DEBUG_ALLOW_PRECOMPUTE_WRITES" {
   type = bool
 }
 
+variable "DONOR_GENOTYPE_PRECOMPUTATION_ENABLED" {
+  type = bool
+}
+
 variable "DONOR_IMPORT_DATABASE_PASSWORD" {
   type = string
 }

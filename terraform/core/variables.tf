@@ -560,6 +560,17 @@ variable "MATCHING_DEBUG_ALLOW_PRECOMPUTE_WRITES" {
   description = "When set, the genotype set compute debug endpoint of the Data Refresh functions app can save genotype sets to the active matching database, where search reads them. Set it in test environments (DEV, UAT) only."
 }
 
+variable "MATCHING_DONOR_GENOTYPE_PRECOMPUTATION_ENABLED" {
+  type        = bool
+  default     = true
+  description = "Turns donor genotype set precomputation on or off for the installation: Data Refresh stage 65 and the precomputation of imported donors. Set it to false in an installation that does not use match prediction. Where it is false, MATCH_PREDICTION_PRECOMPUTE_MODE must be ForceLive. A change does not delete stored sets; the next data refresh removes them."
+
+  validation {
+    condition     = var.MATCHING_DONOR_GENOTYPE_PRECOMPUTATION_ENABLED || var.MATCH_PREDICTION_PRECOMPUTE_MODE == "ForceLive"
+    error_message = "MATCH_PREDICTION_PRECOMPUTE_MODE must be ForceLive when MATCHING_DONOR_GENOTYPE_PRECOMPUTATION_ENABLED is false."
+  }
+}
+
 variable "MATCHING_DONOR_WRITE_TRANSACTIONALITY__DATA_REFRESH" {
   type        = bool
   default     = false
