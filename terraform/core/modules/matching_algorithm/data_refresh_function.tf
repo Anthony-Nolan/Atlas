@@ -58,6 +58,7 @@ locals {
     "DataRefresh:WatchdogGraceDurationMinutes"                                              = var.DATA_REFRESH_WATCHDOG_GRACE_DURATION_MINUTES
 
     "DistributedCache:ConnectionString"        = var.distributed_cache.connection_string
+    "DistributedCache:Enabled"                 = var.distributed_cache.enabled
     "DistributedCache:ManagedIdentityClientId" = var.function_apps_identity.client_id
 
     "Debug:AllowPrecomputeWrites" = var.DEBUG_ALLOW_PRECOMPUTE_WRITES

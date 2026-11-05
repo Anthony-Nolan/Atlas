@@ -24,6 +24,7 @@ variable "azure_storage" {
 variable "distributed_cache" {
   type = object({
     connection_string = string
+    enabled           = bool
   })
 }
 

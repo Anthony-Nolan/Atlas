@@ -26,6 +26,7 @@ variable "application_insights" {
 variable "distributed_cache" {
   type = object({
     connection_string = string
+    enabled           = bool
   })
 }
 

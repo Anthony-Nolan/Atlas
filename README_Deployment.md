@@ -165,11 +165,13 @@ availability recreates the instance**, so for a production environment set `DIST
 to `true` *before* the first release that creates the cache. A recreated cache starts empty; the apps then read from
 SQL and refill it.
 
-**Kill switch.** The app setting `DistributedCache:Enabled` (default `true`) turns the cache off when it is `false`,
-whatever the connection string is. No app then connects to Redis: every read misses, the apps read from SQL, and
-nothing is stored. The Redis instance is not changed, so the cache can be turned on again with no infrastructure change.
-Each app reads the setting when it starts; a change of an app setting restarts the app. Set it to the same value on all
-six apps. When the setting is missing, the cache is on.
+**Kill switch.** The release variable `DISTRIBUTED_CACHE_ENABLED` (default `true`) turns the cache on or off for the
+whole environment. Terraform sets it as the app setting `DistributedCache:Enabled` on the four function apps, and as the
+environment variable `DistributedCache__Enabled` on the two container apps. When it is `false`, no app connects to
+Redis, whatever the connection string is: every read misses, the apps read from SQL, and nothing is stored. The Redis
+instance is created and kept either way, so the cache can be turned on again with no infrastructure change. Each app
+reads the setting when it starts; changing the variable restarts the function apps and starts a new revision of each
+container app. When the setting is missing, the cache is on.
 
 ### Manual Azure Configuration (Post-terraform)
 
