@@ -19,8 +19,12 @@ using NSubstitute;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.GeneticData;
+using Atlas.MatchingAlgorithm.Data.Models.Entities;
+using Dapper;
+using Microsoft.Data.SqlClient;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using SqlException = Microsoft.Data.SqlClient.SqlException;
@@ -392,6 +396,129 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
                 Arg.Is<Dictionary<string, string>>(p => p["ReusedWrites"] == "2"));
         }
 
+        #endregion
+
+        #region Retry after a dropped connection (ATL-524)
+
+        // These tests drop a session bulk copy's connection for real, with KILL, between two writes. The write must be
+        // retried on a new connection, and the session must keep working after it.
+        //
+        // SqlClient reconnects by itself a connection that broke while idle (ConnectRetryCount, 1 by default). It cannot
+        // do that for a connection that breaks during a write, which is what happened on AN LIVE. So these tests turn
+        // that reconnection off: the next write then fails with a transport-level error of severity 20, as on AN LIVE.
+
+        [TearDown]
+        public void ClearConnectionPools()
+        {
+            // A KILL breaks pooled connections too. Clear the pools so that no later test gets a broken one.
+            SqlConnection.ClearAllPools();
+        }
+
+        [Test]
+        public async Task InsertBatchOfDonors_WithinOneBulkWriteSession_WhenTheConnectionIsDropped_RetriesOnANewConnection()
+        {
+            var logger = Substitute.For<IAtlasLogger>();
+            var repository = BuildRepositoryThatDoesNotReconnect(logger);
+            var donorBeforeDrop = new DonorInfoBuilder().Build();
+            var donorAfterDrop = new DonorInfoBuilder().Build();
+            var donorAfterRetry = new DonorInfoBuilder().Build();
+
+            using (repository.OpenBulkWriteSession())
+            {
+                await repository.InsertBatchOfDonors(new List<DonorInfo> {donorBeforeDrop});
+
+                (await KillOtherConnectionsToTheTestDatabase()).Should().BePositive();
+
+                await repository.InsertBatchOfDonors(new List<DonorInfo> {donorAfterDrop});
+                // The session's new bulk copy is used again, with no further error.
+                await repository.InsertBatchOfDonors(new List<DonorInfo> {donorAfterRetry});
+            }
+
+            (await inspectionRepo.GetDonor(donorBeforeDrop.DonorId)).Should().NotBeNull();
+            (await inspectionRepo.GetDonor(donorAfterDrop.DonorId)).Should().NotBeNull();
+            (await inspectionRepo.GetDonor(donorAfterRetry.DonorId)).Should().NotBeNull();
+            logger.Received(1).SendTrace(
+                Arg.Is<string>(m => m.Contains("transient SQL error")),
+                LogLevel.Warn,
+                Arg.Is<Dictionary<string, string>>(p => p["Table"] == "Donors" && p["FailedAttempt"] == "1"));
+        }
+
+        [Test]
+        public async Task AddMatchingRelationsForExistingDonorBatch_WithinOneBulkWriteSession_WhenTheConnectionsAreDropped_RetriesWithoutDuplicateRows()
+        {
+            var logger = Substitute.For<IAtlasLogger>();
+            var repository = BuildRepositoryThatDoesNotReconnect(logger);
+            var donorBeforeDrop = BuildDonorWithRequiredHla();
+            var donorAfterDrop = BuildDonorWithRequiredHla();
+            await repository.InsertBatchOfDonors(new List<DonorInfo> {donorBeforeDrop, donorAfterDrop});
+
+            using (repository.OpenBulkWriteSession())
+            {
+                await AddMatchingRelationsFor(donorBeforeDrop, repository);
+
+                (await KillOtherConnectionsToTheTestDatabase()).Should().BePositive();
+
+                // Writes to all five matching loci at the same time, and every one of their connections was killed.
+                await AddMatchingRelationsFor(donorAfterDrop, repository);
+            }
+
+            testInspectionRepo.GetMatchingHlaRowCount(Locus.A, donorBeforeDrop.DonorId).Should().Be(2);
+            testInspectionRepo.GetMatchingHlaRowCount(Locus.A, donorAfterDrop.DonorId).Should().Be(2);
+            logger.Received().SendTrace(
+                Arg.Is<string>(m => m.Contains("transient SQL error")),
+                LogLevel.Warn,
+                Arg.Is<Dictionary<string, string>>(p => p["Table"] == MatchingHla.TableName(Locus.A)));
+        }
+
+        private DonorImportRepository BuildRepositoryThatDoesNotReconnect(IAtlasLogger logger)
+        {
+            var connectionString = new SqlConnectionStringBuilder(dormantConnectionStringProvider.GetConnectionString())
+            {
+                ConnectRetryCount = 0
+            }.ConnectionString;
+
+            var connectionStringProvider = Substitute.For<IConnectionStringProvider>();
+            connectionStringProvider.GetConnectionString().Returns(connectionString);
+
+            return new DonorImportRepository(Substitute.For<IHlaNamesRepository>(), connectionStringProvider, logger);
+        }
+
+        /// <summary>
+        /// Kills every other user connection to the test database. The open session's bulk copies hold their
+        /// connections open, so these are always among them. The SQL text of a connection cannot pick them out, because
+        /// the test connection strings use MARS, which hides it. Integration tests do not run in parallel, so no other
+        /// test is using these connections.
+        /// </summary>
+        /// <returns>The number of connections killed.</returns>
+        private async Task<int> KillOtherConnectionsToTheTestDatabase()
+        {
+            int killed;
+            await using (var connection = new SqlConnection(dormantConnectionStringProvider.GetConnectionString()))
+            {
+                await connection.OpenAsync();
+
+                var sessionIds = (await connection.QueryAsync<int>(@"
+                    SELECT session_id
+                    FROM sys.dm_exec_sessions
+                    WHERE database_id = DB_ID() AND session_id <> @@SPID AND is_user_process = 1")).ToList();
+
+                foreach (var sessionId in sessionIds)
+                {
+                    await connection.ExecuteAsync($"KILL {sessionId}");
+                }
+
+                killed = sessionIds.Count;
+            }
+
+            // The idle pooled connections were killed too. Clear the pools so that the reads that follow this get new
+            // ones. A connection that a bulk copy holds open is not in the pool, so this does not touch it.
+            SqlConnection.ClearAllPools();
+
+            return killed;
+        }
+
+        #endregion
+
         private static DonorInfoWithExpandedHla BuildDonorWithRequiredHla() =>
             new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithDefaultRequiredHla(new TestHlaMetadata
@@ -405,17 +532,15 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         /// Imports a donor's HLA and then writes its matching relations, which is what the HLA processing stage of the
         /// data refresh does for every batch.
         /// </summary>
-        private async Task AddMatchingRelationsFor(DonorInfoWithExpandedHla donor)
+        private async Task AddMatchingRelationsFor(DonorInfoWithExpandedHla donor, IDonorImportRepository repository = null)
         {
             var hlaLookup = await hlaImportRepository.ImportHla(new List<DonorInfoWithExpandedHla> {donor});
             var donorEntry = donor.ToDonorInfoForPreProcessing(hla => hlaLookup[hla]);
 
-            await donorImportRepository.AddMatchingRelationsForExistingDonorBatch(
+            await (repository ?? donorImportRepository).AddMatchingRelationsForExistingDonorBatch(
                 new List<DonorInfoForHlaPreProcessing> {donorEntry},
                 false);
         }
-
-        #endregion
 
     }
 }

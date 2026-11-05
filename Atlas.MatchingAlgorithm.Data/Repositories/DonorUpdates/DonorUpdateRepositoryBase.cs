@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -44,6 +45,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         /// pre-builds those tables' bulk copies, so that the two cannot drift apart.
         /// </summary>
         private const int MatchingHlaBulkInsertTimeoutInSeconds = 14400;
+
+        /// <summary>Donor ids per DELETE statement when a failed bulk insert is cleaned up before its retry.</summary>
+        private const int DeleteChunkSize = 2000;
 
         /// <summary>
         /// Non-null only between <see cref="OpenBulkWriteSession"/> and the disposal of what it returned.
@@ -377,8 +381,23 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         /// <summary>
         /// Performs a bulk insert wrapped in a transaction, over the session's bulk copy for this table where there is
         /// one it can use, and otherwise over a newly built one on a new connection.
-        /// If columnNames provided, sets up a map from dataTable to SQL, assuming a 1:1 mapping between dataTable and SQL column names  
+        /// If columnNames provided, sets up a map from dataTable to SQL, assuming a 1:1 mapping between dataTable and SQL column names
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Retry.</b> With no ambient transaction, a transient SQL error (for example a dropped connection) is retried
+        /// on a new connection - see <see cref="TransientSqlErrorRetry"/>. Without this, one dropped connection fails the
+        /// whole data refresh stage (ATL-524). Under an ambient transaction a failed write is not retried: the transaction
+        /// is lost with the connection, and only its owner can run it again.
+        /// </para>
+        /// <para>
+        /// <b>No duplicate rows.</b> Before a retry, the rows of the batch's donors are deleted from the table. A failed
+        /// attempt can leave rows behind: the server can commit a batch and the connection can then drop before the client
+        /// hears of it, and a write of more than <see cref="BulkCopyBatchSize"/> rows commits batch by batch. Every caller
+        /// that writes with no ambient transaction is creating these donors' rows in this table, so the rows that the
+        /// delete finds can only be ones that this write left behind.
+        /// </para>
+        /// </remarks>
         private async Task BulkInsertDataTable(
             string tableName,
             DataTable dataTable,
@@ -388,16 +407,75 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         {
             using (longLoopDbWriteTimer?.TimeInnerOperation())
             {
-                var reusableBulkCopy = GetReusableBulkCopy(tableName);
-                if (reusableBulkCopy != null)
+                if (Transaction.Current != null)
                 {
-                    await reusableBulkCopy.WriteToServerAsync(dataTable);
+                    await WriteDataTable(tableName, dataTable, columnNames, timeout);
                     return;
                 }
 
-                using (var sqlBulk = BuildSqlBulkCopy(tableName, columnNames, timeout))
+                await TransientSqlErrorRetry.Run(
+                    async attemptNumber =>
+                    {
+                        if (attemptNumber > 1)
+                        {
+                            await DeleteRowsOfDonorsInDataTable(tableName, dataTable);
+                        }
+
+                        await WriteDataTable(tableName, dataTable, columnNames, timeout);
+                    },
+                    (exception, failedAttemptNumber) =>
+                    {
+                        // The failed write may have used the session's bulk copy, whose connection is now broken. Any
+                        // later write on it would fail too, so the session gets a new one for this table.
+                        activeBulkCopySession?.ReplaceBulkCopyFor(tableName);
+
+                        logger.SendTrace(
+                            $"Bulk insert into {tableName} failed with a transient SQL error. It will be retried.",
+                            LogLevel.Warn,
+                            new Dictionary<string, string>
+                            {
+                                {"Table", tableName},
+                                {"Rows", dataTable.Rows.Count.ToString()},
+                                {"FailedAttempt", failedAttemptNumber.ToString()},
+                                {"Error", exception.Message}
+                            });
+                    },
+                    TransientSqlErrorRetry.DefaultRetryDelays);
+            }
+        }
+
+        private async Task WriteDataTable(string tableName, DataTable dataTable, string[] columnNames, int timeout)
+        {
+            var reusableBulkCopy = GetReusableBulkCopy(tableName);
+            if (reusableBulkCopy != null)
+            {
+                await reusableBulkCopy.WriteToServerAsync(dataTable);
+                return;
+            }
+
+            using (var sqlBulk = BuildSqlBulkCopy(tableName, columnNames, timeout))
+            {
+                await sqlBulk.WriteToServerAsync(dataTable);
+            }
+        }
+
+        /// <summary>
+        /// Deletes the rows that a failed attempt of a bulk insert may have left - see <see cref="BulkInsertDataTable"/>.
+        /// Donors and every matching HLA table have a DonorId column.
+        /// </summary>
+        private async Task DeleteRowsOfDonorsInDataTable(string tableName, DataTable dataTable)
+        {
+            var donorIds = dataTable.Rows.Cast<DataRow>()
+                .Select(row => Convert.ToInt32(row["DonorId"]))
+                .Distinct();
+
+            await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            {
+                // In chunks, so that no statement holds a very long IN list. The ids are ints, so they are safe to inline.
+                foreach (var donorIdChunk in donorIds.Chunk(DeleteChunkSize))
                 {
-                    await sqlBulk.WriteToServerAsync(dataTable);
+                    var deleteSql = $"DELETE FROM {tableName} WHERE DonorId IN ({string.Join(",", donorIdChunk)})";
+                    await conn.ExecuteAsync(deleteSql, null, commandTimeout: 600);
                 }
             }
         }
@@ -455,8 +533,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         /// </summary>
         /// <remarks>
         /// Eagerly, because a <see cref="SqlBulkCopy"/> costs nothing until its first write - it does not even open its
-        /// connection - and because a cache populated up front needs no synchronising against the per-locus writes,
-        /// which run concurrently. One instance per table also means no instance is ever shared between those writes:
+        /// connection - and because a cache populated up front never adds a table while the per-locus writes, which run
+        /// concurrently, read it. It is still a concurrent dictionary, because a write can replace its own table's
+        /// instance after a transient error. One instance per table also means no instance is ever shared between those writes:
         /// they go to one table each, and a <see cref="SqlBulkCopy"/> rejects a second concurrent write on the same
         /// instance. Nor do successive batches overlap, since <see cref="UpsertMatchingPGroupsAtSpecifiedLoci"/> awaits
         /// every locus' write before it returns.
@@ -465,24 +544,18 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         /// Donors, HLA processing only the locus tables - because an unused instance costs an allocation and a disposal
         /// and never reaches the database, which is not worth splitting this method, or its caller's API, in two for.
         /// </remarks>
-        private IReadOnlyDictionary<string, SqlBulkCopy> BuildReusableBulkCopies()
+        private ConcurrentDictionary<string, SqlBulkCopy> BuildReusableBulkCopies()
         {
-            var bulkCopies = new Dictionary<string, SqlBulkCopy>
-            {
-                [DonorsTableName] = BuildSqlBulkCopy(DonorsTableName, donorInsertDataTableColumnNames)
-            };
+            var tableNames = LocusSettings.MatchingOnlyLoci.Select(MatchingHla.TableName).Prepend(DonorsTableName);
 
-            foreach (var locus in LocusSettings.MatchingOnlyLoci)
-            {
-                var tableName = MatchingHla.TableName(locus);
-                bulkCopies[tableName] = BuildSqlBulkCopy(
-                    tableName,
-                    donorPGroupDataTableColumnNames,
-                    MatchingHlaBulkInsertTimeoutInSeconds);
-            }
-
-            return bulkCopies;
+            return new ConcurrentDictionary<string, SqlBulkCopy>(
+                tableNames.Select(tableName => KeyValuePair.Create(tableName, BuildReusableBulkCopy(tableName))));
         }
+
+        private SqlBulkCopy BuildReusableBulkCopy(string tableName) =>
+            tableName == DonorsTableName
+                ? BuildSqlBulkCopy(DonorsTableName, donorInsertDataTableColumnNames)
+                : BuildSqlBulkCopy(tableName, donorPGroupDataTableColumnNames, MatchingHlaBulkInsertTimeoutInSeconds);
 
         /// <summary>
         /// The bulk copies of one <see cref="OpenBulkWriteSession"/>, and their closing.
@@ -490,7 +563,12 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         private sealed class BulkCopySession
         {
             private readonly DonorUpdateRepositoryBase repository;
-            private readonly IReadOnlyDictionary<string, SqlBulkCopy> bulkCopiesByTableName;
+
+            /// <summary>
+            /// Concurrent, because the per-locus writes run at the same time and each can replace its own table's bulk
+            /// copy after a transient error - see <see cref="ReplaceBulkCopyFor"/>.
+            /// </summary>
+            private readonly ConcurrentDictionary<string, SqlBulkCopy> bulkCopiesByTableName;
 
             /// <summary>
             /// Written to from the concurrent per-locus writes, hence interlocked.
@@ -515,6 +593,30 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                 // that were actually spared building an instance, not writes that asked.
                 Interlocked.Increment(ref reusedWriteCount);
                 return bulkCopy;
+            }
+
+            /// <summary>
+            /// Disposes the table's bulk copy, which closes its connection, and puts a new one in its place. The new one
+            /// opens a new connection on its first write. Used after a transient error, when the old connection may be
+            /// broken. Nothing else writes to the table at that time: a table's writes never overlap.
+            /// </summary>
+            internal void ReplaceBulkCopyFor(string tableName)
+            {
+                if (!bulkCopiesByTableName.TryGetValue(tableName, out var brokenBulkCopy))
+                {
+                    return;
+                }
+
+                bulkCopiesByTableName[tableName] = repository.BuildReusableBulkCopy(tableName);
+
+                try
+                {
+                    ((IDisposable) brokenBulkCopy).Dispose();
+                }
+                catch (Exception)
+                {
+                    // Closing a broken connection can throw. The bulk copy is no longer used, so the error does not matter.
+                }
             }
 
             internal void Close()
