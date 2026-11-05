@@ -406,6 +406,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         // SqlClient reconnects by itself a connection that broke while idle (ConnectRetryCount, 1 by default). It cannot
         // do that for a connection that breaks during a write, which is what happened on AN LIVE. So these tests turn
         // that reconnection off: the next write then fails with a transport-level error of severity 20, as on AN LIVE.
+        //
+        // They also turn MARS off. On Linux (the build agents), SqlClient with MARS does not notice that the server closed
+        // the connection: the next write waits until the client timeout (-2), which is not retried. On Windows (where the
+        // Function Apps run) the write fails at once with the transport-level error, with or without MARS.
 
         [TearDown]
         public void ClearConnectionPools()
@@ -474,7 +478,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var connectionString = new SqlConnectionStringBuilder(dormantConnectionStringProvider.GetConnectionString())
             {
-                ConnectRetryCount = 0
+                ConnectRetryCount = 0,
+                MultipleActiveResultSets = false
             }.ConnectionString;
 
             var connectionStringProvider = Substitute.For<IConnectionStringProvider>();
