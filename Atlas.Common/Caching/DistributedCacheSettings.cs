@@ -6,6 +6,16 @@ namespace Atlas.Common.Caching
     public class DistributedCacheSettings
     {
         /// <summary>
+        /// The kill switch of the distributed cache. <c>false</c> means that there is no distributed cache, whatever
+        /// <see cref="ConnectionString"/> is: no app connects to Redis, every read misses, and nothing is stored.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to <c>true</c>, so a host with no value for this setting keeps the cache, if it has a
+        /// <see cref="ConnectionString"/>. Read once, when the app starts.
+        /// </remarks>
+        public bool Enabled { get; set; } = true;
+
+        /// <summary>
         /// The StackExchange.Redis configuration string of the Redis that holds the cache: e.g.
         /// <c>&lt;name&gt;.&lt;region&gt;.redis.azure.net:10000</c> for Azure Managed Redis, or <c>localhost:6379</c> for
         /// a local Redis.

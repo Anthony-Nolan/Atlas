@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
@@ -9,6 +10,7 @@ using AutoFixture;
 using AwesomeAssertions;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -42,6 +44,55 @@ namespace Atlas.Common.Test.Caching
 
             serviceProvider.GetRequiredService<IDistributedCacheProvider>().Should().BeOfType<DistributedCacheProvider>()
                 .Which.IsEnabled.Should().BeTrue();
+        }
+
+        [Test]
+        public async Task RegisterDistributedCacheTypes_EnabledWithAConnectionString_RegistersTheCacheInRedis()
+        {
+            var settings = UnreachableRedis();
+            settings.Enabled = true;
+            await using var serviceProvider = ServicesWith(settings).BuildServiceProvider();
+
+            serviceProvider.GetRequiredService<IDistributedCacheProvider>().Should().BeOfType<DistributedCacheProvider>();
+        }
+
+        [Test]
+        public void RegisterDistributedCacheTypes_NotEnabledWithAConnectionString_RegistersACacheThatKeepsNothingAndLogsWhy()
+        {
+            var settings = UnreachableRedis();
+            settings.Enabled = false;
+            using var serviceProvider = ServicesWith(settings).BuildServiceProvider();
+
+            serviceProvider.GetRequiredService<IDistributedCacheProvider>().Should().BeOfType<DisabledDistributedCacheProvider>()
+                .Which.IsEnabled.Should().BeFalse();
+            serviceProvider.GetFakeLogCollector().GetSnapshot().Should()
+                .ContainSingle(log => log.Level == LogLevel.Information && log.Message.Contains("DistributedCache:Enabled"));
+        }
+
+        [Test]
+        public void DistributedCacheSettings_WhenEnabledIsMissingFromConfiguration_IsEnabled()
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string> { ["DistributedCache:ConnectionString"] = "localhost:6379" })
+                .Build();
+
+            var settings = configuration.GetSection("DistributedCache").Get<DistributedCacheSettings>();
+
+            settings.Enabled.Should().BeTrue();
+        }
+
+        [TestCase("false", false)]
+        [TestCase("False", false)]
+        [TestCase("true", true)]
+        public void DistributedCacheSettings_WithEnabledInConfiguration_ReadsIt(string value, bool expected)
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string> { ["DistributedCache:Enabled"] = value })
+                .Build();
+
+            var settings = configuration.GetSection("DistributedCache").Get<DistributedCacheSettings>();
+
+            settings.Enabled.Should().Be(expected);
         }
 
         [Test]

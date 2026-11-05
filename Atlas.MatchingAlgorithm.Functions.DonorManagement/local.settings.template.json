@@ -5,6 +5,7 @@
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
     "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
+    "DistributedCache:Enabled": "true",
     "DistributedCache:ConnectionString": "",
     "DistributedCache:ManagedIdentityClientId": "",
     "DonorGenotypePrecomputation:Enabled": true,

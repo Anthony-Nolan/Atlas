@@ -243,14 +243,17 @@ namespace Atlas.Common.Caching
     }
 
     /// <summary>
-    /// The <see cref="IDistributedCacheProvider"/> of an app with no Redis configured. It keeps nothing: every read misses,
-    /// and every write returns <c>true</c>, as a cache that keeps nothing cannot serve a stale value.
+    /// The <see cref="IDistributedCacheProvider"/> of an app with no Redis: the cache is turned off, or no Redis is
+    /// configured. It keeps nothing: every read misses, and every write returns <c>true</c>, as a cache that keeps nothing
+    /// cannot serve a stale value.
     /// </summary>
     internal sealed class DisabledDistributedCacheProvider : IDistributedCacheProvider
     {
-        public DisabledDistributedCacheProvider(ILogger<DisabledDistributedCacheProvider> logger)
+        /// <param name="logger">The logger.</param>
+        /// <param name="reason">Why there is no distributed cache: logged once, when the provider is constructed.</param>
+        public DisabledDistributedCacheProvider(ILogger<DisabledDistributedCacheProvider> logger, string reason)
         {
-            logger.LogInformation("No distributed cache is configured. Every read misses, and nothing is stored.");
+            logger.LogInformation("{Reason} Every read misses, and nothing is stored.", reason);
         }
 
         /// <inheritdoc />

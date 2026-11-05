@@ -47,7 +47,8 @@ namespace Atlas.Common.Caching
 
         /// <summary>
         /// Registers <see cref="IDistributedCacheProvider"/>: the distributed cache in Redis, or a cache that keeps nothing
-        /// when <see cref="DistributedCacheSettings.ConnectionString"/> is empty.
+        /// when <see cref="DistributedCacheSettings.Enabled"/> is <c>false</c> or
+        /// <see cref="DistributedCacheSettings.ConnectionString"/> is empty.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -78,9 +79,18 @@ namespace Atlas.Common.Caching
         {
             var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
 
+            if (!settings.Enabled)
+            {
+                return new DisabledDistributedCacheProvider(
+                    loggerFactory.CreateLogger<DisabledDistributedCacheProvider>(),
+                    "The distributed cache is turned off by the setting DistributedCache:Enabled.");
+            }
+
             if (string.IsNullOrWhiteSpace(settings.ConnectionString))
             {
-                return new DisabledDistributedCacheProvider(loggerFactory.CreateLogger<DisabledDistributedCacheProvider>());
+                return new DisabledDistributedCacheProvider(
+                    loggerFactory.CreateLogger<DisabledDistributedCacheProvider>(),
+                    "No distributed cache is configured.");
             }
 
             try
@@ -94,7 +104,9 @@ namespace Atlas.Common.Caching
                 loggerFactory.CreateLogger<DistributedCacheProvider>().LogError(
                     exception,
                     "The distributed cache connection string is not valid. The app runs without the distributed cache.");
-                return new DisabledDistributedCacheProvider(loggerFactory.CreateLogger<DisabledDistributedCacheProvider>());
+                return new DisabledDistributedCacheProvider(
+                    loggerFactory.CreateLogger<DisabledDistributedCacheProvider>(),
+                    "The distributed cache connection string is not valid.");
             }
 
             var timeProvider = serviceProvider.GetRequiredService<TimeProvider>();
