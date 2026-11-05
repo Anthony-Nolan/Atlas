@@ -9,6 +9,8 @@ locals {
     "DistributedCache:ConnectionString"        = var.distributed_cache.connection_string
     "DistributedCache:ManagedIdentityClientId" = var.function_apps_identity.client_id
 
+    "DonorGenotypePrecomputation:Enabled" = var.DONOR_GENOTYPE_PRECOMPUTATION_ENABLED
+
     "HlaMetadataDictionary:AzureStorageConnectionString" = var.key_vault.secret_refs["azure-storage-connection-string"],
 
     "MacDictionary:AzureStorageConnectionString" = var.key_vault.secret_refs["azure-storage-connection-string"]

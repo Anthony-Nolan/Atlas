@@ -62,6 +62,8 @@ locals {
 
     "Debug:AllowPrecomputeWrites" = var.DEBUG_ALLOW_PRECOMPUTE_WRITES
 
+    "DonorGenotypePrecomputation:Enabled" = var.DONOR_GENOTYPE_PRECOMPUTATION_ENABLED
+
     "HlaMetadataDictionary:AzureStorageConnectionString"                          = var.key_vault.secret_refs["azure-storage-connection-string"]
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl"                              = var.WMDA_FILE_URL
     "HlaMetadataDictionary:SearchRelatedMetadata:CacheSlidingExpirationInSeconds" = var.SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC
