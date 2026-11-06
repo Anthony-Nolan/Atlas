@@ -111,7 +111,14 @@ internal class HaplotypeFrequencyCacheTests
             .Create();
 
         var cacheProvider = new HaplotypeFrequencySetCacheProvider(
-            appCache ?? AppCacheBuilder.NewCacheOver(new MemoryCache(new MemoryCacheOptions { Clock = clock })));
+            appCache ?? AppCacheBuilder.NewCacheOver(new MemoryCache(new MemoryCacheOptions
+            {
+                Clock = clock,
+                // No scan for expired entries: an entry expires only when it is read. A scan while the clock is past an
+                // interval would remove the entries stored in it, which expire from the real time (see MoveClockTo), even
+                // when the test then moves the clock back into the interval.
+                ExpirationScanFrequency = TimeSpan.FromDays(365)
+            })));
         var residencyTracker = new FrequencySetResidencyTracker(
             cacheCapacityInBytes,
             evictedKey => cacheProvider.Cache.Remove(evictedKey),
@@ -638,7 +645,7 @@ internal class HaplotypeFrequencyCacheTests
 
         await sut.GetAllHaplotypeFrequencies(set.Id);
         MoveClockTo(SetCheckInterval + ClockMargin);
-        await sut.GetAllHaplotypeFrequencies(set.Id);
+        await CallAfterTheCheck(set.Id);
 
         // The read of the load, and the read of the check.
         await frequencySetRepository.Received(2).GetSet(set.Id, Arg.Any<CancellationToken>());
@@ -659,7 +666,7 @@ internal class HaplotypeFrequencyCacheTests
 
         frequencySetRepository.GetSet(set.Id, Arg.Any<CancellationToken>()).Returns(ReplacingSet(set));
         MoveClockTo(SetCheckInterval + ClockMargin);
-        var entry = await sut.GetAllHaplotypeFrequencies(set.Id);
+        var entry = await CallAfterTheCheck(set.Id);
 
         var row = rowsOfTheNewSet.Single();
         entry.SetFrequencies.Should().ContainSingle();
@@ -675,7 +682,7 @@ internal class HaplotypeFrequencyCacheTests
 
         frequencySetRepository.GetSet(set.Id, Arg.Any<CancellationToken>()).Returns((Data.Models.HaplotypeFrequencySet)null);
         MoveClockTo(SetCheckInterval + ClockMargin);
-        var entry = await sut.GetAllHaplotypeFrequencies(set.Id);
+        var entry = await CallAfterTheCheck(set.Id);
 
         entry.SetFrequencies.Should().BeEmpty();
     }
@@ -691,19 +698,61 @@ internal class HaplotypeFrequencyCacheTests
 
         frequencySetRepository.GetSet(set.Id, Arg.Any<CancellationToken>()).ThrowsAsync(new InvalidOperationException(fixture.Create<string>()));
         MoveClockTo(SetCheckInterval + ClockMargin);
-        var entry = await sut.GetAllHaplotypeFrequencies(set.Id);
+        var entry = await CallAfterTheCheck(set.Id);
 
         entry.SetFrequencies.Should().HaveCount(rows.Count);
         await frequencyRepository.Received(1).GetAllHaplotypeFrequencies(set.Id);
         logger.Received(1).SendTrace(Arg.Is<string>(message => message.Contains("could not be checked")), LogLevel.Warn);
     }
 
+    /// <summary>A failed check does not make the next call check again: the next check is due an interval later.</summary>
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_AfterAFailedCheck_DoesNotReadTheSetRowAgainWithinTheInterval()
+    {
+        var set = NewSet();
+        frequencyRepository.GetAllHaplotypeFrequencies(set.Id).Returns(NewRows(set.Id, 1));
+        await sut.GetAllHaplotypeFrequencies(set.Id);
+
+        frequencySetRepository.GetSet(set.Id, Arg.Any<CancellationToken>()).ThrowsAsync(new InvalidOperationException(fixture.Create<string>()));
+        MoveClockTo(SetCheckInterval + ClockMargin);
+        await CallAfterTheCheck(set.Id);
+        await sut.GetAllHaplotypeFrequencies(set.Id);
+
+        // The read of the load, and the read of the failed check.
+        await frequencySetRepository.Received(2).GetSet(set.Id, Arg.Any<CancellationToken>());
+    }
+
+    /// <summary>A loaded set needs no database: the callers of the set do not wait for its check.</summary>
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_WhenTheSetRowIsSlow_ReturnsTheLoadedSetWithoutWaitingForTheCheck()
+    {
+        var set = NewSet();
+        var rows = NewRows(set.Id, fixture.Create<int>());
+        frequencyRepository.GetAllHaplotypeFrequencies(set.Id).Returns(rows);
+        await sut.GetAllHaplotypeFrequencies(set.Id);
+
+        var rowReadOfTheCheck = new TaskCompletionSource<Data.Models.HaplotypeFrequencySet>();
+        frequencySetRepository.GetSet(set.Id, Arg.Any<CancellationToken>()).Returns(rowReadOfTheCheck.Task);
+        MoveClockTo(SetCheckInterval + ClockMargin);
+
+        // In real time, so that a call that waits for the check fails the test, and does not hang it.
+        var entry = await sut.GetAllHaplotypeFrequencies(set.Id).WaitAsync(ClockMargin);
+        var entryOfALaterCall = await sut.GetAllHaplotypeFrequencies(set.Id).WaitAsync(ClockMargin);
+
+        entry.SetFrequencies.Should().HaveCount(rows.Count);
+        entryOfALaterCall.Should().BeSameAs(entry);
+        sut.RunningSetCheck(set.Id).IsCompleted.Should().BeFalse();
+
+        rowReadOfTheCheck.SetResult(set);
+        await sut.RunningSetCheck(set.Id).WaitAsync(ClockMargin);
+    }
+
     /// <summary>
-    /// All callers of the set wait for the check: when SQL is slow or cannot be reached, the check stops at its timeout, not
-    /// at the end of the retries of the database context.
+    /// When SQL is slow or cannot be reached, the check stops at its timeout, not at the end of the retries of the database
+    /// context: the next check of the set cannot start while it runs.
     /// </summary>
     [Test]
-    public async Task GetAllHaplotypeFrequencies_WhenTheSetRowDoesNotComeInTime_KeepsTheSet_AndLogsAWarning()
+    public async Task GetAllHaplotypeFrequencies_WhenTheSetRowDoesNotComeInTime_StopsTheCheck_KeepsTheSet_AndLogsAWarning()
     {
         var set = NewSet();
         var rows = NewRows(set.Id, fixture.Create<int>());
@@ -719,35 +768,64 @@ internal class HaplotypeFrequencyCacheTests
         });
         MoveClockTo(SetCheckInterval + ClockMargin);
 
-        var call = sut.GetAllHaplotypeFrequencies(set.Id);
-        await rowReadOfTheCheck.Task;
+        await sut.GetAllHaplotypeFrequencies(set.Id);
+        await rowReadOfTheCheck.Task.WaitAsync(ClockMargin);
         timeProvider.Advance(HaplotypeFrequencyCache.SetCheckTimeout);
 
         // In real time, so that a check with no timeout fails the test, and does not hang it.
-        var entry = await call.WaitAsync(ClockMargin);
+        await sut.RunningSetCheck(set.Id).WaitAsync(ClockMargin);
+        MoveClockIntoTheIntervalOfTheLastCheck();
+        var entry = await sut.GetAllHaplotypeFrequencies(set.Id);
 
         entry.SetFrequencies.Should().HaveCount(rows.Count);
         await frequencyRepository.Received(1).GetAllHaplotypeFrequencies(set.Id);
         logger.Received(1).SendTrace(Arg.Is<string>(message => message.Contains("could not be checked")), LogLevel.Warn);
     }
 
-    /// <summary>One caller evicts the replaced set, and the others wait for the one load of the new set.</summary>
+    /// <summary>A check that runs past the next interval: the next interval does not start a second check of the set.</summary>
+    [Test]
+    public async Task GetAllHaplotypeFrequencies_WhileACheckRuns_DoesNotStartAnotherCheckOfTheSet()
+    {
+        var set = NewSet();
+        frequencyRepository.GetAllHaplotypeFrequencies(set.Id).Returns(NewRows(set.Id, 1));
+        await sut.GetAllHaplotypeFrequencies(set.Id);
+
+        var rowReadOfTheCheck = new TaskCompletionSource<Data.Models.HaplotypeFrequencySet>();
+        frequencySetRepository.GetSet(set.Id, Arg.Any<CancellationToken>()).Returns(rowReadOfTheCheck.Task);
+        MoveClockTo(SetCheckInterval + ClockMargin);
+        await sut.GetAllHaplotypeFrequencies(set.Id);
+        MoveClockTo(2 * SetCheckInterval + 2 * ClockMargin);
+        await sut.GetAllHaplotypeFrequencies(set.Id);
+
+        // The read of the load, and the read of the one check.
+        await frequencySetRepository.Received(2).GetSet(set.Id, Arg.Any<CancellationToken>());
+
+        rowReadOfTheCheck.SetResult(set);
+        await sut.RunningSetCheck(set.Id).WaitAsync(ClockMargin);
+    }
+
+    /// <summary>
+    /// Concurrent calls start one check, and get the loaded set. After the check, they wait for the one load of the new set.
+    /// </summary>
     [Test]
     public async Task GetAllHaplotypeFrequencies_ConcurrentCallsAfterTheCheckInterval_ReadTheSetRowOnce_AndLoadTheReplacedSetOnce()
     {
         var set = NewSet();
-        frequencyRepository.GetAllHaplotypeFrequencies(set.Id).Returns(NewRows(set.Id, 1), NewRows(set.Id, 1));
-        await sut.GetAllHaplotypeFrequencies(set.Id);
+        var rowsOfTheNewSet = NewRows(set.Id, 1);
+        frequencyRepository.GetAllHaplotypeFrequencies(set.Id).Returns(NewRows(set.Id, 1), rowsOfTheNewSet);
+        var entryOfTheOldSet = await sut.GetAllHaplotypeFrequencies(set.Id);
 
-        var newSet = ReplacingSet(set);
         var rowReadOfTheCheck = new TaskCompletionSource<Data.Models.HaplotypeFrequencySet>();
-        frequencySetRepository.GetSet(set.Id, Arg.Any<CancellationToken>()).Returns(rowReadOfTheCheck.Task, Task.FromResult(newSet));
+        frequencySetRepository.GetSet(set.Id, Arg.Any<CancellationToken>()).Returns(rowReadOfTheCheck.Task);
         MoveClockTo(SetCheckInterval + ClockMargin);
 
-        var calls = Enumerable.Range(0, 10).Select(_ => sut.GetAllHaplotypeFrequencies(set.Id)).ToList();
-        rowReadOfTheCheck.SetResult(newSet);
-        await Task.WhenAll(calls);
+        var entriesDuringTheCheck = await Task.WhenAll(Enumerable.Range(0, 10).Select(_ => sut.GetAllHaplotypeFrequencies(set.Id)));
+        rowReadOfTheCheck.SetResult(ReplacingSet(set));
+        await sut.RunningSetCheck(set.Id).WaitAsync(ClockMargin);
+        var entriesAfterTheCheck = await Task.WhenAll(Enumerable.Range(0, 10).Select(_ => sut.GetAllHaplotypeFrequencies(set.Id)));
 
+        entriesDuringTheCheck.Should().AllSatisfy(entry => entry.Should().BeSameAs(entryOfTheOldSet));
+        entriesAfterTheCheck.Should().AllSatisfy(entry => entry.ShouldBeTheSameEntryAs(FrequencySetCacheEntry.Build(rowsOfTheNewSet)));
         // The read of the first call, and the read of the check: a load reads no row, as the source of the set has it.
         await frequencySetRepository.Received(2).GetSet(set.Id, Arg.Any<CancellationToken>());
         await frequencyRepository.Received(2).GetAllHaplotypeFrequencies(set.Id);
@@ -969,7 +1047,7 @@ internal class HaplotypeFrequencyCacheTests
 
         frequencySetRepository.GetSet(wrongSet.Id, Arg.Any<CancellationToken>()).ThrowsAsync(new InvalidOperationException(fixture.Create<string>()));
         MoveClockTo(SetCheckInterval + ClockMargin);
-        var entry = await sut.GetAllHaplotypeFrequencies(wrongSet.Id);
+        var entry = await CallAfterTheCheck(wrongSet.Id);
 
         entry.ShouldBeTheSameEntryAs(FrequencySetCacheEntry.Build(rowsOfTheWrongSet));
     }
@@ -991,7 +1069,7 @@ internal class HaplotypeFrequencyCacheTests
         frequencySetRepository.GetSet(set.Id, Arg.Any<CancellationToken>()).Returns(setWithTheNewRows);
         frequencyRepository.GetAllHaplotypeFrequencies(set.Id).Returns(newRows);
         MoveClockTo(SetCheckInterval + ClockMargin);
-        var entry = await sut.GetAllHaplotypeFrequencies(set.Id);
+        var entry = await CallAfterTheCheck(set.Id);
 
         entry.ShouldBeTheSameEntryAs(FrequencySetCacheEntry.Build(newRows));
     }
@@ -1014,7 +1092,7 @@ internal class HaplotypeFrequencyCacheTests
         frequencySetRepository.GetSet(set.Id, Arg.Any<CancellationToken>()).Returns(setWithAHash);
         var otherSet = NewSetWithContent(rows);
         MoveClockTo(SetCheckInterval + ClockMargin);
-        var entryOfTheSet = await sut.GetAllHaplotypeFrequencies(set.Id);
+        var entryOfTheSet = await CallAfterTheCheck(set.Id);
         var entryOfTheOtherSet = await sut.GetAllHaplotypeFrequencies(otherSet.Id);
 
         entryOfTheOtherSet.Should().BeSameAs(entryOfTheSet);
@@ -1182,6 +1260,25 @@ internal class HaplotypeFrequencyCacheTests
         entry.ConsolidatedFrequencies.Should().BeNull();
         logger.Received(1).SendTrace(Arg.Is<string>(msg => msg.Contains("Failed to warm consolidated frequency cache")), LogLevel.Error);
     }
+
+    /// <summary>
+    /// The first call after the check interval starts the check of the set in the background, and returns the loaded set.
+    /// This makes that call, waits for the check, and returns what the next call gets.
+    /// </summary>
+    private async Task<FrequencySetCacheEntry> CallAfterTheCheck(int setId)
+    {
+        await sut.GetAllHaplotypeFrequencies(setId);
+        // In real time, so that a check that does not end fails the test, and does not hang it.
+        await sut.RunningSetCheck(setId).WaitAsync(ClockMargin);
+        MoveClockIntoTheIntervalOfTheLastCheck();
+        return await sut.GetAllHaplotypeFrequencies(setId);
+    }
+
+    /// <summary>
+    /// After a call that started a check: the entry of the check expires an interval after the real time of that call (see
+    /// <see cref="MoveClockTo"/>), so with the clock past the interval, the next call would start another check.
+    /// </summary>
+    private void MoveClockIntoTheIntervalOfTheLastCheck() => MoveClockTo(TimeSpan.Zero);
 
     private async Task WaitForConsolidation(int setId) =>
         await WaitUntil(async () => (await sut.GetAllHaplotypeFrequencies(setId)).ConsolidatedFrequencies != null);
