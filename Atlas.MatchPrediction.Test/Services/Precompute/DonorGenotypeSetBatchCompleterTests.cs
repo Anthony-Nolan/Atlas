@@ -55,7 +55,7 @@ internal class DonorGenotypeSetBatchCompleterTests
             new(1, DonorGenotypeSetSource.NoRow, ToStore(10)),
             new(3, DonorGenotypeSetSource.StaleFrequencySet, ToStore(11, 12, 13)),
             new(1, DonorGenotypeSetSource.DecodeFailed, null),
-            new(1, DonorGenotypeSetSource.TypingChanged, null),
+            new(1, DonorGenotypeSetSource.NotStoredUnambiguous, null),
         };
 
         await completer.Complete(Request(), EnabledContext(), outcomes, PatientGenotypeSetSource.Precomputed);
@@ -75,7 +75,7 @@ internal class DonorGenotypeSetBatchCompleterTests
         loggedMetrics["NoRow"].Should().Be(1);
         loggedMetrics["StaleFrequencySet"].Should().Be(1);
         loggedMetrics["DecodeFailed"].Should().Be(1);
-        loggedMetrics["TypingChanged"].Should().Be(1);
+        loggedMetrics["NotStoredUnambiguous"].Should().Be(1);
         loggedMetrics["UncoveredAllowedLoci"].Should().Be(0);
         loggedMetrics["ActiveDatabaseChanged"].Should().Be(0);
         loggedMetrics["ActiveDatabaseUnknown"].Should().Be(0);

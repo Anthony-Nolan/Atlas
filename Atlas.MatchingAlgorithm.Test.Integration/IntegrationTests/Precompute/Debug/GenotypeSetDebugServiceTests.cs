@@ -115,12 +115,11 @@ internal class GenotypeSetDebugServiceTests
             IncludeGenotypes = true
         });
 
-        var repository = repositoryFactory.GetSubjectGenotypeSetRepositoryForDatabase(activeRecord.Database);
         var sets = result.Subjects.Should().ContainSingle().Which.GenotypeSets;
         sets.Should().HaveCount(AllowedLociKeyExtensions.All.Count);
         foreach (var set in sets)
         {
-            var stored = (await repository.GetDonorSubjectGenotypeSets([donor.DonorId], set.AllowedLociKey))[donor.DonorId];
+            var stored = await LinkedValue(donor.DonorId, set.AllowedLociKey);
             set.HlaTypingKey.Should().Be(stored.HlaTypingKey);
             set.HaplotypeFrequencySet!.Id.Should().Be(stored.HaplotypeFrequencySetId);
             set.IsUnrepresented.Should().Be(stored.IsUnrepresented);
@@ -158,7 +157,10 @@ internal class GenotypeSetDebugServiceTests
             firstSets.Select(set => (set.AllowedLociKey, set.Saved!.SubjectGenotypeSetValueId)));
     }
 
-    /// <summary>How a tester stores a donor's rows against an older, inactive frequency set: search then sees a stale set.</summary>
+    /// <summary>
+    /// How a tester stores a donor's rows against an older, inactive frequency set. Search reads by the key of the set that
+    /// it uses, so it does not use these rows (ATL-424).
+    /// </summary>
     [Test]
     public async Task Compute_WithSaveAndAFrequencySetId_StoresTheDonorsRowsForThatSet()
     {
@@ -173,11 +175,9 @@ internal class GenotypeSetDebugServiceTests
             Save = true
         });
 
-        var repository = repositoryFactory.GetSubjectGenotypeSetRepositoryForDatabase(activeRecord.Database);
         foreach (var allowedLociKey in AllowedLociKeyExtensions.All)
         {
-            var stored = await repository.GetDonorSubjectGenotypeSets([donor.DonorId], allowedLociKey);
-            stored[donor.DonorId].HaplotypeFrequencySetId.Should().Be(olderSet.Id);
+            (await LinkedValue(donor.DonorId, allowedLociKey)).HaplotypeFrequencySetId.Should().Be(olderSet.Id);
         }
     }
 
@@ -218,6 +218,17 @@ internal class GenotypeSetDebugServiceTests
         await using var context = new ContextFactory().Create(activeConnectionString);
         var rows = await context.DonorSubjectGenotypeSets.Where(row => row.DonorId == donorId).ToListAsync();
         return rows.Select(row => (row.AllowedLociKey, row.SubjectGenotypeSetValueId)).ToList();
+    }
+
+    /// <summary>The value row that the donor's link row at the combination points at.</summary>
+    private async Task<SubjectGenotypeSetValue> LinkedValue(int donorId, AllowedLociKey allowedLociKey)
+    {
+        await using var context = new ContextFactory().Create(activeConnectionString);
+        var valueId = await context.DonorSubjectGenotypeSets
+            .Where(row => row.DonorId == donorId && row.AllowedLociKey == allowedLociKey)
+            .Select(row => row.SubjectGenotypeSetValueId)
+            .SingleAsync();
+        return await context.SubjectGenotypeSetValues.SingleAsync(row => row.Id == valueId);
     }
 
     /// <summary>A typing with names of its own at every match prediction locus.</summary>

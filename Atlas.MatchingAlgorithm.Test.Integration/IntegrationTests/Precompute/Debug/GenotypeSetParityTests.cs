@@ -208,10 +208,11 @@ internal class GenotypeSetParityTests
 
     /// <summary>
     /// Criterion 4: a new frequency set is imported and activated for the donor's codes after the store. The lookup gives
-    /// the new set, as search would: this project has no Match Prediction database to import into.
+    /// the new set, as search would: this project has no Match Prediction database to import into. Search reads the key of
+    /// the new set, which has no row yet, and so does the check (ATL-424).
     /// </summary>
     [Test]
-    public async Task CompareWithStored_AfterANewFrequencySetIsActivatedForTheDonor_GivesStaleFrequencySetWithBothIds()
+    public async Task CompareWithStored_AfterANewFrequencySetIsActivatedForTheDonor_GivesNoStoredRow()
     {
         var donor = await InsertDonor(activeRecord.Database);
         await Precompute([donor], activeRecord.Database, activeRecord.HlaNomenclatureVersion);
@@ -221,14 +222,15 @@ internal class GenotypeSetParityTests
         var result = await service.Compute(new GenotypeSetDebugRequest { ExternalDonorCodes = [donor.ExternalDonorCode], CompareWithStored = true });
 
         ParityChecks(result).Should().HaveCount(4).And.OnlyContain(check =>
-            check.Result == ParityResult.StaleFrequencySet
-            && check.StoredHaplotypeFrequencySetId == frequencySet.Id
-            && check.SearchHaplotypeFrequencySetId == newSet.Id);
+            check.Result == ParityResult.NoStoredRow && check.SearchHaplotypeFrequencySetId == newSet.Id);
     }
 
-    /// <summary>Criterion 5: a link row that points at the value row of another typing.</summary>
+    /// <summary>
+    /// Criterion 5: a link row that points at the value row of another typing. The check reads the row with the key of the
+    /// donor's typing, as search does, so the link row does not change the result (ATL-424).
+    /// </summary>
     [Test]
-    public async Task CompareWithStored_ForALinkRowThatPointsAtTheRowOfAnotherTyping_GivesTypingChangedWithBothKeys()
+    public async Task CompareWithStored_ForALinkRowThatPointsAtTheRowOfAnotherTyping_StillReadsTheRowOfTheDonorsTyping()
     {
         var donor = await InsertDonor(activeRecord.Database);
         var other = await InsertDonor(activeRecord.Database);
@@ -247,13 +249,23 @@ internal class GenotypeSetParityTests
 
         var set = result.Subjects.Single().GenotypeSets.Single();
         set.HlaTypingKey.Should().Be(Key(donor.Typing, AllowedLociKey.ABDrb1));
-        set.ParityCheck!.Result.Should().Be(ParityResult.TypingChanged);
-        set.ParityCheck.StoredHlaTypingKey.Should().Be(otherKey.HlaTypingKey);
+        set.ParityCheck!.Result.Should().Be(ParityResult.Match);
     }
 
     /// <summary>Criterion 6: missing rows.</summary>
     [Test]
-    public async Task CompareWithStored_ForADonorWhoseLinkRowsAreRemoved_GivesNoStoredRow()
+    public async Task CompareWithStored_ForADonorThatIsNotPrecomputed_GivesNoStoredRow()
+    {
+        var donor = await InsertDonor(activeRecord.Database);
+
+        var result = await service.Compute(new GenotypeSetDebugRequest { ExternalDonorCodes = [donor.ExternalDonorCode], CompareWithStored = true });
+
+        ParityChecks(result).Should().HaveCount(4).And.OnlyContain(check => check.Result == ParityResult.NoStoredRow);
+    }
+
+    /// <summary>Criterion 6: a donor with no link rows. Its value rows are read by their key, as search reads them (ATL-424).</summary>
+    [Test]
+    public async Task CompareWithStored_ForADonorWhoseLinkRowsAreRemoved_StillGivesMatch()
     {
         var donor = await InsertDonor(activeRecord.Database);
         await Precompute([donor], activeRecord.Database, activeRecord.HlaNomenclatureVersion);
@@ -261,7 +273,7 @@ internal class GenotypeSetParityTests
 
         var result = await service.Compute(new GenotypeSetDebugRequest { ExternalDonorCodes = [donor.ExternalDonorCode], CompareWithStored = true });
 
-        ParityChecks(result).Should().HaveCount(4).And.OnlyContain(check => check.Result == ParityResult.NoStoredRow);
+        ParityChecks(result).Should().HaveCount(4).And.OnlyContain(check => check.Result == ParityResult.Match);
     }
 
     /// <summary>Criterion 6: a damaged payload.</summary>

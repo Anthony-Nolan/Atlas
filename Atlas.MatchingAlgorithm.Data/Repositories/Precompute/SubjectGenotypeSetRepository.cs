@@ -108,16 +108,16 @@ public interface ISubjectGenotypeSetRepository
     Task DeleteDonorAssignments(IReadOnlyCollection<int> donorIds);
 
     /// <summary>
-    /// The stored genotype set of each given donor at one locus combination, for search (ATL-221). Donors with no row
-    /// are absent from the result.
+    /// The stored value of each given key, whether or not any donor points at it. Keys with no row are absent from the
+    /// result. For search, which reads its donors' sets (ATL-424) and its patient's set (ATL-426) by key, and for the
+    /// parity check of the debug endpoint.
     /// </summary>
-    Task<IReadOnlyDictionary<int, StoredDonorSubjectGenotypeSet>> GetDonorSubjectGenotypeSets(IReadOnlyCollection<int> donorIds, AllowedLociKey allowedLociKey);
-
-    /// <summary>
-    /// The stored value with the given key, whether or not any donor points at it; null when there is none. For the
-    /// patient's set in search (ATL-426), which is stored as a value only.
-    /// </summary>
-    Task<StoredSubjectGenotypeSetValue> GetSubjectGenotypeSetValue(SubjectGenotypeSetKey key);
+    /// <remarks>
+    /// Each distinct key is read once. The keys are staged and joined on the unique key index, as for
+    /// <see cref="GetExistingValueIds"/>, so the read cannot disagree with the writers about what "the same key" means.
+    /// </remarks>
+    Task<IReadOnlyDictionary<SubjectGenotypeSetKey, StoredSubjectGenotypeSetValue>> GetSubjectGenotypeSetValues(
+        IReadOnlyCollection<SubjectGenotypeSetKey> keys);
 
     /// <summary>
     /// As <see cref="UpsertDonorAssignments"/>, but writes an assignment only while its donor in <c>Donors</c> still has
@@ -239,42 +239,6 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
     /// with it.
     /// </summary>
     internal const int BucketCount = 16;
-
-    /// <summary>
-    /// A seek on the unique (DonorId, AllowedLociKey) index per donor, then the value row by its primary key. The typing
-    /// key is returned so the caller can check that the row was computed from the typing it has.
-    ///
-    /// <para>
-    /// The primary key of the values is <c>(Id, Bucket)</c>, partitioned on <c>Bucket</c>, so the join gives the bucket
-    /// too: the seek then reads one partition, not all of them. The bucket is cast to the column's <c>tinyint</c>, so
-    /// that the column is not converted, which would stop the seek.
-    /// </para>
-    /// </summary>
-    private static readonly string SelectDonorSubjectGenotypeSetsSql = $"""
-        SELECT
-            a.{nameof(DonorSubjectGenotypeSet.DonorId)},
-            v.{nameof(SubjectGenotypeSetValue.HlaTypingKey)},
-            v.{nameof(SubjectGenotypeSetValue.HaplotypeFrequencySetId)},
-            v.{nameof(SubjectGenotypeSetValue.IsUnrepresented)},
-            v.{nameof(SubjectGenotypeSetValue.SubjectGenotypeSetData)}
-        FROM {AssignmentsTableName} a
-        INNER JOIN {ValuesTableName} v
-            ON v.{nameof(SubjectGenotypeSetValue.Id)} = a.{nameof(DonorSubjectGenotypeSet.SubjectGenotypeSetValueId)}
-           AND v.Bucket = CAST(a.{nameof(DonorSubjectGenotypeSet.SubjectGenotypeSetValueId)} % {BucketCount} AS tinyint)
-        WHERE a.{nameof(DonorSubjectGenotypeSet.AllowedLociKey)} = @AllowedLociKey
-          AND a.{nameof(DonorSubjectGenotypeSet.DonorId)} IN @DonorIds
-        """;
-
-    /// <summary>One seek on the unique key index.</summary>
-    private const string SelectValueByKeySql = $"""
-        SELECT
-            {nameof(SubjectGenotypeSetValue.IsUnrepresented)},
-            {nameof(SubjectGenotypeSetValue.SubjectGenotypeSetData)}
-        FROM {ValuesTableName}
-        WHERE {nameof(SubjectGenotypeSetValue.HlaTypingKey)} = @HlaTypingKey
-          AND {nameof(SubjectGenotypeSetValue.HaplotypeFrequencySetId)} = @HaplotypeFrequencySetId
-          AND {nameof(SubjectGenotypeSetValue.AllowedLociKey)} = @AllowedLociKey
-        """;
 
     private const string DonorsTableName = "Donors";
 
@@ -583,6 +547,24 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
            AND v.{nameof(SubjectGenotypeSetValue.AllowedLociKey)} = s.{nameof(SubjectGenotypeSetValue.AllowedLociKey)}
         """;
 
+    /// <summary>
+    /// The stored value of every staged key: one seek on the unique key index for each, then the value row by its primary
+    /// key. A staged key with no row is not returned.
+    /// </summary>
+    private const string SelectStagedValuesSql = $"""
+        SELECT
+            v.{nameof(SubjectGenotypeSetValue.HlaTypingKey)},
+            v.{nameof(SubjectGenotypeSetValue.HaplotypeFrequencySetId)},
+            v.{nameof(SubjectGenotypeSetValue.AllowedLociKey)},
+            v.{nameof(SubjectGenotypeSetValue.IsUnrepresented)},
+            v.{nameof(SubjectGenotypeSetValue.SubjectGenotypeSetData)}
+        FROM {ValuesTableName} v
+        INNER JOIN {StagingTableName} s
+            ON v.{nameof(SubjectGenotypeSetValue.HlaTypingKey)} = s.{nameof(SubjectGenotypeSetValue.HlaTypingKey)}
+           AND v.{nameof(SubjectGenotypeSetValue.HaplotypeFrequencySetId)} = s.{nameof(SubjectGenotypeSetValue.HaplotypeFrequencySetId)}
+           AND v.{nameof(SubjectGenotypeSetValue.AllowedLociKey)} = s.{nameof(SubjectGenotypeSetValue.AllowedLociKey)}
+        """;
+
     public SubjectGenotypeSetRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
     {
     }
@@ -718,54 +700,21 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyDictionary<int, StoredDonorSubjectGenotypeSet>> GetDonorSubjectGenotypeSets(
-        IReadOnlyCollection<int> donorIds,
-        AllowedLociKey allowedLociKey)
+    public async Task<IReadOnlyDictionary<SubjectGenotypeSetKey, StoredSubjectGenotypeSetValue>> GetSubjectGenotypeSetValues(
+        IReadOnlyCollection<SubjectGenotypeSetKey> keys)
     {
-        var stored = new Dictionary<int, StoredDonorSubjectGenotypeSet>();
-        if (donorIds == null || donorIds.Count == 0)
+        if (keys == null || keys.Count == 0)
         {
-            return stored;
+            return new Dictionary<SubjectGenotypeSetKey, StoredSubjectGenotypeSetValue>();
         }
 
-        await using var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString());
-        await connection.OpenAsync();
+        // Staged as rows with no payload, as for GetExistingValueIds: only the join brings the payloads back.
+        var probes = keys
+            .Distinct()
+            .Select(key => new SubjectGenotypeSetValueToStore(key, IsUnrepresented: false, SubjectGenotypeSetData: null))
+            .ToList();
 
-        // Chunked for the same parameter limit as the delete.
-        foreach (var chunk in donorIds.Distinct().Chunk(DeleteChunkSize))
-        {
-            var rows = await connection.QueryAsync<StoredDonorSubjectGenotypeSetRow>(
-                SelectDonorSubjectGenotypeSetsSql,
-                new { AllowedLociKey = allowedLociKey.ToString(), DonorIds = chunk },
-                commandTimeout: CommandTimeoutInSeconds);
-
-            foreach (var row in rows)
-            {
-                stored[row.DonorId] = new StoredDonorSubjectGenotypeSet(
-                    row.DonorId, row.HlaTypingKey, row.HaplotypeFrequencySetId, row.IsUnrepresented, row.SubjectGenotypeSetData);
-            }
-        }
-
-        return stored;
-    }
-
-    /// <inheritdoc />
-    public async Task<StoredSubjectGenotypeSetValue> GetSubjectGenotypeSetValue(SubjectGenotypeSetKey key)
-    {
-        await using var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString());
-        await connection.OpenAsync();
-
-        var row = await connection.QuerySingleOrDefaultAsync<StoredValueRow>(
-            SelectValueByKeySql,
-            new
-            {
-                key.HlaTypingKey,
-                key.HaplotypeFrequencySetId,
-                AllowedLociKey = key.AllowedLociKey.ToString()
-            },
-            commandTimeout: CommandTimeoutInSeconds);
-
-        return row == null ? null : new StoredSubjectGenotypeSetValue(row.IsUnrepresented, row.SubjectGenotypeSetData);
+        return await OverStagedChunks(probes, ReadStagedValues);
     }
 
     /// <inheritdoc />
@@ -924,11 +873,11 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
     /// takes its range locks from its hints, so the level does not change it.
     /// </para>
     /// </summary>
-    private async Task<IReadOnlyDictionary<SubjectGenotypeSetKey, int>> OverStagedChunks(
+    private async Task<IReadOnlyDictionary<SubjectGenotypeSetKey, T>> OverStagedChunks<T>(
         List<SubjectGenotypeSetValueToStore> values,
-        Func<SqlConnection, Task<IReadOnlyDictionary<SubjectGenotypeSetKey, int>>> perChunk)
+        Func<SqlConnection, Task<IReadOnlyDictionary<SubjectGenotypeSetKey, T>>> perChunk)
     {
-        var ids = new Dictionary<SubjectGenotypeSetKey, int>(values.Count);
+        var results = new Dictionary<SubjectGenotypeSetKey, T>(values.Count);
 
         await using var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString());
         await connection.OpenAsync();
@@ -949,15 +898,15 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
 
             // Staging sits outside the retry on purpose: a retry re-runs against the rows already staged, which is what
             // makes the attempt idempotent rather than a second insert of the same chunk.
-            var chunkIds = await WithRetries(() => perChunk(connection));
+            var chunkResults = await WithRetries(() => perChunk(connection));
 
-            foreach (var (key, id) in chunkIds)
+            foreach (var (key, result) in chunkResults)
             {
-                ids[key] = id;
+                results[key] = result;
             }
         }
 
-        return ids;
+        return results;
     }
 
     /// <summary>
@@ -1014,6 +963,13 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
         return rows.ToDictionary(row => row.ToKey(), row => row.Id);
     }
 
+    private static async Task<IReadOnlyDictionary<SubjectGenotypeSetKey, StoredSubjectGenotypeSetValue>> ReadStagedValues(SqlConnection connection)
+    {
+        var rows = await connection.QueryAsync<StoredValueRow>(SelectStagedValuesSql, commandTimeout: CommandTimeoutInSeconds);
+
+        return rows.ToDictionary(row => row.ToKey(), row => new StoredSubjectGenotypeSetValue(row.IsUnrepresented, row.SubjectGenotypeSetData));
+    }
+
     private static async Task<T> WithRetries<T>(Func<Task<T>> operation)
     {
         for (var attempt = 1;; attempt++)
@@ -1045,18 +1001,15 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
         internal SubjectGenotypeSetKey ToKey() => new(HlaTypingKey, HaplotypeFrequencySetId, Enum.Parse<AllowedLociKey>(AllowedLociKey));
     }
 
+    /// <summary><c>AllowedLociKey</c> is read as a string and parsed, for the reason given on <see cref="StoredValueIdRow"/>.</summary>
     private sealed class StoredValueRow
     {
-        public bool IsUnrepresented { get; init; }
-        public byte[] SubjectGenotypeSetData { get; init; }
-    }
-
-    private sealed class StoredDonorSubjectGenotypeSetRow
-    {
-        public int DonorId { get; init; }
         public string HlaTypingKey { get; init; }
         public int HaplotypeFrequencySetId { get; init; }
+        public string AllowedLociKey { get; init; }
         public bool IsUnrepresented { get; init; }
         public byte[] SubjectGenotypeSetData { get; init; }
+
+        internal SubjectGenotypeSetKey ToKey() => new(HlaTypingKey, HaplotypeFrequencySetId, Enum.Parse<AllowedLociKey>(AllowedLociKey));
     }
 }

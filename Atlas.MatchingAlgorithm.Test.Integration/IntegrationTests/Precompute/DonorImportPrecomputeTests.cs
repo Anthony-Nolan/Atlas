@@ -7,7 +7,6 @@ using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
-using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Models.Precompute;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Repositories;
@@ -236,13 +235,9 @@ public class DonorImportPrecomputeTests
 
         public Task DeleteDonorAssignments(IReadOnlyCollection<int> donorIds) => inner.DeleteDonorAssignments(donorIds);
 
-        public Task<IReadOnlyDictionary<int, StoredDonorSubjectGenotypeSet>> GetDonorSubjectGenotypeSets(
-            IReadOnlyCollection<int> donorIds,
-            AllowedLociKey allowedLociKey) =>
-            inner.GetDonorSubjectGenotypeSets(donorIds, allowedLociKey);
-
-        public Task<StoredSubjectGenotypeSetValue> GetSubjectGenotypeSetValue(SubjectGenotypeSetKey key) =>
-            inner.GetSubjectGenotypeSetValue(key);
+        public Task<IReadOnlyDictionary<SubjectGenotypeSetKey, StoredSubjectGenotypeSetValue>> GetSubjectGenotypeSetValues(
+            IReadOnlyCollection<SubjectGenotypeSetKey> keys) =>
+            inner.GetSubjectGenotypeSetValues(keys);
 
         public Task<GuardedUpsertResult> UpsertDonorAssignmentsWhereDonorUnchanged(IReadOnlyCollection<GuardedDonorAssignment> assignments) =>
             inner.UpsertDonorAssignmentsWhereDonorUnchanged(assignments);

@@ -75,8 +75,7 @@ internal partial class GenotypeSetDebugServiceTests
         genotypeSetRepository.GetOrCreateValueIds(default).ReturnsForAnyArgs(callInfo =>
             callInfo.Arg<IReadOnlyCollection<SubjectGenotypeSetValueToStore>>()?.ToDictionary(value => value.Key, _ => nextValueId++)
             ?? new Dictionary<SubjectGenotypeSetKey, int>());
-        genotypeSetRepository.GetDonorSubjectGenotypeSets(default, default).ReturnsForAnyArgs(new Dictionary<int, StoredDonorSubjectGenotypeSet>());
-        genotypeSetRepository.GetSubjectGenotypeSetValue(default).ReturnsForAnyArgs((StoredSubjectGenotypeSetValue)null);
+        genotypeSetRepository.GetSubjectGenotypeSetValues(default).ReturnsForAnyArgs(new Dictionary<SubjectGenotypeSetKey, StoredSubjectGenotypeSetValue>());
 
         repositoryFactory = Substitute.For<IStaticallyChosenDatabaseRepositoryFactory>();
         repositoryFactory.GetDonorInspectionRepositoryForDatabase(default).ReturnsForAnyArgs(donorRepository);

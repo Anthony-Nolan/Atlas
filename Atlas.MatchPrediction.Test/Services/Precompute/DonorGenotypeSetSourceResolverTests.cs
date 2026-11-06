@@ -1,15 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Public.Models.GeneticData;
+using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.Precompute;
+using AutoFixture;
 using AwesomeAssertions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
+using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 
 namespace Atlas.MatchPrediction.Test.Services.Precompute;
 
@@ -19,19 +24,24 @@ internal class DonorGenotypeSetSourceResolverTests
     private const int DataRefreshRecordId = 42;
     private static readonly IReadOnlyCollection<DonorInput> Donors = [new() { DonorIds = [1, 2] }];
 
+    private Fixture fixture;
     private PrecomputedGenotypeSetSettings settings;
     private IPrecomputedDonorGenotypeSetReader reader;
+    private IHaplotypeFrequencyLookupService frequencySetLookup;
     private IDonorGenotypeSetSourceResolver resolver;
 
     [SetUp]
     public void SetUp()
     {
+        fixture = new Fixture();
         settings = new PrecomputedGenotypeSetSettings();
         reader = Substitute.For<IPrecomputedDonorGenotypeSetReader>();
         reader.GetDonorGenotypeSets(default, default, default, default).ReturnsForAnyArgs(
             new PrecomputedDonorGenotypeSetLookup("ABCDrb1Dqb1", null, new Dictionary<int, PrecomputedDonorGenotypeSetRow>()));
+        frequencySetLookup = Substitute.For<IHaplotypeFrequencyLookupService>();
+        frequencySetLookup.GetSingleHaplotypeFrequencySet(default).ReturnsForAnyArgs(fixture.Create<HaplotypeFrequencySet>());
 
-        resolver = new DonorGenotypeSetSourceResolver(settings, reader, Substitute.For<IAtlasLogger>());
+        resolver = new DonorGenotypeSetSourceResolver(settings, reader, frequencySetLookup, Substitute.For<IAtlasLogger>());
     }
 
     [Test]
@@ -99,13 +109,92 @@ internal class DonorGenotypeSetSourceResolverTests
         var context = await resolver.Resolve(request, Donors);
 
         await reader.Received(1).GetDonorGenotypeSets(
-            Donors,
+            Arg.Is<IReadOnlyCollection<DonorGenotypeSetToRead>>(donors => donors.Select(donor => donor.Donor).SequenceEqual(Donors)),
             Arg.Is<IReadOnlySet<Locus>>(loci => loci.SetEquals(new[] { Locus.A, Locus.B, Locus.Dqb1, Locus.Drb1 })),
             DataRefreshRecordId,
             null);
         context.BatchFallbackReason.Should().BeNull();
         context.AllowedLociKey.Should().Be("ABCDrb1Dqb1");
         context.CanStore.Should().BeTrue();
+    }
+
+    /// <summary>The key of a stored set holds its frequency set, so the read needs the set that the live path would use.</summary>
+    [Test]
+    public async Task Resolve_WhenSwitchedOn_ReadsEachDonorInputWithTheFrequencySetOfItsMetadata()
+    {
+        settings.Mode = PrecomputedGenotypeSetMode.DefaultPrecomputed;
+        var firstMetadata = fixture.Create<FrequencySetMetadata>();
+        var secondMetadata = fixture.Create<FrequencySetMetadata>();
+        var firstSet = fixture.Create<HaplotypeFrequencySet>();
+        var secondSet = fixture.Create<HaplotypeFrequencySet>();
+        frequencySetLookup.GetSingleHaplotypeFrequencySet(firstMetadata).Returns(firstSet);
+        frequencySetLookup.GetSingleHaplotypeFrequencySet(secondMetadata).Returns(secondSet);
+        var first = new DonorInput { DonorIds = [fixture.Create<int>()], DonorFrequencySetMetadata = firstMetadata };
+        var second = new DonorInput { DonorIds = [fixture.Create<int>()], DonorFrequencySetMetadata = secondMetadata };
+
+        await resolver.Resolve(Request(null), [first, second]);
+
+        await reader.Received(1).GetDonorGenotypeSets(
+            Arg.Is<IReadOnlyCollection<DonorGenotypeSetToRead>>(donors => donors.SequenceEqual(new[]
+            {
+                new DonorGenotypeSetToRead(first, firstSet.Id),
+                new DonorGenotypeSetToRead(second, secondSet.Id)
+            })),
+            Arg.Any<IReadOnlySet<Locus>>(),
+            Arg.Any<int?>(),
+            Arg.Any<PatientGenotypeSetKey>());
+    }
+
+    /// <summary>A batch's inputs are sorted by registry and ethnicity, so most of them share the lookup of the input before.</summary>
+    [Test]
+    public async Task Resolve_LooksUpTheFrequencySetOnceForEachRegistryAndEthnicity()
+    {
+        settings.Mode = PrecomputedGenotypeSetMode.DefaultPrecomputed;
+        var metadata = fixture.Create<FrequencySetMetadata>();
+        var sameCodes = new FrequencySetMetadata { RegistryCode = metadata.RegistryCode, EthnicityCode = metadata.EthnicityCode };
+        var otherCodes = fixture.Create<FrequencySetMetadata>();
+        var donors = new[] { metadata, sameCodes, otherCodes }
+            .Select(codes => new DonorInput { DonorIds = [fixture.Create<int>()], DonorFrequencySetMetadata = codes })
+            .ToList();
+
+        await resolver.Resolve(Request(null), donors);
+
+        await frequencySetLookup.ReceivedWithAnyArgs(2).GetSingleHaplotypeFrequencySet(default);
+    }
+
+    /// <summary>As the live path does: an input with no metadata gets the set of empty metadata, usually the global set.</summary>
+    [Test]
+    public async Task Resolve_ForADonorInputWithNoFrequencySetMetadata_LooksUpTheSetOfEmptyMetadata()
+    {
+        settings.Mode = PrecomputedGenotypeSetMode.DefaultPrecomputed;
+
+        await resolver.Resolve(Request(null), [new DonorInput { DonorIds = [fixture.Create<int>()] }]);
+
+        await frequencySetLookup.Received(1).GetSingleHaplotypeFrequencySet(
+            Arg.Is<FrequencySetMetadata>(metadata => metadata.RegistryCode == null && metadata.EthnicityCode == null));
+    }
+
+    [Test]
+    public async Task Resolve_WhenTheFrequencySetLookupFails_ComputesTheBatchLiveRatherThanFailing()
+    {
+        settings.Mode = PrecomputedGenotypeSetMode.DefaultPrecomputed;
+        frequencySetLookup.GetSingleHaplotypeFrequencySet(default).ThrowsAsyncForAnyArgs(new Exception(fixture.Create<string>()));
+
+        var context = await resolver.Resolve(Request(null), Donors);
+
+        context.BatchFallbackReason.Should().Be(DonorGenotypeSetSource.ReadFailed);
+        context.CanStore.Should().BeFalse();
+        await reader.DidNotReceiveWithAnyArgs().GetDonorGenotypeSets(default, default, default, default);
+    }
+
+    [Test]
+    public async Task Resolve_WhenSwitchedOff_DoesNotLookUpFrequencySets()
+    {
+        settings.Mode = PrecomputedGenotypeSetMode.ForceLive;
+
+        await resolver.Resolve(Request(true), Donors);
+
+        await frequencySetLookup.DidNotReceiveWithAnyArgs().GetSingleHaplotypeFrequencySet(default);
     }
 
     [Test]
@@ -163,7 +252,8 @@ internal class DonorGenotypeSetSourceResolverTests
 
         var context = await resolver.Resolve(request, Donors);
 
-        await reader.Received(1).GetDonorGenotypeSets(Donors, Arg.Any<IReadOnlySet<Locus>>(), DataRefreshRecordId, key);
+        await reader.Received(1).GetDonorGenotypeSets(
+            Arg.Any<IReadOnlyCollection<DonorGenotypeSetToRead>>(), Arg.Any<IReadOnlySet<Locus>>(), DataRefreshRecordId, key);
         context.PatientGenotypeSetKey.Should().Be(key);
     }
 

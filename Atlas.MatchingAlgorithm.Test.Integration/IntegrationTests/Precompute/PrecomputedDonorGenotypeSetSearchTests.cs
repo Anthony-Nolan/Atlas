@@ -9,7 +9,6 @@ using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
-using Atlas.MatchingAlgorithm.Data.Models.Precompute;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.Precompute;
@@ -25,6 +24,7 @@ using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MatchPrediction.Services.Precompute;
+using AutoFixture;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,12 +39,13 @@ using SearchAlgorithmContext = Atlas.MatchingAlgorithm.Data.Context.SearchAlgori
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute;
 
 /// <summary>
-/// How search uses a donor's stored genotype set (ATL-221) when the row is good, missing, for another typing or frequency
-/// set, or cannot be decoded, and when the batch cannot use stored rows at all (ATL-493). The stored rows are real rows
-/// in the active matching database, and the batch runs through the real path: the source resolver and reader, the match
-/// probability service, and the batch completer with the real writer. Only the Match Prediction engine (the genotype
-/// matcher, the frequency set lookup and the small g group check) is substituted: this project has no Match Prediction
-/// database.
+/// How search uses a donor's stored genotype set (ATL-221), which it reads by the key of the donor input's typing,
+/// frequency set and loci (ATL-424): when the value is good, missing, only for another frequency set, or cannot be
+/// decoded; when the donor was re-typed or has no link row; and when the batch cannot use stored rows at all (ATL-493).
+/// The stored rows are real rows in the active matching database, and the batch runs through the real path: the source
+/// resolver and reader, the match probability service, and the batch completer with the real writer. Only the Match
+/// Prediction engine (the genotype matcher, the frequency set lookups and the small g group check) is substituted: this
+/// project has no Match Prediction database.
 /// </summary>
 /// <remarks>
 /// <see cref="DonorGenotypeSetSource.UncoveredAllowedLoci"/> is not here: every set of loci the input validator accepts
@@ -73,6 +74,7 @@ internal class PrecomputedDonorGenotypeSetSearchTests
         NoneAsUnambiguous,
         OtherFrequencySet,
         OtherTyping,
+        NoLinkRow,
         Undecodable
     }
 
@@ -84,6 +86,7 @@ internal class PrecomputedDonorGenotypeSetSearchTests
         NoLongerActive
     }
 
+    private Fixture fixture;
     private IDataRefreshHistoryRepository historyRepository;
     private ActiveDataRefreshRecord activeRecord;
     private StaticallyChosenTransientSqlConnectionStringProviderFactory connectionStringFactory;
@@ -91,6 +94,8 @@ internal class PrecomputedDonorGenotypeSetSearchTests
     private ISubjectGenotypeSetRepository repository;
     private PrecomputedDonorGenotypeSetWriter writer;
     private IAtlasLogger logger;
+    private IHaplotypeFrequencyLookupService frequencySetLookup;
+    private IHaplotypeFrequencyService haplotypeFrequencyService;
     private IDonorGenotypeSetSourceResolver resolver;
     private IMatchProbabilityService matchProbabilityService;
     private IDonorGenotypeSetBatchCompleter completer;
@@ -99,10 +104,13 @@ internal class PrecomputedDonorGenotypeSetSearchTests
     private Dictionary<string, double> usageMetrics;
     private SubjectGenotypeSet storedSet;
     private SubjectGenotypeSet liveSet;
+    private Dictionary<(string TypingKey, int FrequencySetId), SubjectGenotypeSet> engineSets;
 
     [SetUp]
     public async Task SetUp()
     {
+        fixture = new Fixture();
+        engineSets = new Dictionary<(string TypingKey, int FrequencySetId), SubjectGenotypeSet>();
         historyRepository = Injection.Provider.GetService<IDataRefreshHistoryRepository>();
         activeRecord = historyRepository.GetActiveRecord();
         connectionStringFactory = Injection.Provider.GetService<StaticallyChosenTransientSqlConnectionStringProviderFactory>();
@@ -121,24 +129,29 @@ internal class PrecomputedDonorGenotypeSetSearchTests
                 Arg.Any<Dictionary<string, string>>(),
                 Arg.Any<Dictionary<string, double>>()))
             .Do(call => usageMetrics = call.ArgAt<Dictionary<string, double>>(3));
+
+        // The set that the batch chooses for a donor input before it reads, as the live path chooses it below.
+        frequencySetLookup = Substitute.For<IHaplotypeFrequencyLookupService>();
+        frequencySetLookup.GetSingleHaplotypeFrequencySet(default).ReturnsForAnyArgs(new HaplotypeFrequencySet { Id = DonorFrequencySetId });
         resolver = Resolver(PrecomputedGenotypeSetMode.DefaultPrecomputed);
         completer = new DonorGenotypeSetBatchCompleter(writer, logger);
 
         storedSet = SetWithGenotypes(2, 0.5m);
         liveSet = SetWithGenotypes(3, 0.6m);
 
-        var haplotypeFrequencyService = Substitute.For<IHaplotypeFrequencyService>();
+        haplotypeFrequencyService = Substitute.For<IHaplotypeFrequencyService>();
         haplotypeFrequencyService.GetHaplotypeFrequencySets(default, default).ReturnsForAnyArgs(new HaplotypeFrequencySetResponse
         {
             PatientSet = new HaplotypeFrequencySet { Id = PatientFrequencySetId },
             DonorSet = new HaplotypeFrequencySet { Id = DonorFrequencySetId }
         });
 
-        // Like the real matcher: uses the supplied donor set, or "computes" the live one.
+        // Like the real matcher: uses the supplied donor set, or "computes" the live one. The input is null only when a test
+        // sets up the matcher again: that is not a call.
         genotypeMatcher = Substitute.For<IGenotypeMatcher>();
         genotypeMatcher.MatchPatientDonorGenotypes(default).ReturnsForAnyArgs(call =>
         {
-            var donorSet = call.Arg<GenotypeMatcherInput>().DonorGenotypeSet ?? liveSet;
+            var donorSet = call.Arg<GenotypeMatcherInput>()?.DonorGenotypeSet ?? liveSet;
             return new GenotypeMatcherResult
             {
                 PatientResult = new GenotypeMatcherResult.SubjectResult(false, 1, 0.1m),
@@ -171,10 +184,11 @@ internal class PrecomputedDonorGenotypeSetSearchTests
     [TestCase(RowState.Unrepresented, DonorGenotypeSetSource.Precomputed, false)]
     [TestCase(RowState.None, DonorGenotypeSetSource.NoRow, true)]
     [TestCase(RowState.NoneAsUnambiguous, DonorGenotypeSetSource.NotStoredUnambiguous, false)]
-    [TestCase(RowState.OtherFrequencySet, DonorGenotypeSetSource.StaleFrequencySet, true)]
-    [TestCase(RowState.OtherTyping, DonorGenotypeSetSource.TypingChanged, false)]
+    [TestCase(RowState.OtherFrequencySet, DonorGenotypeSetSource.NoRow, true)]
+    [TestCase(RowState.OtherTyping, DonorGenotypeSetSource.Precomputed, false)]
+    [TestCase(RowState.NoLinkRow, DonorGenotypeSetSource.Precomputed, false)]
     [TestCase(RowState.Undecodable, DonorGenotypeSetSource.DecodeFailed, false)]
-    public async Task MatchPredictionBatch_ForTheDonorsStoredRow_UsesItOrComputesLive_AndStoresOnlyAMissingOrStaleRow(
+    public async Task MatchPredictionBatch_ForTheDonorsStoredRow_UsesTheValueOfItsKeyOrComputesLive_AndStoresOnlyAMissingRow(
         RowState storedRow,
         DonorGenotypeSetSource expectedSource,
         bool isStoredBack)
@@ -192,6 +206,8 @@ internal class PrecomputedDonorGenotypeSetSearchTests
         switch (storedRow)
         {
             case RowState.Good:
+            case RowState.OtherTyping:
+            case RowState.NoLinkRow:
                 SubjectGenotypeSetPayload.Encode(matcherInput.DonorGenotypeSet).Should().Equal(SubjectGenotypeSetPayload.Encode(storedSet));
                 break;
             case RowState.Unrepresented:
@@ -329,6 +345,102 @@ internal class PrecomputedDonorGenotypeSetSearchTests
     }
 
     /// <summary>
+    /// A new frequency set is activated for the donor's codes after the batch read its stored rows, and before the donor
+    /// runs. The value of the set that the batch read with must not be used, and the donor is stored for the new set.
+    /// </summary>
+    [Test]
+    public async Task MatchPredictionBatch_WhenANewFrequencySetIsActivatedDuringTheBatch_ComputesTheDonorLive_AndStoresItForTheNewSet()
+    {
+        var searchTyping = Typing("search");
+        var donorId = await InsertDonor(searchTyping);
+        await Store(donorId, searchTyping, storedSet);
+        var newFrequencySetId = fixture.Create<int>();
+        // The batch chose DonorFrequencySetId when it started; the donor's own run chooses the new set.
+        haplotypeFrequencyService.GetHaplotypeFrequencySets(default, default).ReturnsForAnyArgs(new HaplotypeFrequencySetResponse
+        {
+            PatientSet = new HaplotypeFrequencySet { Id = PatientFrequencySetId },
+            DonorSet = new HaplotypeFrequencySet { Id = newFrequencySetId }
+        });
+
+        var result = await RunBatch(Input(searchTyping, donorId));
+
+        result.GenotypeSetSource.Should().Be(DonorGenotypeSetSource.StaleFrequencySet);
+        var matcherInput = (GenotypeMatcherInput)genotypeMatcher.ReceivedCalls().Single().GetArguments().Single();
+        matcherInput.DonorGenotypeSet.Should().BeNull("the donor is computed live");
+        usageMetrics["StoredCount"].Should().Be(1);
+        (await StoredRow(donorId)).HaplotypeFrequencySetId.Should().Be(newFrequencySetId);
+    }
+
+    /// <summary>
+    /// Parity (ATL-424): a batch that reads stored sets gives each donor input the set that live imputation gives it. The
+    /// inputs cover the cases where the read by key changes which stored row serves a donor - a donor re-typed after
+    /// matching, a donor with no link row, and inputs of two frequency sets - next to a precomputed input of two donors and
+    /// an input with no stored value. The engine gives one set for each typing and frequency set, and the stored sets are
+    /// the sets it gave, as the pre-computation stores them.
+    /// </summary>
+    [Test]
+    public async Task MatchPredictionBatch_ReadingStoredSets_GivesEveryDonorInputTheSetThatLiveImputationGivesIt()
+    {
+        GivenAnEngineThatGivesOneSetForEachTypingAndFrequencySet();
+        var otherRegistryCode = fixture.Create<string>();
+        var otherFrequencySetId = fixture.Create<int>();
+        GivenTheFrequencySetOfRegistry(otherRegistryCode, otherFrequencySetId);
+
+        // Two donors of one typing, both precomputed.
+        var sharedTyping = Typing("shared");
+        int[] sharedDonorIds = [await InsertDonor(sharedTyping), await InsertDonor(sharedTyping)];
+        foreach (var donorId in sharedDonorIds)
+        {
+            await Store(donorId, sharedTyping, EngineSet(sharedTyping, DonorFrequencySetId));
+        }
+
+        // Re-typed after matching: its link row now points at the value of its new typing.
+        var retypedSearchTyping = Typing("retyped-search");
+        var retypedDonorId = await InsertDonor(retypedSearchTyping);
+        await Store(retypedDonorId, retypedSearchTyping, EngineSet(retypedSearchTyping, DonorFrequencySetId));
+        var retypedNewTyping = Typing("retyped-new");
+        await UpdateDonorTyping(retypedDonorId, retypedNewTyping);
+        await Store(retypedDonorId, retypedNewTyping, EngineSet(retypedNewTyping, DonorFrequencySetId));
+
+        // A value with no link row.
+        var unlinkedTyping = Typing("unlinked");
+        var unlinkedDonorId = await InsertDonor(unlinkedTyping);
+        await Store(unlinkedDonorId, unlinkedTyping, EngineSet(unlinkedTyping, DonorFrequencySetId));
+        await repository.DeleteDonorAssignments([unlinkedDonorId]);
+
+        // No stored value.
+        var missingTyping = Typing("missing");
+        var missingDonorId = await InsertDonor(missingTyping);
+
+        // Another frequency set, chosen by the donor's registry.
+        var otherSetTyping = Typing("other-set");
+        var otherSetDonorId = await InsertDonor(otherSetTyping, otherRegistryCode);
+        await Store(otherSetDonorId, otherSetTyping, EngineSet(otherSetTyping, otherFrequencySetId), otherFrequencySetId, otherRegistryCode);
+
+        var results = await RunBatch([
+            Input(sharedTyping, sharedDonorIds),
+            Input(retypedSearchTyping, retypedDonorId),
+            Input(unlinkedTyping, unlinkedDonorId),
+            Input(missingTyping, missingDonorId),
+            InputOfRegistry(otherSetTyping, otherRegistryCode, otherSetDonorId)
+        ]);
+
+        results.Select(result => result.GenotypeSetSource).Should().Equal(
+            DonorGenotypeSetSource.Precomputed,
+            DonorGenotypeSetSource.Precomputed,
+            DonorGenotypeSetSource.Precomputed,
+            DonorGenotypeSetSource.NoRow,
+            DonorGenotypeSetSource.Precomputed);
+        var matcherInputs = genotypeMatcher.ReceivedCalls().Select(call => (GenotypeMatcherInput)call.GetArguments().Single()).ToList();
+        matcherInputs.Should().HaveCount(5);
+        foreach (var matcherInput in matcherInputs)
+        {
+            var engineSet = EngineSet(matcherInput.DonorData.HlaTyping, matcherInput.DonorData.SubjectFrequencySet.FrequencySet.Id);
+            SubjectGenotypeSetPayload.Encode(matcherInput.DonorGenotypeSet ?? engineSet).Should().Equal(SubjectGenotypeSetPayload.Encode(engineSet));
+        }
+    }
+
+    /// <summary>
     /// Changes the donor's row, stored for the search's typing, into <paramref name="storedRow"/>.
     /// </summary>
     private async Task SetUpTheStoredRow(RowState storedRow, int donorId)
@@ -351,15 +463,22 @@ internal class PrecomputedDonorGenotypeSetSearchTests
                 genotypeSetService.IsUnambiguousAtSmallGGroup(default, default).ReturnsForAnyArgs(true);
                 break;
             case RowState.OtherFrequencySet:
-                // Precomputed before the frequency set search now uses was activated.
+                // Precomputed before the frequency set search now uses was activated. Search reads the key of the set it
+                // uses, so it does not find this value.
                 await TruncatePrecomputeTables();
                 await Store(donorId, Typing("search"), storedSet, ReplacedFrequencySetId);
                 break;
             case RowState.OtherTyping:
-                // As an import after matching does: the donor gets a new typing, and the set of the new typing is stored.
+                // As an import after matching does: the donor gets a new typing, and the set of the new typing is stored. The
+                // value of the search's typing stays, and search reads it by its key.
                 var newTyping = Typing("imported");
                 await UpdateDonorTyping(donorId, newTyping);
                 await Store(donorId, newTyping, SetWithGenotypes(4, 0.7m));
+                break;
+            case RowState.NoLinkRow:
+                // For example, a pre-computation that stored the value and failed before the link row. Search does not
+                // need the link row.
+                await repository.DeleteDonorAssignments([donorId]);
                 break;
             case RowState.Undecodable:
                 await UpdateStoredPayload(donorId, [1, 2, 3]);
@@ -373,10 +492,15 @@ internal class PrecomputedDonorGenotypeSetSearchTests
         new DonorGenotypeSetSourceResolver(
             new PrecomputedGenotypeSetSettings { Mode = mode },
             new PrecomputedDonorGenotypeSetReader(historyRepository, repositoryFactory),
+            frequencySetLookup,
             logger);
 
     /// <summary>One donor input, with the ids that share its typing, matched on the active database.</summary>
     private SingleDonorMatchProbabilityInput Input(PhenotypeInfo<string> searchTyping, params int[] donorIds) =>
+        InputOfRegistry(searchTyping, RegistryCode, donorIds);
+
+    /// <summary>One donor input of the registry, which chooses its frequency set, with the ids that share its typing.</summary>
+    private SingleDonorMatchProbabilityInput InputOfRegistry(PhenotypeInfo<string> searchTyping, string registryCode, params int[] donorIds) =>
         new()
         {
             SearchRequestId = Guid.NewGuid().ToString(),
@@ -387,48 +511,67 @@ internal class PrecomputedDonorGenotypeSetSearchTests
             {
                 DonorIds = donorIds.ToList(),
                 DonorHla = searchTyping.ToPhenotypeInfoTransfer(),
-                DonorFrequencySetMetadata = new FrequencySetMetadata { RegistryCode = RegistryCode, EthnicityCode = EthnicityCode }
+                DonorFrequencySetMetadata = new FrequencySetMetadata { RegistryCode = registryCode, EthnicityCode = EthnicityCode }
             }
         };
 
     /// <summary>One batch of one donor input, as the match prediction algorithm runs it: resolve, calculate, complete.</summary>
+    /// <param name="input">The batch's one donor input.</param>
+    /// <param name="beforeTheStore">What happens in the database after the donor is calculated and before the batch stores it.</param>
+    private async Task<MatchProbabilityResult> RunBatch(SingleDonorMatchProbabilityInput input, Func<Task> beforeTheStore = null) =>
+        (await RunBatch([input], beforeTheStore)).Single();
+
+    /// <summary>One batch, as the match prediction algorithm runs it: resolve, calculate, complete.</summary>
     /// <remarks>
     /// A copy of the steps in <c>MatchPredictionAlgorithm.RunBatch</c> and <c>ParallelMatchPredictionAlgorithm.RunBatch</c>,
     /// without the cache warm-up, the patient set provider and the result upload. A change to those steps does not fail
     /// these tests, so keep this copy the same as them.
     /// </remarks>
-    /// <param name="input">The batch's one donor input.</param>
-    /// <param name="beforeTheStore">What happens in the database after the donor is calculated and before the batch stores it.</param>
-    private async Task<MatchProbabilityResult> RunBatch(SingleDonorMatchProbabilityInput input, Func<Task> beforeTheStore = null)
+    /// <param name="inputs">The batch's donor inputs, of one search.</param>
+    /// <param name="beforeTheStore">What happens in the database after the donors are calculated and before the batch stores them.</param>
+    private async Task<IReadOnlyList<MatchProbabilityResult>> RunBatch(
+        IReadOnlyList<SingleDonorMatchProbabilityInput> inputs,
+        Func<Task> beforeTheStore = null)
     {
-        var batchContext = await resolver.Resolve(input, [input.Donor]);
-        var result = await matchProbabilityService.CalculateMatchProbability(
-            input,
-            new SubjectGenotypeSet(false, new List<GenotypeAtDesiredResolutions>(), 0.1m),
-            batchContext);
+        var batchContext = await resolver.Resolve(inputs[0], inputs.Select(input => input.Donor).ToList());
+        var results = new List<MatchProbabilityResult>(inputs.Count);
+        foreach (var input in inputs)
+        {
+            results.Add(await matchProbabilityService.CalculateMatchProbability(
+                input,
+                new SubjectGenotypeSet(false, new List<GenotypeAtDesiredResolutions>(), 0.1m),
+                batchContext));
+        }
+
         if (beforeTheStore != null)
         {
             await beforeTheStore();
         }
 
         await completer.Complete(
-            input,
+            inputs[0],
             batchContext,
-            [new DonorGenotypeSetBatchOutcome(input.Donor.DonorIds.Count, result.GenotypeSetSource, result.GenotypeSetToStore)],
+            inputs.Zip(results, (input, result) =>
+                new DonorGenotypeSetBatchOutcome(input.Donor.DonorIds.Count, result.GenotypeSetSource, result.GenotypeSetToStore)).ToList(),
             PatientGenotypeSetSource.NoKey);
         usageMetrics.Should().NotBeNull("the completer sends one usage event per batch");
 
-        return result;
+        return results;
     }
 
     /// <summary>Stores the set for the donor through the writer that search stores live sets with.</summary>
-    private async Task Store(int donorId, PhenotypeInfo<string> typing, SubjectGenotypeSet set, int frequencySetId = DonorFrequencySetId)
+    private async Task Store(
+        int donorId,
+        PhenotypeInfo<string> typing,
+        SubjectGenotypeSet set,
+        int frequencySetId = DonorFrequencySetId,
+        string registryCode = RegistryCode)
     {
         var storeResult = await writer.Store(
             [new DonorGenotypeSetToStore(
                 [donorId],
                 typing,
-                RegistryCode,
+                registryCode,
                 EthnicityCode,
                 frequencySetId,
                 set.IsUnrepresented,
@@ -438,10 +581,19 @@ internal class PrecomputedDonorGenotypeSetSearchTests
         storeResult.StoredCount.Should().Be(1);
     }
 
-    private async Task<StoredDonorSubjectGenotypeSet> StoredRow(int donorId) =>
-        (await repository.GetDonorSubjectGenotypeSets([donorId], Key)).GetValueOrDefault(donorId);
+    /// <summary>The value row that the donor's link row points at; null when the donor has no link row.</summary>
+    private async Task<SubjectGenotypeSetValue> StoredRow(int donorId)
+    {
+        await using var context = Context();
+        var valueId = await context.DonorSubjectGenotypeSets
+            .Where(row => row.DonorId == donorId && row.AllowedLociKey == Key)
+            .Select(row => (int?)row.SubjectGenotypeSetValueId)
+            .SingleOrDefaultAsync();
 
-    private async Task<int> InsertDonor(PhenotypeInfo<string> typing)
+        return valueId == null ? null : await context.SubjectGenotypeSetValues.SingleAsync(row => row.Id == valueId);
+    }
+
+    private async Task<int> InsertDonor(PhenotypeInfo<string> typing, string registryCode = RegistryCode)
     {
         var donorId = DonorIdGenerator.NextId();
         var donor = new Donor
@@ -450,7 +602,7 @@ internal class PrecomputedDonorGenotypeSetSearchTests
             DonorType = DonorType.Adult,
             IsAvailableForSearch = true,
             ExternalDonorCode = DonorIdGenerator.NewExternalCode,
-            RegistryCode = RegistryCode,
+            RegistryCode = registryCode,
             EthnicityCode = EthnicityCode
         };
         SetTyping(donor, typing);
@@ -493,6 +645,51 @@ internal class PrecomputedDonorGenotypeSetSearchTests
         new ContextFactory().Create(connectionStringFactory.GenerateConnectionStringProvider(activeRecord.Database).GetConnectionString());
 
     private static string TypingKey(PhenotypeInfo<string> typing) => SubjectGenotypeSetKeyGenerator.GenerateHlaTypingKey(typing, Key);
+
+    /// <summary>Like live imputation: one set for each typing and frequency set, the same at every call.</summary>
+    private void GivenAnEngineThatGivesOneSetForEachTypingAndFrequencySet() =>
+        genotypeMatcher.MatchPatientDonorGenotypes(default).ReturnsForAnyArgs(call =>
+        {
+            var input = call.Arg<GenotypeMatcherInput>();
+            var donorSet = input.DonorGenotypeSet ?? EngineSet(input.DonorData.HlaTyping, input.DonorData.SubjectFrequencySet.FrequencySet.Id);
+            return new GenotypeMatcherResult
+            {
+                PatientResult = new GenotypeMatcherResult.SubjectResult(false, 1, 0.1m),
+                DonorResult = new GenotypeMatcherResult.SubjectResult(donorSet.IsUnrepresented, donorSet.Genotypes.Count, donorSet.SumOfLikelihoods),
+                GenotypeMatchDetails = new List<GenotypeMatchDetails>(),
+                DonorGenotypeSet = donorSet
+            };
+        });
+
+    /// <summary>The set that the engine gives for the typing and frequency set: one of its own for each pair.</summary>
+    private SubjectGenotypeSet EngineSet(PhenotypeInfo<string> typing, int frequencySetId)
+    {
+        var key = (TypingKey(typing), frequencySetId);
+        if (!engineSets.TryGetValue(key, out var set))
+        {
+            set = SetWithGenotypes(engineSets.Count + 1, fixture.Create<decimal>());
+            engineSets[key] = set;
+        }
+
+        return set;
+    }
+
+    /// <summary>The frequency set that the donors of the registry get: the same from the batch's lookup and the donor's own.</summary>
+    private void GivenTheFrequencySetOfRegistry(string registryCode, int frequencySetId)
+    {
+        frequencySetLookup
+            .GetSingleHaplotypeFrequencySet(Arg.Is<FrequencySetMetadata>(metadata => metadata != null && metadata.RegistryCode == registryCode))
+            .Returns(new HaplotypeFrequencySet { Id = frequencySetId });
+        haplotypeFrequencyService
+            .GetHaplotypeFrequencySets(
+                Arg.Is<FrequencySetMetadata>(metadata => metadata != null && metadata.RegistryCode == registryCode),
+                Arg.Any<FrequencySetMetadata>())
+            .Returns(new HaplotypeFrequencySetResponse
+            {
+                PatientSet = new HaplotypeFrequencySet { Id = PatientFrequencySetId },
+                DonorSet = new HaplotypeFrequencySet { Id = frequencySetId }
+            });
+    }
 
     /// <summary>A typing with a distinct name at every match prediction locus.</summary>
     private static PhenotypeInfo<string> Typing(string prefix) =>

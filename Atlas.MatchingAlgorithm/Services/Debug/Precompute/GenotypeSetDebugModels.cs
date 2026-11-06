@@ -165,9 +165,6 @@ public sealed record GenotypeSetParityCheck
 {
     public ParityResult Result { get; init; }
 
-    /// <summary>The typing key of the stored row; null when no row is stored.</summary>
-    public string? StoredHlaTypingKey { get; init; }
-
     /// <summary>The frequency set of the stored row; null when no row is stored.</summary>
     public int? StoredHaplotypeFrequencySetId { get; init; }
 

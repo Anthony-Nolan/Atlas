@@ -10,17 +10,13 @@ namespace Atlas.MatchingAlgorithm.Functions.DataRefresh.Models.Debug.Precompute;
 internal class ParityCheck
 {
     /// <summary>
-    /// <c>Match</c>, <c>Mismatch</c>, <c>StaleFrequencySet</c>, <c>TypingChanged</c>, <c>NoStoredRow</c>,
-    /// <c>NotStoredUnambiguous</c> (no row by design, ATL-478), <c>DecodeFailed</c> or <c>Error</c>. When more than one
-    /// applies, the first in the order that search checks a row: <c>Error</c>, <c>NoStoredRow</c> or
-    /// <c>NotStoredUnambiguous</c>, <c>TypingChanged</c>, <c>StaleFrequencySet</c>, <c>DecodeFailed</c>, then
-    /// <c>Mismatch</c> or <c>Match</c>.
+    /// <c>Match</c>, <c>Mismatch</c>, <c>StaleFrequencySet</c>, <c>NoStoredRow</c>, <c>NotStoredUnambiguous</c> (no row
+    /// by design, ATL-478), <c>DecodeFailed</c> or <c>Error</c>. When more than one applies, the first in the order that
+    /// search checks a row: <c>Error</c>, <c>NoStoredRow</c> or <c>NotStoredUnambiguous</c>, <c>StaleFrequencySet</c>,
+    /// <c>DecodeFailed</c>, then <c>Mismatch</c> or <c>Match</c>.
     /// </summary>
     [JsonConverter(typeof(StringEnumConverter))]
     public ParityResult Result { get; set; }
-
-    /// <summary>The typing key of the stored row. Not given when no row is stored.</summary>
-    public string StoredHlaTypingKey { get; set; }
 
     /// <summary>The frequency set of the stored row. Not given when no row is stored.</summary>
     public int? StoredHaplotypeFrequencySetId { get; set; }
@@ -45,7 +41,6 @@ internal class ParityCheck
         : new ParityCheck
         {
             Result = check.Result,
-            StoredHlaTypingKey = check.StoredHlaTypingKey,
             StoredHaplotypeFrequencySetId = check.StoredHaplotypeFrequencySetId,
             SearchHaplotypeFrequencySetId = check.SearchHaplotypeFrequencySetId,
             DecodeError = check.DecodeError,

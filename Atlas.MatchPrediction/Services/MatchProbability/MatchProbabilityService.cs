@@ -91,8 +91,8 @@ internal class MatchProbabilityService : IMatchProbabilityService
         var donorFrequencySetId = frequencySets.Donor.FrequencySet.Id;
         var donorHla = singleDonorMatchProbabilityInput.Donor.DonorHla.ToPhenotypeInfo();
 
-        // Compared with the set chosen just above, so a stored row computed with a since-replaced frequency set is
-        // never used (StaleFrequencySet): not its payload, and not its IsUnrepresented flag.
+        // The batch read the row with the set it chose when it started. Compared with the set chosen just above, so a row
+        // of a set replaced during the batch is never used (StaleFrequencySet): not its payload, and not its IsUnrepresented flag.
         var genotypeSetSource = DonorGenotypeSetSource.PrecomputeDisabled;
         SubjectGenotypeSet precomputedDonorGenotypeSet = null;
         if (batchContext != null)
@@ -168,13 +168,12 @@ internal class MatchProbabilityService : IMatchProbabilityService
 
     /// <summary>
     /// A live set is stored only when the batch can store, and only for a donor that a stored row could have covered
-    /// but did not: no row, or a row for another frequency set. Not for <see cref="DonorGenotypeSetSource.NotStoredUnambiguous"/>,
-    /// which has no row by design.
+    /// but did not: no row, or a row for a frequency set replaced during the batch. Not for
+    /// <see cref="DonorGenotypeSetSource.NotStoredUnambiguous"/>, which has no row by design.
     /// </summary>
     /// <remarks>
     /// Not for <see cref="DonorGenotypeSetSource.DecodeFailed"/>: the bad row has the same key as the live set, so a
-    /// store would find it and change nothing. The next Data Refresh rebuilds it. Not for
-    /// <see cref="DonorGenotypeSetSource.TypingChanged"/>: the donor's current typing is not the one computed here.
+    /// store would find it and change nothing. The next Data Refresh rebuilds it.
     /// </remarks>
     private static bool ShouldStore(DonorGenotypeSetSource source, DonorGenotypeSetBatchContext batchContext) =>
         batchContext is { CanStore: true }

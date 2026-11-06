@@ -458,7 +458,11 @@ combination, so it has no rows at all. SQL cannot tell these donors from failed 
 Metadata Dictionary. To check single donors, call the debug endpoint `POST debug/precompute/genotypeSets/compute` of
 the Data Refresh app with their `ExternalDonorCodes` and `CompareWithStored`: a donor with no row by design gets
 `NotStoredUnambiguous`, and a missing row gets `NoStoredRow` (see
-[the Match Prediction README](README_MatchPredictionAlgorithm.md#parity-check-comparewithstored)).
+[the Match Prediction README](README_MatchPredictionAlgorithm.md#parity-check-comparewithstored)). The check reads the
+stored value by its key, as search does, and not the donor's rows in `DonorSubjectGenotypeSets` (ATL-424). A donor that
+failed in the stage still gets `Match` when a value with its key exists, for example from another donor with the same
+typing and frequency set, and search then uses that value too. So `NoStoredRow` shows the donors that have no stored
+value for search, not all the donors that failed in the stage.
 
 #### A lost message
 

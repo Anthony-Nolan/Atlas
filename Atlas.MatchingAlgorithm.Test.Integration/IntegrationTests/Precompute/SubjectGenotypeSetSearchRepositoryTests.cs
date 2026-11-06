@@ -11,6 +11,7 @@ using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Repositories.Precompute;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
+using AutoFixture;
 using AwesomeAssertions;
 using Dapper;
 using Microsoft.Data.SqlClient;
@@ -33,6 +34,7 @@ public class SubjectGenotypeSetSearchRepositoryTests
     private const string DefaultRegistryCode = "reg";
     private const string DefaultEthnicityCode = "eth";
 
+    private Fixture fixture;
     private string transientConnectionString;
     private ISubjectGenotypeSetRepository repository;
     private int nextHlaTypingKeySuffix;
@@ -40,6 +42,7 @@ public class SubjectGenotypeSetSearchRepositoryTests
     [SetUp]
     public void SetUp()
     {
+        fixture = new Fixture();
         var connectionStringFactory = Injection.Provider.GetService<StaticallyChosenTransientSqlConnectionStringProviderFactory>();
         var connectionStringProvider = connectionStringFactory.GenerateConnectionStringProvider(TransientDatabase.DatabaseA);
         transientConnectionString = connectionStringProvider.GetConnectionString();
@@ -48,115 +51,81 @@ public class SubjectGenotypeSetSearchRepositoryTests
         DatabaseManager.ClearTransientDatabases();
     }
 
-    [Test]
-    public async Task GetDonorSubjectGenotypeSets_ReturnsTheStoredSetOfEachDonorAtTheGivenKeyOnly()
-    {
-        var valueIds = await repository.GetOrCreateValueIds([
-            new SubjectGenotypeSetValueToStore(NewKey(frequencySetId: 7), false, [1, 2, 3]),
-            new SubjectGenotypeSetValueToStore(NewKey(frequencySetId: 8), true, null),
-            new SubjectGenotypeSetValueToStore(NewKey(frequencySetId: 9, allowedLociKey: AllowedLociKey.ABDrb1), false, [4]),
-        ]);
-        var ids = valueIds.ToDictionary(kv => kv.Key.HaplotypeFrequencySetId, kv => kv.Value);
-        await repository.UpsertDonorAssignments([
-            new DonorSubjectGenotypeSetAssignment(1, Key, ids[7]),
-            new DonorSubjectGenotypeSetAssignment(2, Key, ids[8]),
-            new DonorSubjectGenotypeSetAssignment(3, AllowedLociKey.ABDrb1, ids[9]),
-        ]);
-
-        var stored = await repository.GetDonorSubjectGenotypeSets([1, 2, 3, 4], Key);
-
-        stored.Keys.Should().BeEquivalentTo([1, 2]);
-        stored[1].HaplotypeFrequencySetId.Should().Be(7);
-        stored[1].HlaTypingKey.Should().Be(valueIds.Single(kv => kv.Key.HaplotypeFrequencySetId == 7).Key.HlaTypingKey);
-        stored[1].IsUnrepresented.Should().BeFalse();
-        stored[1].SubjectGenotypeSetData.Should().Equal(1, 2, 3);
-        stored[2].IsUnrepresented.Should().BeTrue();
-        stored[2].SubjectGenotypeSetData.Should().BeNull();
-    }
-
-    [Test]
-    public async Task GetDonorSubjectGenotypeSets_ForMoreDonorsThanOneStatementTakes_ReturnsThemAll()
-    {
-        var valueId = (await repository.GetOrCreateValueIds([new SubjectGenotypeSetValueToStore(NewKey(), false, [1])])).Single().Value;
-        var donorIds = Enumerable.Range(1, 4500).ToList();
-        await repository.UpsertDonorAssignments(donorIds.Select(id => new DonorSubjectGenotypeSetAssignment(id, Key, valueId)).ToList());
-
-        var stored = await repository.GetDonorSubjectGenotypeSets(donorIds, Key);
-
-        stored.Should().HaveCount(donorIds.Count);
-    }
-
     /// <summary>
-    /// ATL-495: the read gives the bucket of each value id, so that the seek reads one partition. A wrong bucket would
-    /// find no row, so values in every bucket must come back.
+    /// Search reads a donor input's set (ATL-424) and a patient's set (ATL-426) by its key: no donor needs to point at it.
+    /// The same typing with another frequency set or other loci is another key.
     /// </summary>
     [Test]
-    public async Task GetDonorSubjectGenotypeSets_ForValuesInEveryBucket_ReturnsTheValueOfEachDonor()
+    public async Task GetSubjectGenotypeSetValues_ReturnsTheValueOfEachExactKey_WithNoDonorAssignment()
     {
-        var valueCount = SubjectGenotypeSetRepository.BucketCount * 3;
-        var valueIds = await repository.GetOrCreateValueIds(Enumerable.Range(1, valueCount)
-            .Select(i => new SubjectGenotypeSetValueToStore(NewKey(frequencySetId: i), false, [(byte) i]))
-            .ToList());
-        var valueIdByDonorId = valueIds.ToDictionary(kv => kv.Key.HaplotypeFrequencySetId, kv => kv.Value);
-        await repository.UpsertDonorAssignments(valueIdByDonorId
-            .Select(kv => new DonorSubjectGenotypeSetAssignment(kv.Key, Key, kv.Value))
-            .ToList());
+        var key = NewKey(frequencySetId: fixture.Create<int>());
+        var otherTypingKey = NewKey(frequencySetId: key.HaplotypeFrequencySetId);
+        var otherSetKey = key with { HaplotypeFrequencySetId = key.HaplotypeFrequencySetId + 1 };
+        var otherLociKey = key with { AllowedLociKey = AllowedLociKey.ABDrb1 };
+        var values = new[] { key, otherTypingKey, otherSetKey, otherLociKey }.Select(NewValue).ToList();
+        await repository.GetOrCreateValueIds(values);
 
-        var stored = await repository.GetDonorSubjectGenotypeSets(valueIdByDonorId.Keys.ToList(), Key);
+        var stored = await repository.GetSubjectGenotypeSetValues([key, otherTypingKey]);
 
-        valueIdByDonorId.Values.Select(id => id % SubjectGenotypeSetRepository.BucketCount).Distinct()
-            .Should().HaveCount(SubjectGenotypeSetRepository.BucketCount);
-        stored.Should().HaveCount(valueCount);
-        foreach (var donorId in valueIdByDonorId.Keys)
-        {
-            stored[donorId].HaplotypeFrequencySetId.Should().Be(donorId);
-            stored[donorId].SubjectGenotypeSetData.Should().Equal((byte) donorId);
-        }
-    }
-
-    [Test]
-    public async Task GetDonorSubjectGenotypeSets_ForNoDonors_ReturnsNothing()
-    {
-        (await repository.GetDonorSubjectGenotypeSets([], Key)).Should().BeEmpty();
-    }
-
-    /// <summary>A patient's set (ATL-426) is a value row that no donor points at.</summary>
-    [Test]
-    public async Task GetSubjectGenotypeSetValue_ReturnsTheValueWithTheExactKey_WithNoDonorAssignment()
-    {
-        var key = NewKey(frequencySetId: 7);
-        await repository.GetOrCreateValueIds([
-            new SubjectGenotypeSetValueToStore(key, false, [1, 2, 3]),
-            new SubjectGenotypeSetValueToStore(key with { HaplotypeFrequencySetId = 8 }, false, [4]),
-            new SubjectGenotypeSetValueToStore(key with { AllowedLociKey = AllowedLociKey.ABDrb1 }, false, [5]),
-        ]);
-
-        var stored = await repository.GetSubjectGenotypeSetValue(key);
-
-        stored.IsUnrepresented.Should().BeFalse();
-        stored.SubjectGenotypeSetData.Should().Equal(1, 2, 3);
+        stored.Keys.Should().BeEquivalentTo([key, otherTypingKey]);
+        stored[key].IsUnrepresented.Should().BeFalse();
+        stored[key].SubjectGenotypeSetData.Should().Equal(values[0].SubjectGenotypeSetData);
+        stored[otherTypingKey].SubjectGenotypeSetData.Should().Equal(values[1].SubjectGenotypeSetData);
         (await StoredAssignments()).Should().BeEmpty();
     }
 
     [Test]
-    public async Task GetSubjectGenotypeSetValue_ForAnUnrepresentedValue_ReturnsItWithNoData()
+    public async Task GetSubjectGenotypeSetValues_ForAnUnrepresentedValue_ReturnsItWithNoData()
     {
         var key = NewKey();
         await repository.GetOrCreateValueIds([new SubjectGenotypeSetValueToStore(key, true, null)]);
 
-        var stored = await repository.GetSubjectGenotypeSetValue(key);
+        var stored = (await repository.GetSubjectGenotypeSetValues([key]))[key];
 
         stored.IsUnrepresented.Should().BeTrue();
         stored.SubjectGenotypeSetData.Should().BeNull();
     }
 
     [Test]
-    public async Task GetSubjectGenotypeSetValue_WhenNoValueHasTheKey_ReturnsNull()
+    public async Task GetSubjectGenotypeSetValues_LeavesOutAKeyWithNoValue()
     {
-        await repository.GetOrCreateValueIds([new SubjectGenotypeSetValueToStore(NewKey(frequencySetId: 7), false, [1])]);
-
+        var storedKey = NewKey(frequencySetId: fixture.Create<int>());
+        await repository.GetOrCreateValueIds([NewValue(storedKey)]);
         // A new key: a different typing at the same frequency set.
-        (await repository.GetSubjectGenotypeSetValue(NewKey(frequencySetId: 7))).Should().BeNull();
+        var missingKey = NewKey(frequencySetId: storedKey.HaplotypeFrequencySetId);
+
+        var stored = await repository.GetSubjectGenotypeSetValues([storedKey, missingKey]);
+
+        stored.Keys.Should().BeEquivalentTo([storedKey]);
+    }
+
+    /// <summary>A batch can ask for one key twice: for two donor inputs, or for a donor input and the patient.</summary>
+    [Test]
+    public async Task GetSubjectGenotypeSetValues_ForAKeyAskedForTwice_ReturnsItOnce()
+    {
+        var key = NewKey();
+        await repository.GetOrCreateValueIds([NewValue(key)]);
+
+        var stored = await repository.GetSubjectGenotypeSetValues([key, key]);
+
+        stored.Keys.Should().BeEquivalentTo([key]);
+    }
+
+    [Test]
+    public async Task GetSubjectGenotypeSetValues_ForMoreKeysThanOneChunkTakes_ReturnsThemAll()
+    {
+        var keys = Enumerable.Range(0, SubjectGenotypeSetRepository.StagingChunkSize + 5).Select(_ => NewKey()).ToList();
+        await repository.GetOrCreateValueIds(keys.Select(NewValue).ToList());
+
+        var stored = await repository.GetSubjectGenotypeSetValues(keys);
+
+        stored.Keys.Should().BeEquivalentTo(keys);
+    }
+
+    [Test]
+    public async Task GetSubjectGenotypeSetValues_ForNoKeys_ReturnsNothing()
+    {
+        (await repository.GetSubjectGenotypeSetValues([])).Should().BeEmpty();
     }
 
     /// <summary>
@@ -171,7 +140,7 @@ public class SubjectGenotypeSetSearchRepositoryTests
         var secondId = (await repository.GetOrCreateValueIds([new SubjectGenotypeSetValueToStore(key, false, [2])])).Single().Value;
 
         secondId.Should().Be(firstId);
-        (await repository.GetSubjectGenotypeSetValue(key)).SubjectGenotypeSetData.Should().Equal(1);
+        (await repository.GetSubjectGenotypeSetValues([key]))[key].SubjectGenotypeSetData.Should().Equal(1);
         (await StoredAssignments()).Should().BeEmpty();
     }
 
@@ -332,6 +301,8 @@ public class SubjectGenotypeSetSearchRepositoryTests
 
     private SubjectGenotypeSetKey NewKey(int frequencySetId = 1, AllowedLociKey allowedLociKey = Key) =>
         new($"{++nextHlaTypingKeySuffix:D64}", frequencySetId, allowedLociKey);
+
+    private SubjectGenotypeSetValueToStore NewValue(SubjectGenotypeSetKey key) => new(key, false, fixture.CreateMany<byte>().ToArray());
 
     private Task InsertDonors(params (int DonorId, PhenotypeInfo<string> Typing)[] donors) =>
         InsertDonors(donors.Select(d => (d.DonorId, d.Typing, DefaultRegistryCode, DefaultEthnicityCode)).ToArray());
