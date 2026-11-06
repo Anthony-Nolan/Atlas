@@ -19,11 +19,11 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Precompute;
 /// <remarks>
 /// <para>
 /// A donor gets here when no stored value had the key of its donor input, or the batch read a value of a frequency set
-/// that was replaced during the batch. Today only the differential donor import (ATL-232) precomputes rows, so this
-/// covers donors it has not reached yet and donors whose pre-computation failed; the Data Refresh stage (ATL-233) is
-/// planned. The set stored here is exactly what the precompute would have
-/// stored - the same genotype set service, the same frequency set lookup, the same nomenclature version (that of the
-/// pinned database) and the same key - so a row written here and a row written by the precompute are the same row.
+/// that was replaced during the batch. Stage 65 of the data refresh (ATL-233) and the differential donor import
+/// (ATL-232) precompute rows, so this covers donors that they have not reached yet and donors whose pre-computation
+/// failed. The set stored here is exactly what the precompute would have stored - the same genotype set service, the
+/// same frequency set lookup, the same nomenclature version (that of the pinned database) and the same key - so a row
+/// written here and a row written by the precompute are the same row.
 /// </para>
 ///
 /// <para>

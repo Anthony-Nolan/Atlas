@@ -118,7 +118,7 @@ internal class PrecomputedDonorGenotypeSetReaderTests
     [Test]
     public async Task GetDonorGenotypeSets_ReadsEachDonorInputWithItsOwnFrequencySet()
     {
-        var otherSetId = fixture.Create<int>();
+        const int otherSetId = FrequencySetId + 1;
         var otherKey = SearchKey with { HaplotypeFrequencySetId = otherSetId };
         var first = InputWithSearchTyping(fixture.Create<int>(), FrequencySetId);
         var second = InputWithSearchTyping(fixture.Create<int>(), otherSetId);
