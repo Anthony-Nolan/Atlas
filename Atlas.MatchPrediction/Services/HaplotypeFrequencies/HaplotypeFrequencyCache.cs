@@ -66,7 +66,8 @@ public interface IHaplotypeFrequencyCache
     /// While the set is in use, this process checks its row in the database each
     /// <c>HaplotypeFrequencySetCacheSettings.ActiveSetCacheExpiryMinutes</c>, and loads the set again when the row has
     /// another content hash or import time, or no longer exists: after a restore or a copy of the database, a set id can
-    /// name another set.
+    /// name another set. The check runs in the background: a caller does not wait for it, and gets the loaded set until the
+    /// check finds another one. So a slow SQL, or no SQL, does not hold the callers of a loaded set.
     /// </para>
     ///
     /// <para>
@@ -142,10 +143,16 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
     private static string QuarantineCacheKey(int setId) => $"hf-set-mismatch-{setId}";
 
     /// <summary>
-    /// How long the check of a set waits for the row of the set. All callers of the set wait for the check, but a loaded set
-    /// needs no database: a check that takes longer stops, and the set stays in use until the next check. Without this
-    /// limit, the retries of the database context and its connection timeout could hold the callers for minutes when SQL
-    /// is slow or cannot be reached.
+    /// The local key of the <see cref="SetCheck"/> of a set: the check of its row that runs in the background, if any. It
+    /// has no expiry, as it is one small object for each set id that this process used.
+    /// </summary>
+    private static string SetCheckRunCacheKey(int setId) => $"hf-set-check-run-{setId}";
+
+    /// <summary>
+    /// How long the check of a set waits for the row of the set. No caller waits for the check, as it runs in the
+    /// background, but the next check of the set cannot start while it runs: a check that takes longer stops, and the set
+    /// stays in use until the next check. Without this limit, the retries of the database context and its connection
+    /// timeout could hold the check for minutes when SQL is slow or cannot be reached.
     /// </summary>
     internal static readonly TimeSpan SetCheckTimeout = TimeSpan.FromSeconds(5);
 
@@ -299,54 +306,141 @@ internal class HaplotypeFrequencyCache : IHaplotypeFrequencyCache
     /// use: after a restore or a copy of the database, a set id can name another set, with other rows. A row with another
     /// content hash or import time, or no row, gives other keys, so the next call loads those frequencies. A set in use does
     /// not expire, so without the check, this process would use the old frequencies until it restarts.
+    ///
+    /// <para>
+    /// Only the first read of the row is on the path of the callers. A later check runs in the background, and the callers
+    /// keep the last source until it ends: a loaded set needs no database, so a slow SQL or no SQL does not hold them.
+    /// </para>
     /// </summary>
     private async Task<FrequencySetSource> GetSource(int setId)
     {
-        // One factory at a time for the key, as for the entry: one caller reads the row, and the others wait for it.
+        // One factory at a time for the key, as for the entry: one caller reads the row or starts the check, and the others
+        // wait for it, which is no wait when the set has a last source.
         return await cache.GetOrAddAsync(SetCheckCacheKey(setId), async () =>
             {
                 var lastSource = cache.Get<FrequencySetSource>(LastSourceCacheKey(setId));
 
-                Data.Models.HaplotypeFrequencySet set;
                 if (lastSource == null)
                 {
                     // The first read of the row: the frequencies of the set are not loaded, and their load needs the database
-                    // anyway. So there is no timeout, and a fault fails the caller.
-                    set = await frequencySetRepository.GetSet(setId);
-                }
-                else
-                {
-                    try
-                    {
-                        using var timeout = new CancellationTokenSource(SetCheckTimeout, timeProvider);
-                        set = await frequencySetRepository.GetSet(setId, timeout.Token);
-                    }
-                    catch (Exception exception)
-                    {
-                        // A loaded set needs no database, so a fault or a timeout here does not fail the caller: the set keeps
-                        // its source, and the next check is due an interval from now.
-                        var reason = exception is OperationCanceledException ? $"no answer in {SetCheckTimeout.TotalSeconds} s" : exception.Message;
-                        logger.SendTrace(
-                            $"HF set {setId} could not be checked against its row in the database, so this process keeps it until the next check: {reason}",
-                            LogLevel.Warn);
-                        return lastSource;
-                    }
+                    // anyway. So the callers wait for it, there is no timeout, and a fault fails the caller.
+                    var source = SourceOf(setId, await frequencySetRepository.GetSet(setId));
+
+                    // No expiry: it is only replaced, by a check.
+                    cache.Add(LastSourceCacheKey(setId), source, new MemoryCacheEntryOptions());
+                    return source;
                 }
 
-                var source = SourceOf(setId, set);
-
-                if (lastSource != null && lastSource.RowVersion != source.RowVersion)
-                {
-                    logger.SendTrace($"HF set {setId} has another content hash or import time in the database, or no row, so this process loads it again.");
-                }
-
-                // No expiry: it is only replaced, by the next check.
-                cache.Add(LastSourceCacheKey(setId), source, new MemoryCacheEntryOptions());
-                return source;
+                // The callers use the last source until the interval ends, or until the check finds another one.
+                StartCheck(setId, lastSource);
+                return lastSource;
             },
             SetCheckLocalEntryOptions()
         );
     }
+
+    /// <summary>
+    /// Starts the check of the row of a set in the background, unless a check of the set still runs: the next check is
+    /// then due at the end of this interval.
+    /// </summary>
+    private void StartCheck(int setId, FrequencySetSource lastSource)
+    {
+        var setCheck = cache.GetOrAdd(SetCheckRunCacheKey(setId), () => new SetCheck(), new MemoryCacheEntryOptions());
+        setCheck.TryStart(() => CheckSource(setId, lastSource));
+    }
+
+    /// <summary>
+    /// Reads the row of a set, and when it gives another source than <paramref name="lastSource"/>, makes it the source of
+    /// the set at once, so the next call loads those frequencies. A fault or a timeout keeps the last source until the end
+    /// of the interval, as a loaded set needs no database.
+    /// </summary>
+    private async Task CheckSource(int setId, FrequencySetSource lastSource)
+    {
+        try
+        {
+            Data.Models.HaplotypeFrequencySet set;
+            try
+            {
+                using var timeout = new CancellationTokenSource(SetCheckTimeout, timeProvider);
+                set = await frequencySetRepository.GetSet(setId, timeout.Token);
+            }
+            catch (Exception exception)
+            {
+                var reason = exception is OperationCanceledException ? $"no answer in {SetCheckTimeout.TotalSeconds} s" : exception.Message;
+                logger.SendTrace(
+                    $"HF set {setId} could not be checked against its row in the database, so this process keeps it until the next check: {reason}",
+                    LogLevel.Warn);
+                return;
+            }
+
+            var source = SourceOf(setId, set);
+
+            // No expiry: it is only replaced, by the next check.
+            cache.Add(LastSourceCacheKey(setId), source, new MemoryCacheEntryOptions());
+
+            if (source.RowVersion != lastSource.RowVersion || source.LocalKey != lastSource.LocalKey)
+            {
+                if (source.RowVersion != lastSource.RowVersion)
+                {
+                    logger.SendTrace($"HF set {setId} has another content hash or import time in the database, or no row, so this process loads it again.");
+                }
+
+                // Replaces the last source, which the callers use until the interval ends: the next call loads the new one.
+                // The next check is due an interval from now.
+                cache.Add(SetCheckCacheKey(setId), source, SetCheckLocalEntryOptions());
+            }
+        }
+        catch (Exception exception)
+        {
+            // Nothing awaits this task: an exception that is not caught would be lost. The set keeps its source.
+            logger.SendTrace($"HF set {setId}: the check against its row in the database failed: {exception.Message}", LogLevel.Error);
+        }
+    }
+
+    /// <summary>
+    /// The check of the row of one set that runs in the background, if any: so only one check of each set runs at a time in
+    /// this process. The instances of <see cref="HaplotypeFrequencyCache"/> are scoped, so this lives in the local cache,
+    /// which the process shares.
+    /// </summary>
+    private sealed class SetCheck
+    {
+        private readonly Lock runLock = new();
+        private Task run = Task.CompletedTask;
+
+        /// <summary>The check that runs, or the last one: complete when no check runs.</summary>
+        public Task Run
+        {
+            get
+            {
+                lock (runLock)
+                {
+                    return run;
+                }
+            }
+        }
+
+        /// <returns>false if a check still runs: it is not started then.</returns>
+        public bool TryStart(Func<Task> check)
+        {
+            lock (runLock)
+            {
+                if (!run.IsCompleted)
+                {
+                    return false;
+                }
+
+                run = Task.Run(check);
+                return true;
+            }
+        }
+    }
+
+    /// <summary>
+    /// The check of the row of the set that runs in the background, or a completed task when none runs. For tests: a caller
+    /// has no need to wait for a check.
+    /// </summary>
+    internal Task RunningSetCheck(int setId) =>
+        cache.Get<SetCheck>(SetCheckRunCacheKey(setId))?.Run ?? Task.CompletedTask;
 
     /// <param name="setId">The id of the set.</param>
     /// <param name="set">The row of the set; null when there is none.</param>

@@ -234,8 +234,10 @@ time, or there is no row, the process uses the entry of the new row: set ids are
 restore, a copy or a rebuild of the database, an id can name another set. The old entry goes when no set uses it for the
 expiry, or when the memory limit removes it. So a restore needs no step for the sets (the list of active sets does: see
 [The active set cache](#the-active-set-cache)), and each process uses a replaced set within the same minute as the list
-of active sets that names it. The callers of the set wait for the check, so the check waits at most 5 seconds for the
-row. When the check cannot read the row in that time, the process keeps the set, logs a warning, and checks again a
+of active sets that names it. The check runs in the background: the callers of the set do not wait for it, and use the
+loaded set until the check finds another row. So when SQL is slow or cannot be reached, match prediction still uses the
+sets that the process holds. Only one check of each set runs at a time in a process, and it waits at most 5 seconds for
+the row. When the check cannot read the row in that time, the process keeps the set, logs a warning, and checks again a
 minute later.
 
 **The stored values.** A content is stored under `hf-set-v2:{content hash}`. A set with no content hash is stored under
