@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Transactions;
 using Atlas.Common.Public.Models.GeneticData;
@@ -113,8 +114,11 @@ public interface ISubjectGenotypeSetRepository
     /// parity check of the debug endpoint.
     /// </summary>
     /// <remarks>
-    /// Each distinct key is read once. The keys are staged and joined on the unique key index, as for
-    /// <see cref="GetExistingValueIds"/>, so the read cannot disagree with the writers about what "the same key" means.
+    /// Each distinct key is read once, in one statement: the keys go to SQL Server as one JSON parameter, and are joined
+    /// on the unique key index (ATL-531). They are not staged as for <see cref="GetExistingValueIds"/>: search reads once
+    /// for each match prediction batch, and the staging costs more round trips. The join compares the keys as the
+    /// writers' join does, and an integration test checks that this read and <see cref="GetExistingValueIds"/> find the
+    /// same keys.
     /// </remarks>
     Task<IReadOnlyDictionary<SubjectGenotypeSetKey, StoredSubjectGenotypeSetValue>> GetSubjectGenotypeSetValues(
         IReadOnlyCollection<SubjectGenotypeSetKey> keys);
@@ -548,18 +552,35 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
         """;
 
     /// <summary>
-    /// The stored value of every staged key: one seek on the unique key index for each, then the value row by its primary
-    /// key. A staged key with no row is not returned.
+    /// The stored value of every key in the JSON array <c>@Keys</c>: one seek on the unique key index for each, then the
+    /// value row by its primary key. A key with no row is not returned.
+    ///
+    /// <para>
+    /// <b>The same key as the writers.</b> The JSON columns have the types of <see cref="CreateStagingTableSql"/>, and
+    /// <c>AllowedLociKey</c> is its stored member name. The join has no <c>COLLATE</c>, so the collation of the table's
+    /// columns compares the keys, as in the writers' join over the staging table.
+    /// <c>GetSubjectGenotypeSetValues_FindsTheSameKeysAsGetExistingValueIds</c> is the integration test that fails if
+    /// the two disagree.
+    /// </para>
+    ///
+    /// <para>
+    /// <b><c>READCOMMITTED</c> as a table hint</b>, not as a <c>SET</c> statement, which would cost a round trip. A
+    /// pooled connection can keep <c>SERIALIZABLE</c> from its last user (see <see cref="OverStagedChunks"/>), and this
+    /// read must not take key-range locks. The hint makes the read of this table read committed at every session level.
+    /// </para>
     /// </summary>
-    private const string SelectStagedValuesSql = $"""
+    private const string SelectValuesByKeySql = $"""
         SELECT
             v.{nameof(SubjectGenotypeSetValue.HlaTypingKey)},
             v.{nameof(SubjectGenotypeSetValue.HaplotypeFrequencySetId)},
             v.{nameof(SubjectGenotypeSetValue.AllowedLociKey)},
             v.{nameof(SubjectGenotypeSetValue.IsUnrepresented)},
             v.{nameof(SubjectGenotypeSetValue.SubjectGenotypeSetData)}
-        FROM {ValuesTableName} v
-        INNER JOIN {StagingTableName} s
+        FROM OPENJSON(@Keys) WITH (
+            {nameof(SubjectGenotypeSetValue.HlaTypingKey)}            nvarchar(64),
+            {nameof(SubjectGenotypeSetValue.HaplotypeFrequencySetId)} int,
+            {nameof(SubjectGenotypeSetValue.AllowedLociKey)}          nvarchar(16)) AS s
+        INNER JOIN {ValuesTableName} v WITH (READCOMMITTED)
             ON v.{nameof(SubjectGenotypeSetValue.HlaTypingKey)} = s.{nameof(SubjectGenotypeSetValue.HlaTypingKey)}
            AND v.{nameof(SubjectGenotypeSetValue.HaplotypeFrequencySetId)} = s.{nameof(SubjectGenotypeSetValue.HaplotypeFrequencySetId)}
            AND v.{nameof(SubjectGenotypeSetValue.AllowedLociKey)} = s.{nameof(SubjectGenotypeSetValue.AllowedLociKey)}
@@ -708,13 +729,28 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
             return new Dictionary<SubjectGenotypeSetKey, StoredSubjectGenotypeSetValue>();
         }
 
-        // Staged as rows with no payload, as for GetExistingValueIds: only the join brings the payloads back.
-        var probes = keys
-            .Distinct()
-            .Select(key => new SubjectGenotypeSetValueToStore(key, IsUnrepresented: false, SubjectGenotypeSetData: null))
-            .ToList();
+        // One JSON parameter for all the keys, so the read is one statement. Always nvarchar(max), so that SQL Server keeps
+        // one plan for every number of keys. The property names are the column names of the OPENJSON clause of
+        // SelectValuesByKeySql, which finds the values by them.
+        var keysParameter = new DbString
+        {
+            Value = JsonSerializer.Serialize(keys.Distinct().Select(key => new
+            {
+                key.HlaTypingKey,
+                key.HaplotypeFrequencySetId,
+                AllowedLociKey = key.AllowedLociKey.ToString()
+            })),
+            IsAnsi = false,
+            Length = -1
+        };
 
-        return await OverStagedChunks(probes, ReadStagedValues);
+        await using var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString());
+        await connection.OpenAsync();
+
+        var rows = await WithRetries(() => connection.QueryAsync<StoredValueRow>(
+            SelectValuesByKeySql, new { Keys = keysParameter }, commandTimeout: CommandTimeoutInSeconds));
+
+        return rows.ToDictionary(row => row.ToKey(), row => new StoredSubjectGenotypeSetValue(row.IsUnrepresented, row.SubjectGenotypeSetData));
     }
 
     /// <inheritdoc />
@@ -961,13 +997,6 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
         var rows = await connection.QueryAsync<StoredValueIdRow>(SelectStagedValueIdsSql, commandTimeout: CommandTimeoutInSeconds);
 
         return rows.ToDictionary(row => row.ToKey(), row => row.Id);
-    }
-
-    private static async Task<IReadOnlyDictionary<SubjectGenotypeSetKey, StoredSubjectGenotypeSetValue>> ReadStagedValues(SqlConnection connection)
-    {
-        var rows = await connection.QueryAsync<StoredValueRow>(SelectStagedValuesSql, commandTimeout: CommandTimeoutInSeconds);
-
-        return rows.ToDictionary(row => row.ToKey(), row => new StoredSubjectGenotypeSetValue(row.IsUnrepresented, row.SubjectGenotypeSetData));
     }
 
     private static async Task<T> WithRetries<T>(Func<Task<T>> operation)

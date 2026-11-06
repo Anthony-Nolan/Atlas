@@ -129,6 +129,35 @@ public class SubjectGenotypeSetSearchRepositoryTests
     }
 
     /// <summary>
+    /// Search reads the keys in one statement (ATL-531), and the writers compare them through their staging table. Both
+    /// must agree about what "the same key" means: letter case (the collation), the frequency set and the loci.
+    /// </summary>
+    [Test]
+    public async Task GetSubjectGenotypeSetValues_FindsTheSameKeysAsGetExistingValueIds()
+    {
+        var upperCaseKey = NewHexKey();
+        var unchangedKey = NewHexKey();
+        var otherSetKey = NewHexKey();
+        var otherLociKey = NewHexKey();
+        await repository.GetOrCreateValueIds([.. new[] { upperCaseKey, unchangedKey, otherSetKey, otherLociKey }.Select(NewValue)]);
+        // Not a key and its upper-case form in one call: the writers' staging table rejects them as one key twice.
+        SubjectGenotypeSetKey[] keys =
+        [
+            upperCaseKey with { HlaTypingKey = upperCaseKey.HlaTypingKey.ToUpperInvariant() },
+            unchangedKey,
+            otherSetKey with { HaplotypeFrequencySetId = otherSetKey.HaplotypeFrequencySetId + 1 },
+            otherLociKey with { AllowedLociKey = AllowedLociKey.ABDrb1 },
+            NewHexKey()
+        ];
+
+        var read = await repository.GetSubjectGenotypeSetValues(keys);
+        var existing = await repository.GetExistingValueIds(keys);
+
+        read.Keys.Should().BeEquivalentTo(existing.Keys);
+        read.Keys.Should().Contain(unchangedKey);
+    }
+
+    /// <summary>
     /// The warm step may run twice for one search (a retried activity), or for two searches of the same patient at once.
     /// Both must agree on one row, and the second must not rewrite the first.
     /// </summary>
@@ -301,6 +330,10 @@ public class SubjectGenotypeSetSearchRepositoryTests
 
     private SubjectGenotypeSetKey NewKey(int frequencySetId = 1, AllowedLociKey allowedLociKey = Key) =>
         new($"{++nextHlaTypingKeySuffix:D64}", frequencySetId, allowedLociKey);
+
+    /// <summary>A key whose typing key is like the generator's: 32 bytes as lower-case hex.</summary>
+    private SubjectGenotypeSetKey NewHexKey() =>
+        new(Convert.ToHexStringLower(fixture.CreateMany<byte>(32).ToArray()), fixture.Create<int>(), Key);
 
     private SubjectGenotypeSetValueToStore NewValue(SubjectGenotypeSetKey key) => new(key, false, fixture.CreateMany<byte>().ToArray());
 
