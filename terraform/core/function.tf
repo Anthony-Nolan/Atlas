@@ -102,6 +102,7 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "Matching:MessagingServiceBus:SearchResultsTopic"  = module.matching_algorithm.service_bus.matching_results_topic.name
 
     "DistributedCache:ConnectionString"        = local.distributed_cache_handoff.connection_string
+    "DistributedCache:Enabled"                 = local.distributed_cache_handoff.enabled
     "DistributedCache:ManagedIdentityClientId" = azurerm_user_assigned_identity.function_apps_identity.client_id
 
     "HaplotypeFrequencySetCache:ActiveSetCacheExpiryMinutes"    = var.MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES

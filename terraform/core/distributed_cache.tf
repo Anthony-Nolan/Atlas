@@ -58,7 +58,11 @@ locals {
   // DistributedCache:ManagedIdentityClientId to the client id of function_apps_identity, which has the access policy
   // above, and Atlas.Common's RedisConnection then turns on TLS and Entra sign-in. An empty connection string would turn
   // the cache off.
+  // enabled is the kill switch, DistributedCache:Enabled: false turns the cache off on every app, whatever the
+  // connection string is. The instance above is kept either way, so the cache can be turned on again with no
+  // infrastructure change.
   distributed_cache_handoff = {
     connection_string = "${azurerm_managed_redis.atlas.hostname}:${azurerm_managed_redis.atlas.default_database[0].port}"
+    enabled           = var.DISTRIBUTED_CACHE_ENABLED
   }
 }

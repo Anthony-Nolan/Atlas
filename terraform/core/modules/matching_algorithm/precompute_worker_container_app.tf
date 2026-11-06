@@ -123,6 +123,10 @@ resource "azurerm_container_app" "atlas_precompute_worker" {
         value = var.distributed_cache.connection_string
       }
       env {
+        name  = "DistributedCache__Enabled"
+        value = tostring(var.distributed_cache.enabled)
+      }
+      env {
         name  = "DistributedCache__ManagedIdentityClientId"
         value = var.function_apps_identity.client_id
       }

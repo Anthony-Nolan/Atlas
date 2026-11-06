@@ -87,6 +87,12 @@ variable "DATABASE_SHARED_SKU_SIZE" {
   description = "Appropriate values determined by DATABASE_SHARED_EDITION. Defaults to 'Standard', where only standard sku sizes are appropriate e.g. S0, S2, S3. Updating to 'GeneralPurpose' instead allows VCore/Serverless tiers, e.g. GP_S_Gen5_2"
 }
 
+variable "DISTRIBUTED_CACHE_ENABLED" {
+  type        = bool
+  default     = true
+  description = "Kill switch of the distributed cache: false sets DistributedCache:Enabled = false on every app that uses the cache, so no app connects to Redis. The Azure Managed Redis instance is kept either way. Changing it restarts the apps."
+}
+
 variable "DISTRIBUTED_CACHE_HIGH_AVAILABILITY_ENABLED" {
   type        = bool
   default     = false

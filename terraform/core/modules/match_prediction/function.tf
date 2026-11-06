@@ -31,6 +31,7 @@ resource "azurerm_windows_function_app" "atlas_match_prediction_function" {
     "AzureStorage:MatchPredictionResultsBlobContainer" = azurerm_storage_container.match_prediction_results_container.name
 
     "DistributedCache:ConnectionString"        = var.distributed_cache.connection_string
+    "DistributedCache:Enabled"                 = var.distributed_cache.enabled
     "DistributedCache:ManagedIdentityClientId" = var.function_apps_identity.client_id
 
     "HlaMetadataDictionary:AzureStorageConnectionString"                          = var.key_vault.secret_refs["azure-storage-connection-string"]
