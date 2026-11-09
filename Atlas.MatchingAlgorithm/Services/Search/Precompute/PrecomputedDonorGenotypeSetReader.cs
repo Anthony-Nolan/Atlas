@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
@@ -64,7 +66,10 @@ public class PrecomputedDonorGenotypeSetReader : IPrecomputedDonorGenotypeSetRea
         int? matchingAlgorithmDataRefreshRecordId,
         PatientGenotypeSetKey patientGenotypeSetKey)
     {
+        // DEV timing only (ATL-531): the steps of the read, for the "Genotype set timings" event.
+        var stepStopwatch = Stopwatch.StartNew();
         var unavailableReason = Pin(allowedLoci, matchingAlgorithmDataRefreshRecordId, out var allowedLociKey, out var activeRecord);
+        ReadStepTimings.Add("ReadPinMs", stepStopwatch);
         if (unavailableReason != null)
         {
             return PrecomputedDonorGenotypeSetLookup.Unavailable(
@@ -72,6 +77,7 @@ public class PrecomputedDonorGenotypeSetReader : IPrecomputedDonorGenotypeSetRea
                 unavailableReason == DonorGenotypeSetSource.UncoveredAllowedLoci ? null : allowedLociKey.ToString());
         }
 
+        stepStopwatch.Restart();
         // The key of each donor input, for every id in it. A donor id in two inputs keeps the key of the first.
         var keyByDonorId = new Dictionary<int, SubjectGenotypeSetKey>();
         foreach (var donor in donors)
@@ -96,14 +102,17 @@ public class PrecomputedDonorGenotypeSetReader : IPrecomputedDonorGenotypeSetRea
             keys.Add(patientKey.Value);
         }
 
+        ReadStepTimings.Add("ReadKeysMs", stepStopwatch);
+
         var values = await repositoryFactory.GetForDatabase(activeRecord.Database).GetSubjectGenotypeSetValues(keys);
 
+        stepStopwatch.Restart();
         var rowByKey = values.ToDictionary(
             value => value.Key,
             value => new PrecomputedDonorGenotypeSetRow(
                 value.Key.HaplotypeFrequencySetId, value.Value.IsUnrepresented, value.Value.SubjectGenotypeSetData));
 
-        return new PrecomputedDonorGenotypeSetLookup(
+        var lookup = new PrecomputedDonorGenotypeSetLookup(
             allowedLociKey.ToString(),
             null,
             keyByDonorId
@@ -112,6 +121,9 @@ public class PrecomputedDonorGenotypeSetReader : IPrecomputedDonorGenotypeSetRea
             patientKey != null && values.TryGetValue(patientKey.Value, out var patientValue)
                 ? new PrecomputedPatientGenotypeSetRow(patientValue.IsUnrepresented, patientValue.SubjectGenotypeSetData)
                 : null);
+        ReadStepTimings.Add("ReadResultMs", stepStopwatch);
+
+        return lookup;
     }
 
     /// <inheritdoc />

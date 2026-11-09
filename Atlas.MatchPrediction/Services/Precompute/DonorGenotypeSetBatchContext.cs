@@ -58,6 +58,9 @@ public sealed class DonorGenotypeSetBatchContext
     /// <summary>The payload bytes read for the batch: each donor row once, and the patient's row when it is not a donor row.</summary>
     public long ReadBytes { get; }
 
+    /// <summary>DEV timing only (ATL-531): the time of each step of the read, by metric name; empty when there was no read.</summary>
+    public IReadOnlyDictionary<string, double> ReadSteps { get; }
+
     /// <summary>
     /// True when a donor computed live should be stored for reuse: the switch is on, the rows were read, and so the
     /// transient database matching used was still active at the start of the batch. The writer checks that again
@@ -90,7 +93,8 @@ public sealed class DonorGenotypeSetBatchContext
         IReadOnlyDictionary<int, PrecomputedDonorGenotypeSetRow> rows,
         PatientGenotypeSetKey patientGenotypeSetKey,
         PrecomputedPatientGenotypeSetRow patientRow,
-        TimeSpan? readTime)
+        TimeSpan? readTime,
+        IReadOnlyDictionary<string, double> readSteps)
     {
         UsePrecomputedGenotypeSets = usePrecomputedGenotypeSets;
         UsePrecomputedGenotypeSetsSource = source;
@@ -102,6 +106,7 @@ public sealed class DonorGenotypeSetBatchContext
         PatientGenotypeSetKey = patientGenotypeSetKey;
         this.patientRow = patientRow;
         ReadTime = readTime;
+        ReadSteps = readSteps ?? new Dictionary<string, double>();
 
         // The ids that share a row share one object, and the patient's payload is a donor row's when their keys are equal.
         var distinctRows = this.rows.Values.Distinct<PrecomputedDonorGenotypeSetRow>(ReferenceEqualityComparer.Instance).ToList();
@@ -120,18 +125,20 @@ public sealed class DonorGenotypeSetBatchContext
         int? matchingAlgorithmDataRefreshRecordId,
         PatientGenotypeSetKey patientGenotypeSetKey = null) =>
         new(false, source, mode, null, matchingAlgorithmDataRefreshRecordId, DonorGenotypeSetSource.PrecomputeDisabled, NoRows,
-            patientGenotypeSetKey, null, null);
+            patientGenotypeSetKey, null, null, null);
 
     /// <param name="readTime">How long <paramref name="lookup"/> took to read; logged only.</param>
+    /// <param name="readSteps">DEV timing only (ATL-531): the time of each step of the read; logged only.</param>
     public static DonorGenotypeSetBatchContext Enabled(
         UsePrecomputedGenotypeSetsSource source,
         PrecomputedGenotypeSetMode mode,
         int? matchingAlgorithmDataRefreshRecordId,
         PrecomputedDonorGenotypeSetLookup lookup,
         PatientGenotypeSetKey patientGenotypeSetKey = null,
-        TimeSpan? readTime = null) =>
+        TimeSpan? readTime = null,
+        IReadOnlyDictionary<string, double> readSteps = null) =>
         new(true, source, mode, lookup.AllowedLociKey, matchingAlgorithmDataRefreshRecordId, lookup.BatchFallbackReason, lookup.Rows,
-            patientGenotypeSetKey, lookup.PatientRow, readTime);
+            patientGenotypeSetKey, lookup.PatientRow, readTime, readSteps);
 
     /// <summary>
     /// Finds and decodes the stored genotype set of a donor input.
