@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
@@ -126,6 +127,37 @@ public class SubjectGenotypeSetSearchRepositoryTests
     public async Task GetSubjectGenotypeSetValues_ForNoKeys_ReturnsNothing()
     {
         (await repository.GetSubjectGenotypeSetValues([])).Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// DEV timing only (ATL-531): inside a timing scope, the read adds each of its steps and the SqlClient statistics of its
+    /// connection, and still returns its values.
+    /// </summary>
+    [Test]
+    public async Task GetSubjectGenotypeSetValues_InATimingScope_AddsEachStepOfTheRead()
+    {
+        var key = NewKey();
+        await repository.GetOrCreateValueIds([NewValue(key)]);
+
+        IReadOnlyDictionary<string, StoredSubjectGenotypeSetValue> stored;
+        IReadOnlyDictionary<string, double> steps;
+        using (ReadStepTimings.Begin(out steps))
+        {
+            stored = (await repository.GetSubjectGenotypeSetValues([key])).ToDictionary(value => value.Key.HlaTypingKey, value => value.Value);
+        }
+
+        stored.Keys.Should().BeEquivalentTo(new[] { key.HlaTypingKey });
+        steps.Keys.Should().Contain(new[]
+        {
+            "ReadOpenMs", "ReadNewConnection", "ReadIsolationMs", "ReadCreateTableMs", "ReadBulkCopyMs", "ReadFirstRowMs",
+            "ReadRestRowsMs", "ReadCloseMs", "ReadServerRoundtrips", "ReadNetworkServerMs", "ReadSqlClientExecutionMs",
+            "ReadBytesReceived"
+        });
+        steps["ReadServerRoundtrips"].Should().BeGreaterThan(0);
+        foreach (var (step, value) in steps)
+        {
+            await TestContext.Out.WriteLineAsync($"{step} = {value}");
+        }
     }
 
     /// <summary>

@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
@@ -879,34 +881,64 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
     {
         var results = new Dictionary<SubjectGenotypeSetKey, T>(values.Count);
 
-        await using var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString());
-        await connection.OpenAsync();
-        await connection.ExecuteAsync("SET TRANSACTION ISOLATION LEVEL READ COMMITTED", commandTimeout: CommandTimeoutInSeconds);
-        await connection.ExecuteAsync(CreateStagingTableSql, commandTimeout: CommandTimeoutInSeconds);
-
-        var isFirstChunk = true;
-        foreach (var chunk in values.Chunk(StagingChunkSize))
+        // DEV timing only (ATL-531): each step is added only inside the scope of search's read, not for the writers.
+        var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString());
+        try
         {
-            if (!isFirstChunk)
+            var stepStopwatch = Stopwatch.StartNew();
+            await connection.OpenAsync();
+            ReadStepTimings.Add("ReadOpenMs", stepStopwatch);
+            if (ReadStepTimings.IsActive)
             {
-                await connection.ExecuteAsync(TruncateStagingTableSql, commandTimeout: CommandTimeoutInSeconds);
+                ReadStepTimings.AddConnection(connection.ClientConnectionId);
+                connection.StatisticsEnabled = true;
             }
 
-            isFirstChunk = false;
+            stepStopwatch.Restart();
+            await connection.ExecuteAsync("SET TRANSACTION ISOLATION LEVEL READ COMMITTED", commandTimeout: CommandTimeoutInSeconds);
+            ReadStepTimings.Add("ReadIsolationMs", stepStopwatch);
 
-            await StageChunk(connection, chunk);
+            stepStopwatch.Restart();
+            await connection.ExecuteAsync(CreateStagingTableSql, commandTimeout: CommandTimeoutInSeconds);
+            ReadStepTimings.Add("ReadCreateTableMs", stepStopwatch);
 
-            // Staging sits outside the retry on purpose: a retry re-runs against the rows already staged, which is what
-            // makes the attempt idempotent rather than a second insert of the same chunk.
-            var chunkResults = await WithRetries(() => perChunk(connection));
-
-            foreach (var (key, result) in chunkResults)
+            var isFirstChunk = true;
+            foreach (var chunk in values.Chunk(StagingChunkSize))
             {
-                results[key] = result;
+                if (!isFirstChunk)
+                {
+                    await connection.ExecuteAsync(TruncateStagingTableSql, commandTimeout: CommandTimeoutInSeconds);
+                }
+
+                isFirstChunk = false;
+
+                stepStopwatch.Restart();
+                await StageChunk(connection, chunk);
+                ReadStepTimings.Add("ReadBulkCopyMs", stepStopwatch);
+
+                // Staging sits outside the retry on purpose: a retry re-runs against the rows already staged, which is what
+                // makes the attempt idempotent rather than a second insert of the same chunk.
+                var chunkResults = await WithRetries(() => perChunk(connection));
+
+                foreach (var (key, result) in chunkResults)
+                {
+                    results[key] = result;
+                }
             }
+
+            if (ReadStepTimings.IsActive)
+            {
+                ReadStepTimings.AddSqlClientStatistics(connection.RetrieveStatistics());
+            }
+
+            return results;
         }
-
-        return results;
+        finally
+        {
+            var closeStopwatch = Stopwatch.StartNew();
+            await connection.DisposeAsync();
+            ReadStepTimings.Add("ReadCloseMs", closeStopwatch);
+        }
     }
 
     /// <summary>
@@ -963,11 +995,33 @@ public class SubjectGenotypeSetRepository : Repository, ISubjectGenotypeSetRepos
         return rows.ToDictionary(row => row.ToKey(), row => row.Id);
     }
 
+    /// <remarks>
+    /// DEV timing only (ATL-531): reads the rows as Dapper's buffered <c>QueryAsync</c> does (sequential access, one
+    /// result), with a row parser, so that the time to the first row and the time of the other rows are two steps.
+    /// </remarks>
     private static async Task<IReadOnlyDictionary<SubjectGenotypeSetKey, StoredSubjectGenotypeSetValue>> ReadStagedValues(SqlConnection connection)
     {
-        var rows = await connection.QueryAsync<StoredValueRow>(SelectStagedValuesSql, commandTimeout: CommandTimeoutInSeconds);
+        var stepStopwatch = Stopwatch.StartNew();
+        await using var reader = await connection.ExecuteReaderAsync(
+            new CommandDefinition(SelectStagedValuesSql, commandTimeout: CommandTimeoutInSeconds),
+            CommandBehavior.SequentialAccess | CommandBehavior.SingleResult);
+        var parseRow = reader.GetRowParser<StoredValueRow>();
+        var values = new Dictionary<SubjectGenotypeSetKey, StoredSubjectGenotypeSetValue>();
 
-        return rows.ToDictionary(row => row.ToKey(), row => new StoredSubjectGenotypeSetValue(row.IsUnrepresented, row.SubjectGenotypeSetData));
+        var hasRow = await reader.ReadAsync();
+        ReadStepTimings.Add("ReadFirstRowMs", stepStopwatch);
+
+        stepStopwatch.Restart();
+        while (hasRow)
+        {
+            var row = parseRow(reader);
+            values.Add(row.ToKey(), new StoredSubjectGenotypeSetValue(row.IsUnrepresented, row.SubjectGenotypeSetData));
+            hasRow = await reader.ReadAsync();
+        }
+
+        ReadStepTimings.Add("ReadRestRowsMs", stepStopwatch);
+
+        return values;
     }
 
     private static async Task<T> WithRetries<T>(Func<Task<T>> operation)

@@ -125,6 +125,25 @@ internal class DonorGenotypeSetSourceResolverTests
         context.ReadBytes.Should().Be(130);
     }
 
+    /// <summary>DEV timing only (ATL-531): a step that the reader adds after an await reaches the batch context.</summary>
+    [Test]
+    public async Task Resolve_WhenRead_KeepsTheStepsThatTheReadAdds()
+    {
+        settings.Mode = PrecomputedGenotypeSetMode.DefaultPrecomputed;
+        var pinMs = fixture.Create<double>();
+        reader.GetDonorGenotypeSets(default, default, default, default).ReturnsForAnyArgs(async _ =>
+        {
+            await Task.Yield();
+            ReadStepTimings.Add("ReadPinMs", pinMs);
+            return new PrecomputedDonorGenotypeSetLookup("ABCDrb1Dqb1", null, new Dictionary<int, PrecomputedDonorGenotypeSetRow>());
+        });
+
+        var context = await resolver.Resolve(Request(null), Donors);
+
+        context.ReadSteps.Should().ContainKey("ReadFrequencySetsMs");
+        context.ReadSteps.Should().Contain("ReadPinMs", pinMs);
+    }
+
     [Test]
     public async Task Resolve_WhenIdsAndThePatientShareARow_CountsTheRowAndItsBytesOnce()
     {

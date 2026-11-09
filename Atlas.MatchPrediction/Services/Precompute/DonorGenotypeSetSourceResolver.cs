@@ -63,22 +63,31 @@ internal class DonorGenotypeSetSourceResolver : IDonorGenotypeSetSourceResolver
         }
 
         PrecomputedDonorGenotypeSetLookup lookup;
+        IReadOnlyDictionary<string, double> readSteps;
         var readStopwatch = Stopwatch.StartNew();
-        try
+        // DEV timing only (ATL-531): the reader and the repository add the time of each step of the read to this scope.
+        using (ReadStepTimings.Begin(out readSteps))
         {
-            // A stored set's key holds its frequency set, so the set must be chosen before the read.
-            var donorsToRead = await WithFrequencySets(donors);
-            lookup = await reader.GetDonorGenotypeSets(
-                donorsToRead, AllowedLoci(request), request.MatchingAlgorithmDataRefreshRecordId, request.PatientGenotypeSetKey);
-        }
-        catch (Exception exception)
-        {
-            LogReadFailure(request, exception);
-            lookup = PrecomputedDonorGenotypeSetLookup.Unavailable(DonorGenotypeSetSource.ReadFailed);
+            try
+            {
+                // A stored set's key holds its frequency set, so the set must be chosen before the read.
+                var frequencySetsStopwatch = Stopwatch.StartNew();
+                var donorsToRead = await WithFrequencySets(donors);
+                ReadStepTimings.Add("ReadFrequencySetsMs", frequencySetsStopwatch);
+
+                lookup = await reader.GetDonorGenotypeSets(
+                    donorsToRead, AllowedLoci(request), request.MatchingAlgorithmDataRefreshRecordId, request.PatientGenotypeSetKey);
+            }
+            catch (Exception exception)
+            {
+                LogReadFailure(request, exception);
+                lookup = PrecomputedDonorGenotypeSetLookup.Unavailable(DonorGenotypeSetSource.ReadFailed);
+            }
         }
 
         return DonorGenotypeSetBatchContext.Enabled(
-            source, settings.Mode, request.MatchingAlgorithmDataRefreshRecordId, lookup, request.PatientGenotypeSetKey, readStopwatch.Elapsed);
+            source, settings.Mode, request.MatchingAlgorithmDataRefreshRecordId, lookup, request.PatientGenotypeSetKey, readStopwatch.Elapsed,
+            readSteps);
     }
 
     /// <summary>

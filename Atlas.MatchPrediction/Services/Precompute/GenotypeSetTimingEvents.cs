@@ -158,6 +158,12 @@ internal class GenotypeSetTimingEvents : IGenotypeSetTimingEvents
             { "EncodeMs", encoded.Sum(d => d.Timing.EncodeTime.TotalMilliseconds) },
         };
 
+        // DEV timing only (ATL-531): the steps of the read, by their metric names.
+        foreach (var (step, value) in context.ReadSteps)
+        {
+            metrics[step] = value;
+        }
+
         foreach (var (_, name) in GenotypeCountBuckets)
         {
             var liveInBucket = live.Where(d => BucketName(d.DonorGenotypeCount) == name).ToList();
