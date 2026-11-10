@@ -18,6 +18,10 @@
     "durableTask": {
       "hubName": "AtlasFunctionsHub",
       "maxConcurrentActivityFunctions": 10
+    },
+    "serviceBus": {
+      "maxConcurrentSessions": 64,
+      "sessionIdleTimeout": "00:00:05"
     }
   },
   "functionTimeout": "23:00:00"
