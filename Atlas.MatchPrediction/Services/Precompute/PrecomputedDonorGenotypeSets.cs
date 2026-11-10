@@ -110,21 +110,8 @@ public enum PatientGenotypeSetSource
     /// <summary>Reading the stored rows failed.</summary>
     ReadFailed,
 
-    /// <summary>The precomputed path is off for this batch: by the kill-switch, or by the request's override.</summary>
+    /// <summary>The precomputed path is off for this batch: the request's <c>UsePrecomputedGenotypeSets</c> is false or empty.</summary>
     PrecomputeDisabled
-}
-
-/// <summary>What decided whether the precomputed path was used for a batch.</summary>
-public enum UsePrecomputedGenotypeSetsSource
-{
-    /// <summary><c>UsePrecomputedGenotypeSets</c> was set on the request, and the mode allowed it to decide.</summary>
-    Request,
-
-    /// <summary>
-    /// The kill-switch mode decided: the request left the override null, or the mode is
-    /// <see cref="ExternalInterface.Settings.PrecomputedGenotypeSetMode.ForceLive"/>, which ignores it.
-    /// </summary>
-    FeatureFlag
 }
 
 /// <summary>

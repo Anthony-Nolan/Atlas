@@ -76,7 +76,7 @@ internal class SearchOrchestrationFunctionsTests
     [Test]
     public async Task SearchOrchestrator_ParallelPath_SuccessPath_TracksInitiationDispatchesBatchesAndSkipsSequentialSteps()
     {
-        var notification = CreateNotification(parallelMatchPrediction: true);
+        var notification = CreateNotification(parallelMatchPrediction: true, usePrecomputedGenotypeSets: true);
         SetUpSearchOrchestratorInput(notification);
         var searchIdentifier = new Guid(notification.SearchRequestId);
 
@@ -85,6 +85,7 @@ internal class SearchOrchestrationFunctionsTests
         await AssertActivityCalled<MatchPredictionProcessInitiatedParameters>(
             nameof(SearchActivityFunctions.SendMatchPredictionProcessInitiated),
             p => p.IsParallelMatchPrediction
+                 && p.IsPrecomputedMatchPrediction
                  && p.SearchIdentifier == searchIdentifier
                  && p.OriginalSearchIdentifier == null
                  && p.InitiationTimeUtc == orchestrationStartTime);
@@ -202,6 +203,7 @@ internal class SearchOrchestrationFunctionsTests
         await AssertActivityCalled<MatchPredictionProcessInitiatedParameters>(
             nameof(SearchActivityFunctions.SendMatchPredictionProcessInitiated),
             p => p.IsParallelMatchPrediction
+                 && !p.IsPrecomputedMatchPrediction
                  && p.SearchIdentifier == repeatSearchIdentifier
                  && p.OriginalSearchIdentifier == originalSearchIdentifier);
         await AssertActivityCalled<PrepareAndDispatchParallelMatchPredictionBatchesParameters>(
@@ -231,6 +233,7 @@ internal class SearchOrchestrationFunctionsTests
 
     private MatchingResultsNotification CreateNotification(
         bool? parallelMatchPrediction,
+        bool? usePrecomputedGenotypeSets = null,
         bool isRepeatSearch = false,
         bool wasSuccessful = true,
         bool hasNumberOfResults = true)
@@ -240,7 +243,11 @@ internal class SearchOrchestrationFunctionsTests
             .With(n => n.RepeatSearchRequestId, isRepeatSearch ? Guid.NewGuid().ToString() : null)
             .With(n => n.WasSuccessful, wasSuccessful)
             .With(n => n.NumberOfResults, hasNumberOfResults ? fixture.Create<int>() : (int?)null)
-            .With(n => n.SearchRequest, new SearchRequest { ParallelMatchPrediction = parallelMatchPrediction })
+            .With(n => n.SearchRequest, new SearchRequest
+            {
+                ParallelMatchPrediction = parallelMatchPrediction,
+                UsePrecomputedGenotypeSets = usePrecomputedGenotypeSets
+            })
             .Create();
     }
 

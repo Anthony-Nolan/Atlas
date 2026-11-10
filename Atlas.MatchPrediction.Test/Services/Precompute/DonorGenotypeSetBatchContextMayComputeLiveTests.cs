@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
-using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Services.Precompute;
 using AwesomeAssertions;
 using NUnit.Framework;
@@ -50,7 +49,7 @@ internal class DonorGenotypeSetBatchContextMayComputeLiveTests
     [Test]
     public void MayComputeLive_WhenPrecomputeIsDisabled_IsTrue()
     {
-        var context = DonorGenotypeSetBatchContext.Disabled(UsePrecomputedGenotypeSetsSource.Request, PrecomputedGenotypeSetMode.DefaultLive, 42);
+        var context = DonorGenotypeSetBatchContext.Disabled(42);
 
         context.MayComputeLive([Donor(1)]).Should().BeTrue();
     }
@@ -59,8 +58,6 @@ internal class DonorGenotypeSetBatchContextMayComputeLiveTests
     public void MayComputeLive_WhenTheBatchFellBack_IsTrue()
     {
         var context = DonorGenotypeSetBatchContext.Enabled(
-            UsePrecomputedGenotypeSetsSource.Request,
-            PrecomputedGenotypeSetMode.DefaultLive,
             42,
             PrecomputedDonorGenotypeSetLookup.Unavailable(DonorGenotypeSetSource.ActiveDatabaseUnknown));
 
@@ -71,8 +68,6 @@ internal class DonorGenotypeSetBatchContextMayComputeLiveTests
         Dictionary<int, PrecomputedDonorGenotypeSetRow> rows,
         PrecomputedPatientGenotypeSetRow patientRow) =>
         DonorGenotypeSetBatchContext.Enabled(
-            UsePrecomputedGenotypeSetsSource.Request,
-            PrecomputedGenotypeSetMode.DefaultLive,
             42,
             new PrecomputedDonorGenotypeSetLookup("ABCDrb1Dqb1", null, rows, patientRow));
 

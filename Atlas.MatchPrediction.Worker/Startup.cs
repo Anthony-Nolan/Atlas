@@ -35,7 +35,6 @@ public static class Startup
             OptionsReaderFor<NotificationsServiceBusSettings>(),
             OptionsReaderFor<AzureStorageSettings>(),
             OptionsReaderFor<GenotypeImputationSettings>(),
-            OptionsReaderFor<PrecomputedGenotypeSetSettings>(),
             ConnectionStringReader("MatchPredictionSql")
         );
 

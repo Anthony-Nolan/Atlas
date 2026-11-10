@@ -72,7 +72,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             // result persistence, log upload, and completion tracking from here on
             if (notification.SearchRequest?.ParallelMatchPrediction == true)
             {
-                await SendMatchPredictionProcessInitiated(context, new MatchPredictionProcessInitiatedParameters { SearchIdentifier = trackingSearchIdentifier, OriginalSearchIdentifier = originalSearchIdentifier, InitiationTimeUtc = orchestrationStartTime, IsParallelMatchPrediction = true });
+                await SendMatchPredictionProcessInitiated(context, new MatchPredictionProcessInitiatedParameters { SearchIdentifier = trackingSearchIdentifier, OriginalSearchIdentifier = originalSearchIdentifier, InitiationTimeUtc = orchestrationStartTime, IsParallelMatchPrediction = true, IsPrecomputedMatchPrediction = notification.SearchRequest?.UsePrecomputedGenotypeSets == true });
                 await PrepareAndDispatchParallelMatchPredictionBatches(context, notification, requestInfo, orchestrationStartTime);
                 return new SearchOrchestrationOutput { MatchingDonorCount = notification.NumberOfResults ?? -1 };
             }
@@ -85,7 +85,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
             try
             {
-                await SendMatchPredictionProcessInitiated(context, new MatchPredictionProcessInitiatedParameters { SearchIdentifier = trackingSearchIdentifier, OriginalSearchIdentifier = originalSearchIdentifier, InitiationTimeUtc = orchestrationStartTime, IsParallelMatchPrediction = false });
+                await SendMatchPredictionProcessInitiated(context, new MatchPredictionProcessInitiatedParameters { SearchIdentifier = trackingSearchIdentifier, OriginalSearchIdentifier = originalSearchIdentifier, InitiationTimeUtc = orchestrationStartTime, IsParallelMatchPrediction = false, IsPrecomputedMatchPrediction = notification.SearchRequest?.UsePrecomputedGenotypeSets == true });
 
                 var matchPredictionRequestLocations = await PrepareMatchPrediction(context, notification, requestInfo);
                 await SendMatchPredictionBatchProcessingStarted(context, new MatchPredictionSearchIdentifiers { SearchIdentifier = trackingSearchIdentifier, OriginalSearchIdentifier = originalSearchIdentifier });
@@ -201,7 +201,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             // result persistence, log upload, and completion tracking from here on
             if (notification.SearchRequest?.ParallelMatchPrediction == true)
             {
-                await SendMatchPredictionProcessInitiated(context, new MatchPredictionProcessInitiatedParameters { SearchIdentifier = trackingSearchIdentifier, OriginalSearchIdentifier = originalSearchIdentifier, InitiationTimeUtc = orchestrationStartTime, IsParallelMatchPrediction = true });
+                await SendMatchPredictionProcessInitiated(context, new MatchPredictionProcessInitiatedParameters { SearchIdentifier = trackingSearchIdentifier, OriginalSearchIdentifier = originalSearchIdentifier, InitiationTimeUtc = orchestrationStartTime, IsParallelMatchPrediction = true, IsPrecomputedMatchPrediction = notification.SearchRequest?.UsePrecomputedGenotypeSets == true });
                 await PrepareAndDispatchParallelMatchPredictionBatches(context, notification, requestInfo, orchestrationStartTime);
                 return new SearchOrchestrationOutput { MatchingDonorCount = notification.NumberOfResults ?? -1 };
             }
@@ -213,7 +213,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
             try
             {
-                await SendMatchPredictionProcessInitiated(context, new MatchPredictionProcessInitiatedParameters { SearchIdentifier = trackingSearchIdentifier, OriginalSearchIdentifier = originalSearchIdentifier, InitiationTimeUtc = orchestrationStartTime, IsParallelMatchPrediction = false });
+                await SendMatchPredictionProcessInitiated(context, new MatchPredictionProcessInitiatedParameters { SearchIdentifier = trackingSearchIdentifier, OriginalSearchIdentifier = originalSearchIdentifier, InitiationTimeUtc = orchestrationStartTime, IsParallelMatchPrediction = false, IsPrecomputedMatchPrediction = notification.SearchRequest?.UsePrecomputedGenotypeSets == true });
 
                 var matchPredictionRequestLocations = await PrepareMatchPrediction(context, notification, requestInfo);
                 await SendMatchPredictionBatchProcessingStarted(context, new MatchPredictionSearchIdentifiers { SearchIdentifier = trackingSearchIdentifier, OriginalSearchIdentifier = originalSearchIdentifier });

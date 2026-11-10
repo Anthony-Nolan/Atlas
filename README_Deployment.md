@@ -261,10 +261,13 @@ does steps 2 to 4.
    sets. Apply the Terraform of [ATL-438](https://anthonynolan.atlassian.net/browse/ATL-438) first. It adds these
    settings:
    - The Match Prediction Worker (`Atlas.MatchPrediction.Worker`): the connection strings `MatchingPersistentSql`,
-     `MatchingTransientASql` and `MatchingTransientBSql`, and `Precompute:Mode`. Without the connection strings, the
-     worker cannot get to the matching databases.
-   - The Atlas Functions app: `MatchPrediction:Precompute:Mode`. The app already has its matching connection strings.
-   - Keep the mode `ForceLive` (the default) in both apps. For the modes, see
+     `MatchingTransientASql` and `MatchingTransientBSql`. Without them, the worker cannot get to the matching
+     databases. The Atlas Functions app already has its matching connection strings.
+   - The Atlas Public API app: `AtlasFunction:Search:DefaultUsePrecomputedGenotypeSets` and
+     `AtlasFunction:Search:UsePrecomputedGenotypeSetsRequestPercentage` (Terraform variables
+     `DEFAULT_USE_PRECOMPUTED_GENOTYPE_SETS` and `USE_PRECOMPUTED_GENOTYPE_SETS_REQUEST_PERCENTAGE`, ATL-535). They
+     choose the method once for each search.
+   - Keep the switch `false` and the share `0` (the defaults). For the settings, see
      [the Match Prediction README](README_MatchPredictionAlgorithm.md#switching-it-on-and-off).
 2. **Service Bus.** Create the topic `donor-genotype-precomputation-requests` and its subscription `precomputation-worker`.
    - Use a long message time to live. On a full donor set, a batch message can wait on the topic for many hours.
@@ -362,7 +365,8 @@ does steps 2 to 4.
 2. **Stop searches (optional).** Stage 65 does not need this step: it writes only to the dormant database, and the swap
    at the end of the refresh is the same as for every refresh. Search does not need it either. Until the full data
    refresh is complete, the active database has stored genotype sets for some donors only, and search computes the
-   other donors live, as it does today. In `ForceLive` mode (the default), search does not read the stored sets.
+   other donors live, as it does today. While the Public API switch is off (the default), search does not read the
+   stored sets.
 3. **Release.** Apply Terraform, run the database migrations, and release the function apps and the worker image.
    - Migrate the two transient databases (A and B) and the persistent database. The persistent database gets the
      columns `DonorGenotypePrecomputationCompleted`, `AwaitingManualDecisionSinceUtc` and `PendingManualDecision`,

@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
-using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
@@ -96,7 +95,7 @@ internal class PatientGenotypeSetProviderTests
     public async Task Get_WhenTheBatchHasNoKey_ComputesLive()
     {
         var context = DonorGenotypeSetBatchContext.Enabled(
-            UsePrecomputedGenotypeSetsSource.FeatureFlag, PrecomputedGenotypeSetMode.DefaultPrecomputed, 42, Lookup(null), patientGenotypeSetKey: null);
+            42, Lookup(null), patientGenotypeSetKey: null);
 
         var (genotypeSet, source) = await provider.Get(Input(), context);
 
@@ -123,8 +122,6 @@ internal class PatientGenotypeSetProviderTests
         PatientGenotypeSetSource expectedSource)
     {
         var context = DonorGenotypeSetBatchContext.Enabled(
-            UsePrecomputedGenotypeSetsSource.FeatureFlag,
-            PrecomputedGenotypeSetMode.DefaultPrecomputed,
             42,
             PrecomputedDonorGenotypeSetLookup.Unavailable(batchReason),
             Key);
@@ -138,7 +135,7 @@ internal class PatientGenotypeSetProviderTests
     [Test]
     public async Task Get_WhenThePrecomputedPathIsOff_ComputesLiveEvenWithAKey()
     {
-        var context = DonorGenotypeSetBatchContext.Disabled(UsePrecomputedGenotypeSetsSource.FeatureFlag, PrecomputedGenotypeSetMode.ForceLive, 42, Key);
+        var context = DonorGenotypeSetBatchContext.Disabled(42, Key);
 
         var (genotypeSet, source) = await provider.Get(Input(), context);
 
@@ -162,7 +159,7 @@ internal class PatientGenotypeSetProviderTests
 
     private static DonorGenotypeSetBatchContext Enabled(PrecomputedPatientGenotypeSetRow patientRow) =>
         DonorGenotypeSetBatchContext.Enabled(
-            UsePrecomputedGenotypeSetsSource.FeatureFlag, PrecomputedGenotypeSetMode.DefaultPrecomputed, 42, Lookup(patientRow), Key);
+            42, Lookup(patientRow), Key);
 
     private static PrecomputedDonorGenotypeSetLookup Lookup(PrecomputedPatientGenotypeSetRow patientRow) =>
         new("ABCDrb1Dqb1", null, new Dictionary<int, PrecomputedDonorGenotypeSetRow>(), patientRow);
