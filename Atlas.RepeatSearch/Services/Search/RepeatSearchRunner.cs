@@ -98,7 +98,8 @@ namespace Atlas.RepeatSearch.Services.Search
             // later tell which transient database these results came from.
             var dataRefreshRecordId = activeDataRefreshRecordAccessor.GetActiveRecord()?.Id;
             SearchResultDifferential diff = null;
-            var resultsSentTime = new DateTime();
+            // Set when a results notification (success or failure) is published, the same as in SearchRunner; null if none is.
+            DateTime? resultsSentTime = null;
             int? numberOfResults = null;
             MatchingAlgorithmFailureInfo matchingAlgorithmFailureInfo = null;
 
@@ -111,9 +112,11 @@ namespace Atlas.RepeatSearch.Services.Search
 
             try
             {
-                await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
-
+                // Must run before validation: search tracking creates the attempt row on this event, and the completed event sent from
+                // `finally` needs that row, else it is retried until dead-lettered.
                 await searchTrackingEventPublisher.ProcessInitiation(enqueuedTimeUtc.UtcDateTime, searchStartTime.UtcDateTime);
+
+                await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
 
                 // ReSharper disable once PossibleInvalidOperationException - validation has ensured this is not null.
                 var searchCutoffDate = identifiedRepeatSearchRequest.RepeatSearchRequest.SearchCutoffDate.Value;
@@ -149,7 +152,6 @@ namespace Atlas.RepeatSearch.Services.Search
                 await repeatResultsBlobStorageClient.UploadResults(searchResultSet, azureStorageSettings.SearchResultsBatchSize,
                     $"{originalSearchRequestId}/{repeatSearchId}");
                 await searchTrackingEventPublisher.ProcessPersistingResultsEnded();
-                resultsSentTime = DateTime.UtcNow;
 
                 var notification = new MatchingResultsNotification
                 {
@@ -167,6 +169,7 @@ namespace Atlas.RepeatSearch.Services.Search
                     BatchFolderName = azureStorageSettings.ShouldBatchResults && results.Any() ? $"{originalSearchRequestId}/{repeatSearchId}" : null
                 };
                 await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);
+                resultsSentTime = DateTime.UtcNow;
             }
 
             #region Expected Exceptions
@@ -208,6 +211,7 @@ namespace Atlas.RepeatSearch.Services.Search
                     LogLevel.Error);
                 await repeatSearchMatchingFailureNotificationSender.SendFailureNotification(identifiedRepeatSearchRequest, attemptNumber,
                     searchRequestMaxRetryCount - attemptNumber);
+                resultsSentTime = DateTime.UtcNow;
 
                 matchingAlgorithmFailureInfo = new MatchingAlgorithmFailureInfo
                 {
@@ -243,6 +247,7 @@ namespace Atlas.RepeatSearch.Services.Search
 
                 await repeatSearchMatchingFailureNotificationSender.SendFailureNotification(
                     identifiedRepeatSearchRequest, attemptNumber, 0, ex.Message);
+                resultsSentTime = DateTime.UtcNow;
             }
         }
 
