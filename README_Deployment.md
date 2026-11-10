@@ -269,6 +269,13 @@ does steps 2 to 4.
      choose the method once for each search.
    - Keep the switch `false` and the share `0` (the defaults). For the settings, see
      [the Match Prediction README](README_MatchPredictionAlgorithm.md#switching-it-on-and-off).
+   - Deploy order: release match prediction (the Atlas Functions app and the Match Prediction Worker) first, or
+     together with the Atlas Public API. Keep the share at `0` until both are released. If the Public API is released
+     first with a share above 0, while match prediction still runs the old mode setting, the two settings decide
+     together again.
+   - In the release pipeline, remove the per-stage `TF_VAR_MATCH_PREDICTION_PRECOMPUTE_MODE` values: the variable is
+     no longer declared. Set `TF_VAR_DEFAULT_USE_PRECOMPUTED_GENOTYPE_SETS` and
+     `TF_VAR_USE_PRECOMPUTED_GENOTYPE_SETS_REQUEST_PERCENTAGE` only where they must differ from the defaults.
 2. **Service Bus.** Create the topic `donor-genotype-precomputation-requests` and its subscription `precomputation-worker`.
    - Use a long message time to live. On a full donor set, a batch message can wait on the topic for many hours.
    - The Data Refresh app reads the dead-letter queue of the subscription. If the subscription does not exist, that
