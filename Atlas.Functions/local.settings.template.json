@@ -36,7 +36,7 @@
 
     "AtlasFunction:Orchestration:MatchPredictionBatchSize": 100,
     "AtlasFunction:Orchestration:ParallelMatchPredictionBatchSize": 100,
-    "AtlasFunction:Orchestration:ParallelFinalisationCronSchedule": "0 */1 * * * *",
+    "AtlasFunction:Orchestration:ParallelFinalisationCronSchedule": "*/10 * * * * *",
     "AtlasFunction:Orchestration:ParallelBatchCleanupCronSchedule": "0 0 3 * * *",
     "AtlasFunction:Orchestration:ParallelBatchRetentionDays": 90,
     "AtlasFunction:Orchestration:AbandonBatchAfterMinutes": 360,
