@@ -664,7 +664,7 @@ variable "ORCHESTRATION_PARALLEL_BATCH_RETENTION_DAYS" {
 
 variable "ORCHESTRATION_PARALLEL_FINALISATION_CRON_SCHEDULE" {
   type        = string
-  default     = "0 */1 * * * *"
+  default     = "*/10 * * * * *"
   description = "CRON schedule (six-field NCrontab) for the timer that finalises completed parallel match-prediction runs."
 }
 
