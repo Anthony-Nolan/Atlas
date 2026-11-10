@@ -235,6 +235,32 @@ The integration tests need no Azure resources, and no pipeline variables or secr
   the matching validation tests are split across two jobs, by namespace, and the smaller suites run one after the other in one job.
   The matching validation split has a shard named "Other", which runs every test that the other shard does not.
 
+### E2E tests after a deploy (optional)
+
+The [Atlas E2E tests](https://github.com/Anthony-Nolan/Atlas.Auto.Tests) run against a deployed Atlas, from their own pipeline.
+A release stage can queue that pipeline once it has deployed, so a regression is found straight away and can be matched to the deploy.
+`terraform/core/scripts/queue_e2e_tests.ps1` (published in the `terraform-atlas-core` artifact) does this:
+1. It waits (`-MinimumWaitSeconds`, 120 by default), then until every URL in `-HealthCheckUrls` returns `Healthy` (the `/api/HealthCheck`
+   endpoint of each function app, which needs no key). After `-HealthCheckTimeoutSeconds` (900) it warns, and queues the tests anyway.
+2. It cancels the E2E pipeline's queued and running runs. The deploy restarted the functions under them, and two runs against one Atlas
+   delete each other's test donors.
+3. It queues a run of the E2E pipeline (`-PipelineId`, branch `-PipelineBranch`, `refs/heads/main` by default) for `-RequestedForId`,
+   so that person gets Azure DevOps's "Build completes" email, and adds `-Tags`, plus `atlas-commit-<commit>` from `-Commit`.
+
+`-DryRun` waits for the health checks and lists the runs, but cancels, queues and tags nothing.
+
+To use it, add an agent job after the deploy job of the stage:
+- Tick "Allow scripts to access the OAuth token". The script uses `SYSTEM_ACCESSTOKEN`.
+- Give the job a condition if only some builds should be tested, e.g. `and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))`.
+- Add a PowerShell task that runs `$(System.DefaultWorkingDirectory)/$(Release.PrimaryArtifactSourceAlias)/terraform-atlas-core/scripts/queue_e2e_tests.ps1`,
+  with "Continue on error" ticked, so a problem queuing the tests doesn't fail the deploy. For example:
+  ```
+  -PipelineId 277 -RequestedForId "$(Release.Deployment.RequestedForId)" -Commit "$(Build.SourceVersion)"
+  -HealthCheckUrls "https://<app>.azurewebsites.net/api/HealthCheck,..." -Tags "deployed-to-dev,atlas-build-$(Build.BuildNumber),$(Release.ReleaseName)"
+  ```
+- Give the job's identity (in a classic release, "Project Collection Build Service (<organisation>)", unless the job authorization
+  scope is limited to the project) View builds, Queue builds, Stop builds and Update build information on the E2E pipeline.
+
 ## Releasing to multiple environments
 
 The expected use case for multiple environments is a development -> uat -> live route.
