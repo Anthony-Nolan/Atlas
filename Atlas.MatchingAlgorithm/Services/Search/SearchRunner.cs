@@ -94,9 +94,11 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
             try
             {
-                await new SearchRequestValidator().ValidateAndThrowAsync(identifiedSearchRequest.SearchRequest);
-
+                // Must run before validation: search tracking creates the attempt row on this event, and the completed event sent from
+                // `finally` needs that row, else it is retried until dead-lettered.
                 await searchTrackingEventPublisher.ProcessInitiation(enqueuedTimeUtc.UtcDateTime, searchStartTime.UtcDateTime);
+
+                await new SearchRequestValidator().ValidateAndThrowAsync(identifiedSearchRequest.SearchRequest);
 
                 searchStopWatch.Start();
                 var results = (await searchService.Search(identifiedSearchRequest.SearchRequest, null)).ToList();

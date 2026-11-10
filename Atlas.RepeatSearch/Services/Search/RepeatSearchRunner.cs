@@ -111,9 +111,11 @@ namespace Atlas.RepeatSearch.Services.Search
 
             try
             {
-                await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
-
+                // Must run before validation: search tracking creates the attempt row on this event, and the completed event sent from
+                // `finally` needs that row, else it is retried until dead-lettered.
                 await searchTrackingEventPublisher.ProcessInitiation(enqueuedTimeUtc.UtcDateTime, searchStartTime.UtcDateTime);
+
+                await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
 
                 // ReSharper disable once PossibleInvalidOperationException - validation has ensured this is not null.
                 var searchCutoffDate = identifiedRepeatSearchRequest.RepeatSearchRequest.SearchCutoffDate.Value;

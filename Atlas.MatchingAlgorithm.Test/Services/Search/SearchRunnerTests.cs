@@ -19,6 +19,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
+using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
 using AwesomeAssertions;
 using NSubstitute;
@@ -352,6 +353,25 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
                 await searchTrackingEventPublisher.Received().ProcessCompleted(
                     Arg.Any<(string, DateTime?, int?, MatchingAlgorithmFailureInfo, MatchingAlgorithmRepeatSearchResultsDetails, int?)>());
             }
+        }
+
+        [Test]
+        public async Task RunSearch_WhenRequestFailsValidation_PublishesInitiationBeforeCompletedWithValidationError()
+        {
+            const string id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
+            var invalidRequest = DefaultMatchingRequest;
+            invalidRequest.SearchHlaData = null;
+
+            await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = id, SearchRequest = invalidRequest }, 1, default);
+
+            Received.InOrder(() =>
+            {
+                searchTrackingEventPublisher.ProcessInitiation(Arg.Any<DateTime>(), Arg.Any<DateTime>());
+                searchTrackingEventPublisher.ProcessCompleted(
+                    Arg.Is<(string, DateTime?, int?, MatchingAlgorithmFailureInfo, MatchingAlgorithmRepeatSearchResultsDetails, int?)>(e =>
+                        e.Item4.Type == MatchingAlgorithmFailureType.ValidationError));
+            });
+            await searchService.DidNotReceiveWithAnyArgs().Search(default);
         }
 
         [Test]
