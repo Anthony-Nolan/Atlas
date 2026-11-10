@@ -58,7 +58,7 @@ namespace Atlas.Functions.PublicApi.Test.Functions
             return new SearchFunctions(searchDispatcher, repeatSearchDispatcher, matchPredictionValidator, Options.Create(settings), logger);
         }
 
-        private SearchFunctions BuildPrecomputeFunctions(bool defaultUsePrecomputedGenotypeSets, int requestPercentage)
+        private SearchFunctions BuildPrecomputeFunctions(bool defaultUsePrecomputedGenotypeSets, int requestPercentage, int? randomNumber = null)
         {
             var settings = new SearchFunctionSettings
             {
@@ -66,7 +66,9 @@ namespace Atlas.Functions.PublicApi.Test.Functions
                 UsePrecomputedGenotypeSetsRequestPercentage = requestPercentage
             };
 
-            return new SearchFunctions(searchDispatcher, repeatSearchDispatcher, matchPredictionValidator, Options.Create(settings), logger);
+            return randomNumber == null
+                ? new SearchFunctions(searchDispatcher, repeatSearchDispatcher, matchPredictionValidator, Options.Create(settings), logger)
+                : new SearchFunctions(searchDispatcher, repeatSearchDispatcher, matchPredictionValidator, Options.Create(settings), logger, _ => randomNumber.Value);
         }
 
         #region Search - explicit request value is honoured
@@ -234,6 +236,26 @@ namespace Atlas.Functions.PublicApi.Test.Functions
 
             await searchDispatcher.Received(1).DispatchSearch(Arg.Is<SearchRequest>(r => r.UsePrecomputedGenotypeSets == expected));
             loggedProps["UsePrecomputedGenotypeSetsSource"].Should().Be("FeatureFlag");
+        }
+
+        // The share is the percentage of searches with a random number (0-99) below it.
+        [TestCase(1, 0, true)]
+        [TestCase(1, 1, false)]
+        [TestCase(1, 99, false)]
+        [TestCase(50, 49, true)]
+        [TestCase(50, 50, false)]
+        [TestCase(99, 98, true)]
+        [TestCase(99, 99, false)]
+        public async Task Search_WhenUsePrecomputedGenotypeSetsIsEmpty_AndTheShareIsBetween1And99_UsesTheStoredSetsBelowTheShare(
+            int requestPercentage,
+            int randomNumber,
+            bool expected)
+        {
+            var functions = BuildPrecomputeFunctions(defaultUsePrecomputedGenotypeSets: true, requestPercentage, randomNumber);
+
+            await functions.Search(RequestBuilders.ValidSearchRequest(usePrecomputedGenotypeSets: null).ToHttpRequest());
+
+            await searchDispatcher.Received(1).DispatchSearch(Arg.Is<SearchRequest>(r => r.UsePrecomputedGenotypeSets == expected));
         }
 
         [Test]

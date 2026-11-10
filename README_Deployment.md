@@ -273,6 +273,9 @@ does steps 2 to 4.
      together with the Atlas Public API. Keep the share at `0` until both are released. If the Public API is released
      first with a share above 0, while match prediction still runs the old mode setting, the two settings decide
      together again.
+   - Do not run QA tests that set `UsePrecomputedGenotypeSets` to `true` while match prediction is deployed. Before
+     this version, `ForceLive` ignored that value. A test search that is still running when the new version starts
+     calculates its first batches live and reads the stored sets for the rest.
    - In the release pipeline, remove the per-stage `TF_VAR_MATCH_PREDICTION_PRECOMPUTE_MODE` values: the variable is
      no longer declared. Set `TF_VAR_DEFAULT_USE_PRECOMPUTED_GENOTYPE_SETS` and
      `TF_VAR_USE_PRECOMPUTED_GENOTYPE_SETS_REQUEST_PERCENTAGE` only where they must differ from the defaults.

@@ -165,6 +165,23 @@ internal class SearchOrchestrationFunctionsTests
             log => log.WasSuccessful && log.SearchRequestId == notification.SearchRequestId);
     }
 
+    [TestCase(true)]
+    [TestCase(false)]
+    public async Task SearchOrchestrator_SequentialPath_TracksTheMethodTheAtlasPublicApiChose(bool usePrecomputedGenotypeSets)
+    {
+        var notification = CreateNotification(parallelMatchPrediction: false, usePrecomputedGenotypeSets: usePrecomputedGenotypeSets);
+        SetUpSearchOrchestratorInput(notification);
+        SetUpSuccessfulSequentialMatchPrediction(requestLocationCount: 2);
+
+        await functions.SearchOrchestrator(context);
+
+        await AssertActivityCalled<MatchPredictionProcessInitiatedParameters>(
+            nameof(SearchActivityFunctions.SendMatchPredictionProcessInitiated),
+            p => !p.IsParallelMatchPrediction
+                 && p.IsPrecomputedMatchPrediction == usePrecomputedGenotypeSets
+                 && p.SearchIdentifier == new Guid(notification.SearchRequestId));
+    }
+
     [Test]
     public async Task SearchOrchestrator_SequentialPath_WhenStageFails_SendsCompletionTrackingWithOrchestrationFailureInfo()
     {

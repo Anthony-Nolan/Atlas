@@ -88,7 +88,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
                 }
 
                 // Once per batch, in the batch's scope, and shared by the per-donor scopes below: one read of the stored
-                // rows, and one decision about the kill-switch for every donor.
+                // rows for every donor.
                 var batchContext = await genotypeSetSourceResolver.Resolve(
                     multipleDonorMatchProbabilityInput,
                     multipleDonorMatchProbabilityInput.Donors);

@@ -34,6 +34,7 @@ namespace Atlas.Functions.PublicApi.Functions
         private readonly bool defaultUsePrecomputedGenotypeSets;
         private readonly int usePrecomputedGenotypeSetsRequestPercentage;
         private readonly IAtlasLogger logger;
+        private readonly Func<int, int> nextRandom;
 
         public SearchFunctions(
             ISearchDispatcher searchDispatcher,
@@ -41,6 +42,21 @@ namespace Atlas.Functions.PublicApi.Functions
             IMatchPredictionValidator matchPredictionValidator,
             IOptions<SearchFunctionSettings> searchFunctionSettings,
             IAtlasLogger logger)
+            : this(searchDispatcher, repeatSearchDispatcher, matchPredictionValidator, searchFunctionSettings, logger, Random.Shared.Next)
+        {
+        }
+
+        /// <param name="nextRandom">
+        /// Returns a number from 0 to the given maximum, not including the maximum. Tests pass a fixed number, to check
+        /// a share between 1 and 99.
+        /// </param>
+        internal SearchFunctions(
+            ISearchDispatcher searchDispatcher,
+            IRepeatSearchDispatcher repeatSearchDispatcher,
+            IMatchPredictionValidator matchPredictionValidator,
+            IOptions<SearchFunctionSettings> searchFunctionSettings,
+            IAtlasLogger logger,
+            Func<int, int> nextRandom)
         {
             this.searchDispatcher = searchDispatcher;
             this.repeatSearchDispatcher = repeatSearchDispatcher;
@@ -50,6 +66,7 @@ namespace Atlas.Functions.PublicApi.Functions
             defaultUsePrecomputedGenotypeSets = searchFunctionSettings.Value.DefaultUsePrecomputedGenotypeSets;
             usePrecomputedGenotypeSetsRequestPercentage = Math.Clamp(searchFunctionSettings.Value.UsePrecomputedGenotypeSetsRequestPercentage, 0, 100);
             this.logger = logger;
+            this.nextRandom = nextRandom;
         }
 
         [Function(nameof(Search))]
@@ -136,7 +153,7 @@ namespace Atlas.Functions.PublicApi.Functions
         {
             searchRequest.ParallelMatchPrediction ??=
                 defaultParallelMatchPrediction
-                && Random.Shared.Next(100) < parallelMatchPredictionRequestPercentage;
+                && nextRandom(100) < parallelMatchPredictionRequestPercentage;
         }
 
         /// <summary>
@@ -159,7 +176,7 @@ namespace Atlas.Functions.PublicApi.Functions
 
             searchRequest.UsePrecomputedGenotypeSets =
                 defaultUsePrecomputedGenotypeSets
-                && Random.Shared.Next(100) < usePrecomputedGenotypeSetsRequestPercentage;
+                && nextRandom(100) < usePrecomputedGenotypeSetsRequestPercentage;
             return UsePrecomputedGenotypeSetsSource.FeatureFlag;
         }
 

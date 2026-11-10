@@ -63,9 +63,16 @@ internal class DonorGenotypeSetSourceResolver : IDonorGenotypeSetSourceResolver
 
     /// <summary>
     /// The request value alone decides: <c>true</c> is stored, <c>false</c> or empty is live. The Atlas Public API
-    /// chooses the value once for each search, when it accepts the search, so a running search keeps its method.
-    /// Empty means live for a call that does not pass through the Atlas Public API too.
+    /// chooses the value once for each search, when it accepts the search, so a change of its settings does not change
+    /// the method of a running search. Empty means live for a call that does not pass through the Atlas Public API too.
     /// </summary>
+    /// <remarks>
+    /// One exception, while this version is deployed: before it, the match prediction setting <c>Precompute:Mode</c>
+    /// could ignore a <c>true</c> on the request (in <c>ForceLive</c>). A search that a client sent with <c>true</c>,
+    /// and that is still running when this version is deployed, calculated its first batches live and reads the stored
+    /// sets for the rest. Only QA tests set the value, so do not run them during the deploy. The stored sets are checked
+    /// against the donor's typing and frequency set before use, so the result is still correct.
+    /// </remarks>
     internal static bool UsesPrecomputedGenotypeSets(MatchProbabilityRequestBase request) =>
         request.UsePrecomputedGenotypeSets == true;
 

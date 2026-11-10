@@ -67,7 +67,7 @@ public enum DonorGenotypeSetSource
     /// </summary>
     ReadFailed,
 
-    /// <summary>The precomputed path is off for this request: by the kill-switch, or by the request's override.</summary>
+    /// <summary>The precomputed path is off for this request: its <c>UsePrecomputedGenotypeSets</c> is false or empty.</summary>
     PrecomputeDisabled
 }
 
