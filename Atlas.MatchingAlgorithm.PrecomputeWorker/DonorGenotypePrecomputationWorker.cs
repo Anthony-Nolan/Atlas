@@ -7,20 +7,34 @@ namespace Atlas.MatchingAlgorithm.PrecomputeWorker;
 /// message after its batch. The work is in <see cref="DonorGenotypePrecomputationMessageHandler"/>.
 /// </summary>
 /// <remarks>
-/// It reads no database when it starts: the handler reads the data refresh record of each message. So the host can start
-/// outside a data refresh, and before a release migrates the databases.
+/// <para>
+/// Before it takes its first message, it warms the HLA Metadata Dictionary tables that imputation reads
+/// (<see cref="IDonorGenotypePrecomputationCacheWarmer"/>). The warm-up reads the open data refresh records and the active
+/// haplotype frequency sets. It is best effort: when it fails, the worker starts with cold tables.
+/// </para>
+///
+/// <para>
+/// The handler reads the data refresh record of each message. Nothing reads a database when the host is created. So the
+/// host can start outside a data refresh: the warm-up then warms nothing, and the worker skips every message.
+/// </para>
 /// </remarks>
 internal class DonorGenotypePrecomputationWorker(
     ServiceBusProcessor processor,
     DonorGenotypePrecomputationMessageHandler handler,
+    IDonorGenotypePrecomputationCacheWarmer cacheWarmer,
     ILogger<DonorGenotypePrecomputationWorker> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         logger.LogInformation("DonorGenotypePrecomputationWorker starting.");
 
+        // Before the warm-up, so that StopAsync can remove them also when the host stops during the warm-up.
         processor.ProcessMessageAsync += ProcessMessageAsync;
         processor.ProcessErrorAsync += ProcessErrorAsync;
+
+        // Before the first message, so that the batches read the dictionary from memory. A stop does not wait for the
+        // tables to load.
+        await cacheWarmer.WarmUp().WaitAsync(stoppingToken);
 
         await processor.StartProcessingAsync(stoppingToken);
     }
@@ -29,12 +43,13 @@ internal class DonorGenotypePrecomputationWorker(
     {
         logger.LogInformation("DonorGenotypePrecomputationWorker stopping.");
 
+        // First end ExecuteAsync. Then a warm-up that ends during the stop cannot start the processor after it has stopped.
+        await base.StopAsync(cancellationToken);
+
         await processor.StopProcessingAsync(cancellationToken);
 
         processor.ProcessMessageAsync -= ProcessMessageAsync;
         processor.ProcessErrorAsync -= ProcessErrorAsync;
-
-        await base.StopAsync(cancellationToken);
     }
 
     private async Task ProcessMessageAsync(ProcessMessageEventArgs args)

@@ -6,6 +6,7 @@ using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
+using Atlas.MatchPrediction.Services.CacheWarming;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 using Atlas.MatchPrediction.Services.MatchProbability;
@@ -43,6 +44,16 @@ internal class GenotypeSetPipelineRegistrationTests
 
         services.Should().Contain(d => d.ServiceType == typeof(IGenotypeSetService));
         services.Should().Contain(d => d.ServiceType == typeof(IHaplotypeFrequencyLookupService));
+    }
+
+    [Test]
+    public void RegisterGenotypeSetPipeline_RegistersTheCacheWarmUp()
+    {
+        // The precompute worker registers only the pipeline, and warms the tables that imputation reads before its first
+        // message.
+        var services = PipelineOnly();
+
+        services.Should().Contain(d => d.ServiceType == typeof(IMatchPredictionCacheWarmer));
     }
 
     [Test]
@@ -101,6 +112,7 @@ internal class GenotypeSetPipelineRegistrationTests
     [TestCase(typeof(IHaplotypeFrequencyLookupService))]
     [TestCase(typeof(IHaplotypeFrequencySetCacheProvider))]
     [TestCase(typeof(IFrequencySetResidencyTracker))]
+    [TestCase(typeof(IMatchPredictionCacheWarmer))]
     public void RegisterGenotypeSetPipeline_WithRegisterMatchPredictionAlgorithmToo_RegistersEachPipelineServiceOnce(Type serviceType)
     {
         // A host that precomputes and also runs match prediction calls both. A second singleton cache provider or

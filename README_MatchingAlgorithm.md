@@ -279,6 +279,13 @@ So after the first refresh with the setting off, the refreshed database has no s
    values, writes the donor rows, and records the result of the batch. For each message, the worker reads the
    refresh record that the message names. When the record is open, the worker writes to the database of the record.
    When the record is closed, the worker skips the message.
+
+   Before a worker replica takes its first message, it loads the HLA Metadata Dictionary tables that imputation reads
+   (`PreWarmMatchPredictionCaches`), at the version of each open refresh record and of each active haplotype frequency
+   set. Until a table is loaded, each lookup in it is a single-row Table Storage read, and a new replica takes its
+   first batches at once. The warm-up is best effort: when it fails, the worker logs a warning and starts. With no open
+   refresh record, it warms nothing. A frequency set imported during the stage, at a version that no active set had,
+   is not warmed: its tables load when they are first used.
 4. **Timers.** Functions of the Data Refresh app move the batches and the run. They act only on a running run of an
    open refresh record that has completed stage 60, has not completed stage 65, is not paused, and has no pending
    manual decision. So they do not keep a scaled-down dormant database awake.

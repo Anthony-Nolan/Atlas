@@ -43,6 +43,14 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         /// </remarks>
         Task<IReadOnlyDictionary<int, TransientDatabase>> GetIncompleteRefreshJobDatabases();
 
+        /// <returns>The HLA nomenclature version of each open refresh record that has one. Each version once.</returns>
+        /// <remarks>
+        /// Reads only the version of each record, as <see cref="GetIncompleteRefreshJobDatabases"/> reads only its database.
+        /// A refresh records its version at the start of its <see cref="DataRefreshStage.MetadataDictionaryRefresh"/> stage:
+        /// the version that it processes the donors at.
+        /// </remarks>
+        Task<IReadOnlyCollection<string>> GetIncompleteRefreshJobHlaNomenclatureVersions();
+
         Task<int> Create(DataRefreshRecord dataRefreshRecord);
 
         Task<DataRefreshRecord> GetRecord(int dataRefreshRecordId);
@@ -225,6 +233,16 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
                 .ToListAsync();
 
             return records.ToDictionary(r => r.Id, r => r.Database.ParseToEnum<TransientDatabase>());
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyCollection<string>> GetIncompleteRefreshJobHlaNomenclatureVersions()
+        {
+            return await Context.DataRefreshRecords
+                .Where(r => r.RefreshEndUtc == null && !string.IsNullOrEmpty(r.HlaNomenclatureVersion))
+                .Select(r => r.HlaNomenclatureVersion)
+                .Distinct()
+                .ToListAsync();
         }
 
         public async Task<int> Create(DataRefreshRecord dataRefreshRecord)

@@ -9,6 +9,7 @@ using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.CacheWarming;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
+using AutoFixture;
 using AwesomeAssertions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -19,8 +20,10 @@ namespace Atlas.MatchPrediction.Test.Services.CacheWarming;
 [TestFixture]
 internal class MatchPredictionCacheWarmerTests
 {
+    private Fixture fixture;
     private IHlaMetadataDictionaryFactory hmdFactory;
     private IHaplotypeFrequencyLookupService frequencyLookupService;
+    private IHaplotypeFrequencyCache frequencyCache;
     private IAtlasLogger logger;
     private Dictionary<string, IHlaMetadataCacheControl> cacheControls;
     private IMatchPredictionCacheWarmer warmer;
@@ -28,8 +31,10 @@ internal class MatchPredictionCacheWarmerTests
     [SetUp]
     public void SetUp()
     {
+        fixture = new Fixture();
         hmdFactory = Substitute.For<IHlaMetadataDictionaryFactory>();
         frequencyLookupService = Substitute.For<IHaplotypeFrequencyLookupService>();
+        frequencyCache = Substitute.For<IHaplotypeFrequencyCache>();
         logger = Substitute.For<IAtlasLogger>();
 
         cacheControls = new Dictionary<string, IHlaMetadataCacheControl>();
@@ -53,7 +58,7 @@ internal class MatchPredictionCacheWarmerTests
             return new HaplotypeFrequencySet { HlaNomenclatureVersion = setVersionsByRegistry.GetValueOrDefault(registry, "3480") };
         });
 
-        warmer = new MatchPredictionCacheWarmer(hmdFactory, frequencyLookupService, logger);
+        warmer = new MatchPredictionCacheWarmer(hmdFactory, frequencyLookupService, frequencyCache, logger);
     }
 
     [Test]
@@ -150,6 +155,103 @@ internal class MatchPredictionCacheWarmerTests
             LogLevel.Info,
             Arg.Is<Dictionary<string, string>>(p => p["HlaNomenclatureVersions"] == "3480,3660"),
             Arg.Is<Dictionary<string, double>>(m => m["WarmUpMs"] >= MatchPredictionCacheWarmer.LoggedWarmUpThreshold.TotalMilliseconds));
+    }
+
+    [Test]
+    public async Task WarmUpForActiveFrequencySets_WarmsTheMatchPredictionTablesOnceForEachActiveSetVersionAndEachMatchingVersion()
+    {
+        var setVersion = fixture.Create<string>();
+        var otherSetVersion = fixture.Create<string>();
+        var matchingVersion = fixture.Create<string>();
+        // A version can be the version of more than one set, and also a matching version.
+        ActiveSetsAt(setVersion, otherSetVersion, setVersion);
+
+        await warmer.WarmUpForActiveFrequencySets([matchingVersion, setVersion]);
+
+        cacheControls.Keys.Should().BeEquivalentTo(setVersion, otherSetVersion, matchingVersion);
+        foreach (var cacheControl in cacheControls.Values)
+        {
+            await cacheControl.Received(1).PreWarmMatchPredictionCaches();
+            await cacheControl.DidNotReceive().PreWarmAllCaches();
+        }
+    }
+
+    [Test]
+    public async Task WarmUpForActiveFrequencySets_WithNoActiveSets_WarmsTheMatchingVersions()
+    {
+        var matchingVersions = fixture.CreateMany<string>(2).ToList();
+        ActiveSetsAt();
+
+        await warmer.WarmUpForActiveFrequencySets(matchingVersions);
+
+        cacheControls.Keys.Should().BeEquivalentTo(matchingVersions);
+    }
+
+    [Test]
+    public async Task WarmUpForActiveFrequencySets_DoesNotWarmAnEmptyVersion()
+    {
+        var setVersion = fixture.Create<string>();
+        ActiveSetsAt(setVersion, null, "");
+
+        await warmer.WarmUpForActiveFrequencySets([""]);
+
+        cacheControls.Keys.Should().BeEquivalentTo(setVersion);
+    }
+
+    [Test]
+    public async Task WarmUpForActiveFrequencySets_ReadsTheActiveSetsOnce_AndLooksUpNoSetByRegistry()
+    {
+        ActiveSetsAt(fixture.Create<string>(), fixture.Create<string>());
+
+        await warmer.WarmUpForActiveFrequencySets([fixture.Create<string>()]);
+
+        await frequencyCache.Received(1).GetActiveHaplotypeFrequencySets();
+        await frequencyLookupService.DidNotReceiveWithAnyArgs().GetSingleHaplotypeFrequencySet(default);
+    }
+
+    [Test]
+    public async Task WarmUpForActiveFrequencySets_WhenTheActiveSetsCannotBeRead_WarmsNothing_DoesNotThrow_AndLogsAWarning()
+    {
+        var failure = new Exception(fixture.Create<string>());
+        frequencyCache.GetActiveHaplotypeFrequencySets().ThrowsAsync(failure);
+
+        var act = () => warmer.WarmUpForActiveFrequencySets([fixture.Create<string>()]);
+
+        await act.Should().NotThrowAsync();
+        cacheControls.Should().BeEmpty();
+        logger.Received(1).SendException(
+            Arg.Is(failure),
+            LogLevel.Warn,
+            Arg.Is<Dictionary<string, string>>(p => p["EventName"] == MatchPredictionCacheWarmer.FailedEventName));
+    }
+
+    [Test]
+    public async Task WarmUpForActiveFrequencySets_WhenAWarmFails_DoesNotThrow_AndLogsAWarningWithTheVersions()
+    {
+        var setVersion = fixture.Create<string>();
+        var matchingVersion = fixture.Create<string>();
+        ActiveSetsAt(setVersion);
+        hmdFactory.BuildCacheControl(setVersion).PreWarmMatchPredictionCaches().ThrowsAsync(new Exception(fixture.Create<string>()));
+
+        var act = () => warmer.WarmUpForActiveFrequencySets([matchingVersion]);
+
+        await act.Should().NotThrowAsync();
+        var expectedVersions = string.Join(",", new[] { setVersion, matchingVersion }.Order());
+        logger.Received(1).SendException(
+            Arg.Any<Exception>(),
+            LogLevel.Warn,
+            Arg.Is<Dictionary<string, string>>(p =>
+                p["EventName"] == MatchPredictionCacheWarmer.FailedEventName && p["HlaNomenclatureVersions"] == expectedVersions));
+    }
+
+    /// <summary>The active sets: one set at each version, each for a registry and ethnicity of its own.</summary>
+    private void ActiveSetsAt(params string[] versions)
+    {
+        var activeSets = versions.ToDictionary(
+            _ => (fixture.Create<string>(), fixture.Create<string>()),
+            version => new HaplotypeFrequencySet { HlaNomenclatureVersion = version });
+
+        frequencyCache.GetActiveHaplotypeFrequencySets().Returns(activeSets);
     }
 
     private static MultipleDonorMatchProbabilityInput Batch(string matchingVersion, string patientRegistry, string[] donorRegistries)
