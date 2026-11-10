@@ -34,6 +34,7 @@ namespace Atlas.RepeatSearch.Test.Services.Search
         private ISearchService searchService;
         private IRepeatSearchValidator repeatSearchValidator;
         private ISearchTrackingEventPublisher searchTrackingEventPublisher;
+        private IRepeatSearchMatchingFailureNotificationSender failureNotificationSender;
 
         private IRepeatSearchRunner repeatSearchRunner;
 
@@ -43,6 +44,7 @@ namespace Atlas.RepeatSearch.Test.Services.Search
             searchService = Substitute.For<ISearchService>();
             repeatSearchValidator = Substitute.For<IRepeatSearchValidator>();
             searchTrackingEventPublisher = Substitute.For<ISearchTrackingEventPublisher>();
+            failureNotificationSender = Substitute.For<IRepeatSearchMatchingFailureNotificationSender>();
 
             repeatSearchRunner = new RepeatSearchRunner(
                 Substitute.For<IRepeatSearchServiceBusClient>(),
@@ -58,7 +60,7 @@ namespace Atlas.RepeatSearch.Test.Services.Search
                 Substitute.For<IOriginalSearchResultSetTracker>(),
                 new AzureStorageSettings(),
                 new MessagingServiceBusSettings { RepeatSearchRequestsMaxDeliveryCount = 10 },
-                Substitute.For<IRepeatSearchMatchingFailureNotificationSender>(),
+                failureNotificationSender,
                 new MatchingAlgorithmSearchTrackingContext(),
                 searchTrackingEventPublisher);
         }
@@ -88,14 +90,31 @@ namespace Atlas.RepeatSearch.Test.Services.Search
             await searchService.DidNotReceiveWithAnyArgs().Search(default, default);
         }
 
+        [Test]
+        public async Task RunSearch_WhenFailureNotificationIsNotPublished_PublishesCompletedWithoutResultsSentTime()
+        {
+            repeatSearchValidator.ValidateRepeatSearchAndThrow(default)
+                .ThrowsAsyncForAnyArgs(new Exception("transient SQL error"));
+            failureNotificationSender.SendFailureNotification(default, default, default)
+                .ThrowsAsyncForAnyArgs(new Exception("Service Bus error"));
+
+            await repeatSearchRunner.Invoking(r => r.RunSearch(BuildRequest(), 1, default))
+                .Should().ThrowAsync<Exception>();
+
+            await searchTrackingEventPublisher.Received(1).ProcessCompleted(
+                Arg.Is<(string, DateTime?, int?, MatchingAlgorithmFailureInfo, MatchingAlgorithmRepeatSearchResultsDetails, int?)>(e =>
+                    e.Item2 == null));
+        }
+
         private void AssertInitiationPublishedBeforeCompletedWithFailure(MatchingAlgorithmFailureType expectedFailureType)
         {
             Received.InOrder(() =>
             {
                 searchTrackingEventPublisher.ProcessInitiation(Arg.Any<DateTime>(), Arg.Any<DateTime>());
+                // A failure notification was published, so the results sent time is set (not left null or at its default value).
                 searchTrackingEventPublisher.ProcessCompleted(
                     Arg.Is<(string, DateTime?, int?, MatchingAlgorithmFailureInfo, MatchingAlgorithmRepeatSearchResultsDetails, int?)>(e =>
-                        e.Item4.Type == expectedFailureType));
+                        e.Item4.Type == expectedFailureType && e.Item2.HasValue && e.Item2.Value != default));
             });
         }
 

@@ -98,7 +98,8 @@ namespace Atlas.RepeatSearch.Services.Search
             // later tell which transient database these results came from.
             var dataRefreshRecordId = activeDataRefreshRecordAccessor.GetActiveRecord()?.Id;
             SearchResultDifferential diff = null;
-            var resultsSentTime = new DateTime();
+            // Set when a results notification (success or failure) is published, the same as in SearchRunner; null if none is.
+            DateTime? resultsSentTime = null;
             int? numberOfResults = null;
             MatchingAlgorithmFailureInfo matchingAlgorithmFailureInfo = null;
 
@@ -151,7 +152,6 @@ namespace Atlas.RepeatSearch.Services.Search
                 await repeatResultsBlobStorageClient.UploadResults(searchResultSet, azureStorageSettings.SearchResultsBatchSize,
                     $"{originalSearchRequestId}/{repeatSearchId}");
                 await searchTrackingEventPublisher.ProcessPersistingResultsEnded();
-                resultsSentTime = DateTime.UtcNow;
 
                 var notification = new MatchingResultsNotification
                 {
@@ -169,6 +169,7 @@ namespace Atlas.RepeatSearch.Services.Search
                     BatchFolderName = azureStorageSettings.ShouldBatchResults && results.Any() ? $"{originalSearchRequestId}/{repeatSearchId}" : null
                 };
                 await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);
+                resultsSentTime = DateTime.UtcNow;
             }
 
             #region Expected Exceptions
@@ -210,6 +211,7 @@ namespace Atlas.RepeatSearch.Services.Search
                     LogLevel.Error);
                 await repeatSearchMatchingFailureNotificationSender.SendFailureNotification(identifiedRepeatSearchRequest, attemptNumber,
                     searchRequestMaxRetryCount - attemptNumber);
+                resultsSentTime = DateTime.UtcNow;
 
                 matchingAlgorithmFailureInfo = new MatchingAlgorithmFailureInfo
                 {
@@ -245,6 +247,7 @@ namespace Atlas.RepeatSearch.Services.Search
 
                 await repeatSearchMatchingFailureNotificationSender.SendFailureNotification(
                     identifiedRepeatSearchRequest, attemptNumber, 0, ex.Message);
+                resultsSentTime = DateTime.UtcNow;
             }
         }
 

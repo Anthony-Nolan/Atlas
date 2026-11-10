@@ -369,7 +369,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
                 searchTrackingEventPublisher.ProcessInitiation(Arg.Any<DateTime>(), Arg.Any<DateTime>());
                 searchTrackingEventPublisher.ProcessCompleted(
                     Arg.Is<(string, DateTime?, int?, MatchingAlgorithmFailureInfo, MatchingAlgorithmRepeatSearchResultsDetails, int?)>(e =>
-                        e.Item4.Type == MatchingAlgorithmFailureType.ValidationError));
+                        e.Item4.Type == MatchingAlgorithmFailureType.ValidationError && e.Item2.HasValue && e.Item2.Value != default));
             });
             await searchService.DidNotReceiveWithAnyArgs().Search(default);
         }

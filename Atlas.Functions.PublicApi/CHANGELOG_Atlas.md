@@ -72,6 +72,7 @@ Feature flags permit greater control over the release of new features (see this 
 
 #### Search Tracking
 * BF: When a repeat search fails validation (for example, there is no record of the original search), its `MatchingAlgorithmCompleted` search tracking event is no longer retried until dead-lettered. The matching algorithm attempt is now tracked before the request is validated, so the attempt is stored with the validation error. The same order is used for original searches, and for unexpected errors during validation.
+* BF: Search tracking no longer stores every repeat search as "results sent" on 1 January 0001. `MatchingAlgorithm_ResultsSent` and `MatchingAlgorithm_ResultsSentTimeUtc` are now set only when a results notification (success or failure) is published, the same as for original searches.
 
 ### 4.0.1
 * BF: A data refresh to HLA nomenclature version 3660 no longer fails while it recreates the HLA Metadata Dictionary. Batch inserts into Azure Table Storage now also have a size limit, not only a limit of 50 rows. Before, a batch of large rows (such as the serology to alleles lookup) could exceed the 4 MiB limit of a table batch, and the storage service rejected it (`413 RequestBodyTooLarge`). This change also applies to the import of the Multiple Allele Code Dictionary, which uses the same batch insert.
