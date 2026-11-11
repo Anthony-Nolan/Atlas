@@ -122,14 +122,24 @@ namespace Atlas.Common.AzureStorage.Blob
             try
             {
                 var blobClient = containerClient.GetBlobClient(filename);
-                var downloadedBlob = await blobClient.DownloadContentAsync();
+                Response<BlobDownloadResult> downloadedBlob;
+                using (ResultsPipelineTimings.Time("BlobDownloadIo"))
+                {
+                    downloadedBlob = await blobClient.DownloadContentAsync();
+                }
+
                 if (downloadedBlob is not { HasValue: true })
                 {
                     throw new BlobNotFoundException(containerClient.Name, filename);
                 }
 
-                using var contentStream = downloadedBlob.Value.Content.ToStream();
-                return serializer.DeserializeFromStream<T>(contentStream);
+                ResultsPipelineTimings.AddBlobRead(downloadedBlob.Value.Content.ToMemory().Length);
+
+                using (ResultsPipelineTimings.Time("BlobDeserialize"))
+                {
+                    using var contentStream = downloadedBlob.Value.Content.ToStream();
+                    return serializer.DeserializeFromStream<T>(contentStream);
+                }
             }
             catch (RequestFailedException ex) when(ex.ErrorCode == "BlobNotFound")
             {

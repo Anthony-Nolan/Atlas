@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Utils;
 using Atlas.Common.Validation;
 using Atlas.RepeatSearch.Models;
@@ -24,14 +25,17 @@ namespace Atlas.RepeatSearch.Functions.Functions
         private readonly IRepeatSearchRunner repeatSearchRunner;
         private readonly IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender;
         private readonly ILogger<RepeatSearchFunctions> logger;
+        private readonly IAtlasLogger atlasLogger;
 
         public RepeatSearchFunctions(IRepeatSearchDispatcher repeatSearchDispatcher, IRepeatSearchRunner repeatSearchRunner,
-            IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender, ILogger<RepeatSearchFunctions> logger)
+            IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender, ILogger<RepeatSearchFunctions> logger,
+            IAtlasLogger atlasLogger)
         {
             this.repeatSearchDispatcher = repeatSearchDispatcher;
             this.repeatSearchRunner = repeatSearchRunner;
             this.repeatSearchMatchingFailureNotificationSender = repeatSearchMatchingFailureNotificationSender;
             this.logger = logger;
+            this.atlasLogger = atlasLogger;
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
@@ -65,6 +69,10 @@ namespace Atlas.RepeatSearch.Functions.Functions
             DateTime enqueuedTimeUtc,
             CancellationToken cancellationToken)
         {
+            // ATL-526 experiment: one "Results pipeline timings" event per invocation.
+            using var timings = ResultsPipelineTimings.Begin(
+                atlasLogger, nameof(RunRepeatSearch), request.OriginalSearchId, request.RepeatSearchId, deliveryCount, enqueuedTimeUtc);
+
             try
             {
                 logger.LogInformation("Function {FunctionName} executing; Search Id: {SearchId}; Repeat Search Id: {RepeatSearchId}",
@@ -86,7 +94,13 @@ namespace Atlas.RepeatSearch.Functions.Functions
 
                 logger.LogError(wrappedException, message);
 
+                timings.Fail(wrappedException);
                 throw wrappedException;
+            }
+            catch (Exception e)
+            {
+                timings.Fail(e);
+                throw;
             }
         }
 

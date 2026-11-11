@@ -116,20 +116,34 @@ namespace Atlas.RepeatSearch.Services.Search
                 // `finally` needs that row, else it is retried until dead-lettered.
                 await searchTrackingEventPublisher.ProcessInitiation(enqueuedTimeUtc.UtcDateTime, searchStartTime.UtcDateTime);
 
-                await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
+                using (ResultsPipelineTimings.Time("Validate"))
+                {
+                    await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
+                }
 
                 // ReSharper disable once PossibleInvalidOperationException - validation has ensured this is not null.
                 var searchCutoffDate = identifiedRepeatSearchRequest.RepeatSearchRequest.SearchCutoffDate.Value;
 
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
-                var results = (await searchService.Search(identifiedRepeatSearchRequest.RepeatSearchRequest.SearchRequest, searchCutoffDate))
-                    .ToList();
+                List<MatchingAlgorithmResult> results;
+                using (ResultsPipelineTimings.Time("Matching"))
+                {
+                    results = (await searchService.Search(identifiedRepeatSearchRequest.RepeatSearchRequest.SearchRequest, searchCutoffDate))
+                        .ToList();
+                }
                 numberOfResults = results.Count;
+                ResultsPipelineTimings.SetMetric("Results", results.Count);
 
                 diff = await CalculateAndStoreResultsDiff(originalSearchRequestId, results, searchCutoffDate);
+                ResultsPipelineTimings.SetMetric("NewResults", diff.NewResults.Count);
+                ResultsPipelineTimings.SetMetric("UpdatedResults", diff.UpdatedResults.Count);
+                ResultsPipelineTimings.SetMetric("RemovedResults", diff.RemovedResults.Count);
 
-                await RecordRepeatSearch(identifiedRepeatSearchRequest, diff);
+                using (ResultsPipelineTimings.Time("RecordHistory"))
+                {
+                    await RecordRepeatSearch(identifiedRepeatSearchRequest, diff);
+                }
 
                 stopwatch.Stop();
 
@@ -149,8 +163,11 @@ namespace Atlas.RepeatSearch.Services.Search
                 };
 
                 await searchTrackingEventPublisher.ProcessPersistingResultsStarted();
-                await repeatResultsBlobStorageClient.UploadResults(searchResultSet, azureStorageSettings.SearchResultsBatchSize,
-                    $"{originalSearchRequestId}/{repeatSearchId}");
+                using (ResultsPipelineTimings.Time("UploadResults"))
+                {
+                    await repeatResultsBlobStorageClient.UploadResults(searchResultSet, azureStorageSettings.SearchResultsBatchSize,
+                        $"{originalSearchRequestId}/{repeatSearchId}");
+                }
                 await searchTrackingEventPublisher.ProcessPersistingResultsEnded();
 
                 var notification = new MatchingResultsNotification
@@ -168,7 +185,10 @@ namespace Atlas.RepeatSearch.Services.Search
                     ResultsBatched = azureStorageSettings.ShouldBatchResults,
                     BatchFolderName = azureStorageSettings.ShouldBatchResults && results.Any() ? $"{originalSearchRequestId}/{repeatSearchId}" : null
                 };
-                await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);
+                using (ResultsPipelineTimings.Time("PublishNotification"))
+                {
+                    await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);
+                }
                 resultsSentTime = DateTime.UtcNow;
             }
 
@@ -241,6 +261,9 @@ namespace Atlas.RepeatSearch.Services.Search
 
             async Task HandleValidationExceptionWithoutRethrow(Exception ex)
             {
+                ResultsPipelineTimings.Set("Outcome", "ValidationFailed");
+                ResultsPipelineTimings.Set("ExceptionType", ex.GetType().Name);
+
                 repeatSearchLogger.SendTrace(
                     $"Validation failed for repeat search id: {repeatSearchId} (search id: {originalSearchRequestId}). Exception: {ex}",
                     LogLevel.Error);
@@ -258,8 +281,16 @@ namespace Atlas.RepeatSearch.Services.Search
         {
             using (repeatSearchLogger.RunTimed("Calculate and apply result diff to canonical result set"))
             {
-                var diff = await repeatSearchDifferentialCalculator.CalculateDifferential(searchRequestId, results, searchCutoffDate);
-                await originalSearchResultSetTracker.ApplySearchResultDiff(searchRequestId, diff);
+                SearchResultDifferential diff;
+                using (ResultsPipelineTimings.Time("CalculateDiff"))
+                {
+                    diff = await repeatSearchDifferentialCalculator.CalculateDifferential(searchRequestId, results, searchCutoffDate);
+                }
+
+                using (ResultsPipelineTimings.Time("ApplyDiff"))
+                {
+                    await originalSearchResultSetTracker.ApplySearchResultDiff(searchRequestId, diff);
+                }
 
                 repeatSearchLogger.SendTrace(
                     $"Donor Result Diff Calculated. {diff.NewResults.Count} new results. {diff.UpdatedResults.Count} updated results. {diff.RemovedResults.Count} removed results."

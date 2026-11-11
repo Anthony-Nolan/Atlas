@@ -6,6 +6,7 @@ using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.RepeatSearch.Data.Repositories;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Utils.Extensions;
 
 namespace Atlas.RepeatSearch.Services.Search
@@ -50,20 +51,41 @@ namespace Atlas.RepeatSearch.Services.Search
             DateTimeOffset searchCutoffDate)
         {
             var returnedDonorCodes = results.Select(r => r.DonorCode).ToList();
+            ResultsPipelineTimings.SetMetric("CutoffAgeDays", (DateTimeOffset.UtcNow - searchCutoffDate).TotalDays);
 
-            var allDonorsUpdatedSinceCutoff = await donorReader.GetDonorIdsUpdatedSince(searchCutoffDate);
+            IReadOnlyDictionary<string, int> allDonorsUpdatedSinceCutoff;
+            using (ResultsPipelineTimings.Time("GetDonorIdsUpdatedSince"))
+            {
+                allDonorsUpdatedSinceCutoff = await donorReader.GetDonorIdsUpdatedSince(searchCutoffDate);
+            }
+            ResultsPipelineTimings.SetMetric("DonorsUpdatedSinceCutoff", allDonorsUpdatedSinceCutoff.Count);
 
             var nonMatchingDonors = allDonorsUpdatedSinceCutoff.Keys.Except(returnedDonorCodes);
 
-            var previousCanonicalDonors = (await canonicalResultSetRepository.GetCanonicalResults(originalSearchRequestId))
-                .Select(r => r.ExternalDonorCode).ToList();
+            List<string> previousCanonicalDonors;
+            using (ResultsPipelineTimings.Time("GetCanonicalResults"))
+            {
+                previousCanonicalDonors = (await canonicalResultSetRepository.GetCanonicalResults(originalSearchRequestId))
+                    .Select(r => r.ExternalDonorCode).ToList();
+            }
+            ResultsPipelineTimings.SetMetric("CanonicalDonors", previousCanonicalDonors.Count);
 
-            var newDonors = returnedDonorCodes.Except(previousCanonicalDonors).ToList();
-            var updatedDonors = returnedDonorCodes.Except(newDonors).ToList();
-            var noLongerMatchingDonors = previousCanonicalDonors.Intersect(nonMatchingDonors).ToList();
+            List<string> newDonors, updatedDonors, noLongerMatchingDonors;
+            using (ResultsPipelineTimings.Time("DiffInMemory"))
+            {
+                newDonors = returnedDonorCodes.Except(previousCanonicalDonors).ToList();
+                updatedDonors = returnedDonorCodes.Except(newDonors).ToList();
+                noLongerMatchingDonors = previousCanonicalDonors.Intersect(nonMatchingDonors).ToList();
+            }
 
-            var previousCanonicalDonorsInDonorStore = await donorReader.GetDonorsByExternalDonorCodes(previousCanonicalDonors);
+            IReadOnlyDictionary<string, Donor> previousCanonicalDonorsInDonorStore;
+            using (ResultsPipelineTimings.Time("GetDonorsByExternalDonorCodes"))
+            {
+                previousCanonicalDonorsInDonorStore = await donorReader.GetDonorsByExternalDonorCodes(previousCanonicalDonors);
+            }
+
             var deletedDonors = previousCanonicalDonors.Where(d => !previousCanonicalDonorsInDonorStore.ContainsKey(d)).ToList();
+            ResultsPipelineTimings.SetMetric("DeletedDonors", deletedDonors.Count);
 
             var atlasIdsByDonorCode = results.ToDictionary(r => r.DonorCode, r => r.AtlasDonorId);
 

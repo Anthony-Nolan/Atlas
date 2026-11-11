@@ -57,14 +57,21 @@ namespace Atlas.Common.AzureStorage.Blob
         private async Task UploadBlob<T>(BlobContainerClient containerClient, string filename, T fileContents)
         {
             using var memoryStream = new MemoryStream();
-            serializer.SerializeToStream(fileContents, memoryStream);
+            using (ResultsPipelineTimings.Time("BlobSerialize"))
+            {
+                serializer.SerializeToStream(fileContents, memoryStream);
+            }
 
             memoryStream.Seek(0, SeekOrigin.Begin); // Stream position will be on the end of the stream. Need to rewind it to the beginning
+            ResultsPipelineTimings.AddBlobWritten(memoryStream.Length);
 
             var blobClient = containerClient.GetBlobClient(filename);
             var uploadOptions = new BlobUploadOptions { HttpHeaders = new BlobHttpHeaders { ContentType = "text/plain" } };
 
-            await blobClient.UploadAsync(memoryStream, uploadOptions);
+            using (ResultsPipelineTimings.Time("BlobUploadIo"))
+            {
+                await blobClient.UploadAsync(memoryStream, uploadOptions);
+            }
         }
     }
 }

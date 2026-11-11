@@ -2,6 +2,7 @@
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Utils;
 using Atlas.RepeatSearch.Data.Models;
 using Atlas.RepeatSearch.Data.Settings;
@@ -42,11 +43,20 @@ namespace Atlas.RepeatSearch.Data.Repositories
 
         public async Task CreateCanonicalResultSet(string searchRequestId, IReadOnlyCollection<string> externalDonorCodes)
         {
+            using (ResultsPipelineTimings.Time("CanonicalSetTransaction"))
             using (var transactionScope = new AsyncTransactionScope())
             {
-                var resultSetId = await CreateResultSetIfNotExists(searchRequestId);
+                int? resultSetId;
+                using (ResultsPipelineTimings.Time("CreateResultSetRow"))
+                {
+                    resultSetId = await CreateResultSetIfNotExists(searchRequestId);
+                }
+
                 if (resultSetId is null) // null is returned - results are already saved
+                {
+                    ResultsPipelineTimings.Set("CanonicalSetAlreadyExisted", "True");
                     return;
+                }
 
                 await AddResultsToSet(externalDonorCodes, resultSetId.Value);
                 transactionScope.Complete();
@@ -91,6 +101,7 @@ namespace Atlas.RepeatSearch.Data.Repositories
             {
                 foreach (var donorCodeBatch in donorCodesToRemove.Batch(2000))
                 {
+                    ResultsPipelineTimings.Add("RemoveResultsBatches", 1);
                     await connection.ExecuteAsync(sql, new {searchRequestId, Ids = donorCodeBatch.ToList()});
                 }
             }
@@ -104,7 +115,14 @@ namespace Atlas.RepeatSearch.Data.Repositories
 
         private async Task AddResultsToSet(IReadOnlyCollection<string> externalDonorCodes, int resultSetId)
         {
-            var resultEntryDataTable = BuildResultsInsertDataTable(resultSetId, externalDonorCodes);
+            DataTable resultEntryDataTable;
+            using (ResultsPipelineTimings.Time("BuildBulkCopyDataTable"))
+            {
+                resultEntryDataTable = BuildResultsInsertDataTable(resultSetId, externalDonorCodes);
+            }
+
+            ResultsPipelineTimings.Add("BulkCopyRows", resultEntryDataTable.Rows.Count);
+            using (ResultsPipelineTimings.Time("BulkCopy"))
             using (var sqlBulk = BuildResultsBulkCopy())
             {
                 await sqlBulk.WriteToServerAsync(resultEntryDataTable);
