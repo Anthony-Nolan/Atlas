@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using AwesomeAssertions;
+using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.ApplicationInsights.Extensibility;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -93,6 +95,20 @@ namespace Atlas.Common.Test.ApplicationInsights
 
             logger.ReceivedWithAnyArgs(1).SendEvent(default);
             sentMetrics.Should().NotContainKey("Count");
+        }
+
+        [Test]
+        public void TelemetryInitializer_SetsSamplingPercentageTo100_OnlyForTimingsEvents()
+        {
+            var initializer = new ResultsPipelineTimingsTelemetryInitializer();
+            var timingsEvent = new EventTelemetry(ResultsPipelineTimings.EventName);
+            var otherEvent = new EventTelemetry("Other");
+
+            initializer.Initialize(timingsEvent);
+            initializer.Initialize(otherEvent);
+
+            ((ISupportSampling)timingsEvent).SamplingPercentage.Should().Be(100);
+            ((ISupportSampling)otherEvent).SamplingPercentage.Should().BeNull();
         }
 
         private static async Task AddFromAnotherAsyncMethod()

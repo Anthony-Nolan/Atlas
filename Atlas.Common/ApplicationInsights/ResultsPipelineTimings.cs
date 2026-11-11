@@ -13,8 +13,8 @@ namespace Atlas.Common.ApplicationInsights
     /// <para>
     /// <see cref="Begin"/> is called once per step (one function invocation), from the method that awaits the whole step. The
     /// collection flows through an <see cref="AsyncLocal{T}"/> into every method the step calls, so services and repositories
-    /// add to it with the static methods and need no new dependencies. Disposing the collection sends one unsampled
-    /// "Results pipeline timings" event.
+    /// add to it with the static methods and need no new dependencies. Disposing the collection sends one
+    /// "Results pipeline timings" event, which <see cref="ResultsPipelineTimingsTelemetryInitializer"/> keeps out of sampling.
     /// </para>
     /// <para>
     /// Phase times are added up per name (<c>{name}Ms</c>, <c>{name}Calls</c>). Phases that run in parallel (for example blob

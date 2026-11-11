@@ -33,6 +33,9 @@ namespace Atlas.Common.ApplicationInsights
             // Stamp SearchRequestId on all telemetry items for end-to-end correlation in Application Insights.
             // TryAddEnumerable prevents duplicate initializer registrations for the same reason as above.
             services.TryAddEnumerable(ServiceDescriptor.Singleton<ITelemetryInitializer, SearchRequestTelemetryInitializer>());
+
+            // ATL-526 experiment: keep the "Results pipeline timings" events out of sampling.
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<ITelemetryInitializer, ResultsPipelineTimingsTelemetryInitializer>());
         }
     }
 }
