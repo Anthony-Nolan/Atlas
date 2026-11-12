@@ -8,7 +8,6 @@ using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
-using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
@@ -28,7 +27,6 @@ internal class PatientGenotypeSetWarmerTests
     private const int PatientFrequencySetId = 7;
     private static readonly PatientGenotypeSetKey Key = new("typing-key", PatientFrequencySetId, "ABCDrb1Dqb1");
 
-    private PrecomputedGenotypeSetSettings settings;
     private IHaplotypeFrequencyLookupService haplotypeFrequencyService;
     private IGenotypeSetService genotypeSetService;
     private IPrecomputedDonorGenotypeSetReader reader;
@@ -43,13 +41,12 @@ internal class PatientGenotypeSetWarmerTests
     [SetUp]
     public void SetUp()
     {
-        settings = new PrecomputedGenotypeSetSettings { Mode = PrecomputedGenotypeSetMode.DefaultPrecomputed };
         haplotypeFrequencyService = Substitute.For<IHaplotypeFrequencyLookupService>();
         genotypeSetService = Substitute.For<IGenotypeSetService>();
         reader = Substitute.For<IPrecomputedDonorGenotypeSetReader>();
         writer = Substitute.For<IPrecomputedDonorGenotypeSetWriter>();
         logger = Substitute.For<IAtlasLogger>();
-        warmer = new PatientGenotypeSetWarmer(settings, haplotypeFrequencyService, genotypeSetService, reader, writer, logger);
+        warmer = new PatientGenotypeSetWarmer(haplotypeFrequencyService, genotypeSetService, reader, writer, logger);
 
         patientFrequencySet = new HaplotypeFrequencySet { Id = PatientFrequencySetId };
         haplotypeFrequencyService.GetSingleHaplotypeFrequencySet(default).ReturnsForAnyArgs(patientFrequencySet);
@@ -128,12 +125,10 @@ internal class PatientGenotypeSetWarmerTests
         await writer.Received(1).StorePatientGenotypeSet(Key, true, null, DataRefreshRecordId);
     }
 
-    [TestCase(PrecomputedGenotypeSetMode.ForceLive, true)]
-    [TestCase(PrecomputedGenotypeSetMode.DefaultLive, null)]
-    [TestCase(PrecomputedGenotypeSetMode.DefaultPrecomputed, false)]
-    public async Task Warm_WhenThePrecomputedPathIsOffForTheSearch_DoesNothingAndReturnsNull(PrecomputedGenotypeSetMode mode, bool? requestOverride)
+    [TestCase(null)]
+    [TestCase(false)]
+    public async Task Warm_WhenThePrecomputedPathIsOffForTheSearch_DoesNothingAndReturnsNull(bool? requestOverride)
     {
-        settings.Mode = mode;
         var request = Request();
         request.UsePrecomputedGenotypeSets = requestOverride;
 
@@ -228,7 +223,6 @@ internal class PatientGenotypeSetWarmerTests
         loggedProps["SearchRequestId"].Should().Be("search-id");
         loggedProps["Result"].Should().Be(result);
         loggedProps["Reason"].Should().Be(reason);
-        loggedProps["PrecomputeMode"].Should().Be(settings.Mode.ToString());
         loggedProps["MatchingAlgorithmDataRefreshRecordId"].Should().Be(DataRefreshRecordId.ToString());
     }
 
@@ -237,6 +231,7 @@ internal class PatientGenotypeSetWarmerTests
         SearchRequestId = "search-id",
         MatchingAlgorithmDataRefreshRecordId = DataRefreshRecordId,
         MatchingAlgorithmHlaNomenclatureVersion = "3330",
+        UsePrecomputedGenotypeSets = true,
         PatientHla = new PhenotypeInfo<string>("A*01:01").ToPhenotypeInfoTransfer(),
         PatientFrequencySetMetadata = new FrequencySetMetadata { RegistryCode = "reg", EthnicityCode = "eth" }
     };

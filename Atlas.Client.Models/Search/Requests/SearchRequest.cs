@@ -63,13 +63,14 @@ namespace Atlas.Client.Models.Search.Requests
         public bool? ParallelMatchPrediction { get; set; }
 
         /// <summary>
-        /// Optional. Controls whether match prediction reads precomputed donor genotype sets, instead of imputing each donor live.
-        /// When <c>true</c>, precomputed genotype sets are used for this search, even if the kill-switch's default is live.
-        /// When <c>false</c>, every donor is imputed live for this search, even if the kill-switch's default is precomputed.
-        /// When <c>null</c> (default), the kill-switch's default is applied.
-        /// The value is ignored while the kill-switch (<c>MatchPrediction:Precompute:Mode</c>) is <c>ForceLive</c>: every
-        /// search is then imputed live.
-        /// The value is resolved by match prediction for each donor batch, not when the search is submitted.
+        /// Optional, and meant for testing: production clients should leave it empty.
+        /// Controls whether match prediction reads precomputed donor genotype sets, instead of imputing each donor live.
+        /// When <c>true</c>, precomputed genotype sets are used for this search. When <c>false</c>, every donor is imputed live.
+        /// A value set here is always kept: it ignores the function app's switch
+        /// (<c>AtlasFunction:Search:DefaultUsePrecomputedGenotypeSets</c>) and share
+        /// (<c>AtlasFunction:Search:UsePrecomputedGenotypeSetsRequestPercentage</c>).
+        /// When <c>null</c> (default), the Atlas Public API chooses the value from the switch and the share, once, when it
+        /// accepts the search. A search that does not pass through the Atlas Public API, with an empty value, is imputed live.
         /// </summary>
         public bool? UsePrecomputedGenotypeSets { get; set; }
     }

@@ -59,6 +59,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Atlas.DependencyInjection.Test" />
+    <InternalsVisibleTo Include="Atlas.Functions.PublicApi.Test" />
   </ItemGroup>
 
 </Project>

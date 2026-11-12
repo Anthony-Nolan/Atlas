@@ -9,7 +9,6 @@ using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
-using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
@@ -95,7 +94,7 @@ internal class MatchProbabilityServicePrecomputeTests
     [Test]
     public async Task CalculateMatchProbability_WhenPrecomputeDisabled_ComputesLiveAndStoresNothing()
     {
-        var context = DonorGenotypeSetBatchContext.Disabled(UsePrecomputedGenotypeSetsSource.FeatureFlag, PrecomputedGenotypeSetMode.ForceLive, DataRefreshRecordId);
+        var context = DonorGenotypeSetBatchContext.Disabled(DataRefreshRecordId);
 
         var result = await matchProbabilityService.CalculateMatchProbability(Input(), patientGenotypeSet, context);
 
@@ -291,8 +290,6 @@ internal class MatchProbabilityServicePrecomputeTests
     public async Task CalculateMatchProbability_WithBatchFallbackReason_ComputesLiveWithThatReasonAndStoresNothing(DonorGenotypeSetSource reason)
     {
         var context = DonorGenotypeSetBatchContext.Enabled(
-            UsePrecomputedGenotypeSetsSource.Request,
-            PrecomputedGenotypeSetMode.DefaultLive,
             DataRefreshRecordId,
             PrecomputedDonorGenotypeSetLookup.Unavailable(reason));
 
@@ -307,8 +304,6 @@ internal class MatchProbabilityServicePrecomputeTests
 
     private static DonorGenotypeSetBatchContext EnabledContext(Dictionary<int, PrecomputedDonorGenotypeSetRow> rows) =>
         DonorGenotypeSetBatchContext.Enabled(
-            UsePrecomputedGenotypeSetsSource.FeatureFlag,
-            PrecomputedGenotypeSetMode.DefaultPrecomputed,
             DataRefreshRecordId,
             new PrecomputedDonorGenotypeSetLookup("ABCDrb1Dqb1", null, rows));
 

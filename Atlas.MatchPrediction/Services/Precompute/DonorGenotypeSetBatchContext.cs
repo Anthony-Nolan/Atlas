@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
-using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Models;
 
 namespace Atlas.MatchPrediction.Services.Precompute;
@@ -16,13 +15,8 @@ public sealed class DonorGenotypeSetBatchContext
 {
     private static readonly IReadOnlyDictionary<int, PrecomputedDonorGenotypeSetRow> NoRows = new Dictionary<int, PrecomputedDonorGenotypeSetRow>();
 
-    /// <summary>The resolved switch for this batch: the kill-switch mode, and the request's override where the mode allows it.</summary>
+    /// <summary>Whether the batch uses precomputed genotype sets: the request's value (see <see cref="MatchProbabilityRequestBase.UsePrecomputedGenotypeSets"/>).</summary>
     public bool UsePrecomputedGenotypeSets { get; }
-
-    public UsePrecomputedGenotypeSetsSource UsePrecomputedGenotypeSetsSource { get; }
-
-    /// <summary>The kill-switch mode the batch ran under.</summary>
-    public PrecomputedGenotypeSetMode Mode { get; }
 
     /// <summary>The name of the allowed-loci key that was looked up; null when none was.</summary>
     public string AllowedLociKey { get; }
@@ -31,7 +25,7 @@ public sealed class DonorGenotypeSetBatchContext
 
     /// <summary>
     /// Null when the rows were read. Otherwise the reason every donor in the batch is computed live, including
-    /// <see cref="DonorGenotypeSetSource.PrecomputeDisabled"/> when the switch is off.
+    /// <see cref="DonorGenotypeSetSource.PrecomputeDisabled"/> when the request turns the path off.
     /// </summary>
     public DonorGenotypeSetSource? BatchFallbackReason { get; }
 
@@ -66,8 +60,6 @@ public sealed class DonorGenotypeSetBatchContext
 
     private DonorGenotypeSetBatchContext(
         bool usePrecomputedGenotypeSets,
-        UsePrecomputedGenotypeSetsSource source,
-        PrecomputedGenotypeSetMode mode,
         string allowedLociKey,
         int? matchingAlgorithmDataRefreshRecordId,
         DonorGenotypeSetSource? batchFallbackReason,
@@ -76,8 +68,6 @@ public sealed class DonorGenotypeSetBatchContext
         PrecomputedPatientGenotypeSetRow patientRow)
     {
         UsePrecomputedGenotypeSets = usePrecomputedGenotypeSets;
-        UsePrecomputedGenotypeSetsSource = source;
-        Mode = mode;
         AllowedLociKey = allowedLociKey;
         MatchingAlgorithmDataRefreshRecordId = matchingAlgorithmDataRefreshRecordId;
         BatchFallbackReason = batchFallbackReason;
@@ -87,20 +77,16 @@ public sealed class DonorGenotypeSetBatchContext
     }
 
     public static DonorGenotypeSetBatchContext Disabled(
-        UsePrecomputedGenotypeSetsSource source,
-        PrecomputedGenotypeSetMode mode,
         int? matchingAlgorithmDataRefreshRecordId,
         PatientGenotypeSetKey patientGenotypeSetKey = null) =>
-        new(false, source, mode, null, matchingAlgorithmDataRefreshRecordId, DonorGenotypeSetSource.PrecomputeDisabled, NoRows,
+        new(false, null, matchingAlgorithmDataRefreshRecordId, DonorGenotypeSetSource.PrecomputeDisabled, NoRows,
             patientGenotypeSetKey, null);
 
     public static DonorGenotypeSetBatchContext Enabled(
-        UsePrecomputedGenotypeSetsSource source,
-        PrecomputedGenotypeSetMode mode,
         int? matchingAlgorithmDataRefreshRecordId,
         PrecomputedDonorGenotypeSetLookup lookup,
         PatientGenotypeSetKey patientGenotypeSetKey = null) =>
-        new(true, source, mode, lookup.AllowedLociKey, matchingAlgorithmDataRefreshRecordId, lookup.BatchFallbackReason, lookup.Rows,
+        new(true, lookup.AllowedLociKey, matchingAlgorithmDataRefreshRecordId, lookup.BatchFallbackReason, lookup.Rows,
             patientGenotypeSetKey, lookup.PatientRow);
 
     /// <summary>

@@ -18,7 +18,7 @@ namespace Atlas.Functions.PublicApi.Test.TestHelpers
     /// </summary>
     internal static class RequestBuilders
     {
-        public static SearchRequest ValidSearchRequest(bool? parallelMatchPrediction = null) => new()
+        public static SearchRequest ValidSearchRequest(bool? parallelMatchPrediction = null, bool? usePrecomputedGenotypeSets = null) => new()
         {
             SearchDonorType = DonorType.Adult,
             MatchCriteria = new MismatchCriteria
@@ -38,12 +38,13 @@ namespace Atlas.Functions.PublicApi.Test.TestHelpers
                 B = new LocusInfoTransfer<string> {Position1 = "*08:01", Position2 = "*08:01"},
                 Drb1 = new LocusInfoTransfer<string> {Position1 = "*03:01", Position2 = "*03:01"}
             },
-            ParallelMatchPrediction = parallelMatchPrediction
+            ParallelMatchPrediction = parallelMatchPrediction,
+            UsePrecomputedGenotypeSets = usePrecomputedGenotypeSets
         };
 
-        public static RepeatSearchRequest ValidRepeatSearchRequest(bool? parallelMatchPrediction = null) => new()
+        public static RepeatSearchRequest ValidRepeatSearchRequest(bool? parallelMatchPrediction = null, bool? usePrecomputedGenotypeSets = null) => new()
         {
-            SearchRequest = ValidSearchRequest(parallelMatchPrediction),
+            SearchRequest = ValidSearchRequest(parallelMatchPrediction, usePrecomputedGenotypeSets),
             OriginalSearchId = Guid.NewGuid().ToString(),
             SearchCutoffDate = new DateTimeOffset(2026, 07, 31, 0, 0, 0, TimeSpan.Zero)
         };

@@ -6,7 +6,6 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
-using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.Precompute;
 using AutoFixture;
@@ -25,7 +24,6 @@ internal class DonorGenotypeSetSourceResolverTests
     private static readonly IReadOnlyCollection<DonorInput> Donors = [new() { DonorIds = [1, 2] }];
 
     private Fixture fixture;
-    private PrecomputedGenotypeSetSettings settings;
     private IPrecomputedDonorGenotypeSetReader reader;
     private IHaplotypeFrequencyLookupService frequencySetLookup;
     private IDonorGenotypeSetSourceResolver resolver;
@@ -34,53 +32,30 @@ internal class DonorGenotypeSetSourceResolverTests
     public void SetUp()
     {
         fixture = new Fixture();
-        settings = new PrecomputedGenotypeSetSettings();
         reader = Substitute.For<IPrecomputedDonorGenotypeSetReader>();
         reader.GetDonorGenotypeSets(default, default, default, default).ReturnsForAnyArgs(
             new PrecomputedDonorGenotypeSetLookup("ABCDrb1Dqb1", null, new Dictionary<int, PrecomputedDonorGenotypeSetRow>()));
         frequencySetLookup = Substitute.For<IHaplotypeFrequencyLookupService>();
         frequencySetLookup.GetSingleHaplotypeFrequencySet(default).ReturnsForAnyArgs(fixture.Create<HaplotypeFrequencySet>());
 
-        resolver = new DonorGenotypeSetSourceResolver(settings, reader, frequencySetLookup, Substitute.For<IAtlasLogger>());
+        resolver = new DonorGenotypeSetSourceResolver(reader, frequencySetLookup, Substitute.For<IAtlasLogger>());
     }
 
-    [Test]
-    public void Settings_ByDefault_ForceLive()
+    [TestCase(null, false)]
+    [TestCase(false, false)]
+    [TestCase(true, true)]
+    public async Task Resolve_UsesTheValueTheAtlasPublicApiSetOnTheRequest(bool? requestValue, bool expectedUse)
     {
-        new PrecomputedGenotypeSetSettings().Mode.Should().Be(PrecomputedGenotypeSetMode.ForceLive);
-    }
-
-    [TestCase(PrecomputedGenotypeSetMode.ForceLive, null, false, UsePrecomputedGenotypeSetsSource.FeatureFlag)]
-    [TestCase(PrecomputedGenotypeSetMode.ForceLive, true, false, UsePrecomputedGenotypeSetsSource.FeatureFlag)]
-    [TestCase(PrecomputedGenotypeSetMode.ForceLive, false, false, UsePrecomputedGenotypeSetsSource.FeatureFlag)]
-    [TestCase(PrecomputedGenotypeSetMode.DefaultLive, null, false, UsePrecomputedGenotypeSetsSource.FeatureFlag)]
-    [TestCase(PrecomputedGenotypeSetMode.DefaultLive, true, true, UsePrecomputedGenotypeSetsSource.Request)]
-    [TestCase(PrecomputedGenotypeSetMode.DefaultLive, false, false, UsePrecomputedGenotypeSetsSource.Request)]
-    [TestCase(PrecomputedGenotypeSetMode.DefaultPrecomputed, null, true, UsePrecomputedGenotypeSetsSource.FeatureFlag)]
-    [TestCase(PrecomputedGenotypeSetMode.DefaultPrecomputed, true, true, UsePrecomputedGenotypeSetsSource.Request)]
-    [TestCase(PrecomputedGenotypeSetMode.DefaultPrecomputed, false, false, UsePrecomputedGenotypeSetsSource.Request)]
-    public async Task Resolve_CombinesTheModeAndTheRequestOverride(
-        PrecomputedGenotypeSetMode mode,
-        bool? requestValue,
-        bool expectedUse,
-        UsePrecomputedGenotypeSetsSource expectedSource)
-    {
-        settings.Mode = mode;
-
         var context = await resolver.Resolve(Request(requestValue), Donors);
 
         context.UsePrecomputedGenotypeSets.Should().Be(expectedUse);
-        context.UsePrecomputedGenotypeSetsSource.Should().Be(expectedSource);
-        context.Mode.Should().Be(mode);
     }
 
-    /// <summary>The hard off: a request that opts in still gets nothing read, nothing trusted and nothing stored.</summary>
+    /// <summary>An empty value means the search did not pass through the Atlas Public API, so it is computed live.</summary>
     [Test]
-    public async Task Resolve_InForceLive_IgnoresARequestThatOptsInAndDoesNotRead()
+    public async Task Resolve_WhenTheRequestValueIsEmpty_DoesNotReadAndDisablesTheBatch()
     {
-        settings.Mode = PrecomputedGenotypeSetMode.ForceLive;
-
-        var context = await resolver.Resolve(Request(true), Donors);
+        var context = await resolver.Resolve(Request(null), Donors);
 
         await reader.DidNotReceiveWithAnyArgs().GetDonorGenotypeSets(default, default, default, default);
         context.BatchFallbackReason.Should().Be(DonorGenotypeSetSource.PrecomputeDisabled);
@@ -90,8 +65,6 @@ internal class DonorGenotypeSetSourceResolverTests
     [Test]
     public async Task Resolve_WhenSwitchedOff_DoesNotReadAndDisablesTheBatch()
     {
-        settings.Mode = PrecomputedGenotypeSetMode.DefaultPrecomputed;
-
         var context = await resolver.Resolve(Request(false), Donors);
 
         await reader.DidNotReceiveWithAnyArgs().GetDonorGenotypeSets(default, default, default, default);
@@ -102,7 +75,6 @@ internal class DonorGenotypeSetSourceResolverTests
     [Test]
     public async Task Resolve_WhenSwitchedOn_ReadsTheBatchOnceWithItsDonorInputsLociAndRecord()
     {
-        settings.Mode = PrecomputedGenotypeSetMode.DefaultLive;
         var request = Request(true);
         request.ExcludedLoci = [Locus.C];
 
@@ -122,7 +94,6 @@ internal class DonorGenotypeSetSourceResolverTests
     [Test]
     public async Task Resolve_WhenSwitchedOn_ReadsEachDonorInputWithTheFrequencySetOfItsMetadata()
     {
-        settings.Mode = PrecomputedGenotypeSetMode.DefaultPrecomputed;
         var firstMetadata = fixture.Create<FrequencySetMetadata>();
         var secondMetadata = fixture.Create<FrequencySetMetadata>();
         var firstSet = fixture.Create<HaplotypeFrequencySet>();
@@ -132,7 +103,7 @@ internal class DonorGenotypeSetSourceResolverTests
         var first = new DonorInput { DonorIds = [fixture.Create<int>()], DonorFrequencySetMetadata = firstMetadata };
         var second = new DonorInput { DonorIds = [fixture.Create<int>()], DonorFrequencySetMetadata = secondMetadata };
 
-        await resolver.Resolve(Request(null), [first, second]);
+        await resolver.Resolve(Request(true), [first, second]);
 
         await reader.Received(1).GetDonorGenotypeSets(
             Arg.Is<IReadOnlyCollection<DonorGenotypeSetToRead>>(donors => donors.SequenceEqual(new[]
@@ -149,7 +120,6 @@ internal class DonorGenotypeSetSourceResolverTests
     [Test]
     public async Task Resolve_LooksUpTheFrequencySetOnceForEachRegistryAndEthnicity()
     {
-        settings.Mode = PrecomputedGenotypeSetMode.DefaultPrecomputed;
         var metadata = fixture.Create<FrequencySetMetadata>();
         var sameCodes = new FrequencySetMetadata { RegistryCode = metadata.RegistryCode, EthnicityCode = metadata.EthnicityCode };
         var otherCodes = fixture.Create<FrequencySetMetadata>();
@@ -157,7 +127,7 @@ internal class DonorGenotypeSetSourceResolverTests
             .Select(codes => new DonorInput { DonorIds = [fixture.Create<int>()], DonorFrequencySetMetadata = codes })
             .ToList();
 
-        await resolver.Resolve(Request(null), donors);
+        await resolver.Resolve(Request(true), donors);
 
         await frequencySetLookup.ReceivedWithAnyArgs(2).GetSingleHaplotypeFrequencySet(default);
     }
@@ -166,9 +136,7 @@ internal class DonorGenotypeSetSourceResolverTests
     [Test]
     public async Task Resolve_ForADonorInputWithNoFrequencySetMetadata_LooksUpTheSetOfEmptyMetadata()
     {
-        settings.Mode = PrecomputedGenotypeSetMode.DefaultPrecomputed;
-
-        await resolver.Resolve(Request(null), [new DonorInput { DonorIds = [fixture.Create<int>()] }]);
+        await resolver.Resolve(Request(true), [new DonorInput { DonorIds = [fixture.Create<int>()] }]);
 
         await frequencySetLookup.Received(1).GetSingleHaplotypeFrequencySet(
             Arg.Is<FrequencySetMetadata>(metadata => metadata.RegistryCode == null && metadata.EthnicityCode == null));
@@ -177,10 +145,9 @@ internal class DonorGenotypeSetSourceResolverTests
     [Test]
     public async Task Resolve_WhenTheFrequencySetLookupFails_ComputesTheBatchLiveRatherThanFailing()
     {
-        settings.Mode = PrecomputedGenotypeSetMode.DefaultPrecomputed;
         frequencySetLookup.GetSingleHaplotypeFrequencySet(default).ThrowsAsyncForAnyArgs(new Exception(fixture.Create<string>()));
 
-        var context = await resolver.Resolve(Request(null), Donors);
+        var context = await resolver.Resolve(Request(true), Donors);
 
         context.BatchFallbackReason.Should().Be(DonorGenotypeSetSource.ReadFailed);
         context.CanStore.Should().BeFalse();
@@ -190,9 +157,7 @@ internal class DonorGenotypeSetSourceResolverTests
     [Test]
     public async Task Resolve_WhenSwitchedOff_DoesNotLookUpFrequencySets()
     {
-        settings.Mode = PrecomputedGenotypeSetMode.ForceLive;
-
-        await resolver.Resolve(Request(true), Donors);
+        await resolver.Resolve(Request(false), Donors);
 
         await frequencySetLookup.DidNotReceiveWithAnyArgs().GetSingleHaplotypeFrequencySet(default);
     }
@@ -200,11 +165,10 @@ internal class DonorGenotypeSetSourceResolverTests
     [Test]
     public async Task Resolve_PassesTheReadersBatchFallbackReasonOn()
     {
-        settings.Mode = PrecomputedGenotypeSetMode.DefaultPrecomputed;
         reader.GetDonorGenotypeSets(default, default, default, default).ReturnsForAnyArgs(
             PrecomputedDonorGenotypeSetLookup.Unavailable(DonorGenotypeSetSource.ActiveDatabaseChanged, "ABDrb1"));
 
-        var context = await resolver.Resolve(Request(null), Donors);
+        var context = await resolver.Resolve(Request(true), Donors);
 
         context.BatchFallbackReason.Should().Be(DonorGenotypeSetSource.ActiveDatabaseChanged);
         context.CanStore.Should().BeFalse();
@@ -213,41 +177,19 @@ internal class DonorGenotypeSetSourceResolverTests
     [Test]
     public async Task Resolve_WhenTheReadFails_ComputesTheBatchLiveRatherThanFailing()
     {
-        settings.Mode = PrecomputedGenotypeSetMode.DefaultPrecomputed;
         reader.GetDonorGenotypeSets(default, default, default, default).ThrowsAsyncForAnyArgs(new Exception("sql is down"));
 
-        var context = await resolver.Resolve(Request(null), Donors);
+        var context = await resolver.Resolve(Request(true), Donors);
 
         context.BatchFallbackReason.Should().Be(DonorGenotypeSetSource.ReadFailed);
         context.CanStore.Should().BeFalse();
     }
 
-    /// <summary>
-    /// The value is resolved for each batch, not when the search is submitted, so switching to ForceLive reaches a
-    /// search that is already running - even one that opted in.
-    /// </summary>
-    [Test]
-    public async Task Resolve_WhenTheModeChangesBetweenBatchesOfOneSearch_EachBatchUsesTheCurrentMode()
-    {
-        var request = Request(true);
-
-        settings.Mode = PrecomputedGenotypeSetMode.DefaultLive;
-        var firstBatch = await resolver.Resolve(request, Donors);
-
-        settings.Mode = PrecomputedGenotypeSetMode.ForceLive;
-        var secondBatch = await resolver.Resolve(request, Donors);
-
-        firstBatch.UsePrecomputedGenotypeSets.Should().BeTrue();
-        secondBatch.UsePrecomputedGenotypeSets.Should().BeFalse();
-        await reader.ReceivedWithAnyArgs(1).GetDonorGenotypeSets(default, default, default, default);
-    }
-
     [Test]
     public async Task Resolve_WhenTheBatchHasAPatientKey_ReadsThePatientRowWithTheDonorsAndKeepsTheKey()
     {
-        settings.Mode = PrecomputedGenotypeSetMode.DefaultPrecomputed;
         var key = new PatientGenotypeSetKey("typing-key", 7, "ABCDrb1Dqb1");
-        var request = Request(null);
+        var request = Request(true);
         request.PatientGenotypeSetKey = key;
 
         var context = await resolver.Resolve(request, Donors);
@@ -260,8 +202,7 @@ internal class DonorGenotypeSetSourceResolverTests
     [Test]
     public async Task Resolve_WhenSwitchedOff_KeepsThePatientKeyButReadsNothing()
     {
-        settings.Mode = PrecomputedGenotypeSetMode.ForceLive;
-        var request = Request(true);
+        var request = Request(false);
         request.PatientGenotypeSetKey = new PatientGenotypeSetKey("typing-key", 7, "ABCDrb1Dqb1");
 
         var context = await resolver.Resolve(request, Donors);

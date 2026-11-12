@@ -92,7 +92,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
                     return fileNames;
                 }
 
-                // Once per batch, not per donor: one read of the stored rows, and one decision about the kill-switch.
+                // Once per batch, not per donor: one read of the stored rows for the whole batch.
                 var batchContext = await genotypeSetSourceResolver.Resolve(
                     multipleDonorMatchProbabilityInput,
                     multipleDonorMatchProbabilityInput.Donors);

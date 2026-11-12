@@ -315,24 +315,34 @@ space: the sets that are not stored are the smallest ones.
 - In search, such a donor has the outcome `NotStoredUnambiguous` (below), not `NoRow`, and its set is not stored back.
 
 ### Switching it on and off
-The kill-switch is a mode setting:
-- `Atlas.Functions` (sequential Durable path): `MatchPrediction:Precompute:Mode`.
-- `Atlas.MatchPrediction.Worker` (parallel path): `Precompute:Mode` (env var `Precompute__Mode`).
+The Atlas Public API (`Atlas.Functions.PublicApi`) chooses the method once for each search, when it accepts the
+search (ATL-535). It writes the choice to `SearchRequest.UsePrecomputedGenotypeSets`. Match prediction (both the
+sequential and the parallel path) only reads that value, and has no setting of its own. Two Public API settings choose
+the value:
+- `AtlasFunction:Search:DefaultUsePrecomputedGenotypeSets` - the switch. `false` by default.
+- `AtlasFunction:Search:UsePrecomputedGenotypeSetsRequestPercentage` - the share of searches (0-100) that use
+  precomputed sets while the switch is on. `0` by default. Values outside 0-100 are clamped.
 
-Set both to the same value.
+| Switch | Share | Search with `UsePrecomputedGenotypeSets` null | `true` | `false` |
+|---|---|---|---|---|
+| `false` (default) | any | live | precomputed | live |
+| `true` | `0` (default) | live | precomputed | live |
+| `true` | N | precomputed for about N % of searches, live for the rest | precomputed | live |
 
-| Mode | Search with `UsePrecomputedGenotypeSets` null | `true` | `false` |
-|---|---|---|---|
-| `ForceLive` (default) | live | live | live |
-| `DefaultLive` | live | precomputed | live |
-| `DefaultPrecomputed` | precomputed | precomputed | live |
-
-- `ForceLive` is the hard off: it ignores the request, so it can stop the precomputed path for every search at once,
-  without a deploy. It stays the setting until clinical sign-off.
-- The value is resolved once for each donor batch, not when the search is submitted. So changing the mode also affects
-  searches that are already running. Repeat search uses the same `SearchRequest` value.
+- To stop the precomputed path, set the switch to `false` or the share to `0`. This affects new searches only: a
+  search that is already running keeps its method until it ends.
+- A value that the request names is always kept, in either direction. It is meant for QA tests: production clients
+  leave it empty. The `Precomputed genotype sets method chosen` event (below) shows when a client names it.
+- A repeat search is a new search for the Public API: its method is chosen again, and does not have to be the method of
+  the original search.
+- A search that does not pass through the Public API, with an empty value, is computed live.
+- The rerun utility (`Atlas.Utilities.RerunFailedSearches`) clears the value before it sends a search again. The
+  stored request holds the value that was chosen when the search was first accepted, and a rerun does not pass through
+  the Public API, so it is computed live.
 - When the precomputed path is off for a search, nothing stored is read, trusted or written: every donor runs the
   complete live pipeline.
+- Search Tracking saves the method of each search in `SearchRequestMatchPredictions.IsPrecomputedMatchPrediction`,
+  next to `IsParallelMatchPrediction`.
 - The standalone match prediction endpoint (`Atlas.MatchPrediction.Functions`) always computes live. It has no access
   to the transient databases, and it does not send the logging event below.
 
@@ -406,9 +416,13 @@ end of the batch and of the search. Its lock timeout keeps that delay short. Gua
   read link rows.
 
 ### Logging
+The Public API sends one event for each search and repeat search, `Precomputed genotype sets method chosen`.
+- Properties: `SearchRequestId`, `RepeatSearchRequestId` (empty for a search), `UsePrecomputedGenotypeSets` (the
+  chosen value), and `UsePrecomputedGenotypeSetsSource` (`Request` when the request named the value, `FeatureFlag`
+  when the switch and the share chose it).
+
 Each donor batch sends one Application Insights event, `Precomputed genotype sets used`.
-- Properties: `SearchRequestId`, `AllowedLociKey`, `UsePrecomputedGenotypeSets` (the resolved value),
-  `UsePrecomputedGenotypeSetsSource` (`Request`, or `FeatureFlag` when the mode decided), `PrecomputeMode`,
+- Properties: `SearchRequestId`, `AllowedLociKey`, `UsePrecomputedGenotypeSets` (the value on the request),
   `MatchingAlgorithmDataRefreshRecordId`, `PatientGenotypeSetSource` (see below).
 - Metrics: `DonorCount` (donor inputs), `DonorIdCount` (donors), `PrecomputedCount`, one count for each outcome in the
   table above, and `StoredCount`, `StoreSkippedDonorChanged`, `StoreSkippedDatabaseChanged` (in donors).
@@ -431,13 +445,13 @@ customEvents
 ## Precomputed patient genotype set (search)
 Without this, each match prediction batch imputes the patient again, so a search with N batches imputes the same patient
 N times. Instead, the patient's set is stored once per search, and each batch decodes it (ATL-426). It follows the same
-mode, request override and database rules as the donor sets above.
+request value and database rules as the donor sets above.
 
 ### The warm step, once per search
 Before the batches are uploaded, `Atlas.Functions` (`MatchPredictionInputBuilder`, for both the sequential and the
 parallel path, and for repeat search) runs `PatientGenotypeSetWarmer`:
 1. If matching found no donors, it stops: there are no batches to use the set. A repeat search often has no new
-   donors. If the precomputed path is off for the search (the mode table above), it stops too.
+   donors. If the precomputed path is off for the search (the table above), it stops too.
 2. It finds the patient's haplotype frequency set, with the same lookup the live path uses.
 3. It builds the key `(typing key, frequency set id, allowed loci key)`. This is the same key a donor with the same typing
    and frequency set has, so the two share one stored row.
@@ -469,14 +483,13 @@ when all of these hold; otherwise it computes the patient live, as before. Batch
 | `DecodeFailed` | The stored row could not be decoded. |
 | `UncoveredAllowedLoci`, `ActiveDatabaseChanged`, `ActiveDatabaseUnknown`, `ReadFailed`, `PrecomputeDisabled` | The batch-wide reasons in the donor table above. |
 
-The batch decides the mode again, so changing the mode after the warm step still applies: in `ForceLive` the patient is
-computed live even when the batch has a key.
+The warm step and the batches read the same request value, so they always agree.
 
 ### Logging
 - The warm step sends one event per search, `Precomputed patient genotype set warmed`.
   - Properties: `SearchRequestId`, `Result` (`Hit`, `Created`, `Skipped` or `Failed`), `Reason` (why it was skipped:
     `NoDonors`, `PrecomputeDisabled`, `ActiveDatabaseChanged`, `ActiveDatabaseUnknown` or `UncoveredAllowedLoci`), `AllowedLociKey`,
-    `HaplotypeFrequencySetId`, `PrecomputeMode`, `MatchingAlgorithmDataRefreshRecordId`, and the exception type and message
+    `HaplotypeFrequencySetId`, `MatchingAlgorithmDataRefreshRecordId`, and the exception type and message
     when it failed.
   - Metric: `PatientGenotypeCount`, when the set was computed.
 - Each batch's `Precomputed genotype sets used` event has the property `PatientGenotypeSetSource`.
@@ -486,7 +499,8 @@ SQL can show which stored rows exist, and their key, frequency set and "unrepres
 data, and it cannot make the typing key of a typing. The debug endpoint `POST debug/precompute/genotypeSets/compute`
 on the Data Refresh functions app (`<ENV>-DATA-REFRESH-FUNCTION`, function key needed) does these parts. It can also
 compare the stored rows with a live computation (the parity check, below). This gives the evidence that the stored sets
-are the same as the live sets, before `MatchPrediction:Precompute:Mode` changes from `ForceLive`.
+are the same as the live sets, before the Public API switch (`AtlasFunction:Search:DefaultUsePrecomputedGenotypeSets`)
+is turned on.
 
 **Why the Data Refresh app.** One request can impute up to 80 sets (20 donors, 4 locus combinations), and each frequency
 set that it loads stays in the app's cache for up to an hour. In the matching algorithm app, which runs searches, that

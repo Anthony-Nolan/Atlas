@@ -42,7 +42,6 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
             Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, GenotypeImputationSettings> fetchGenotypeImputationSettings,
-            Func<IServiceProvider, PrecomputedGenotypeSetSettings> fetchPrecomputedGenotypeSetSettings,
             Func<IServiceProvider, string> fetchSqlConnectionString
         )
         {
@@ -54,7 +53,6 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
                 fetchSqlConnectionString);
 
             services.RegisterSettings(fetchNotificationsServiceBusSettings, fetchAzureStorageSettings);
-            services.MakeSettingsAvailableForUse(fetchPrecomputedGenotypeSetSettings);
             services.RegisterSearchServices();
             services.RegisterPrecomputedGenotypeSetServices();
             services.RegisterClientServices(fetchNotificationsServiceBusSettings, fetchApplicationInsightsSettings);

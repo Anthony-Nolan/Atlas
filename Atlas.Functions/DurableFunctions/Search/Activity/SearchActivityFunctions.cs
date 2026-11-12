@@ -307,7 +307,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         public async Task SendMatchPredictionProcessInitiated([ActivityTrigger] MatchPredictionProcessInitiatedParameters parameters)
         {
             await matchPredictionSearchTrackingDispatcher.ProcessInitiation(
-                parameters.SearchIdentifier, parameters.OriginalSearchIdentifier, parameters.InitiationTimeUtc, parameters.IsParallelMatchPrediction);
+                parameters.SearchIdentifier, parameters.OriginalSearchIdentifier, parameters.InitiationTimeUtc, parameters.IsParallelMatchPrediction,
+                parameters.IsPrecomputedMatchPrediction);
         }
 
         [Function(nameof(SendMatchPredictionBatchProcessingStarted))]

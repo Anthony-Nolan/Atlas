@@ -11,5 +11,6 @@ public record MatchPredictionProcessInitiatedParameters
     public Guid? OriginalSearchIdentifier { get; init; }
     public DateTime InitiationTimeUtc { get; init; }
     public bool IsParallelMatchPrediction { get; init; }
+    public bool IsPrecomputedMatchPrediction { get; init; }
 }
 

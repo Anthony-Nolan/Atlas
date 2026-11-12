@@ -100,7 +100,7 @@ internal class MatchPredictionInputBuilderTests
     [TestCase(true)]
     [TestCase(false)]
     [TestCase(null)]
-    public async Task BuildMatchPredictionInputs_PassesUsePrecomputedGenotypeSetsOnUnresolved(bool? usePrecomputedGenotypeSets)
+    public async Task BuildMatchPredictionInputs_PassesOnTheUsePrecomputedGenotypeSetsTheAtlasPublicApiChose(bool? usePrecomputedGenotypeSets)
     {
         var resultSet = BuildResultSet();
         resultSet.SearchRequest.UsePrecomputedGenotypeSets = usePrecomputedGenotypeSets;

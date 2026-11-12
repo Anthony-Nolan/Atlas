@@ -6,7 +6,6 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Public.Models.MatchPrediction;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
-using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
 
@@ -53,7 +52,6 @@ internal class PatientGenotypeSetWarmer : IPatientGenotypeSetWarmer
         Failed
     }
 
-    private readonly PrecomputedGenotypeSetSettings settings;
     private readonly IHaplotypeFrequencyLookupService haplotypeFrequencyService;
     private readonly IGenotypeSetService genotypeSetService;
     private readonly IPrecomputedDonorGenotypeSetReader reader;
@@ -61,14 +59,12 @@ internal class PatientGenotypeSetWarmer : IPatientGenotypeSetWarmer
     private readonly IAtlasLogger logger;
 
     public PatientGenotypeSetWarmer(
-        PrecomputedGenotypeSetSettings settings,
         IHaplotypeFrequencyLookupService haplotypeFrequencyService,
         IGenotypeSetService genotypeSetService,
         IPrecomputedDonorGenotypeSetReader reader,
         IPrecomputedDonorGenotypeSetWriter writer,
         IAtlasLogger logger)
     {
-        this.settings = settings;
         this.haplotypeFrequencyService = haplotypeFrequencyService;
         this.genotypeSetService = genotypeSetService;
         this.reader = reader;
@@ -88,9 +84,8 @@ internal class PatientGenotypeSetWarmer : IPatientGenotypeSetWarmer
                 return null;
             }
 
-            // The same decision the batches make. A batch decides again, so a mode change after this step still wins.
-            var (usePrecomputedGenotypeSets, _) = DonorGenotypeSetSourceResolver.Decide(settings.Mode, request.UsePrecomputedGenotypeSets);
-            if (!usePrecomputedGenotypeSets)
+            // The same decision the batches make, from the request value the Atlas Public API set for the search.
+            if (!DonorGenotypeSetSourceResolver.UsesPrecomputedGenotypeSets(request))
             {
                 SendEvent(request, WarmResult.Skipped, nameof(DonorGenotypeSetSource.PrecomputeDisabled), null, null);
                 return null;
@@ -161,7 +156,6 @@ internal class PatientGenotypeSetWarmer : IPatientGenotypeSetWarmer
                 { "Reason", reason },
                 { "AllowedLociKey", key?.AllowedLociKey },
                 { "HaplotypeFrequencySetId", key?.HaplotypeFrequencySetId.ToString(CultureInfo.InvariantCulture) },
-                { "PrecomputeMode", settings.Mode.ToString() },
                 { "MatchingAlgorithmDataRefreshRecordId", request.MatchingAlgorithmDataRefreshRecordId?.ToString(CultureInfo.InvariantCulture) },
             };
             if (exception != null)

@@ -264,7 +264,8 @@ internal class SearchActivityFunctionsTests
         await functions.SendMatchPredictionProcessInitiated(parameters);
 
         await matchPredictionSearchTrackingDispatcher.Received(1).ProcessInitiation(
-            parameters.SearchIdentifier, parameters.OriginalSearchIdentifier, parameters.InitiationTimeUtc, parameters.IsParallelMatchPrediction);
+            parameters.SearchIdentifier, parameters.OriginalSearchIdentifier, parameters.InitiationTimeUtc, parameters.IsParallelMatchPrediction,
+            parameters.IsPrecomputedMatchPrediction);
     }
 
     [Test]

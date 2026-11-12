@@ -66,6 +66,28 @@ namespace Atlas.SearchTracking.Data.Test.Repositories
                 .Excluding(a => a.SearchRequest));
         }
 
+        [TestCase(true)]
+        [TestCase(false)]
+        [TestCase(null)]
+        public async Task TrackMatchPredictionStartedEvent_SavesTheParallelAndPrecomputedMethods(bool? isPrecomputedMatchPrediction)
+        {
+            const int expectedSearchRequestId = 1;
+            var matchPredictionStartedEvent = new MatchPredictionStartedEvent
+            {
+                SearchIdentifier = new Guid("aaaaaaaa-bbbb-cccc-dddd-000000000000"),
+                InitiationTimeUtc = defaultMatchPrediction.InitiationTimeUtc,
+                StartTimeUtc = defaultMatchPrediction.StartTimeUtc,
+                IsParallelMatchPrediction = true,
+                IsPrecomputedMatchPrediction = isPrecomputedMatchPrediction
+            };
+
+            await matchPredictionRepository.TrackStartedEvent(matchPredictionStartedEvent);
+
+            var actualMatchPredictionEntity = await matchPredictionRepository.GetSearchRequestMatchPredictionById(expectedSearchRequestId);
+            actualMatchPredictionEntity.IsParallelMatchPrediction.Should().BeTrue();
+            actualMatchPredictionEntity.IsPrecomputedMatchPrediction.Should().Be(isPrecomputedMatchPrediction);
+        }
+
         [TestCase(SearchTrackingEventType.MatchPredictionPersistingResultsEnded, nameof(SearchRequestMatchPrediction.PersistingResults_EndTimeUtc))]
         [TestCase(SearchTrackingEventType.MatchPredictionPersistingResultsStarted, nameof(SearchRequestMatchPrediction.PersistingResults_StartTimeUtc))]
         [TestCase(SearchTrackingEventType.MatchPredictionRunningBatchesEnded, nameof(SearchRequestMatchPrediction.AlgorithmCore_RunningBatches_EndTimeUtc))]
