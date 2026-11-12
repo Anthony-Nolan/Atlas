@@ -332,17 +332,6 @@ variable "MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT" {
   description = "Genotype-truncation limit: the maximum number of expanded genotypes retained per patient/donor before match calculation. Must be identical across every host that runs imputation; increasing it beyond 2000 trades performance/memory for accuracy."
 }
 
-variable "MATCH_PREDICTION_PRECOMPUTE_MODE" {
-  type        = string
-  default     = "ForceLive"
-  description = "Controls whether search-time match prediction reads precomputed donor genotype sets. Shared by the Atlas Functions app and the Match Prediction Worker. ForceLive: always live. DefaultLive: live unless the search request sets UsePrecomputedGenotypeSets=true. DefaultPrecomputed: precomputed unless the request sets it to false."
-
-  validation {
-    condition     = contains(["ForceLive", "DefaultLive", "DefaultPrecomputed"], var.MATCH_PREDICTION_PRECOMPUTE_MODE)
-    error_message = "MATCH_PREDICTION_PRECOMPUTE_MODE must be one of: ForceLive, DefaultLive, DefaultPrecomputed."
-  }
-}
-
 variable "MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS" {
   type        = number
   default     = 3
@@ -586,11 +575,11 @@ variable "MATCHING_DEBUG_ALLOW_PRECOMPUTE_WRITES" {
 variable "MATCHING_DONOR_GENOTYPE_PRECOMPUTATION_ENABLED" {
   type        = bool
   default     = true
-  description = "Turns donor genotype set precomputation on or off for the installation: Data Refresh stage 65 and the precomputation of imported donors. Set it to false in an installation that does not use match prediction. Where it is false, MATCH_PREDICTION_PRECOMPUTE_MODE must be ForceLive. A change does not delete stored sets; the next data refresh removes them."
+  description = "Turns donor genotype set precomputation on or off for the installation: Data Refresh stage 65 and the precomputation of imported donors. Set it to false in an installation that does not use match prediction. Where it is false, searches must not use precomputed sets: DEFAULT_USE_PRECOMPUTED_GENOTYPE_SETS must be false, or USE_PRECOMPUTED_GENOTYPE_SETS_REQUEST_PERCENTAGE must be 0. A change does not delete stored sets; the next data refresh removes them."
 
   validation {
-    condition     = var.MATCHING_DONOR_GENOTYPE_PRECOMPUTATION_ENABLED || var.MATCH_PREDICTION_PRECOMPUTE_MODE == "ForceLive"
-    error_message = "MATCH_PREDICTION_PRECOMPUTE_MODE must be ForceLive when MATCHING_DONOR_GENOTYPE_PRECOMPUTATION_ENABLED is false."
+    condition     = var.MATCHING_DONOR_GENOTYPE_PRECOMPUTATION_ENABLED || !var.DEFAULT_USE_PRECOMPUTED_GENOTYPE_SETS || var.USE_PRECOMPUTED_GENOTYPE_SETS_REQUEST_PERCENTAGE <= 0
+    error_message = "When MATCHING_DONOR_GENOTYPE_PRECOMPUTATION_ENABLED is false, DEFAULT_USE_PRECOMPUTED_GENOTYPE_SETS must be false or USE_PRECOMPUTED_GENOTYPE_SETS_REQUEST_PERCENTAGE must be 0."
   }
 }
 
@@ -744,6 +733,23 @@ variable "PARALLEL_MATCH_PREDICTION_REQUEST_PERCENTAGE" {
   type        = number
   default     = 0
   description = "Canary throttle (0-100) applied only when DEFAULT_PARALLEL_MATCH_PREDICTION is true: this percentage of searches take the parallel ACA Worker path and the rest fall back to the legacy sequential Durable orchestrator path. No effect when the master switch is false. Defaults to 0 (no searches take the parallel path)."
+}
+
+variable "DEFAULT_USE_PRECOMPUTED_GENOTYPE_SETS" {
+  type        = bool
+  default     = false
+  description = "The switch for precomputed donor genotype sets in match prediction, read by the Atlas Public API when it accepts a search. When false, every search is computed live. When true, USE_PRECOMPUTED_GENOTYPE_SETS_REQUEST_PERCENTAGE of searches use the stored sets. A change affects new searches only. A search request that sets UsePrecomputedGenotypeSets (QA only) keeps its value."
+}
+
+variable "USE_PRECOMPUTED_GENOTYPE_SETS_REQUEST_PERCENTAGE" {
+  type        = number
+  default     = 0
+  description = "The share (0-100) of searches that use precomputed donor genotype sets while DEFAULT_USE_PRECOMPUTED_GENOTYPE_SETS is true. The rest are computed live. No effect when the switch is false. Defaults to 0, which is also off."
+
+  validation {
+    condition     = var.USE_PRECOMPUTED_GENOTYPE_SETS_REQUEST_PERCENTAGE >= 0 && var.USE_PRECOMPUTED_GENOTYPE_SETS_REQUEST_PERCENTAGE <= 100
+    error_message = "USE_PRECOMPUTED_GENOTYPE_SETS_REQUEST_PERCENTAGE must be between 0 and 100."
+  }
 }
 
 variable "STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_BATCHSIZE" {

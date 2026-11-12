@@ -14,7 +14,6 @@ using Atlas.MatchPrediction.ExternalInterface.ResultsUpload;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.CacheWarming;
 using Atlas.MatchPrediction.Services.MatchProbability;
-using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Services.Precompute;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
@@ -55,7 +54,7 @@ namespace Atlas.MatchPrediction.Test.Services
                 patientGenotypeSetProvider, resultUploader, logger, serviceScopeFactory, genotypeSetSourceResolver, genotypeSetBatchCompleter,
                 cacheWarmer);
 
-            batchContext = DonorGenotypeSetBatchContext.Disabled(UsePrecomputedGenotypeSetsSource.FeatureFlag, PrecomputedGenotypeSetMode.ForceLive, null);
+            batchContext = DonorGenotypeSetBatchContext.Disabled(null);
             genotypeSetSourceResolver.Resolve(default, default).ReturnsForAnyArgs(batchContext);
 
             var patientGenotypeSet = new SubjectGenotypeSet(false, new List<GenotypeAtDesiredResolutions>(), 0.1m);

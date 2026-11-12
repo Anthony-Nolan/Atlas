@@ -256,7 +256,9 @@ When it is `false`:
   and continues with stage 70.
 - A donor import does not precompute the donors that it writes: the Donor Management app, and the queued donor updates
   of stage 80.
-- Search imputes every donor live. Keep `MatchPrediction:Precompute:Mode` at `ForceLive`.
+- Search imputes every donor live. Keep the Public API switch `AtlasFunction:Search:DefaultUsePrecomputedGenotypeSets`
+  at `false`, or its share `AtlasFunction:Search:UsePrecomputedGenotypeSetsRequestPercentage` at `0`. Terraform checks
+  this.
 
 A change of the setting does not delete the stored sets. They are deleted as before, whatever the value: the data
 deletion (stage 20) removes all the sets of the refreshed database, and a donor update removes the sets of that donor.

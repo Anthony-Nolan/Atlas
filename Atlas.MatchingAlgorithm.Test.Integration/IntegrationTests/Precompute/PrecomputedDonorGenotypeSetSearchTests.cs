@@ -19,7 +19,6 @@ using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
-using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
@@ -133,7 +132,10 @@ internal class PrecomputedDonorGenotypeSetSearchTests
         // The set that the batch chooses for a donor input before it reads, as the live path chooses it below.
         frequencySetLookup = Substitute.For<IHaplotypeFrequencyLookupService>();
         frequencySetLookup.GetSingleHaplotypeFrequencySet(default).ReturnsForAnyArgs(new HaplotypeFrequencySet { Id = DonorFrequencySetId });
-        resolver = Resolver(PrecomputedGenotypeSetMode.DefaultPrecomputed);
+        resolver = new DonorGenotypeSetSourceResolver(
+            new PrecomputedDonorGenotypeSetReader(historyRepository, repositoryFactory),
+            frequencySetLookup,
+            logger);
         completer = new DonorGenotypeSetBatchCompleter(writer, logger);
 
         storedSet = SetWithGenotypes(2, 0.5m);
@@ -244,18 +246,15 @@ internal class PrecomputedDonorGenotypeSetSearchTests
         }
     }
 
-    [TestCase(PrecomputedGenotypeSetMode.ForceLive, true, MatchedDatabase.Active, DonorGenotypeSetSource.PrecomputeDisabled)]
-    [TestCase(PrecomputedGenotypeSetMode.DefaultLive, null, MatchedDatabase.Active, DonorGenotypeSetSource.PrecomputeDisabled)]
-    [TestCase(PrecomputedGenotypeSetMode.DefaultPrecomputed, false, MatchedDatabase.Active, DonorGenotypeSetSource.PrecomputeDisabled)]
-    [TestCase(PrecomputedGenotypeSetMode.DefaultPrecomputed, null, MatchedDatabase.Unknown, DonorGenotypeSetSource.ActiveDatabaseUnknown)]
-    [TestCase(PrecomputedGenotypeSetMode.DefaultPrecomputed, null, MatchedDatabase.NoLongerActive, DonorGenotypeSetSource.ActiveDatabaseChanged)]
+    [TestCase(null, MatchedDatabase.Active, DonorGenotypeSetSource.PrecomputeDisabled)]
+    [TestCase(false, MatchedDatabase.Active, DonorGenotypeSetSource.PrecomputeDisabled)]
+    [TestCase(true, MatchedDatabase.Unknown, DonorGenotypeSetSource.ActiveDatabaseUnknown)]
+    [TestCase(true, MatchedDatabase.NoLongerActive, DonorGenotypeSetSource.ActiveDatabaseChanged)]
     public async Task MatchPredictionBatch_WhenTheBatchCannotUseStoredRows_ComputesTheDonorLive_AndStoresNothing(
-        PrecomputedGenotypeSetMode mode,
         bool? usePrecomputedGenotypeSets,
         MatchedDatabase matchedDatabase,
         DonorGenotypeSetSource expectedSource)
     {
-        resolver = Resolver(mode);
         var searchTyping = Typing("search");
         var donorId = await InsertDonor(searchTyping);
         await Store(donorId, searchTyping, storedSet);
@@ -488,13 +487,6 @@ internal class PrecomputedDonorGenotypeSetSearchTests
         }
     }
 
-    private IDonorGenotypeSetSourceResolver Resolver(PrecomputedGenotypeSetMode mode) =>
-        new DonorGenotypeSetSourceResolver(
-            new PrecomputedGenotypeSetSettings { Mode = mode },
-            new PrecomputedDonorGenotypeSetReader(historyRepository, repositoryFactory),
-            frequencySetLookup,
-            logger);
-
     /// <summary>One donor input, with the ids that share its typing, matched on the active database.</summary>
     private SingleDonorMatchProbabilityInput Input(PhenotypeInfo<string> searchTyping, params int[] donorIds) =>
         InputOfRegistry(searchTyping, RegistryCode, donorIds);
@@ -506,6 +498,7 @@ internal class PrecomputedDonorGenotypeSetSearchTests
             SearchRequestId = Guid.NewGuid().ToString(),
             MatchingAlgorithmHlaNomenclatureVersion = activeRecord.HlaNomenclatureVersion,
             MatchingAlgorithmDataRefreshRecordId = activeRecord.Id,
+            UsePrecomputedGenotypeSets = true,
             PatientHla = Typing("patient").ToPhenotypeInfoTransfer(),
             Donor = new DonorInput
             {

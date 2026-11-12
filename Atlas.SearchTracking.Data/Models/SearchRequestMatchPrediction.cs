@@ -44,5 +44,11 @@ namespace Atlas.SearchTracking.Data.Models
         public bool? IsSuccessful { get; set; }
 
         public bool IsParallelMatchPrediction { get; set; }
+
+        /// <summary>
+        /// The method the search asked for: true for precomputed genotype sets, false for live calculation. Some donors
+        /// can still be calculated live. Null on rows from before the column was added.
+        /// </summary>
+        public bool? IsPrecomputedMatchPrediction { get; set; }
     }
 }

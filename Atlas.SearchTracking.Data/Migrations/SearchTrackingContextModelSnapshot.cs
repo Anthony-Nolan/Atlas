@@ -18,7 +18,7 @@ namespace Atlas.SearchTracking.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("SearchTracking")
-                .HasAnnotation("ProductVersion", "6.0.3")
+                .HasAnnotation("ProductVersion", "10.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -172,6 +172,9 @@ namespace Atlas.SearchTracking.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("IsParallelMatchPrediction")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("IsPrecomputedMatchPrediction")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("IsSuccessful")

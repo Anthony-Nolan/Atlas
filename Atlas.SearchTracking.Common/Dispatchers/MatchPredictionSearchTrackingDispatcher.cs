@@ -6,7 +6,7 @@ namespace Atlas.SearchTracking.Common.Dispatchers
 {
     public interface IMatchPredictionSearchTrackingDispatcher
     {
-        Task ProcessInitiation(Guid searchIdentifier, Guid? originalSearchIdentifier, DateTime initiationTime, bool isParallelMatchPrediction);
+        Task ProcessInitiation(Guid searchIdentifier, Guid? originalSearchIdentifier, DateTime initiationTime, bool isParallelMatchPrediction, bool isPrecomputedMatchPrediction);
 
         Task ProcessPrepareBatchesStarted(Guid searchIdentifier, Guid? originalSearchIdentifier);
 
@@ -29,7 +29,7 @@ namespace Atlas.SearchTracking.Common.Dispatchers
     public class MatchPredictionSearchTrackingDispatcher(ISearchTrackingServiceBusClient searchTrackingServiceBusClient)
         : IMatchPredictionSearchTrackingDispatcher
     {
-        public async Task ProcessInitiation(Guid searchIdentifier, Guid? originalSearchIdentifier, DateTime initiationTime, bool isParallelMatchPrediction)
+        public async Task ProcessInitiation(Guid searchIdentifier, Guid? originalSearchIdentifier, DateTime initiationTime, bool isParallelMatchPrediction, bool isPrecomputedMatchPrediction)
         {
             var matchPredictionStartedEvent = new MatchPredictionStartedEvent
             {
@@ -37,7 +37,8 @@ namespace Atlas.SearchTracking.Common.Dispatchers
                 OriginalSearchIdentifier = originalSearchIdentifier,
                 InitiationTimeUtc = initiationTime,
                 StartTimeUtc = DateTime.UtcNow,
-                IsParallelMatchPrediction = isParallelMatchPrediction
+                IsParallelMatchPrediction = isParallelMatchPrediction,
+                IsPrecomputedMatchPrediction = isPrecomputedMatchPrediction
             };
 
             await searchTrackingServiceBusClient.PublishSearchTrackingEvent(

@@ -649,6 +649,23 @@ If a search has not yet returned results after a reasonable period of time, ther
         * (a) reducing the number of concurrent activity functions
         * (b) increasing the amount of memory available by scaling up the app service plan
 
+### Repeat search or rerun probabilities differ from the original search
+
+Match prediction can read precomputed (stored) donor genotype sets, or compute every donor live. The Atlas Public API
+chooses the method once for each search, when it accepts the search (ATL-535). So a search and a later search on the
+same patient can use different methods:
+- A repeat search is a new search for the Public API. Its method is chosen again, from the switch
+  (`AtlasFunction:Search:DefaultUsePrecomputedGenotypeSets`) and the share
+  (`AtlasFunction:Search:UsePrecomputedGenotypeSetsRequestPercentage`). It does not reuse the method of the original
+  search.
+- A rerun with `Atlas.Utilities.RerunFailedSearches` is always computed live. The utility clears the stored value, and
+  the rerun does not pass through the Public API.
+
+The stored sets should be the same as the live sets, but the probabilities can differ slightly, for this reason
+alone. To see the method of a search, read `IsPrecomputedMatchPrediction` in `[SearchTracking].[SearchRequestMatchPredictions]`
+(`NULL` for searches from before 4.1), or the `Precomputed genotype sets method chosen` event in Application Insights.
+See [the Match Prediction README](README_MatchPredictionAlgorithm.md#switching-it-on-and-off).
+
 ### Search logs
 
 [Log files](/Atlas.Client.Models/Search/Results/SearchLogs.cs) named `{search-request-id}-log.json` are uploaded to `matching-algorithm-results` and `atlas-search-results` containers. 

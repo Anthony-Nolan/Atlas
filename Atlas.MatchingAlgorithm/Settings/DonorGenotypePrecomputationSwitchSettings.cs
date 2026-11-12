@@ -7,7 +7,8 @@ namespace Atlas.MatchingAlgorithm.Settings;
 /// </summary>
 /// <remarks>
 /// An installation that does not use match prediction does not need the genotype sets. Turn it off there. Search then
-/// imputes every donor live, so also keep <c>MatchPrediction:Precompute:Mode</c> at <c>ForceLive</c>.
+/// imputes every donor live, so also keep the Atlas Public API switch
+/// <c>AtlasFunction:Search:DefaultUsePrecomputedGenotypeSets</c> at <c>false</c> (or its share at <c>0</c>).
 /// </remarks>
 public class DonorGenotypePrecomputationSwitchSettings
 {

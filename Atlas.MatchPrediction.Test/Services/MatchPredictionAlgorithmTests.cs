@@ -15,7 +15,6 @@ using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.CacheWarming;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
-using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Services.Precompute;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
@@ -63,7 +62,7 @@ namespace Atlas.MatchPrediction.Test.Services
                 patientGenotypeSetProvider,
                 cacheWarmer);
 
-            batchContext = DonorGenotypeSetBatchContext.Disabled(UsePrecomputedGenotypeSetsSource.FeatureFlag, PrecomputedGenotypeSetMode.ForceLive, null);
+            batchContext = DonorGenotypeSetBatchContext.Disabled(null);
             genotypeSetSourceResolver.Resolve(default, default).ReturnsForAnyArgs(batchContext);
 
             haplotypeFrequencyService.GetSingleHaplotypeFrequencySet(default)
@@ -241,8 +240,6 @@ namespace Atlas.MatchPrediction.Test.Services
         public async Task RunMatchPredictionAlgorithmBatch_WhenEveryDonorAndThePatientHaveAStoredRow_DoesNotWarmTheCaches()
         {
             var coveringContext = DonorGenotypeSetBatchContext.Enabled(
-                UsePrecomputedGenotypeSetsSource.Request,
-                PrecomputedGenotypeSetMode.DefaultLive,
                 42,
                 new PrecomputedDonorGenotypeSetLookup(
                     "ABCDrb1Dqb1",

@@ -110,7 +110,6 @@ resource "azurerm_windows_function_app" "atlas_function" {
     "HaplotypeFrequencySetCache:SetCacheExpiryMinutes"          = var.MATCH_PREDICTION_SET_CACHE_EXPIRY_MINUTES
 
     "MatchPrediction:GenotypeImputation:MaximumExpandedGenotypesPerInput" = var.MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT
-    "MatchPrediction:Precompute:Mode"                                     = var.MATCH_PREDICTION_PRECOMPUTE_MODE
 
     "MatchPrediction:AzureStorage:ConnectionString"                    = local.kv_ref["azure-storage-connection-string"]
     "MatchPrediction:AzureStorage:MatchPredictionResultsBlobContainer" = module.match_prediction.storage.match_prediction_results_container_name
@@ -210,9 +209,11 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
   app_settings = {
     "ApplicationInsights:LogLevel" = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
-    "AutoMapper:LicenseKey"                                         = var.AUTOMAPPER_LICENSE_KEY
-    "AtlasFunction:Search:DefaultParallelMatchPrediction"           = var.DEFAULT_PARALLEL_MATCH_PREDICTION
-    "AtlasFunction:Search:ParallelMatchPredictionRequestPercentage" = var.PARALLEL_MATCH_PREDICTION_REQUEST_PERCENTAGE
+    "AutoMapper:LicenseKey"                                            = var.AUTOMAPPER_LICENSE_KEY
+    "AtlasFunction:Search:DefaultParallelMatchPrediction"              = var.DEFAULT_PARALLEL_MATCH_PREDICTION
+    "AtlasFunction:Search:ParallelMatchPredictionRequestPercentage"    = var.PARALLEL_MATCH_PREDICTION_REQUEST_PERCENTAGE
+    "AtlasFunction:Search:DefaultUsePrecomputedGenotypeSets"           = var.DEFAULT_USE_PRECOMPUTED_GENOTYPE_SETS
+    "AtlasFunction:Search:UsePrecomputedGenotypeSetsRequestPercentage" = var.USE_PRECOMPUTED_GENOTYPE_SETS_REQUEST_PERCENTAGE
 
     "MatchingAlgorithmFunction:BaseUrl" = module.matching_algorithm.function_app.base_url
     "MatchingAlgorithmFunction:ApiKey"  = module.matching_algorithm.function_app.api_key

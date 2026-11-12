@@ -40,7 +40,6 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
                 _ => new NotificationsServiceBusSettings(),
                 AzureStorageSettingsReader,
                 _ => new GenotypeImputationSettings(),
-                _ => new PrecomputedGenotypeSetSettings(),
                 ConnectionStringReader(MatchPredictionSqlConnectionString)
             );
             services.RegisterIntegrationTestServices();

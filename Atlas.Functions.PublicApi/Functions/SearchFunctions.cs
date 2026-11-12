@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Functions.PublicApi.Models;
 using Atlas.Functions.PublicApi.Settings;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
@@ -21,23 +24,49 @@ namespace Atlas.Functions.PublicApi.Functions
 {
     public class SearchFunctions
     {
+        internal const string PrecomputedGenotypeSetsChosenEventName = "Precomputed genotype sets method chosen";
+
         private readonly ISearchDispatcher searchDispatcher;
         private readonly IRepeatSearchDispatcher repeatSearchDispatcher;
         private readonly IMatchPredictionValidator matchPredictionValidator;
         private readonly bool defaultParallelMatchPrediction;
         private readonly int parallelMatchPredictionRequestPercentage;
+        private readonly bool defaultUsePrecomputedGenotypeSets;
+        private readonly int usePrecomputedGenotypeSetsRequestPercentage;
+        private readonly IAtlasLogger logger;
+        private readonly Func<int, int> nextRandom;
 
         public SearchFunctions(
             ISearchDispatcher searchDispatcher,
             IRepeatSearchDispatcher repeatSearchDispatcher,
             IMatchPredictionValidator matchPredictionValidator,
-            IOptions<SearchFunctionSettings> searchFunctionSettings)
+            IOptions<SearchFunctionSettings> searchFunctionSettings,
+            IAtlasLogger logger)
+            : this(searchDispatcher, repeatSearchDispatcher, matchPredictionValidator, searchFunctionSettings, logger, Random.Shared.Next)
+        {
+        }
+
+        /// <param name="nextRandom">
+        /// Returns a number from 0 to the given maximum, not including the maximum. Tests pass a fixed number, to check
+        /// a share between 1 and 99.
+        /// </param>
+        internal SearchFunctions(
+            ISearchDispatcher searchDispatcher,
+            IRepeatSearchDispatcher repeatSearchDispatcher,
+            IMatchPredictionValidator matchPredictionValidator,
+            IOptions<SearchFunctionSettings> searchFunctionSettings,
+            IAtlasLogger logger,
+            Func<int, int> nextRandom)
         {
             this.searchDispatcher = searchDispatcher;
             this.repeatSearchDispatcher = repeatSearchDispatcher;
             this.matchPredictionValidator = matchPredictionValidator;
             defaultParallelMatchPrediction = searchFunctionSettings.Value.DefaultParallelMatchPrediction;
             parallelMatchPredictionRequestPercentage = Math.Clamp(searchFunctionSettings.Value.ParallelMatchPredictionRequestPercentage, 0, 100);
+            defaultUsePrecomputedGenotypeSets = searchFunctionSettings.Value.DefaultUsePrecomputedGenotypeSets;
+            usePrecomputedGenotypeSetsRequestPercentage = Math.Clamp(searchFunctionSettings.Value.UsePrecomputedGenotypeSetsRequestPercentage, 0, 100);
+            this.logger = logger;
+            this.nextRandom = nextRandom;
         }
 
         [Function(nameof(Search))]
@@ -62,8 +91,10 @@ namespace Atlas.Functions.PublicApi.Functions
             }
 
             ResolveParallelMatchPrediction(searchRequest);
+            var precomputedGenotypeSetsSource = ResolveUsePrecomputedGenotypeSets(searchRequest);
 
             var id = await searchDispatcher.DispatchSearch(searchRequest);
+            LogPrecomputedGenotypeSetsChoice(searchRequest, precomputedGenotypeSetsSource, id, null);
             await searchDispatcher.DispatchSearchTrackingEvent(searchRequest, id);
 
             return new JsonResult(new SearchInitiationResponse {SearchIdentifier = id});
@@ -91,8 +122,12 @@ namespace Atlas.Functions.PublicApi.Functions
             }
 
             ResolveParallelMatchPrediction(repeatSearchRequest.SearchRequest);
+            // Chosen again: a repeat search does not reuse the method of its original search.
+            var precomputedGenotypeSetsSource = ResolveUsePrecomputedGenotypeSets(repeatSearchRequest.SearchRequest);
 
             var repeatSearchId = await repeatSearchDispatcher.DispatchSearch(repeatSearchRequest);
+            LogPrecomputedGenotypeSetsChoice(
+                repeatSearchRequest.SearchRequest, precomputedGenotypeSetsSource, repeatSearchRequest.OriginalSearchId, repeatSearchId);
             await repeatSearchDispatcher.DispatchSearchTrackingEvent(repeatSearchRequest, repeatSearchId);
 
             return new JsonResult(new SearchInitiationResponse
@@ -118,7 +153,57 @@ namespace Atlas.Functions.PublicApi.Functions
         {
             searchRequest.ParallelMatchPrediction ??=
                 defaultParallelMatchPrediction
-                && Random.Shared.Next(100) < parallelMatchPredictionRequestPercentage;
+                && nextRandom(100) < parallelMatchPredictionRequestPercentage;
+        }
+
+        /// <summary>
+        /// Resolves <see cref="SearchRequest.UsePrecomputedGenotypeSets"/> once for the search. A value named on the
+        /// request is kept, in either direction. An empty value is chosen from the switch
+        /// (<see cref="SearchFunctionSettings.DefaultUsePrecomputedGenotypeSets"/>) and the share
+        /// (<see cref="SearchFunctionSettings.UsePrecomputedGenotypeSetsRequestPercentage"/>): when the switch is off, or
+        /// the share is 0, the search calculates live.
+        /// </summary>
+        /// <remarks>
+        /// Match prediction uses the resolved value and does not decide again, so a change of the settings affects new
+        /// searches only.
+        /// </remarks>
+        private UsePrecomputedGenotypeSetsSource ResolveUsePrecomputedGenotypeSets(SearchRequest searchRequest)
+        {
+            if (searchRequest.UsePrecomputedGenotypeSets.HasValue)
+            {
+                return UsePrecomputedGenotypeSetsSource.Request;
+            }
+
+            searchRequest.UsePrecomputedGenotypeSets =
+                defaultUsePrecomputedGenotypeSets
+                && nextRandom(100) < usePrecomputedGenotypeSetsRequestPercentage;
+            return UsePrecomputedGenotypeSetsSource.FeatureFlag;
+        }
+
+        /// <remarks>
+        /// The source shows when a client names the value: production clients are expected to leave it empty.
+        /// Logging must never fail the request.
+        /// </remarks>
+        private void LogPrecomputedGenotypeSetsChoice(
+            SearchRequest searchRequest,
+            UsePrecomputedGenotypeSetsSource source,
+            string searchRequestId,
+            string repeatSearchRequestId)
+        {
+            try
+            {
+                logger.SendEvent(PrecomputedGenotypeSetsChosenEventName, props: new Dictionary<string, string>
+                {
+                    { "SearchRequestId", searchRequestId },
+                    { "RepeatSearchRequestId", repeatSearchRequestId },
+                    { "UsePrecomputedGenotypeSets", searchRequest.UsePrecomputedGenotypeSets.ToString() },
+                    { "UsePrecomputedGenotypeSetsSource", source.ToString() },
+                });
+            }
+            catch
+            {
+                // The search is already dispatched; a lost event must not fail the request.
+            }
         }
 
         private static IActionResult BuildValidationResponse(ValidationResult validationResult) =>
