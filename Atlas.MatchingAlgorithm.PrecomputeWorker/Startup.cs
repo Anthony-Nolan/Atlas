@@ -50,8 +50,9 @@ public static class Startup
         services.AddScoped<StaticallyChosenTransientSqlConnectionStringProviderFactory>();
         services.AddScoped<IStaticallyChosenDatabaseRepositoryFactory, StaticallyChosenDatabaseRepositoryFactory>();
 
-        // The persistent database, only to read the data refresh record of each message. Nothing reads it when the host
-        // starts, so the worker starts outside a data refresh too.
+        // The persistent database, only to read the data refresh records: the open ones, for the cache warm-up before the
+        // first message, and the record of each message. Nothing reads it when the host is created, so the worker starts
+        // outside a data refresh too.
         services.AddScoped(sp => new ContextFactory().Create(ConnectionStringReader("PersistentSql")(sp)));
         services.AddScoped<IDataRefreshHistoryRepository, DataRefreshHistoryRepository>();
 
@@ -80,6 +81,7 @@ public static class Startup
         });
 
         services.AddSingleton<DonorGenotypePrecomputationMessageHandler>();
+        services.AddSingleton<IDonorGenotypePrecomputationCacheWarmer, DonorGenotypePrecomputationCacheWarmer>();
 
         services.AddHealthChecks()
             .AddCheck("self", () => HealthCheckResult.Healthy(), tags: ["live", "ready"]);

@@ -78,6 +78,12 @@ Feature flags permit greater control over the release of new features (see this 
   * Search tracking events are not sampled, also when the app samples its other telemetry.
   * The events are sent at the `Info` level: an app whose `ApplicationInsights:LogLevel` is above `Info` does not send them.
 
+#### Data Refresh
+* E: Each replica of the donor genotype precomputation worker (stage 65) now loads the HLA metadata lookups that imputation uses before it takes its first batch, at the nomenclature version of the data refresh and at the version of each active haplotype frequency set. Before, a new replica read them one row at a time during its first batches. If the load fails, the worker logs a warning and starts as before. The worker waits for the load for at most 2 minutes: then it logs a warning and starts, and the lookups continue to load in the background. With no data refresh in progress, it loads nothing. See [the stage](/README_MatchingAlgorithm.md#how-the-stage-works).
+
+#### Matching Algorithm
+* E: The matching algorithm and donor management functions apps now load every HLA metadata lookup table of the active nomenclature version except the allele groups when they start and each night (`UpdateHlaMetadataDictionaryCache`), not only the allele names. Before, an app loaded the other tables only when it first read them, and read single rows until a table was loaded. So each app now keeps more lookups in memory, also some that it does not read: the scoring, DPB1 TCE group and serology to alleles lookups in donor management, and the small g group and G group to P group lookups in the matching algorithm app. See [Caching](/README_HlaMetadataDictionary.md#caching).
+
 ### 4.1.0
 
 #### Debug

@@ -131,6 +131,19 @@ The run-time consumer of the HMD doesn't need to know much of those details thou
 
 `IHlaMetadataCacheControl` has three warm-up methods: `PreWarmAllCaches` (every table except allele groups, used by the data refresh), `PreWarmAlleleNameCache`, and `PreWarmMatchPredictionCaches` (the tables live imputation reads for almost every subject; see `README_MatchPredictionAlgorithm.md`, "Cache warm-up for live imputation").
 
+Until a table is in the cache, each lookup in it is a single-row Table Storage read (at most 16 at a time for each table), and the first lookup starts a load of the whole table in the background. So the apps that match or impute warm their tables before they do their work:
+
+| App | When | Warm-up |
+|---|---|---|
+| Matching Algorithm Functions and Donor Management | On start-up, and each night (`CachingFunctions`, at 02:00 and 03:00) | `PreWarmAllCaches`, at the active version |
+| Precompute worker (`Atlas.MatchingAlgorithm.PrecomputeWorker`) | Before it takes its first message, for at most 2 minutes | `PreWarmMatchPredictionCaches`, at the version of each open data refresh record and of each active haplotype frequency set |
+| Match prediction, on the durable and the parallel path | For each search batch that imputes live | `PreWarmMatchPredictionCaches`, at the versions that the batch uses |
+| Data refresh (`HlaProcessor`) | Before it processes the donor HLA | `PreWarmAllCaches`, at the version of the refresh |
+
+The warm-ups of the precompute worker and of match prediction are best effort: when one fails, a warning is logged, and the lookups read single rows. The precompute worker waits for its warm-up for at most 2 minutes. Then it logs a warning and starts, and the tables continue to load in the background. Donor Management also precomputes the genotype sets of the donors that it imports. For this it also reads the match prediction tables at the version of each haplotype frequency set. These tables are not warmed: they load when they are first used.
+
+The timers of the Matching Algorithm Functions and Donor Management apps do not warm the allele groups, because `PreWarmAllCaches` does not load them. These apps read the allele groups table only to look up P, G and small g group typings. On DEV, in the 14 days to 12 November 2026, when the timers warmed only the allele names, Donor Management did not read the table, and the Matching Algorithm Functions app made 124 single-row reads in it. In the same time, that app made 60,111 single-row reads in the matching and scoring tables, which the timers now warm. So the allele groups table loads when it is first used.
+
 #### Cache Invalidation
 Every in-memory cache of dictionary data is keyed by HLA Nomenclature version and nothing else - the whole-table caches in `TableClientRepositoryBase`, the individual lookup outcomes in `MetadataServiceBase`, and the objects the `Factory` hands out. Recreating the dictionary at a version that is *already* active therefore changes the stored data without changing anything a running process keys on, and that process would go on serving its old snapshot until the cache expired (24h) or the worker restarted. That is how a donor carrying newly-added lookup data came to be silently skipped during matching (ATL-395).
 
@@ -170,7 +183,7 @@ The logic classes that other projects should be using are the following.
   * This object exposes all of the methods for looking up details of a given HLA string.
 * `IHlaMetadataCacheControl`
   * As referenced earlier, the HMD caches all its data in memory. By default the first call will cache the relevant data it needs, which can be quite slow. If you want to ensure that your first usage of the HMD is quick then you can use the `CacheControl` to pre-warm the memory caches.
-  * Either warm everything, with `.PreWarmAllCaches()` or just target `.PreWarmAlleleNameCache()` if desired.
+  * Warm everything with `.PreWarmAllCaches()`, the tables that match prediction reads with `.PreWarmMatchPredictionCaches()`, or only the allele names with `.PreWarmAlleleNameCache()`.
   * Note that pre-warming only fills empty cache slots - it does not replace data already cached. To drop stale data, see `IHlaMetadataCacheInvalidator`.
 * `IHlaMetadataCacheInvalidator`
   * The counterpart to `CacheControl`: `.InvalidateCaches(hlaNomenclatureVersion)` empties this process's cached dictionary data, so the next lookup re-reads storage.

@@ -1,4 +1,5 @@
 using Atlas.MatchingAlgorithm.Services.DataRefresh.Precompute;
+using Atlas.MatchPrediction.Services.CacheWarming;
 using AutoFixture;
 using AwesomeAssertions;
 using Microsoft.Extensions.Configuration;
@@ -48,6 +49,13 @@ internal class StartupTests
     [TestCase(typeof(IDonorGenotypePrecomputationMetrics))]
     [TestCase(typeof(DonorGenotypePrecomputationMessageHandler))]
     public void Configure_RegistersTheServicesOfABatch(Type serviceType)
+    {
+        WorkerServices().Should().Contain(descriptor => descriptor.ServiceType == serviceType);
+    }
+
+    [TestCase(typeof(IDonorGenotypePrecomputationCacheWarmer))]
+    [TestCase(typeof(IMatchPredictionCacheWarmer))]
+    public void Configure_RegistersTheCacheWarmUpBeforeTheFirstMessage(Type serviceType)
     {
         WorkerServices().Should().Contain(descriptor => descriptor.ServiceType == serviceType);
     }

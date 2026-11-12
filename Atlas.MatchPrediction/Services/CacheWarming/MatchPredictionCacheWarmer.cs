@@ -42,6 +42,30 @@ public interface IMatchPredictionCacheWarmer
     /// </para>
     /// </remarks>
     Task WarmUp(MultipleDonorMatchProbabilityInput batch);
+
+    /// <summary>
+    /// Loads the HLA Metadata Dictionary tables match prediction reads into memory, for the nomenclature version of every
+    /// active haplotype frequency set, and for each of <paramref name="matchingAlgorithmHlaNomenclatureVersions"/>.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// For a process that warms once, before it takes any work, and does not know which frequency sets its work will
+    /// use: the donor genotype precomputation worker. So it warms the version of every active set. It reads the active
+    /// sets from the frequency set cache, as <see cref="IHaplotypeFrequencyLookupService.GetSingleHaplotypeFrequencySet"/>
+    /// does.
+    /// </para>
+    /// <para>
+    /// A set that becomes active later, at a version that no set had before, is not warmed: lookups at that version read
+    /// one row at a time until the tables are cached, as for any table that is not warmed.
+    /// </para>
+    /// <para>
+    /// Best effort, never throws, as <see cref="WarmUp(MultipleDonorMatchProbabilityInput)"/>.
+    /// </para>
+    /// </remarks>
+    /// <param name="matchingAlgorithmHlaNomenclatureVersions">
+    /// The versions that the work of the process converts to P groups at.
+    /// </param>
+    Task WarmUpForActiveFrequencySets(IReadOnlyCollection<string> matchingAlgorithmHlaNomenclatureVersions);
 }
 
 internal class MatchPredictionCacheWarmer : IMatchPredictionCacheWarmer
@@ -57,29 +81,42 @@ internal class MatchPredictionCacheWarmer : IMatchPredictionCacheWarmer
 
     private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
     private readonly IHaplotypeFrequencyLookupService haplotypeFrequencyLookupService;
+    private readonly IHaplotypeFrequencyCache haplotypeFrequencyCache;
     private readonly IAtlasLogger logger;
 
     public MatchPredictionCacheWarmer(
         IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
         IHaplotypeFrequencyLookupService haplotypeFrequencyLookupService,
+        IHaplotypeFrequencyCache haplotypeFrequencyCache,
         IAtlasLogger logger)
     {
         this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
         this.haplotypeFrequencyLookupService = haplotypeFrequencyLookupService;
+        this.haplotypeFrequencyCache = haplotypeFrequencyCache;
         this.logger = logger;
     }
 
     /// <inheritdoc />
-    public async Task WarmUp(MultipleDonorMatchProbabilityInput batch)
+    public Task WarmUp(MultipleDonorMatchProbabilityInput batch) => WarmUp(() => HlaNomenclatureVersions(batch));
+
+    /// <inheritdoc />
+    public Task WarmUpForActiveFrequencySets(IReadOnlyCollection<string> matchingAlgorithmHlaNomenclatureVersions) =>
+        WarmUp(() => HlaNomenclatureVersionsOfActiveSets(matchingAlgorithmHlaNomenclatureVersions));
+
+    /// <summary>
+    /// Warms the match prediction tables of each version that <paramref name="readVersions"/> gives. A failure to read the
+    /// versions or to load a table is logged, and is not thrown.
+    /// </summary>
+    private async Task WarmUp(Func<Task<IReadOnlyCollection<string>>> readVersions)
     {
         var stopwatch = Stopwatch.StartNew();
         IReadOnlyCollection<string> versions = [];
 
         try
         {
-            versions = await HlaNomenclatureVersions(batch);
+            versions = await readVersions();
 
-            // Concurrently: on a cold process every one of these is a whole-table read, and the batch waits for all of them.
+            // Concurrently: on a cold process every one of these is a whole-table read, and the caller waits for all of them.
             await Task.WhenAll(versions.Select(version =>
                 hlaMetadataDictionaryFactory.BuildCacheControl(version).PreWarmMatchPredictionCaches()));
         }
@@ -120,12 +157,27 @@ internal class MatchPredictionCacheWarmer : IMatchPredictionCacheWarmer
             versions.Add(set.HlaNomenclatureVersion);
         }
 
-        return versions
+        return DistinctVersions(versions);
+    }
+
+    /// <summary>
+    /// The version of each active frequency set, for the same reason as in <see cref="HlaNomenclatureVersions"/>, and the
+    /// matching versions.
+    /// </summary>
+    private async Task<IReadOnlyCollection<string>> HlaNomenclatureVersionsOfActiveSets(
+        IReadOnlyCollection<string> matchingAlgorithmHlaNomenclatureVersions)
+    {
+        var activeSets = await haplotypeFrequencyCache.GetActiveHaplotypeFrequencySets();
+
+        return DistinctVersions(matchingAlgorithmHlaNomenclatureVersions.Concat(activeSets.Values.Select(set => set.HlaNomenclatureVersion)));
+    }
+
+    private static IReadOnlyCollection<string> DistinctVersions(IEnumerable<string> versions) =>
+        versions
             .Where(version => !string.IsNullOrEmpty(version))
             .Distinct()
             .Order()
             .ToList();
-    }
 
     private void LogWarmUp(TimeSpan elapsed, IReadOnlyCollection<string> versions)
     {

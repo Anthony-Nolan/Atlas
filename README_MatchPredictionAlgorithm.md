@@ -642,6 +642,11 @@ allele names, allele groups, small g groups, and the G group and small g group t
 nomenclature version of each haplotype frequency set the batch's patient and donors use, and the search's matching
 version. So a process loads only the versions it needs.
 
+The donor genotype precomputation worker uses the same warm-up one time, before it takes its first message
+(`IMatchPredictionCacheWarmer.WarmUpForActiveFrequencySets`), and waits for it for at most 2 minutes. It does not know
+its batches yet, so it warms the version of each active frequency set, and the version of each open data refresh
+record (see [the stage in README_MatchingAlgorithm](README_MatchingAlgorithm.md#how-the-stage-works)).
+
 The scoring table is not warmed. Match prediction reads it only to find the G group of a null allele in a typing, and to
 convert a typing to G or P groups for a frequency set that holds haplotypes at those groups. With small g group
 frequency sets, only subjects with a null allele read it, and most processes never do. The first such lookup is a

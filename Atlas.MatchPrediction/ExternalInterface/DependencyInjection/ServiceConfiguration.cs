@@ -63,9 +63,10 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
 
         /// <summary>
         /// Registers the genotype set pipeline alone: <see cref="IGenotypeSetService"/> (imputation, truncation and
-        /// conversion to the matching algorithm's P groups) and the haplotype frequency set lookup,
-        /// <see cref="IHaplotypeFrequencyLookupService"/>. This is what a host needs to precompute donor genotype sets,
-        /// without the rest of match prediction.
+        /// conversion to the matching algorithm's P groups), the haplotype frequency set lookup,
+        /// <see cref="IHaplotypeFrequencyLookupService"/>, and the warm-up of the HLA Metadata Dictionary tables that
+        /// imputation reads, <see cref="IMatchPredictionCacheWarmer"/>. This is what a host needs to precompute donor
+        /// genotype sets, without the rest of match prediction.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -254,8 +255,8 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
         }
 
         /// <summary>
-        /// The services <see cref="IGenotypeSetService"/> needs, and the frequency set lookup. Added only if not already
-        /// registered - see <see cref="RegisterGenotypeSetPipeline"/>.
+        /// The services <see cref="IGenotypeSetService"/> needs, the frequency set lookup, and the cache warm-up. Added only
+        /// if not already registered - see <see cref="RegisterGenotypeSetPipeline"/>.
         /// </summary>
         private static void RegisterGenotypeSetPipelineServices(this IServiceCollection services)
         {
@@ -293,6 +294,8 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             services.TryAddScoped<IGenotypeImputationService, GenotypeImputationService>();
             services.TryAddScoped<IGenotypeSetService, GenotypeSetService>();
             services.TryAddScoped<IGenotypeConverter, GenotypeConverter>();
+
+            services.TryAddScoped<IMatchPredictionCacheWarmer, MatchPredictionCacheWarmer>();
         }
 
         /// <summary>
@@ -303,7 +306,6 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
         {
             services.AddScoped<IMatchPredictionAlgorithm, MatchPredictionAlgorithm>();
             services.AddScoped<IParallelMatchPredictionAlgorithm, ParallelMatchPredictionAlgorithm>();
-            services.AddScoped<IMatchPredictionCacheWarmer, MatchPredictionCacheWarmer>();
             services.AddScoped<IDonorInputBatcher, DonorInputBatcher>();
 
             services.AddScoped<IFrequencySetImporter, FrequencySetImporter>();
