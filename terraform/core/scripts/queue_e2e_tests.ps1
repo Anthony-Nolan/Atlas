@@ -12,7 +12,7 @@
          email, and tags it so the run can be matched to the deploy.
 
     Uses the job's OAuth token ($env:SYSTEM_ACCESSTOKEN, "Allow scripts to access the OAuth token"), and the
-    collection and project of the release ($env:SYSTEM_COLLECTIONURI, $env:SYSTEM_TEAMPROJECT). The identity of that
+    organisation and project of the release ($env:SYSTEM_TEAMFOUNDATIONCOLLECTIONURI, $env:SYSTEM_TEAMPROJECT). The identity of that
     token needs View builds, Queue builds, Stop builds and Update build information on the E2E pipeline.
 
     Works in Windows PowerShell 5.1 and PowerShell 7+.
@@ -71,7 +71,13 @@ function Get-RequiredEnvironmentVariable([string]$name, [string]$hint) {
     return $value
 }
 
-$collectionUri = (Get-RequiredEnvironmentVariable "SYSTEM_COLLECTIONURI" "It is set on pipeline agents.").TrimEnd("/")
+# In a classic release job, SYSTEM_COLLECTIONURI is the Release Management URL (https://vsrm.dev.azure.com/<org>/),
+# which doesn't serve the Build API. SYSTEM_TEAMFOUNDATIONCOLLECTIONURI is the organisation URL in builds and releases.
+$collectionUri = [Environment]::GetEnvironmentVariable("SYSTEM_TEAMFOUNDATIONCOLLECTIONURI")
+if ([string]::IsNullOrWhiteSpace($collectionUri)) {
+    $collectionUri = Get-RequiredEnvironmentVariable "SYSTEM_COLLECTIONURI" "It is set on pipeline agents."
+}
+$collectionUri = ($collectionUri -replace "://vsrm\.", "://").TrimEnd("/")
 $project = Get-RequiredEnvironmentVariable "SYSTEM_TEAMPROJECT" "It is set on pipeline agents."
 $accessToken = Get-RequiredEnvironmentVariable "SYSTEM_ACCESSTOKEN" "Tick 'Allow scripts to access the OAuth token' on the agent job."
 $projectUri = "$collectionUri/$([Uri]::EscapeDataString($project))"
