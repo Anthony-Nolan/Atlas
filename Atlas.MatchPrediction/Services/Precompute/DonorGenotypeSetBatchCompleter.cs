@@ -129,8 +129,6 @@ internal class DonorGenotypeSetBatchCompleter : IDonorGenotypeSetBatchCompleter
                 { "SearchRequestId", request.SearchRequestId },
                 { "AllowedLociKey", batchContext.AllowedLociKey },
                 { "UsePrecomputedGenotypeSets", batchContext.UsePrecomputedGenotypeSets.ToString() },
-                { "UsePrecomputedGenotypeSetsSource", batchContext.UsePrecomputedGenotypeSetsSource.ToString() },
-                { "PrecomputeMode", batchContext.Mode.ToString() },
                 { "MatchingAlgorithmDataRefreshRecordId", batchContext.MatchingAlgorithmDataRefreshRecordId?.ToString(CultureInfo.InvariantCulture) },
                 { "PatientGenotypeSetSource", patientGenotypeSetSource.ToString() },
             };

@@ -162,10 +162,9 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         public FrequencySetMetadata PatientFrequencySetMetadata { get; set; }
 
         /// <summary>
-        /// Overrides the precompute kill-switch (<see cref="Settings.PrecomputedGenotypeSetSettings.Mode"/>) for this
-        /// request, in either direction - except in <see cref="Settings.PrecomputedGenotypeSetMode.ForceLive"/>, the hard
-        /// off, which ignores it. `null` means the mode's default decides.
-        /// Resolved once per donor batch, so changing the kill-switch also affects a running search.
+        /// Whether match prediction reads precomputed genotype sets: <c>true</c> is stored, <c>false</c> or <c>null</c>
+        /// is live. For a search, the Atlas Public API sets it once, when it accepts the search, from the request or from
+        /// its switch and share; match prediction does not decide it again.
         /// </summary>
         public bool? UsePrecomputedGenotypeSets { get; set; }
     }

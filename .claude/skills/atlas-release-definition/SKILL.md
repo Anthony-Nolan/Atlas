@@ -71,9 +71,9 @@ Before any write, the script refuses a candidate that:
      only warns about an undeclared `TF_VAR_`, so it is harmless, but it does nothing until the declaration is
      released.
    - Read its type and any `validation`. If a validation refers to another variable (for example, precomputation off
-     needs `MATCH_PREDICTION_PRECOMPUTE_MODE = ForceLive`), run `show-var` on that variable in the same stages. A
+     needs `DEFAULT_USE_PRECOMPUTED_GENOTYPE_SETS = false`), run `show-var` on that variable in the same stages. A
      wrong value would make the release fail.
-   - Release variables are strings: use `false`, `500` and `ForceLive`, without HCL quoting. For lists or maps, use
+   - Release variables are strings: use `false`, `500` and `Info`, without HCL quoting. For lists or maps, use
      the HCL or JSON text Terraform expects, in the style of the existing values (`show-var` shows them).
 4. **Draft the history comment** in the form `<TICKET>: <what changed: the variable, the stages, the value>. <why>.`
    For example: `ATL-488: add TF_VAR_MATCHING_DONOR_GENOTYPE_PRECOMPUTATION_ENABLED = false to UAT and LIVE. The

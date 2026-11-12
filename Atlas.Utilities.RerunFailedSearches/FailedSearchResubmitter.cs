@@ -35,6 +35,7 @@ namespace Atlas.Utilities.RerunFailedSearches
             var searchRequest = JsonConvert.DeserializeObject<SearchRequest>(requestJson)
                 ?? throw new InvalidOperationException($"Stored RequestJson for search {originalSearchIdentifier} did not deserialize to a SearchRequest.");
             searchRequest.ParallelMatchPrediction = forcedParallelMatchPrediction;
+            ClearUsePrecomputedGenotypeSets(searchRequest);
 
             var identifiedRequest = new IdentifiedSearchRequest
             {
@@ -61,6 +62,7 @@ namespace Atlas.Utilities.RerunFailedSearches
             var searchRequest = repeatSearchRequest.SearchRequest
                 ?? throw new InvalidOperationException($"Stored RequestJson for repeat search {repeatSearchIdentifier} did not contain a SearchRequest.");
             searchRequest.ParallelMatchPrediction = forcedParallelMatchPrediction;
+            ClearUsePrecomputedGenotypeSets(searchRequest);
 
             var identifiedRequest = new IdentifiedRepeatSearchRequest
             {
@@ -75,6 +77,16 @@ namespace Atlas.Utilities.RerunFailedSearches
 
             await using var sender = client.CreateSender(settings.RepeatSearchRequestsTopic);
             await sender.SendMessageAsync(message);
+        }
+
+        /// <summary>
+        /// The stored request holds the value the Atlas Public API chose when it first accepted the search (ATL-535).
+        /// A rerun does not pass through the Public API, so a stored <c>true</c> would skip the precompute switch, which
+        /// may have been turned off since. Clearing it makes the rerun impute every donor live, which is always safe.
+        /// </summary>
+        private static void ClearUsePrecomputedGenotypeSets(SearchRequest searchRequest)
+        {
+            searchRequest.UsePrecomputedGenotypeSets = null;
         }
     }
 }

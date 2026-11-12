@@ -6,7 +6,6 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
-using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Services.Precompute;
 using AwesomeAssertions;
 using NSubstitute;
@@ -63,10 +62,7 @@ internal class DonorGenotypeSetBatchCompleterTests
         logger.Received(1).SendEvent(DonorGenotypeSetBatchCompleter.UsageEventName, LogLevel.Info, Arg.Any<Dictionary<string, string>>(), Arg.Any<Dictionary<string, double>>());
         loggedProps["SearchRequestId"].Should().Be(SearchRequestId);
         loggedProps["AllowedLociKey"].Should().Be("ABCDrb1Dqb1");
-        loggedProps["UsePrecomputedGenotypeSets"].Should().Be("True");
-        loggedProps["UsePrecomputedGenotypeSetsSource"].Should().Be("FeatureFlag");
-        loggedProps["PrecomputeMode"].Should().Be("DefaultPrecomputed");
-        loggedProps["MatchingAlgorithmDataRefreshRecordId"].Should().Be("42");
+        loggedProps["UsePrecomputedGenotypeSets"].Should().Be("True");        loggedProps["MatchingAlgorithmDataRefreshRecordId"].Should().Be("42");
         loggedProps["PatientGenotypeSetSource"].Should().Be("Precomputed");
 
         loggedMetrics["DonorCount"].Should().Be(6);
@@ -116,8 +112,6 @@ internal class DonorGenotypeSetBatchCompleterTests
     public async Task Complete_WhenTheBatchCannotStore_DoesNotCallTheWriter()
     {
         var context = DonorGenotypeSetBatchContext.Enabled(
-            UsePrecomputedGenotypeSetsSource.Request,
-            PrecomputedGenotypeSetMode.DefaultLive,
             DataRefreshRecordId,
             PrecomputedDonorGenotypeSetLookup.Unavailable(DonorGenotypeSetSource.ActiveDatabaseChanged));
 
@@ -148,13 +142,11 @@ internal class DonorGenotypeSetBatchCompleterTests
     [Test]
     public async Task Complete_WhenDisabled_CountsEveryDonorAsPrecomputeDisabled()
     {
-        var context = DonorGenotypeSetBatchContext.Disabled(UsePrecomputedGenotypeSetsSource.Request, PrecomputedGenotypeSetMode.DefaultLive, DataRefreshRecordId);
+        var context = DonorGenotypeSetBatchContext.Disabled(DataRefreshRecordId);
 
         await completer.Complete(Request(), context, [new(1, DonorGenotypeSetSource.PrecomputeDisabled, null), new(4, DonorGenotypeSetSource.PrecomputeDisabled, null)], PatientGenotypeSetSource.PrecomputeDisabled);
 
-        loggedProps["UsePrecomputedGenotypeSets"].Should().Be("False");
-        loggedProps["UsePrecomputedGenotypeSetsSource"].Should().Be("Request");
-        loggedMetrics["PrecomputeDisabled"].Should().Be(2);
+        loggedProps["UsePrecomputedGenotypeSets"].Should().Be("False");        loggedMetrics["PrecomputeDisabled"].Should().Be(2);
         loggedMetrics["DonorIdCount"].Should().Be(5);
     }
 
@@ -162,8 +154,6 @@ internal class DonorGenotypeSetBatchCompleterTests
 
     private static DonorGenotypeSetBatchContext EnabledContext() =>
         DonorGenotypeSetBatchContext.Enabled(
-            UsePrecomputedGenotypeSetsSource.FeatureFlag,
-            PrecomputedGenotypeSetMode.DefaultPrecomputed,
             DataRefreshRecordId,
             new PrecomputedDonorGenotypeSetLookup("ABCDrb1Dqb1", null, new Dictionary<int, PrecomputedDonorGenotypeSetRow>()));
 

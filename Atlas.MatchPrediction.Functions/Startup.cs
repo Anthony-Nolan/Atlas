@@ -20,6 +20,8 @@ namespace Atlas.MatchPrediction.Functions
             services.AddHealthChecks();
             SwashBuckleStartup.Configure(services);
 
+            // This app has no access to the transient matching databases, so it keeps the no-op reader and writer
+            // and every donor is computed live.
             services.RegisterMatchPredictionAlgorithm(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
@@ -27,9 +29,6 @@ namespace Atlas.MatchPrediction.Functions
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),
                 OptionsReaderFor<GenotypeImputationSettings>(),
-                // This app has no access to the transient matching databases, so it keeps the no-op reader and writer
-                // and every donor is computed live. The kill-switch is left at its default (off).
-                _ => new PrecomputedGenotypeSetSettings(),
                 ConnectionStringReader("MatchPredictionSql")
             );
 

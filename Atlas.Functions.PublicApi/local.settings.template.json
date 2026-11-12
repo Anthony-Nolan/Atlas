@@ -11,6 +11,8 @@
 
     "AtlasFunction:Search:DefaultParallelMatchPrediction": false,
     "AtlasFunction:Search:ParallelMatchPredictionRequestPercentage": 100,
+    "AtlasFunction:Search:DefaultUsePrecomputedGenotypeSets": false,
+    "AtlasFunction:Search:UsePrecomputedGenotypeSetsRequestPercentage": 0,
 
     "Matching:MessagingServiceBus:ConnectionString": "override-this",
     "Matching:MessagingServiceBus:SearchRequestsTopic": "matching-requests",

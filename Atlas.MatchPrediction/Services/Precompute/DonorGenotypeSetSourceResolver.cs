@@ -6,7 +6,6 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
-using Atlas.MatchPrediction.ExternalInterface.Settings;
 
 namespace Atlas.MatchPrediction.Services.Precompute;
 
@@ -27,16 +26,13 @@ internal class DonorGenotypeSetSourceResolver : IDonorGenotypeSetSourceResolver
 {
     internal const string ReadFailedEventName = "Precomputed genotype set read failed";
 
-    private readonly PrecomputedGenotypeSetSettings settings;
     private readonly IPrecomputedDonorGenotypeSetReader reader;
     private readonly IAtlasLogger logger;
 
     public DonorGenotypeSetSourceResolver(
-        PrecomputedGenotypeSetSettings settings,
         IPrecomputedDonorGenotypeSetReader reader,
         IAtlasLogger logger)
     {
-        this.settings = settings;
         this.reader = reader;
         this.logger = logger;
     }
@@ -44,15 +40,10 @@ internal class DonorGenotypeSetSourceResolver : IDonorGenotypeSetSourceResolver
     /// <inheritdoc />
     public async Task<DonorGenotypeSetBatchContext> Resolve(IdentifiedMatchProbabilityRequest request, IReadOnlyCollection<DonorInput> donors)
     {
-        // Resolved here, per batch, and not when the search is submitted, so that changing the kill-switch also affects
-        // a search that is already running.
-        var (usePrecomputedGenotypeSets, source) = Decide(settings.Mode, request.UsePrecomputedGenotypeSets);
-
-        if (!usePrecomputedGenotypeSets)
+        if (!UsesPrecomputedGenotypeSets(request))
         {
             // No read at all: when the path is off, nothing precomputed is trusted, not even partly.
-            return DonorGenotypeSetBatchContext.Disabled(
-                source, settings.Mode, request.MatchingAlgorithmDataRefreshRecordId, request.PatientGenotypeSetKey);
+            return DonorGenotypeSetBatchContext.Disabled(request.MatchingAlgorithmDataRefreshRecordId, request.PatientGenotypeSetKey);
         }
 
         PrecomputedDonorGenotypeSetLookup lookup;
@@ -67,25 +58,23 @@ internal class DonorGenotypeSetSourceResolver : IDonorGenotypeSetSourceResolver
             lookup = PrecomputedDonorGenotypeSetLookup.Unavailable(DonorGenotypeSetSource.ReadFailed);
         }
 
-        return DonorGenotypeSetBatchContext.Enabled(
-            source, settings.Mode, request.MatchingAlgorithmDataRefreshRecordId, lookup, request.PatientGenotypeSetKey);
+        return DonorGenotypeSetBatchContext.Enabled(request.MatchingAlgorithmDataRefreshRecordId, lookup, request.PatientGenotypeSetKey);
     }
 
     /// <summary>
-    /// <see cref="PrecomputedGenotypeSetMode.ForceLive"/> is the hard off and ignores the request. In the other two
-    /// modes, a request that sets the override wins, in either direction; a request that leaves it null gets the mode's
-    /// default.
+    /// The request value alone decides: <c>true</c> is stored, <c>false</c> or empty is live. The Atlas Public API
+    /// chooses the value once for each search, when it accepts the search, so a change of its settings does not change
+    /// the method of a running search. Empty means live for a call that does not pass through the Atlas Public API too.
     /// </summary>
-    internal static (bool UsePrecomputedGenotypeSets, UsePrecomputedGenotypeSetsSource Source) Decide(
-        PrecomputedGenotypeSetMode mode,
-        bool? requestOverride) =>
-        mode switch
-        {
-            PrecomputedGenotypeSetMode.ForceLive => (false, UsePrecomputedGenotypeSetsSource.FeatureFlag),
-            _ when requestOverride.HasValue => (requestOverride.Value, UsePrecomputedGenotypeSetsSource.Request),
-            PrecomputedGenotypeSetMode.DefaultPrecomputed => (true, UsePrecomputedGenotypeSetsSource.FeatureFlag),
-            _ => (false, UsePrecomputedGenotypeSetsSource.FeatureFlag)
-        };
+    /// <remarks>
+    /// One exception, while this version is deployed: before it, the match prediction setting <c>Precompute:Mode</c>
+    /// could ignore a <c>true</c> on the request (in <c>ForceLive</c>). A search that a client sent with <c>true</c>,
+    /// and that is still running when this version is deployed, calculated its first batches live and reads the stored
+    /// sets for the rest. Only QA tests set the value, so do not run them during the deploy. The stored sets are checked
+    /// against the donor's typing and frequency set before use, so the result is still correct.
+    /// </remarks>
+    internal static bool UsesPrecomputedGenotypeSets(MatchProbabilityRequestBase request) =>
+        request.UsePrecomputedGenotypeSets == true;
 
     private void LogReadFailure(IdentifiedMatchProbabilityRequest request, Exception exception)
     {

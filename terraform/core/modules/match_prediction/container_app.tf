@@ -193,8 +193,8 @@ resource "azurerm_container_app" "atlas_match_prediction" {
         name        = "ConnectionStrings__MatchPredictionSql"
         secret_name = "match-prediction-sql-connection-string"
       }
-      // The worker builds the matching persistent database context for every batch, even in ForceLive mode, so the
-      // persistent connection string must exist or every batch fails.
+      // The worker builds the matching persistent database context for every batch, even when a search is computed
+      // live, so the persistent connection string must exist or every batch fails.
       env {
         name        = "ConnectionStrings__MatchingPersistentSql"
         secret_name = "matching-persistent-sql-connection-string"
@@ -206,11 +206,6 @@ resource "azurerm_container_app" "atlas_match_prediction" {
       env {
         name        = "ConnectionStrings__MatchingTransientBSql"
         secret_name = "matching-transient-b-sql-connection-string"
-      }
-
-      env {
-        name  = "Precompute__Mode"
-        value = var.MATCH_PREDICTION_PRECOMPUTE_MODE
       }
 
       liveness_probe {
