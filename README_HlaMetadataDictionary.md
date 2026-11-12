@@ -136,11 +136,11 @@ Until a table is in the cache, each lookup in it is a single-row Table Storage r
 | App | When | Warm-up |
 |---|---|---|
 | Matching Algorithm Functions and Donor Management | On start-up, and each night (`CachingFunctions`, at 02:00 and 03:00) | `PreWarmAllCaches`, at the active version |
-| Precompute worker (`Atlas.MatchingAlgorithm.PrecomputeWorker`) | Before it takes its first message | `PreWarmMatchPredictionCaches`, at the version of each open data refresh record and of each active haplotype frequency set |
+| Precompute worker (`Atlas.MatchingAlgorithm.PrecomputeWorker`) | Before it takes its first message, for at most 2 minutes | `PreWarmMatchPredictionCaches`, at the version of each open data refresh record and of each active haplotype frequency set |
 | Match prediction, on the durable and the parallel path | For each search batch that imputes live | `PreWarmMatchPredictionCaches`, at the versions that the batch uses |
 | Data refresh (`HlaProcessor`) | Before it processes the donor HLA | `PreWarmAllCaches`, at the version of the refresh |
 
-The warm-ups of the precompute worker and of match prediction are best effort: when one fails, a warning is logged, and the lookups read single rows. Donor Management also precomputes the genotype sets of the donors that it imports. For this it also reads the match prediction tables at the version of each haplotype frequency set. These tables are not warmed: they load when they are first used.
+The warm-ups of the precompute worker and of match prediction are best effort: when one fails, a warning is logged, and the lookups read single rows. The precompute worker waits for its warm-up for at most 2 minutes. Then it logs a warning and starts, and the tables continue to load in the background. Donor Management also precomputes the genotype sets of the donors that it imports. For this it also reads the match prediction tables at the version of each haplotype frequency set. These tables are not warmed: they load when they are first used.
 
 #### Cache Invalidation
 Every in-memory cache of dictionary data is keyed by HLA Nomenclature version and nothing else - the whole-table caches in `TableClientRepositoryBase`, the individual lookup outcomes in `MetadataServiceBase`, and the objects the `Factory` hands out. Recreating the dictionary at a version that is *already* active therefore changes the stored data without changing anything a running process keys on, and that process would go on serving its old snapshot until the cache expired (24h) or the worker restarted. That is how a donor carrying newly-added lookup data came to be silently skipped during matching (ATL-395).
