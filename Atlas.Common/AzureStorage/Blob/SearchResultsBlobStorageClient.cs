@@ -1,7 +1,7 @@
 ﻿using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Common.ApplicationInsights;
-using Newtonsoft.Json;
+using System;
 using System.Threading.Tasks;
 
 namespace Atlas.Common.AzureStorage.Blob
@@ -23,10 +23,12 @@ namespace Atlas.Common.AzureStorage.Blob
         {
             await UploadResults(searchResultSet, searchResultSet.BlobStorageContainerName, searchResultSet.ResultsFileName);
 
-            if (searchResultSet.BatchedResult)
+            if (searchResultsBatchSize <= 0)
             {
-                await ChunkAndUpload(searchResultSet.Results, searchResultsBatchSize, searchResultSet.BlobStorageContainerName, batchFolder);
+                throw new InvalidOperationException($"{nameof(searchResultsBatchSize)} must be greater than 0 as search results are always batched.");
             }
+
+            await ChunkAndUpload(searchResultSet.Results, searchResultsBatchSize, searchResultSet.BlobStorageContainerName, batchFolder);
         }
 
         public async Task UploadResults<T>(T results, string blobContainerName, string fileName)

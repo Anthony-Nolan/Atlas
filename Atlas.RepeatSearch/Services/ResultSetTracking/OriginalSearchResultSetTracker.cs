@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
@@ -36,7 +37,7 @@ namespace Atlas.RepeatSearch.Services.ResultSetTracking
 
             if (notification.NumberOfResults > 0)
             {
-                if (notification.ResultsBatched && !string.IsNullOrEmpty(notification.BatchFolderName))
+                if (!string.IsNullOrEmpty(notification.BatchFolderName))
                 {
                     var matchingAlgorithmResults = blobDownloader.DownloadFolderContentsFileByFile<MatchingAlgorithmResult>(notification.BlobStorageContainerName, notification.BatchFolderName);
                     await foreach (var resultsList in matchingAlgorithmResults)
@@ -46,7 +47,7 @@ namespace Atlas.RepeatSearch.Services.ResultSetTracking
                 }
                 else
                 {
-                    donorIds = resultSet.Results.Select(r => r.DonorCode).ToList();
+                    throw new InvalidOperationException($"Matching results notification has results but no BatchFolderName");
                 }
             }
 

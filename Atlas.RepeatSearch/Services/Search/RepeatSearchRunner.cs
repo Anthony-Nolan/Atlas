@@ -144,7 +144,7 @@ namespace Atlas.RepeatSearch.Services.Search
                     MatchingAlgorithmDataRefreshRecordId = dataRefreshRecordId,
                     BlobStorageContainerName = azureStorageSettings.MatchingResultsBlobContainer,
                     NoLongerMatchingDonors = diff.RemovedResults.ToList(),
-                    BatchedResult = azureStorageSettings.ShouldBatchResults,
+                    BatchedResult = true,
                     MatchingStartTime = searchStartTime
                 };
 
@@ -165,8 +165,7 @@ namespace Atlas.RepeatSearch.Services.Search
                     BlobStorageContainerName = azureStorageSettings.MatchingResultsBlobContainer,
                     ResultsFileName = searchResultSet.ResultsFileName,
                     ElapsedTime = stopwatch.Elapsed,
-                    ResultsBatched = azureStorageSettings.ShouldBatchResults,
-                    BatchFolderName = azureStorageSettings.ShouldBatchResults && results.Any() ? $"{originalSearchRequestId}/{repeatSearchId}" : null
+                    BatchFolderName = results.Any() ? $"{originalSearchRequestId}/{repeatSearchId}" : null
                 };
                 await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);
                 resultsSentTime = DateTime.UtcNow;
