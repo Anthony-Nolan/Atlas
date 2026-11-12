@@ -35,8 +35,9 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             [TimerTrigger("00 00 02 * * *", RunOnStartup = true)]
             TimerInfo timerInfo)
         {
-            // Every table of the active version. Until a table is cached, each lookup in it is a single-row Table Storage
-            // read, so the first searches after a start would make many of them.
+            // Every table of the active version except allele groups, which PreWarmAllCaches does not load: this app reads
+            // them only for P, G and small g group typings, and few such lookups miss the cache. Until a table is cached,
+            // each lookup in it is a single-row Table Storage read, so the first searches after a start would make many of them.
             await (hlaMetadataCacheControl?.PreWarmAllCaches() ?? Task.CompletedTask);
         }
     }
