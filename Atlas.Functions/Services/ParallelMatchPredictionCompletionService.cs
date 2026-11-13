@@ -441,7 +441,7 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
             if (resultsShouldBeBatched)
             {
                 await searchResultsBlobUploader.UploadResults(
-                    currentSearchResults, blobStorageContainerName, $"{batchFolder}/{++batchNumber}.json"
+                    currentSearchResults, blobStorageContainerName, BatchedResultsFileNames.FileName(batchFolder, ++batchNumber)
                 );
             }
             else

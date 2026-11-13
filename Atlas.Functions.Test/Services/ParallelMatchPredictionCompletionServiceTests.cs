@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Results;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
+using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Client.Models.Search.Results.ResultSet;
 using Atlas.Client.Models.SupportMessages;
 using Atlas.Common.ApplicationInsights;
@@ -18,6 +21,7 @@ using Atlas.SearchTracking.Common.Dispatchers;
 using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
 using AutoFixture;
+using AwesomeAssertions;
 using NSubstitute;
 using NUnit.Framework;
 using Microsoft.Extensions.Options;
@@ -41,6 +45,7 @@ namespace Atlas.Functions.Test.Services
         private INotificationSender notificationSender;
         private IMatchingResultsDownloader matchingResultsDownloader;
         private IResultsCombiner resultsCombiner;
+        private ISearchResultsBlobStorageClient searchResultsBlobUploader;
         private ParallelMatchPredictionCompletionService completionService;
 
         private Fixture fixture;
@@ -55,17 +60,23 @@ namespace Atlas.Functions.Test.Services
             notificationSender = Substitute.For<INotificationSender>();
             matchingResultsDownloader = Substitute.For<IMatchingResultsDownloader>();
             resultsCombiner = Substitute.For<IResultsCombiner>();
+            searchResultsBlobUploader = Substitute.For<ISearchResultsBlobStorageClient>();
 
-            completionService = new ParallelMatchPredictionCompletionService(
+            completionService = CreateCompletionService(new AzureStorageSettings());
+        }
+
+        private ParallelMatchPredictionCompletionService CreateCompletionService(AzureStorageSettings azureStorageSettings)
+        {
+            return new ParallelMatchPredictionCompletionService(
                 repository,
                 matchingResultsDownloader,
                 resultsCombiner,
-                Substitute.For<ISearchResultsBlobStorageClient>(),
+                searchResultsBlobUploader,
                 searchCompletionMessageSender,
                 trackingDispatcher,
                 notificationSender,
                 Substitute.For<ISearchLogger<SearchLoggingContext>>(),
-                Options.Create(new AzureStorageSettings()),
+                Options.Create(azureStorageSettings),
                 Options.Create(new OrchestrationSettings())
             );
         }
@@ -331,6 +342,65 @@ namespace Atlas.Functions.Test.Services
 
             // A failed run raises a High-priority alert, never a success notification.
             await notificationSender.DidNotReceiveWithAnyArgs().SendNotification(default, default, default);
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public async Task FinaliseRun_WithTwelveBatchedMatchingFiles_KeepsReadOrderInFinalResults(bool finalResultsBatched)
+        {
+            const int fileCount = 12;
+            const string batchFolder = "batch-folder";
+            var runId = fixture.Create<int>();
+            var runResults = RunResults(status: ParallelMatchPredictionRunStatus.Running, failedBatch: false);
+            runResults.Run.ResultsBatched = true;
+            runResults.Run.BatchFolderName = batchFolder;
+            repository.GetRunWithResults(runId).Returns(runResults);
+            StubSuccessfulCompletionPipeline();
+            // Each matching file holds one donor; the donor id is the file number, so the read order is visible in the output.
+            matchingResultsDownloader.DownloadResults(false, batchFolder).Returns(MatchingFiles(fileCount));
+            resultsCombiner.CombineResults(
+                    Arg.Any<string>(),
+                    Arg.Any<IEnumerable<MatchingAlgorithmResult>>(),
+                    Arg.Any<IReadOnlyDictionary<int, MatchProbabilityResponse>>())
+                .Returns(call => call.ArgAt<IEnumerable<MatchingAlgorithmResult>>(1)
+                    .Select(r => new SearchResult { MatchingResult = r })
+                    .ToList());
+            var service = CreateCompletionService(new AzureStorageSettings { ShouldBatchResults = finalResultsBatched });
+
+            await service.FinaliseRun(runId);
+
+            var expectedDonorOrder = Enumerable.Range(1, fileCount).ToList();
+            if (finalResultsBatched)
+            {
+                var uploadedFiles = searchResultsBlobUploader.ReceivedCalls()
+                    .Where(c => c.GetMethodInfo().Name == nameof(ISearchResultsBlobStorageClient.UploadResults)
+                                && c.GetArguments()[0] is IEnumerable<SearchResult>)
+                    .Select(c => (
+                        FileName: (string)c.GetArguments()[2],
+                        DonorIds: ((IEnumerable<SearchResult>)c.GetArguments()[0]).Select(r => r.MatchingResult.AtlasDonorId).ToList()))
+                    .ToList();
+
+                uploadedFiles.Select(f => f.FileName)
+                    .Should().Equal(expectedDonorOrder.Select(n => BatchedResultsFileNames.FileName(batchFolder, n)));
+                uploadedFiles.SelectMany(f => f.DonorIds).Should().Equal(expectedDonorOrder);
+            }
+            else
+            {
+                var finalResultSet = (ResultSet<SearchResult>)searchResultsBlobUploader.ReceivedCalls()
+                    .Single(c => c.GetArguments()[0] is ResultSet<SearchResult>)
+                    .GetArguments()[0];
+
+                finalResultSet.Results.Select(r => r.MatchingResult.AtlasDonorId).Should().Equal(expectedDonorOrder);
+            }
+        }
+
+        private static async IAsyncEnumerable<IEnumerable<MatchingAlgorithmResult>> MatchingFiles(int fileCount)
+        {
+            foreach (var fileNumber in Enumerable.Range(1, fileCount))
+            {
+                await Task.Yield();
+                yield return new List<MatchingAlgorithmResult> { new() { AtlasDonorId = fileNumber } };
+            }
         }
 
         private ParallelMatchPredictionRunResults RunResults(

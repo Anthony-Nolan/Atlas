@@ -193,6 +193,11 @@ container and filename at which the results can be found, indicator was results 
 The results can then be downloaded from this blob storage container. They will be stored as JSON objects, [in the format described in this model](Atlas.Client.Models/Search/Results/SearchResultSet.cs)
 If results were batched, the search summary data should be downloaded from the same file, but search results should be downloaded from the files in the folder with batched results: each file contains some number of results, to load all results data from all files should be read. 
 
+The files in the batched results folder are numbered: `000001.json`, `000002.json`, and so on. The numbers are padded with zeros to 6 digits, so name order is the same as number order. Results are in ranking order inside each file and across files: file 1 holds the best-ranked results. To keep the ranking order, read the files in number order.
+* Read the files by the number in the file name, not by the order in which the blob storage lists them. Folders written before Atlas 4.2.0 have names without zeros (`1.json`, `2.json`, ..., `10.json`), and blob storage lists these in name order (`1.json`, `10.json`, `2.json`, ...).
+* If a search ever has more than 999,999 files, the higher numbers have more than 6 digits (for example `1000000.json`). Reading by number handles this too.
+* In versions before 4.2.0, when the matching results had 10 or more files, the order of the results across files was wrong (the files were combined in name order). See ATL-530.
+
 **A consumer of ATLAS results notifications will need to be granted access to the following:**
 
 - Read access to the appropriate service bus 
