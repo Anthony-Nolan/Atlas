@@ -35,6 +35,10 @@ Feature flags permit greater control over the release of new features (see this 
 
 ### 4.2.0
 
+#### Search Results
+* BF: When the matching results of a search had 10 or more batched files, the final results were not in ranking order: the files were read in blob listing order (`1`, `10`, `11`, ..., `2`). Atlas now reads the files of a batched results folder in number order, so the final results are in ranking order again (batched and not batched final results, both match prediction paths, original and repeat searches).
+* FBC: Batched results files are now named with the number padded with zeros to 6 digits (`000001.json`, `000002.json`, ...), so blob listing order is the same as number order. Consumers that build the file names themselves must use the new names; consumers should read the files in number order. See [README_Integration](/README_Integration.md#receiving-search-results).
+
 #### Match Prediction
 * E: After a haplotype frequency set import, every app uses the new set within 1 minute of the success notification, not 5 minutes. The apps share the list of active sets through the distributed cache (Redis), when one is configured. See [the active set cache](/README_MatchPredictionAlgorithm.md#the-active-set-cache).
   * An import takes 30 seconds longer: 30 seconds after the success notification, it writes the list to the distributed cache again. If the cache does not store the list after 4 more writes, the import sends a medium-priority alert (see [README_Support](/README_Support.md#alert-the-new-active-sets-are-not-confirmed-in-the-distributed-cache)).
