@@ -319,26 +319,5 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 await serviceBusClient.DidNotReceiveWithAnyArgs().PublishToRequestTopic(default);
             }
         }
-
-
-        [Test]
-        public async Task RequestDataRefresh_WhenActiveHlaVersionMatchesLatest_AndShouldForceRefresh_StoresRefreshRecordWithDonorUpdatesEnabled()
-        {
-            wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().ReturnsForAnyArgs(ExistingHlaVersion);
-
-            await dataRefreshRequester.RequestDataRefresh(new DataRefreshRequest {ForceDataRefresh = true}, false);
-            
-            await dataRefreshHistoryRepository.Received().Create(Arg.Is<DataRefreshRecord>(r => r.ShouldMarkAllDonorsAsUpdated));
-        }
-
-        [Test]
-        public async Task RequestDataRefresh_WhenActiveHlaVersionDoesNotMatchLatest_StoresRefreshRecordWithDonorUpdatesEnabled()
-        {
-            wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().ReturnsForAnyArgs(NewHlaVersion);
-
-            await dataRefreshRequester.RequestDataRefresh(new DataRefreshRequest(), false);
-
-            await dataRefreshHistoryRepository.Received().Create(Arg.Is<DataRefreshRecord>(r => r.ShouldMarkAllDonorsAsUpdated));
-        }
     }
 }
