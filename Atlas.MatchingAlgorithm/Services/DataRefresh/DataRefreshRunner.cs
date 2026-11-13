@@ -497,7 +497,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     // entries create-only, which relies on the log table being empty of the donors being imported. In FromScratch mode that is
                     // guaranteed by DataRefreshStage.DataDeletion having just run, or by this stage never having written anything in the interrupted
                     // run it is following. See DonorImporter.InsertDonorBatch.
-                    await donorImporter.ImportDonors(refreshRecord.ShouldMarkAllDonorsAsUpdated, cancellationToken);
+                    await donorImporter.ImportDonors(cancellationToken);
                     break;
                 case DataRefreshStage.DonorHlaProcessing:
                     var isContinuation = (executionMode == DataRefreshStageExecutionMode.Continuation);
