@@ -84,6 +84,12 @@ Feature flags permit greater control over the release of new features (see this 
 #### Matching Algorithm
 * E: The matching algorithm and donor management functions apps now load every HLA metadata lookup table of the active nomenclature version except the allele groups when they start and each night (`UpdateHlaMetadataDictionaryCache`), not only the allele names. Before, an app loaded the other tables only when it first read them, and read single rows until a table was loaded. So each app now keeps more lookups in memory, also some that it does not read: the scoring, DPB1 TCE group and serology to alleles lookups in donor management, and the small g group and G group to P group lookups in the matching algorithm app. See [Caching](/README_HlaMetadataDictionary.md#caching).
 
+#### Repeat Search
+* BF: A repeat search no longer fails when the results of its original search are not stored yet, for example when the repeat search functions app stores a large search before them. The repeat search waits: it publishes its request to `repeat-search-requests` again, to be delivered 5 minutes later, and checks again then. Before, it failed at once with the validation error "there is no record of the original search".
+  * The repeat search fails with this validation error, as before, only after it waits for 24 hours from its first request. So a repeat search of an unknown original search now fails 24 hours after the request, not at once.
+  * While it waits, the repeat search sends no failure notification and no search tracking events: its attempt starts when it runs, and the `InitiationTimeUtc` of the attempt is the time of the first request, so the wait counts as queue time. Each wait logs a trace with the original search id, the repeat search id and the time waited so far. The `audit` subscription of `repeat-search-requests` gets the request again at each wait.
+  * Two new Terraform variables set the wait: `REPEAT_SEARCH_ORIGINAL_RESULTS_WAIT_INTERVAL_SECONDS` (default `300`) and `REPEAT_SEARCH_MAX_WAIT_FOR_ORIGINAL_RESULTS_MINUTES` (default `1440`; `0` turns the wait off). They set the app settings `RepeatSearch:OriginalResultsWaitIntervalSeconds` and `RepeatSearch:MaxWaitForOriginalResultsMinutes` of the repeat search functions app.
+
 ### 4.1.0
 
 #### Debug

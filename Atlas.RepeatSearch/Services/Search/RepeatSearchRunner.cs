@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -19,6 +20,7 @@ using Atlas.RepeatSearch.Data.Models;
 using Atlas.RepeatSearch.Data.Repositories;
 using Atlas.RepeatSearch.Models;
 using Atlas.RepeatSearch.Services.ResultSetTracking;
+using Atlas.RepeatSearch.Settings;
 using Atlas.RepeatSearch.Settings.Azure;
 using Atlas.RepeatSearch.Settings.ServiceBus;
 using Atlas.SearchTracking.Common.Enums;
@@ -50,6 +52,8 @@ namespace Atlas.RepeatSearch.Services.Search
         private readonly IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender;
         private readonly MatchingAlgorithmSearchTrackingContext matchingAlgorithmSearchTrackingContext;
         private readonly ISearchTrackingEventPublisher searchTrackingEventPublisher;
+        private readonly TimeSpan originalResultsWaitInterval;
+        private readonly TimeSpan maxWaitForOriginalResults;
 
         public RepeatSearchRunner(
             IRepeatSearchServiceBusClient repeatSearchServiceBusClient,
@@ -67,7 +71,8 @@ namespace Atlas.RepeatSearch.Services.Search
             MessagingServiceBusSettings messagingServiceBusSettings,
             IRepeatSearchMatchingFailureNotificationSender repeatSearchMatchingFailureNotificationSender,
             MatchingAlgorithmSearchTrackingContext matchingAlgorithmSearchTrackingContext,
-            ISearchTrackingEventPublisher searchTrackingEventPublisher)
+            ISearchTrackingEventPublisher searchTrackingEventPublisher,
+            RepeatSearchSettings repeatSearchSettings)
         {
             this.repeatSearchServiceBusClient = repeatSearchServiceBusClient;
             this.searchService = searchService;
@@ -85,6 +90,8 @@ namespace Atlas.RepeatSearch.Services.Search
             this.repeatSearchMatchingFailureNotificationSender = repeatSearchMatchingFailureNotificationSender;
             this.matchingAlgorithmSearchTrackingContext = matchingAlgorithmSearchTrackingContext;
             this.searchTrackingEventPublisher = searchTrackingEventPublisher;
+            originalResultsWaitInterval = TimeSpan.FromSeconds(repeatSearchSettings.OriginalResultsWaitIntervalSeconds);
+            maxWaitForOriginalResults = TimeSpan.FromMinutes(repeatSearchSettings.MaxWaitForOriginalResultsMinutes);
         }
 
         public async Task RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest, int attemptNumber, DateTimeOffset enqueuedTimeUtc)
@@ -110,11 +117,19 @@ namespace Atlas.RepeatSearch.Services.Search
             matchingAlgorithmSearchTrackingContext.OriginalSearchIdentifier = new Guid(originalSearchRequestId);
             matchingAlgorithmSearchTrackingContext.AttemptNumber = (byte)attemptNumber;
 
+            // Must run before the search tracking initiation event: a wait is not an attempt of the repeat search.
+            if (await WaitForOriginalSearchResultSetIfNotStored(identifiedRepeatSearchRequest, enqueuedTimeUtc))
+            {
+                return;
+            }
+
             try
             {
                 // Must run before validation: search tracking creates the attempt row on this event, and the completed event sent from
                 // `finally` needs that row, else it is retried until dead-lettered.
-                await searchTrackingEventPublisher.ProcessInitiation(enqueuedTimeUtc.UtcDateTime, searchStartTime.UtcDateTime);
+                // After a wait for the original results, the request was queued at its first message, not at this one.
+                var initiationTimeUtc = identifiedRepeatSearchRequest.FirstRequestTimeUtc ?? enqueuedTimeUtc;
+                await searchTrackingEventPublisher.ProcessInitiation(initiationTimeUtc.UtcDateTime, searchStartTime.UtcDateTime);
 
                 await repeatSearchValidator.ValidateRepeatSearchAndThrow(identifiedRepeatSearchRequest.RepeatSearchRequest);
 
@@ -249,6 +264,50 @@ namespace Atlas.RepeatSearch.Services.Search
                     identifiedRepeatSearchRequest, attemptNumber, 0, ex.Message);
                 resultsSentTime = DateTime.UtcNow;
             }
+        }
+
+        /// <summary>
+        /// The result set of the original search can be stored after the repeat search is requested, for example when a large search
+        /// is stored before it. Until the maximum wait, a repeat search whose original result set is not stored yet is published again
+        /// with a delay, and the current message is completed. After the maximum wait, the repeat search runs, and validation fails it.
+        /// </summary>
+        /// <returns>True if the request was published again to wait, so this run must stop.</returns>
+        private async Task<bool> WaitForOriginalSearchResultSetIfNotStored(
+            IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest,
+            DateTimeOffset enqueuedTimeUtc)
+        {
+            var originalSearchId = identifiedRepeatSearchRequest.RepeatSearchRequest?.OriginalSearchId;
+
+            // An invalid request fails validation at once: there is nothing to wait for.
+            if (string.IsNullOrWhiteSpace(originalSearchId))
+            {
+                return false;
+            }
+
+            var firstRequestTimeUtc = identifiedRepeatSearchRequest.FirstRequestTimeUtc ?? enqueuedTimeUtc;
+            var timeWaited = TimeSpan.FromSeconds(Math.Floor((DateTimeOffset.UtcNow - firstRequestTimeUtc).TotalSeconds));
+
+            if (timeWaited >= maxWaitForOriginalResults || await repeatSearchValidator.IsOriginalSearchResultSetStored(originalSearchId))
+            {
+                return false;
+            }
+
+            identifiedRepeatSearchRequest.FirstRequestTimeUtc = firstRequestTimeUtc;
+            await repeatSearchServiceBusClient.PublishToRepeatSearchRequestsTopic(
+                identifiedRepeatSearchRequest, DateTimeOffset.UtcNow + originalResultsWaitInterval);
+
+            repeatSearchLogger.SendTrace(
+                $"Original search results are not stored yet for repeat search id: {identifiedRepeatSearchRequest.RepeatSearchId} " +
+                $"(search id: {originalSearchId}). Waited {timeWaited} so far; the repeat search will run again in {originalResultsWaitInterval}.",
+                LogLevel.Info,
+                new Dictionary<string, string>
+                {
+                    { "OriginalSearchId", originalSearchId },
+                    { "RepeatSearchId", identifiedRepeatSearchRequest.RepeatSearchId },
+                    { "TimeWaitedSeconds", timeWaited.TotalSeconds.ToString(CultureInfo.InvariantCulture) }
+                });
+
+            return true;
         }
 
         private async Task<SearchResultDifferential> CalculateAndStoreResultsDiff(

@@ -72,5 +72,24 @@ namespace Atlas.RepeatSearch.Test.Services.Search
                 .Invoking(v => v.ValidateRepeatSearchAndThrow(repeatSearch))
                 .Should().ThrowAsync<ValidationException>();
         }
+
+        [Test]
+        public async Task IsOriginalSearchResultSetStored_WhenResultSetIsStored_ReturnsTrue()
+        {
+            var isStored = await repeatSearchValidator.IsOriginalSearchResultSetStored("stored-search-request");
+
+            isStored.Should().BeTrue();
+        }
+
+        [Test]
+        public async Task IsOriginalSearchResultSetStored_WhenResultSetIsNotStored_ReturnsFalse()
+        {
+            const string searchId = "not-stored-search-request";
+            canonicalResultSetRepository.GetCanonicalResultSetSummary(searchId).Returns(null as CanonicalResultSet);
+
+            var isStored = await repeatSearchValidator.IsOriginalSearchResultSetStored(searchId);
+
+            isStored.Should().BeFalse();
+        }
     }
 }

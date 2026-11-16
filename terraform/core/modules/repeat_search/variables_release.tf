@@ -29,6 +29,14 @@ variable "MAX_SCALE_OUT" {
   type = number
 }
 
+variable "MAX_WAIT_FOR_ORIGINAL_RESULTS_MINUTES" {
+  type = number
+}
+
+variable "ORIGINAL_RESULTS_WAIT_INTERVAL_SECONDS" {
+  type = number
+}
+
 variable "REPEAT_SEARCH_RESULTS_READY_SUBSCRIPTION_NAMES" {
   type    = list(string)
   default = []
