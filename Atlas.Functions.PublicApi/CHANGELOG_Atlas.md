@@ -110,6 +110,9 @@ Feature flags permit greater control over the release of new features (see this 
 
 #### Blob Storage
 * E: Each app process now uses one Azure Blob Storage client for each storage account. Before, it made a new client for each object that reads or writes blobs: for example, two for each batch message of the match prediction worker. Blob reads and writes do not change.
+* E: Each app process checks that a blob container exists only before its first upload to that container. Before, it checked before each upload, which added one storage request to each upload: for example, to each batch of the match prediction worker.
+  * If two apps make the same container at the same time, the upload no longer fails.
+  * Do not delete a blob container while the apps run. An app that has checked a container does not make it again until the app restarts, and its uploads to that container fail.
 
 ### 4.1.0
 

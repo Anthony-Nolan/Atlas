@@ -13,11 +13,14 @@ namespace Atlas.Common.AzureStorage.Blob
 {
     public class BlobUploader : AzureStorageBlobClient
     {
-        private readonly JsonSerializer serializer;
+        private readonly JsonSerializer serializer = new();
 
         public BlobUploader(string azureStorageConnectionString, IAtlasLogger logger) : base(azureStorageConnectionString, logger, "Upload")
         {
-            serializer = new JsonSerializer();
+        }
+
+        internal BlobUploader(BlobServiceClient serviceClient, IAtlasLogger logger) : base(serviceClient, logger, "Upload")
+        {
         }
 
         public async Task Upload<T>(string container, string filename, T fileContents)
