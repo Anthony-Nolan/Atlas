@@ -187,6 +187,7 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
   site_config {
     application_insights_key  = azurerm_application_insights.atlas.instrumentation_key
     pre_warmed_instance_count = 1
+    use_32_bit_worker         = false
     ftps_state                = "AllAllowed"
     scm_minimum_tls_version   = "1.2"
     cors {

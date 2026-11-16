@@ -66,6 +66,7 @@ resource "azurerm_windows_function_app" "atlas_search_tracking_function" {
 
     app_scale_limit = 1
 
+    use_32_bit_worker       = false
     ftps_state              = "AllAllowed"
     scm_minimum_tls_version = "1.0"
   }

@@ -92,6 +92,7 @@ resource "azurerm_windows_function_app" "atlas_donor_import_function" {
     pre_warmed_instance_count = 1
     app_scale_limit           = var.MAX_INSTANCES
 
+    use_32_bit_worker       = false
     ftps_state              = "AllAllowed"
     scm_minimum_tls_version = "1.2"
   }
