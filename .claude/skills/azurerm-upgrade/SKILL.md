@@ -40,10 +40,8 @@ migration of Atlas's azurerm provider from **{SOURCE_VERSION}** to
 ## Context assumptions
 
 - The engineer is experienced with Terraform and Azure.
-- This repo has **two independent Terraform roots**, each with their own
-  `versions.tf` provider constraint and their own `.terraform.lock.hcl`:
-  `terraform/core` and `terraform/system-tests`. Both must be upgraded —
-  check each one independently in every phase, don't assume a single root.
+- This repo has one Terraform root, `terraform/core`, with its own
+  `versions.tf` provider constraint and `.terraform.lock.hcl`.
 - The codebase uses Terraform workspaces for environment separation. Atlas's
   actual workspaces and var-files are:
 
@@ -86,15 +84,14 @@ version-specific changelog file). If any exist:
 ## Phase 1 — Codebase Analysis
 
 Before proposing any changes, scan the full Terraform codebase and produce a
-structured inventory — **separately for `terraform/core` and
-`terraform/system-tests`**, since they version and apply independently.
+structured inventory of `terraform/core`.
 
 Steps:
 
-1. List every `azurerm_*` resource type and data source in use, per root.
+1. List every `azurerm_*` resource type and data source in use.
 2. For each, record the file path (relative to repo root) and approximate
    usage count.
-3. Identify the provider version constraint in each root's `versions.tf`
+3. Identify the provider version constraint in `versions.tf`
    (`required_providers`, `version = "~> X.Y"`, etc.) and its
    `.terraform.lock.hcl`.
 4. Look up the {SOURCE_VERSION} → {TARGET_VERSION} upgrade path using, in
@@ -114,7 +111,7 @@ Steps:
 
 ### Output format
 
-Produce this table (Markdown), one per Terraform root:
+Produce this table (Markdown):
 
 ```
 | Resource Type | File | Count | Breaking Change Risk |
@@ -132,14 +129,14 @@ count**.
 
 ## Phase 2 — Breaking Changes Report
 
-Cross-reference the Phase 1 inventory (both roots) against the azurerm
+Cross-reference the Phase 1 inventory against the azurerm
 CHANGELOG entries between {SOURCE_VERSION} and {TARGET_VERSION}.
 
 For every breaking change that applies to this codebase:
 
 - State the change: removed resource / renamed argument / type change /
   behavior change.
-- Name the affected HCL attribute or block, and which root(s) it appears in.
+- Name the affected HCL attribute or block, and the file(s) it appears in.
 - Show a minimal before → after code snippet (3–5 lines max, fenced `hcl`).
 - Classify impact: **plan-time error** | **apply-time error** | **silent
   behavior change**.
@@ -174,21 +171,21 @@ Migration proceeds sequentially by risk tier: **atlas-dev → atlas-uat →
 atlas-production → atlas-wmda-uat-new → atlas-wmda-live**. Both `atlas-production` and
 `atlas-wmda-live` are production and carry the same constraints (3.3).
 
-The code changes are made once per root (they are shared across workspaces
-within that root). What differs per workspace is the validation and apply
-cycle, because each workspace targets a different var-file and state.
+The code changes are made once (they are shared across workspaces). What
+differs per workspace is the validation and apply cycle, because each
+workspace targets a different var-file and state.
 
 If the user declares different workspace names, adapt accordingly (and flag
 the mismatch per "Clarification Behavior").
 
-### 3.1 — Pre-migration (run once per Terraform root, before any workspace)
+### 3.1 — Pre-migration (run once, before any workspace)
 
 1. Back up all workspace state files (remote snapshot or `terraform state pull`
-   per workspace) for that root.
+   per workspace).
 2. Verify no state locks are held: `terraform force-unlock` if stale.
 3. Apply code changes from Phase 2 (provider pin to {TARGET_VERSION},
-   resource/attribute fixes) to that root.
-4. From the root directory, run:
+   resource/attribute fixes).
+4. From `terraform/core`, run:
 
    ```bash
    terraform init -upgrade \
@@ -197,13 +194,9 @@ the mismatch per "Clarification Behavior").
      -backend-config="resource_group_name=AN-RESOURCE-GROUP"
    ```
 
-   to pull the new provider and update `.terraform.lock.hcl`. Repeat for
-   `terraform/system-tests` — it has its own lock file and provider
-   constraint.
+   to pull the new provider and update `.terraform.lock.hcl`.
 
-### 3.2 — Iterative validation loop (run per workspace, `terraform/core` only —
-`system-tests` is not workspace-per-environment; validate it once against its
-own state after 3.1)
+### 3.2 — Iterative validation loop (run per workspace)
 
 For each of the 5 workspaces in turn, run:
 
