@@ -212,6 +212,7 @@ Give each test project its own databases, so that one project's tests cannot cla
 | `Atlas.DonorImport.Test.Integration` | `ConnectionStrings__DonorStoreSql` |
 | `Atlas.MatchPrediction.Test.Integration` | `ConnectionStrings__MatchPredictionSql` |
 | `Atlas.MultipleAlleleCodeDictionary.Test.Integration` | none: it only needs Azurite |
+| `Atlas.RepeatSearch.Test.Integration` | `ConnectionStrings__RepeatSearchSql` |
 
 Each connection string has the form:
 `Server=localhost,14330;User ID=sa;Password=Atlas-System-Tests-1;Initial Catalog=<database>;MultipleActiveResultSets=True;TrustServerCertificate=True;`

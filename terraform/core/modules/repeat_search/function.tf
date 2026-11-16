@@ -64,6 +64,7 @@ resource "azurerm_windows_function_app" "atlas_repeat_search_function" {
     "SearchTrackingServiceBus:SendRetryCount"                  = var.SERVICE_BUS_SEND_RETRY_COUNT
     "SearchTrackingServiceBus:SendRetryCooldownSeconds"        = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
     "StoreOriginalSearchResultsBulkCopy:BatchSize"             = var.STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_BATCHSIZE
+    "StoreOriginalSearchResultsBulkCopy:ChunkSize"             = var.STORE_ORIGINAL_SEARCH_RESULTS_CHUNK_SIZE
     "StoreOriginalSearchResultsBulkCopy:Timeout"               = var.STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_TIMEOUT
 
     "WEBSITE_RUN_FROM_PACKAGE" = "1"

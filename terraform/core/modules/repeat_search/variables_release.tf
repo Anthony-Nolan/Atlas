@@ -67,6 +67,10 @@ variable "STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_TIMEOUT" {
   type = number
 }
 
+variable "STORE_ORIGINAL_SEARCH_RESULTS_CHUNK_SIZE" {
+  type = number
+}
+
 // External SQL variables
 variable "USE_EXTERNAL_SQL" {
   type    = bool
