@@ -311,8 +311,8 @@ variable "MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT" {
 
 variable "MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS" {
   type        = number
-  default     = 3
-  description = "Maximum number of service bus messages the match prediction worker's ServiceBusProcessor handles concurrently. Aligned with match prediction request parallelism."
+  default     = 4
+  description = "Maximum number of service bus messages (batches) the match prediction worker's ServiceBusProcessor handles concurrently per replica. Keep equal to MATCH_PREDICTION_CONTAINER_ACA_SCALE_RULE_MESSAGE_COUNT."
 }
 
 variable "MATCH_PREDICTION_WORKER_MAX_CACHED_FREQUENCY_SETS" {
@@ -849,8 +849,8 @@ variable "MATCH_PREDICTION_CONTAINER_MAX_REPLICAS" {
 
 variable "MATCH_PREDICTION_CONTAINER_ACA_SCALE_RULE_MESSAGE_COUNT" {
   type        = number
-  default     = 3
-  description = "Message threshold for the match prediction container ACA Service Bus custom scale rule. Override via TF_VAR_MATCH_PREDICTION_CONTAINER_ACA_SCALE_RULE_MESSAGE_COUNT."
+  default     = 4
+  description = "Message threshold for the match prediction container ACA Service Bus custom scale rule. Keep equal to MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS (batches per replica). Override via TF_VAR_MATCH_PREDICTION_CONTAINER_ACA_SCALE_RULE_MESSAGE_COUNT."
 }
 
 variable "MATCH_PREDICTION_CONTAINER_SCALE_RULE_POLLING_INTERVAL_SECONDS" {
@@ -861,8 +861,8 @@ variable "MATCH_PREDICTION_CONTAINER_SCALE_RULE_POLLING_INTERVAL_SECONDS" {
 
 variable "MATCH_PREDICTION_CONTAINER_REQUESTS_MAX_PARALLELISM" {
   type        = number
-  default     = 2
-  description = "Maximum number of match prediction requests processed in parallel per Container App replica. Override via TF_VAR_MATCH_PREDICTION_CONTAINER_REQUESTS_MAX_PARALLELISM."
+  default     = 3
+  description = "Maximum number of match prediction requests (threads) processed in parallel within one batch on a Container App replica. Override via TF_VAR_MATCH_PREDICTION_CONTAINER_REQUESTS_MAX_PARALLELISM."
 }
 
 variable "MATCHING_PRECOMPUTE_WORKER_CONTAINER_IMAGE_TAG" {
