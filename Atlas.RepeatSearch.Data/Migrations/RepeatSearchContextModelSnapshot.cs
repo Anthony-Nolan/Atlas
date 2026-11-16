@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
+#nullable disable
+
 namespace Atlas.RepeatSearch.Data.Migrations
 {
     [DbContext(typeof(RepeatSearchContext))]
@@ -16,36 +18,45 @@ namespace Atlas.RepeatSearch.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("RepeatSearch")
-                .HasAnnotation("ProductVersion", "3.1.4")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                .HasAnnotation("ProductVersion", "10.0.9")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("Atlas.RepeatSearch.Data.Models.CanonicalResultSet", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("OriginalSearchRequestId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(200)")
-                        .HasMaxLength(200);
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("StoreAttemptId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
                     b.HasIndex("OriginalSearchRequestId")
                         .IsUnique();
 
-                    b.ToTable("CanonicalResultSets");
+                    b.ToTable("CanonicalResultSets", "RepeatSearch");
                 });
 
             modelBuilder.Entity("Atlas.RepeatSearch.Data.Models.RepeatSearchHistoryRecord", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AddedResultCount")
                         .HasColumnType("int");
@@ -55,16 +66,16 @@ namespace Atlas.RepeatSearch.Data.Migrations
 
                     b.Property<string>("OriginalSearchRequestId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(200)")
-                        .HasMaxLength(200);
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<int>("RemovedResultCount")
                         .HasColumnType("int");
 
                     b.Property<string>("RepeatSearchRequestId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(200)")
-                        .HasMaxLength(200);
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTimeOffset>("SearchCutoffDate")
                         .HasColumnType("datetimeoffset");
@@ -74,23 +85,24 @@ namespace Atlas.RepeatSearch.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("RepeatSearchHistoryRecords");
+                    b.ToTable("RepeatSearchHistoryRecords", "RepeatSearch");
                 });
 
             modelBuilder.Entity("Atlas.RepeatSearch.Data.Models.SearchResult", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CanonicalResultSetId")
                         .HasColumnType("int");
 
                     b.Property<string>("ExternalDonorCode")
                         .IsRequired()
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.HasKey("Id");
 
@@ -99,7 +111,7 @@ namespace Atlas.RepeatSearch.Data.Migrations
                     b.HasIndex("ExternalDonorCode", "CanonicalResultSetId")
                         .IsUnique();
 
-                    b.ToTable("SearchResults");
+                    b.ToTable("SearchResults", "RepeatSearch");
                 });
 
             modelBuilder.Entity("Atlas.RepeatSearch.Data.Models.SearchResult", b =>
@@ -109,6 +121,11 @@ namespace Atlas.RepeatSearch.Data.Migrations
                         .HasForeignKey("CanonicalResultSetId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Atlas.RepeatSearch.Data.Models.CanonicalResultSet", b =>
+                {
+                    b.Navigation("SearchResults");
                 });
 #pragma warning restore 612, 618
         }

@@ -84,6 +84,15 @@ Feature flags permit greater control over the release of new features (see this 
 #### Matching Algorithm
 * E: The matching algorithm and donor management functions apps now load every HLA metadata lookup table of the active nomenclature version except the allele groups when they start and each night (`UpdateHlaMetadataDictionaryCache`), not only the allele names. Before, an app loaded the other tables only when it first read them, and read single rows until a table was loaded. So each app now keeps more lookups in memory, also some that it does not read: the scoring, DPB1 TCE group and serology to alleles lookups in donor management, and the small g group and G group to P group lookups in the matching algorithm app. See [Caching](/README_HlaMetadataDictionary.md#caching).
 
+#### Repeat Search
+* BF: The repeat search functions app (`StoreOriginalSearchResults`) now stores the donor codes of an original search in chunks, and no longer loads the whole results into memory. Before, it deserialised all the matching results, with their scoring data and donor HLA, only to get the donor codes, and inserted them in one transaction with a 30 s timeout: large searches ran out of memory (for example 175,000 donors and more on DEV), and on WMDA LIVE about 18 % of runs failed on the SQL timeout. A retry started again from zero.
+  * The app reads only the donor codes: a single results file as a stream, and batched results one file at a time. Memory use no longer grows with the number of donors.
+  * Each chunk is inserted and committed on its own. The new app setting `StoreOriginalSearchResultsBulkCopy:ChunkSize` (Terraform variable `STORE_ORIGINAL_SEARCH_RESULTS_CHUNK_SIZE`, default `50000`) sets the number of donor codes in a chunk. The timeout `StoreOriginalSearchResultsBulkCopy:Timeout` (`STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_TIMEOUT`, default 30 s) now applies to each chunk.
+  * A canonical result set now has a status: `InProgress` while it is stored, `Complete` at the end. If the results message is delivered again while the set is in progress, the new delivery takes over the set, deletes its rows and stores it again; the earlier delivery can no longer add chunks or complete it. A delivery after the set is complete does nothing, as before. The set is only completed when the number of donor codes read equals `NumberOfResults` of the notification.
+  * Repeat searches use only complete sets: a repeat search whose original set is still in progress fails validation with the same message as when there is no set.
+  * Each stored set sends the custom event `Original search results stored` to Application Insights, with the search request id and the number of donors, the number of chunks and the time taken.
+  * The migration adds the `Status` and `StoreAttemptId` columns to `RepeatSearch.CanonicalResultSets` (see the [data changelog](/Atlas.RepeatSearch.Data/CHANGELOG_Data.md)). Existing sets are `Complete`.
+
 ### 4.1.0
 
 #### Debug

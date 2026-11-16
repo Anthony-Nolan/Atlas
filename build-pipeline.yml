@@ -397,6 +397,7 @@ stages:
         Atlas.DonorImport.Test.Integration
         Atlas.MatchPrediction.Test.Integration
         Atlas.MultipleAlleleCodeDictionary.Test.Integration
+        Atlas.RepeatSearch.Test.Integration
         Atlas.Common.Test.Integration
     steps:
     - checkout: self
@@ -528,7 +529,7 @@ stages:
 
   # The smaller suites, one after the other, each in its own database.
   - job: Other_Integration_Tests
-    displayName: 'Donor Import, Match Prediction and MAC Dictionary Integration Tests'
+    displayName: 'Donor Import, Match Prediction, MAC Dictionary and Repeat Search Integration Tests'
     pool:
       vmImage: 'ubuntu-latest'
     steps:
@@ -546,6 +547,10 @@ stages:
             ConnectionStrings__MatchPredictionSql: '$(sqlServerConnection)Initial Catalog=AtlasMatchPredictionIntegrationTests;'
         - project: Atlas.MultipleAlleleCodeDictionary.Test.Integration
           testRunTitle: 'MAC Dictionary Integration Tests'
+        - project: Atlas.RepeatSearch.Test.Integration
+          testRunTitle: 'Repeat Search Integration Tests'
+          env:
+            ConnectionStrings__RepeatSearchSql: '$(sqlServerConnection)Initial Catalog=AtlasRepeatSearchIntegrationTests;'
 
   # The tests do not use SQL. The Service Bus emulator does: it keeps its entities in a SQL Server container.
   - job: Service_Bus_Emulator_Tests

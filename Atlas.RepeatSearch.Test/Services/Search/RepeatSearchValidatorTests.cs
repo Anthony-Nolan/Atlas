@@ -24,7 +24,8 @@ namespace Atlas.RepeatSearch.Test.Services.Search
         {
             canonicalResultSetRepository = Substitute.For<ICanonicalResultSetRepository>();
 
-            canonicalResultSetRepository.GetCanonicalResultSetSummary(default).ReturnsForAnyArgs(new CanonicalResultSet());
+            canonicalResultSetRepository.GetCanonicalResultSetSummary(default)
+                .ReturnsForAnyArgs(new CanonicalResultSet { Status = CanonicalResultSetStatus.Complete });
             
             repeatSearchValidator = new RepeatSearchValidator(canonicalResultSetRepository);
         }
@@ -67,6 +68,26 @@ namespace Atlas.RepeatSearch.Test.Services.Search
             };
 
             canonicalResultSetRepository.GetCanonicalResultSetSummary(searchId).Returns(null as CanonicalResultSet);
+
+            await repeatSearchValidator
+                .Invoking(v => v.ValidateRepeatSearchAndThrow(repeatSearch))
+                .Should().ThrowAsync<ValidationException>();
+        }
+
+        [Test]
+        public async Task ValidateRepeatSearchRequest_WhenOriginalResultSetIsInProgress_ThrowsException()
+        {
+            const string searchId = "in-progress-search-request";
+
+            var repeatSearch = new RepeatSearchRequest
+            {
+                SearchRequest = new SearchRequestBuilder().Build(),
+                OriginalSearchId = searchId,
+                SearchCutoffDate = DateTimeOffset.Now
+            };
+
+            canonicalResultSetRepository.GetCanonicalResultSetSummary(searchId)
+                .Returns(new CanonicalResultSet { Status = CanonicalResultSetStatus.InProgress });
 
             await repeatSearchValidator
                 .Invoking(v => v.ValidateRepeatSearchAndThrow(repeatSearch))

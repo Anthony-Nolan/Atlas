@@ -761,7 +761,13 @@ variable "STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_BATCHSIZE" {
 variable "STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_TIMEOUT" {
   type        = number
   default     = 30
-  description = "Timeout for bulk copying repeat search results to the database, in seconds"
+  description = "Timeout for bulk copying repeat search results to the database, in seconds. It applies to each chunk of an original search result set (see STORE_ORIGINAL_SEARCH_RESULTS_CHUNK_SIZE)."
+}
+
+variable "STORE_ORIGINAL_SEARCH_RESULTS_CHUNK_SIZE" {
+  type        = number
+  default     = 50000
+  description = "Number of donor codes in each chunk when the repeat search app stores the results of an original search. Each chunk is read, inserted and committed on its own, so this is how many donor codes the app holds in memory at once."
 }
 
 variable "TERRAFORM_RESOURCE_GROUP_NAME" {

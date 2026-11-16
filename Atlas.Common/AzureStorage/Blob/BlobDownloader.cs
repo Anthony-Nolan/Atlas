@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.IO;
 using Atlas.Common.ApplicationInsights;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -50,6 +51,13 @@ namespace Atlas.Common.AzureStorage.Blob
         /// <param name="folderName">Name of the folder to download files from</param>
         /// <returns>An enumerator with collection of objects of type <typeparamref name="T"></returns>
         IAsyncEnumerable<IEnumerable<T>> DownloadFolderContentsFileByFile<T>(string container, string folderName);
+
+        /// <summary>
+        /// Opens the file with the name <paramref name="filename"/> from blob container <paramref name="container"/> as a stream, which
+        /// downloads the file in parts while it is read. Use it to read a large file without holding all of it in memory.
+        /// The caller must dispose the stream.
+        /// </summary>
+        Task<Stream> OpenRead(string container, string filename);
     }
     
     public class BlobDownloader : AzureStorageBlobClient, IBlobDownloader
@@ -115,6 +123,19 @@ namespace Atlas.Common.AzureStorage.Blob
 
             sw.Stop();
             SendAzureStorageEvent(folderName, container, sw.ElapsedMilliseconds);
+        }
+
+        public async Task<Stream> OpenRead(string container, string filename)
+        {
+            var containerClient = GetBlobContainer(container);
+            try
+            {
+                return await containerClient.GetBlobClient(filename).OpenReadAsync();
+            }
+            catch (RequestFailedException ex) when (ex.ErrorCode == "BlobNotFound")
+            {
+                throw new BlobNotFoundException(containerClient.Name, filename);
+            }
         }
 
         private async Task<T> GetBlobData<T>(BlobContainerClient containerClient, string filename)
