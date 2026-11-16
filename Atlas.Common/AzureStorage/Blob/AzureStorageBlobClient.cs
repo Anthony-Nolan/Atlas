@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -9,23 +10,33 @@ namespace Atlas.Common.AzureStorage.Blob
 {
     public abstract class AzureStorageBlobClient
     {
-        private readonly BlobServiceClient blobClient;
+        // Azure SDK clients are thread-safe and hold no connections of their own, so one client per storage account can serve the
+        // whole process. Most instances of this class are made per scope, and a process can use more than one storage account.
+        // Lazy makes only one client per connection string, also when two threads ask for it at the same time.
+        private static readonly ConcurrentDictionary<string, Lazy<BlobServiceClient>> ServiceClientsByConnectionString = new();
+
         protected readonly IAtlasLogger logger;
         private readonly string logLabel;
 
         protected AzureStorageBlobClient(string azureStorageConnectionString, IAtlasLogger logger, string logLabel)
         {
-            blobClient = new BlobServiceClient(azureStorageConnectionString);
+            ArgumentNullException.ThrowIfNull(azureStorageConnectionString);
+            ServiceClient = ServiceClientsByConnectionString
+                .GetOrAdd(azureStorageConnectionString,
+                    connectionString => new Lazy<BlobServiceClient>(() => new BlobServiceClient(connectionString)))
+                .Value;
             this.logger = logger;
             this.logLabel = logLabel;
         }
+
+        internal BlobServiceClient ServiceClient { get; }
 
         /// <summary>
         ///  Gets blob container reference without any check to see if it exists or not.
         /// </summary>
         protected BlobContainerClient GetBlobContainer(string containerName)
         {
-            return blobClient.GetBlobContainerClient(containerName);
+            return ServiceClient.GetBlobContainerClient(containerName);
         }
 
         /// <summary>
@@ -33,7 +44,7 @@ namespace Atlas.Common.AzureStorage.Blob
         /// </summary>
         protected async Task<BlobContainerClient> CreateAndGetBlobContainer(string containerName)
         {
-            var container = blobClient.GetBlobContainerClient(containerName);
+            var container = ServiceClient.GetBlobContainerClient(containerName);
 
             // avoiding the use of the `CreateIfNotExists` method as it seems to send a CreateContainer API call even when the container already exists.
 
