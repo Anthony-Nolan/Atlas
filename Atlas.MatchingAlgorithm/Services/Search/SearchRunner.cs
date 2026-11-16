@@ -15,6 +15,7 @@ using Atlas.MatchingAlgorithm.Validators.SearchRequest;
 using Atlas.SearchTracking.Common.Enums;
 using FluentValidation;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -101,7 +102,17 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 await new SearchRequestValidator().ValidateAndThrowAsync(identifiedSearchRequest.SearchRequest);
 
                 searchStopWatch.Start();
-                var results = (await searchService.Search(identifiedSearchRequest.SearchRequest, null)).ToList();
+                List<MatchingAlgorithmResult> results;
+                // ATL-526 experiment: a redelivered message is not run again, so one long failed attempt is not retried 10 times.
+                if (MatchingTimeExperiment.IsOn && attemptNumber > 1)
+                {
+                    MatchingTimeExperiment.SendSkippedRetry(identifiedSearchRequest.SearchRequest, attemptNumber, searchLogger);
+                    results = new List<MatchingAlgorithmResult>();
+                }
+                else
+                {
+                    results = (await searchService.Search(identifiedSearchRequest.SearchRequest, null)).ToList();
+                }
                 searchStopWatch.Stop();
 
                 var searchResultSet = new OriginalMatchingAlgorithmResultSet

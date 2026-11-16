@@ -92,6 +92,35 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
                 searchTrackingEventPublisher);
         }
 
+        [TearDown]
+        public void TearDown()
+        {
+            MatchingTimeExperiment.ModeOverride = null;
+        }
+
+        [Test]
+        public async Task RunSearch_WhenMatchingTimeExperimentIsOnAndMessageIsRedelivered_DoesNotRunSearch()
+        {
+            MatchingTimeExperiment.ModeOverride = MatchingTimeExperimentMode.MatchingOnly;
+            const string id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
+
+            await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest }, 2, default);
+
+            await searchService.DidNotReceiveWithAnyArgs().Search(default);
+            await searchServiceBusClient.Received().PublishToResultsNotificationTopic(Arg.Is<MatchingResultsNotification>(n => n.NumberOfResults == 0));
+        }
+
+        [Test]
+        public async Task RunSearch_WhenMatchingTimeExperimentIsOnAndFirstAttempt_RunsSearch()
+        {
+            MatchingTimeExperiment.ModeOverride = MatchingTimeExperimentMode.MatchingOnly;
+            const string id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
+
+            await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = id, SearchRequest = DefaultMatchingRequest }, 1, default);
+
+            await searchService.ReceivedWithAnyArgs().Search(default);
+        }
+
         [Test]
         public async Task RunSearch_RunsSearch()
         {

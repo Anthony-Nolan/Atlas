@@ -66,6 +66,25 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
             var matches = RunSubSearches(splitSearch, cutOffDate, new NonHlaFilteringCriteria { RegistryCodes = matchingRequest.DonorRegistryCodes});
 
+            // ATL-526 experiment: measure matching for very large searches and return no results.
+            var experimentMode = MatchingTimeExperiment.Mode;
+            if (experimentMode != MatchingTimeExperimentMode.Normal)
+            {
+                await MatchingTimeExperiment.Run(
+                    experimentMode,
+                    matchingRequest,
+                    splitSearch.Count,
+                    matches,
+                    experimentMatches => scoringService.StreamScoring(new StreamingMatchResultsScoringRequest
+                    {
+                        PatientHla = matchingRequest.SearchHlaData,
+                        MatchResults = experimentMatches,
+                        ScoringCriteria = matchingRequest.ScoringCriteria
+                    }),
+                    searchLogger);
+                return new List<MatchingAlgorithmResult>();
+            }
+
             var request = new StreamingMatchResultsScoringRequest
             {
                 PatientHla = matchingRequest.SearchHlaData,
