@@ -49,6 +49,20 @@ namespace Atlas.Common.ApplicationInsights.Timing
             }
         }
 
+        public static async Task RunTimedAsync(
+            this IAtlasLogger logger,
+            string completionMessage,
+            Func<Task> action,
+            LogLevel logLevel = LogLevel.Info,
+            bool logAtStart = false
+        )
+        {
+            using (logger.RunTimed(completionMessage, logLevel, logAtStart))
+            {
+                await action();
+            }
+        }
+
         /// <summary>
         /// Allow you to select using sub-blocks to time.
         /// Tracks how long it takes to run the contents of those blocks, then logs the elapsed time along with a provided message. 

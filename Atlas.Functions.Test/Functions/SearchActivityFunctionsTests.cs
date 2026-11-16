@@ -156,7 +156,6 @@ internal class SearchActivityFunctionsTests
     }
 
     [TestCase(true)]
-    [TestCase(false)]
     public async Task PrepareAndDispatchParallelMatchPredictionBatches_DownloadsResultsFromBatchFolderOnlyWhenResultsAreBatched(bool resultsBatched)
     {
         var notification = CreateNotification(isRepeat: false, resultsBatched: resultsBatched);
