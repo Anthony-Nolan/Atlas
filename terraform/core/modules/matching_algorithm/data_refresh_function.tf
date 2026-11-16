@@ -10,7 +10,7 @@ locals {
   data_refresh_func_app_settings = {
     "ApplicationInsights:LogLevel" = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
-    "AutoMapper:LicenseKey" = var.AUTOMAPPER_LICENSE_KEY
+    "AutoMapper:LicenseKey" = var.key_vault.secret_refs["automapper-license-key"]
 
     "AzureManagement:Authentication:ClientId"     = var.AZURE_CLIENT_ID
     "AzureManagement:Authentication:ClientSecret" = var.key_vault.secret_refs["azure-client-secret"]

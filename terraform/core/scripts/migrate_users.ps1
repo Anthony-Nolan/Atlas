@@ -19,8 +19,6 @@ $variablesArray =
 "searchTrackingPassword=$env:searchTrackingPassword",
 "searchTrackingSchema=SearchTracking"
 
-Write-Host $variablesArray
-
 Invoke-Sqlcmd -InputFile "sql/createUsers/matchPrediction.sql" -ServerInstance $env:sqlServer -Database $env:matchPredictionDatabaseName -Username $env:sqlServerLogin -Password $env:sqlServerLoginPassword -Variable $variablesArray
 
 Invoke-Sqlcmd -InputFile "sql/createUsers/matchingPersistent.sql" -ServerInstance $env:sqlServer -Database $env:matchingAlgorithmDatabasePersistentName -Username $env:sqlServerLogin -Password $env:sqlServerLoginPassword -Variable $variablesArray

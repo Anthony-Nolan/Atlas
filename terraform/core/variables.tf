@@ -10,24 +10,9 @@ variable "APPLICATION_INSIGHTS_DAILY_DATA_CAP_IN_GB" {
   description = "Daily data cap in GB for Application Insights. Use TF_VAR_APPLICATION_INSIGHTS_DAILY_DATA_CAP_IN_GB environment variable to override for specific environments."
 }
 
-variable "AUTOMAPPER_LICENSE_KEY" {
-  type        = string
-  sensitive   = true
-  description = "AutoMapper commercial license key. Required from AutoMapper 15+. Supplied by the deployment pipeline."
-}
-
 variable "AZURE_CLIENT_ID" {
   type        = string
   description = "Client ID used for authenticating to manage Azure resources from code."
-}
-
-// No longer consumed by any resource: the apps read this value from the hand-seeded "azure-client-secret" Key Vault
-// secret instead. Kept declared because every environment's tfvars still sets it, and it is the source the secret is
-// seeded from - see "Key Vault bootstrap" in README_Deployment.md.
-variable "AZURE_CLIENT_SECRET" {
-  type        = string
-  sensitive   = true
-  description = "Client secret used for authenticating to manage Azure resources from code."
 }
 
 variable "AZURE_OAUTH_BASEURL" {
@@ -51,7 +36,8 @@ variable "DATABASE_SERVER_ADMIN_LOGIN" {
 }
 
 variable "DATABASE_SERVER_ADMIN_LOGIN_PASSWORD" {
-  type = string
+  type      = string
+  sensitive = true
 }
 
 variable "DATABASE_SERVER_AZUREAD_ADMINISTRATOR_LOGIN_USERNAME" {
@@ -111,7 +97,8 @@ variable "DISTRIBUTED_CACHE_SKU_NAME" {
 }
 
 variable "DONOR_DATABASE_PASSWORD" {
-  type = string
+  type      = string
+  sensitive = true
 }
 
 variable "DONOR_DATABASE_USERNAME" {
@@ -294,7 +281,8 @@ variable "MAC_SOURCE" {
 }
 
 variable "MATCH_PREDICTION_DATABASE_PASSWORD" {
-  type = string
+  type      = string
+  sensitive = true
 }
 
 variable "MATCH_PREDICTION_DATABASE_USERNAME" {
@@ -553,7 +541,8 @@ variable "MATCHING_DATABASE_OPERATION_POLLING_INTERVAL_MILLISECONDS" {
 }
 
 variable "MATCHING_DATABASE_PASSWORD" {
-  type = string
+  type      = string
+  sensitive = true
 }
 
 variable "MATCHING_DATABASE_STORAGE_ALERT_THRESHOLD_PERCENT" {
@@ -614,7 +603,8 @@ variable "MATCHING_MESSAGING_BUS_DONOR_CRON_SCHEDULE" {
 }
 
 variable "MATCHING_PASSWORD_FOR_DONOR_IMPORT_DATABASE" {
-  type = string
+  type      = string
+  sensitive = true
 }
 
 variable "MATCHING_USERNAME_FOR_DONOR_IMPORT_DATABASE" {
@@ -670,7 +660,8 @@ variable "ORCHESTRATION_PARALLEL_MATCH_PREDICTION_BATCH_SIZE" {
 }
 
 variable "REPEAT_SEARCH_DATABASE_PASSWORD" {
-  type = string
+  type      = string
+  sensitive = true
 }
 
 variable "REPEAT_SEARCH_DATABASE_USERNAME" {
@@ -715,7 +706,8 @@ variable "SEARCH_RESULTS_READY_SUBSCRIPTION_NAMES" {
 }
 
 variable "SEARCH_TRACKING_DATABASE_PASSWORD" {
-  type = string
+  type      = string
+  sensitive = true
 }
 
 variable "SEARCH_TRACKING_DATABASE_USERNAME" {
