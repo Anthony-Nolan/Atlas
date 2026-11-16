@@ -1,3 +1,5 @@
+using Atlas.Common.ApplicationInsights;
+using Atlas.SearchTracking.Common.ApplicationInsights;
 using Atlas.SearchTracking.Common.Clients;
 using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
@@ -26,7 +28,7 @@ namespace Atlas.SearchTracking.Common.Dispatchers
         Task ProcessResultsSent(Guid searchIdentifier, Guid? originalSearchIdentifier);
     }
 
-    public class MatchPredictionSearchTrackingDispatcher(ISearchTrackingServiceBusClient searchTrackingServiceBusClient)
+    public class MatchPredictionSearchTrackingDispatcher(ISearchTrackingServiceBusClient searchTrackingServiceBusClient, IAtlasLogger logger)
         : IMatchPredictionSearchTrackingDispatcher
     {
         public async Task ProcessInitiation(Guid searchIdentifier, Guid? originalSearchIdentifier, DateTime initiationTime, bool isParallelMatchPrediction, bool isPrecomputedMatchPrediction)
@@ -41,8 +43,7 @@ namespace Atlas.SearchTracking.Common.Dispatchers
                 IsPrecomputedMatchPrediction = isPrecomputedMatchPrediction
             };
 
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                matchPredictionStartedEvent, SearchTrackingEventType.MatchPredictionStarted);
+            await Publish(matchPredictionStartedEvent, SearchTrackingEventType.MatchPredictionStarted);
         }
 
         public async Task ProcessPrepareBatchesStarted(Guid searchIdentifier, Guid? originalSearchIdentifier)
@@ -54,8 +55,7 @@ namespace Atlas.SearchTracking.Common.Dispatchers
                 TimeUtc = DateTime.UtcNow
             };
 
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionBatchPreparationStarted);
+            await Publish(matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionBatchPreparationStarted);
         }
 
         public async Task ProcessPrepareBatchesEnded(Guid searchIdentifier, Guid? originalSearchIdentifier)
@@ -67,8 +67,7 @@ namespace Atlas.SearchTracking.Common.Dispatchers
                 TimeUtc = DateTime.UtcNow
             };
 
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionBatchPreparationEnded);
+            await Publish(matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionBatchPreparationEnded);
         }
 
         public async Task ProcessRunningBatchesStarted(Guid searchIdentifier, Guid? originalSearchIdentifier)
@@ -80,8 +79,7 @@ namespace Atlas.SearchTracking.Common.Dispatchers
                 TimeUtc = DateTime.UtcNow
             };
 
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionRunningBatchesStarted);
+            await Publish(matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionRunningBatchesStarted);
         }
 
         public async Task ProcessRunningBatchesEnded(Guid searchIdentifier, Guid? originalSearchIdentifier)
@@ -93,8 +91,7 @@ namespace Atlas.SearchTracking.Common.Dispatchers
                 TimeUtc = DateTime.UtcNow
             };
 
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionRunningBatchesEnded);
+            await Publish(matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionRunningBatchesEnded);
         }
 
         public async Task ProcessPersistingResultsStarted(Guid searchIdentifier, Guid? originalSearchIdentifier)
@@ -106,8 +103,7 @@ namespace Atlas.SearchTracking.Common.Dispatchers
                 TimeUtc = DateTime.UtcNow
             };
 
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionPersistingResultsStarted);
+            await Publish(matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionPersistingResultsStarted);
         }
 
         public async Task ProcessPersistingResultsEnded(Guid searchIdentifier, Guid? originalSearchIdentifier)
@@ -119,8 +115,7 @@ namespace Atlas.SearchTracking.Common.Dispatchers
                 TimeUtc = DateTime.UtcNow
             };
 
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionPersistingResultsEnded);
+            await Publish(matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionPersistingResultsEnded);
         }
 
         public async Task ProcessCompleted((Guid SearchIdentifier, Guid? OriginalSearchIdentifier, bool IsSuccessful, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches) eventDetails)
@@ -139,8 +134,7 @@ namespace Atlas.SearchTracking.Common.Dispatchers
                 }
             };
 
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                matchPredictionCompletedEvent, SearchTrackingEventType.MatchPredictionCompleted);
+            await Publish(matchPredictionCompletedEvent, SearchTrackingEventType.MatchPredictionCompleted);
         }
 
         public async Task ProcessResultsSent(Guid searchIdentifier, Guid? originalSearchIdentifier)
@@ -152,8 +146,14 @@ namespace Atlas.SearchTracking.Common.Dispatchers
                 TimeUtc = DateTime.UtcNow
             };
 
-            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(
-                matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionResultsSent);
+            await Publish(matchPredictionTimingEvent, SearchTrackingEventType.MatchPredictionResultsSent);
+        }
+
+        // Sent to Application Insights first, so that a Service Bus publish that fails after its retries does not lose the record.
+        private async Task Publish<TEvent>(TEvent searchTrackingEvent, SearchTrackingEventType eventType) where TEvent : ISearchTrackingEvent
+        {
+            logger.SendSearchTrackingEvent(searchTrackingEvent, eventType);
+            await searchTrackingServiceBusClient.PublishSearchTrackingEvent(searchTrackingEvent, eventType);
         }
     }
 }

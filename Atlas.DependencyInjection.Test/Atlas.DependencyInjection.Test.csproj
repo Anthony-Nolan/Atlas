@@ -36,6 +36,7 @@
     <ProjectReference Include="..\Atlas.MatchingAlgorithm.Functions\Atlas.MatchingAlgorithm.Functions.csproj" />
     <ProjectReference Include="..\Atlas.MatchingAlgorithm.Functions.DataRefresh\Atlas.MatchingAlgorithm.Functions.DataRefresh.csproj" />
     <ProjectReference Include="..\Atlas.MatchingAlgorithm.Functions.DonorManagement\Atlas.MatchingAlgorithm.Functions.DonorManagement.csproj" />
+    <ProjectReference Include="..\Atlas.MatchPrediction.Worker\Atlas.MatchPrediction.Worker.csproj" />
     <ProjectReference Include="..\Atlas.RepeatSearch.Functions\Atlas.RepeatSearch.Functions.csproj" />
     <ProjectReference Include="..\Atlas.SearchTracking.Functions\Atlas.SearchTracking.Functions.csproj" />
   </ItemGroup>

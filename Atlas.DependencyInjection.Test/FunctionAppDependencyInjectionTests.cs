@@ -51,7 +51,8 @@ internal class FunctionAppDependencyInjectionTests
 
     /// <summary>The apps that send search tracking events to Application Insights.</summary>
     private static IEnumerable<TestCaseData> SearchTrackingApps() =>
-        FunctionApps().Where(testCase => testCase.Arguments[0] is FunctionApp { Name: "PublicApi" or "MatchingAlgorithm" or "RepeatSearch" });
+        FunctionApps().Where(testCase =>
+            testCase.Arguments[0] is FunctionApp { Name: "Functions" or "PublicApi" or "MatchingAlgorithm" or "RepeatSearch" });
 
     [TestCaseSource(nameof(FunctionApps))]
     public void ServiceProvider_IsValid(FunctionApp app)
@@ -188,7 +189,7 @@ internal class FunctionAppDependencyInjectionTests
     /// </summary>
     private static Dictionary<string, string?> TemplateSettings(FunctionApp app)
     {
-        var templatePath = Path.Combine(RepositoryRoot(), app.Assembly.GetName().Name!, "local.settings.template.json");
+        var templatePath = Path.Combine(RepositoryPaths.Root(), app.Assembly.GetName().Name!, "local.settings.template.json");
         var template = JObject.Parse(File.ReadAllText(templatePath));
 
         var values = ((JObject?)template["Values"])?.Properties() ?? [];
@@ -215,17 +216,6 @@ internal class FunctionAppDependencyInjectionTests
             _ when key.EndsWith("Url") => "https://localhost/",
             _ => "test",
         };
-    }
-
-    private static string RepositoryRoot()
-    {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory != null && !File.Exists(Path.Combine(directory.FullName, "Atlas.slnx")))
-        {
-            directory = directory.Parent;
-        }
-
-        return directory?.FullName ?? throw new DirectoryNotFoundException("Could not find the repository root (Atlas.slnx).");
     }
 
     private static bool IsAtlasFactory(ServiceDescriptor descriptor)

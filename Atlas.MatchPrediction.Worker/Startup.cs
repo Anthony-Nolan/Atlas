@@ -76,6 +76,7 @@ public static class Startup
         // Make the settings available as a plain singleton so the shared registration (and the client's constructor) can resolve it.
         services.AddSingleton(sp => sp.GetRequiredService<IOptions<SearchTrackingServiceBusSettings>>().Value);
         services.RegisterSearchTrackingServiceBusClient();
+        services.RegisterSearchTrackingEventTelemetry();
 
         services.AddScoped<IMatchPredictionSearchTrackingDispatcher, MatchPredictionSearchTrackingDispatcher>();
 

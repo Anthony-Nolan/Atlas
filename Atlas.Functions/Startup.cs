@@ -213,6 +213,7 @@ namespace Atlas.Functions
 
             services.AddScoped<IMatchPredictionSearchTrackingDispatcher, MatchPredictionSearchTrackingDispatcher>();
             services.RegisterSearchTrackingServiceBusClient();
+            services.RegisterSearchTrackingEventTelemetry();
         }
     }
 }
