@@ -76,10 +76,9 @@ namespace Atlas.Common.AzureStorage.Blob
             {
                 var data = new List<T>();
                 var containerClient = GetBlobContainer(container);
-                var blobs = containerClient.GetBlobsAsync(traits: BlobTraits.None, states: BlobStates.None, prefix: $"{folderName}/", cancellationToken: default);
-                await foreach (var blob in blobs)
+                foreach (var blobName in await GetFolderBlobNamesInFileNumberOrder(containerClient, folderName))
                 {
-                    data.AddRange(await GetBlobData<IEnumerable<T>>(containerClient, blob.Name));
+                    data.AddRange(await GetBlobData<IEnumerable<T>>(containerClient, blobName));
                 }
                 return (IEnumerable<T>)data;
             });
@@ -106,15 +105,29 @@ namespace Atlas.Common.AzureStorage.Blob
         {
             var sw = Stopwatch.StartNew();
             var containerClient = GetBlobContainer(container);
-            var blobs = containerClient.GetBlobsAsync(traits: BlobTraits.None, states: BlobStates.None, prefix: $"{folderName}/", cancellationToken: default);
-
-            await foreach (var blob in blobs)
+            foreach (var blobName in await GetFolderBlobNamesInFileNumberOrder(containerClient, folderName))
             {
-                yield return await GetBlobData<IEnumerable<T>>(containerClient, blob.Name);
+                yield return await GetBlobData<IEnumerable<T>>(containerClient, blobName);
             }
 
             sw.Stop();
             SendAzureStorageEvent(folderName, container, sw.ElapsedMilliseconds);
+        }
+
+        /// <summary>
+        /// Blob listing returns names in name order (1, 10, 11, ..., 2), but batched results files must be read in number order,
+        /// because the order of the files is the ranking order of the results.
+        /// </summary>
+        private static async Task<IReadOnlyCollection<string>> GetFolderBlobNamesInFileNumberOrder(BlobContainerClient containerClient, string folderName)
+        {
+            var blobNames = new List<string>();
+            var blobs = containerClient.GetBlobsAsync(traits: BlobTraits.None, states: BlobStates.None, prefix: $"{folderName}/", cancellationToken: default);
+            await foreach (var blob in blobs)
+            {
+                blobNames.Add(blob.Name);
+            }
+
+            return BatchedResultsFileNames.OrderByFileNumber(blobNames).ToList();
         }
 
         private async Task<T> GetBlobData<T>(BlobContainerClient containerClient, string filename)

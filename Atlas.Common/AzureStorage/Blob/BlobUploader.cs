@@ -37,7 +37,7 @@ namespace Atlas.Common.AzureStorage.Blob
                 var batchNumber = 0;
                 foreach (var batch in list.Batch(batchSize))
                 {
-                    await UploadBlob(containerClient, $"{blobFolder}/{++batchNumber}.json", batch);
+                    await UploadBlob(containerClient, BatchedResultsFileNames.FileName(blobFolder, ++batchNumber), batch);
                 }
             });
         }

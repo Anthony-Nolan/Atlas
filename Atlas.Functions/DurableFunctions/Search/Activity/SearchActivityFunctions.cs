@@ -360,7 +360,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                 var currentSearchResults = await ProcessSearchResults(searchRequestId, matchingResults, matchPredictionResultLocationsForCurrentDonors);
                 if (resultsShouldBeBatched)
                 {
-                    await searchResultsBlobUploader.UploadResults(currentSearchResults, blobStorageContainerName, $"{batchFolder}/{++batchNumber}.json");
+                    await searchResultsBlobUploader.UploadResults(currentSearchResults, blobStorageContainerName, BatchedResultsFileNames.FileName(batchFolder, ++batchNumber));
                 }
                 else
                 {
