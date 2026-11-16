@@ -108,6 +108,9 @@ Feature flags permit greater control over the release of new features (see this 
   * Each store logs a trace at its start with the search request id, `NumberOfResults` and `ResultsBatched`, and a failed store logs its exception with the same properties. The other telemetry of the store, for example its SQL dependencies, also has the search request id. Before, a failed store could not be linked to its search. Each stored set sends the custom event `Original search results stored` to Application Insights, with the search request id and the number of donors, the number of chunks and the time taken. This event is not sampled.
   * The migration adds the `Status` and `StoreAttemptId` columns to `RepeatSearch.CanonicalResultSets` (see the [data changelog](/Atlas.RepeatSearch.Data/CHANGELOG_Data.md)). Existing sets are `Complete`.
 
+#### Blob Storage
+* E: Each app process now uses one Azure Blob Storage client for each storage account. Before, it made a new client for each object that reads or writes blobs: for example, two for each batch message of the match prediction worker. Blob reads and writes do not change.
+
 ### 4.1.0
 
 #### Debug
