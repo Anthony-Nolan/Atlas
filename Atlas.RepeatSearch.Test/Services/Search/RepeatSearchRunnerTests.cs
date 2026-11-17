@@ -53,7 +53,16 @@ namespace Atlas.RepeatSearch.Test.Services.Search
 
             repeatSearchValidator.IsOriginalSearchResultSetStored(default).ReturnsForAnyArgs(true);
 
-            repeatSearchRunner = new RepeatSearchRunner(
+            repeatSearchRunner = BuildRunner(new RepeatSearchSettings
+            {
+                OriginalResultsWaitIntervalSeconds = WaitIntervalSeconds,
+                MaxWaitForOriginalResultsMinutes = MaxWaitMinutes
+            });
+        }
+
+        private IRepeatSearchRunner BuildRunner(RepeatSearchSettings repeatSearchSettings)
+        {
+            return new RepeatSearchRunner(
                 serviceBusClient,
                 searchService,
                 Substitute.For<ISearchResultsBlobStorageClient>(),
@@ -70,11 +79,7 @@ namespace Atlas.RepeatSearch.Test.Services.Search
                 failureNotificationSender,
                 new MatchingAlgorithmSearchTrackingContext(),
                 searchTrackingEventPublisher,
-                new RepeatSearchSettings
-                {
-                    OriginalResultsWaitIntervalSeconds = WaitIntervalSeconds,
-                    MaxWaitForOriginalResultsMinutes = MaxWaitMinutes
-                });
+                repeatSearchSettings);
         }
 
         [Test]
@@ -204,6 +209,23 @@ namespace Atlas.RepeatSearch.Test.Services.Search
             await serviceBusClient.DidNotReceiveWithAnyArgs().PublishToRepeatSearchRequestsTopic(default, default);
             await failureNotificationSender.Received(1).SendFailureNotification(
                 Arg.Any<IdentifiedRepeatSearchRequest>(), 1, 0, "no record of the original search");
+            AssertInitiationPublishedBeforeCompletedWithFailure(MatchingAlgorithmFailureType.ValidationError);
+        }
+
+        [Test]
+        public async Task RunSearch_WhenWaitSettingsAreNotSet_DoesNotWaitAndRunsValidation()
+        {
+            // Both values 0, as in an app without the settings: the wait is off, and the repeat search works as before.
+            var runnerWithoutWait = BuildRunner(new RepeatSearchSettings());
+            repeatSearchValidator.IsOriginalSearchResultSetStored(default).ReturnsForAnyArgs(false);
+            repeatSearchValidator.ValidateRepeatSearchAndThrow(default)
+                .ThrowsAsyncForAnyArgs(new ValidationException("no record of the original search"));
+
+            await runnerWithoutWait.RunSearch(BuildRequest(), 1, DateTimeOffset.UtcNow);
+
+            await repeatSearchValidator.DidNotReceiveWithAnyArgs().IsOriginalSearchResultSetStored(default);
+            await serviceBusClient.DidNotReceiveWithAnyArgs().PublishToRepeatSearchRequestsTopic(default, default);
+            await repeatSearchValidator.ReceivedWithAnyArgs(1).ValidateRepeatSearchAndThrow(default);
             AssertInitiationPublishedBeforeCompletedWithFailure(MatchingAlgorithmFailureType.ValidationError);
         }
 
