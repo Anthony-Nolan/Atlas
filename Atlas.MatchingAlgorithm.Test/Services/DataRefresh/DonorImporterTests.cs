@@ -172,14 +172,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
 
         [Test]
-        public async Task ImportDonors_WhenDonorsShouldBeMarkedAsUpdated_CreatesDonorManagementLogs()
+        public async Task ImportDonors_CreatesDonorManagementLogs()
         {
             var donorId = fixture.Create<int>();
             var donor = DonorBuilder.New.With(d => d.AtlasDonorId, donorId).Build();
 
             donorReader.StreamAllDonors().Returns(new List<Donor> {donor});
 
-            await donorImporter.ImportDonors(true);
+            await donorImporter.ImportDonors();
 
             await donorManagementLogRepository.Received(1).CreateDonorManagementLogBatch(
                 Arg.Is<IEnumerable<DonorManagementInfo>>(x => x.Single().DonorId == donorId));
@@ -190,29 +190,15 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         /// (expensive) read of existing logs that the upsert path performs. See <see cref="IDonorManagementLogRepository"/>.
         /// </summary>
         [Test]
-        public async Task ImportDonors_WhenDonorsShouldBeMarkedAsUpdated_DoesNotReadExistingDonorManagementLogs()
+        public async Task ImportDonors_DoesNotReadExistingDonorManagementLogs()
         {
             var donor = DonorBuilder.New.With(d => d.AtlasDonorId, fixture.Create<int>()).Build();
 
             donorReader.StreamAllDonors().Returns(new List<Donor> {donor});
 
-            await donorImporter.ImportDonors(true);
+            await donorImporter.ImportDonors();
 
             await donorManagementLogRepository.DidNotReceive().GetDonorManagementLogBatch(Arg.Any<IEnumerable<int>>());
-            await donorManagementLogRepository.DidNotReceive()
-                .CreateOrUpdateDonorManagementLogBatch(Arg.Any<IEnumerable<DonorManagementInfo>>());
-        }
-
-        [Test]
-        public async Task ImportDonors_WhenDonorsShouldNotBeMarkedAsUpdated_DoesNotWriteDonorManagementLogs()
-        {
-            var donor = DonorBuilder.New.With(d => d.AtlasDonorId, fixture.Create<int>()).Build();
-
-            donorReader.StreamAllDonors().Returns(new List<Donor> {donor});
-
-            await donorImporter.ImportDonors(false);
-
-            await donorManagementLogRepository.DidNotReceive().CreateDonorManagementLogBatch(Arg.Any<IEnumerable<DonorManagementInfo>>());
             await donorManagementLogRepository.DidNotReceive()
                 .CreateOrUpdateDonorManagementLogBatch(Arg.Any<IEnumerable<DonorManagementInfo>>());
         }
@@ -227,7 +213,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             var cancelled = new CancellationTokenSource();
             await cancelled.CancelAsync();
 
-            await donorImporter.Invoking(i => i.ImportDonors(false, cancelled.Token)).Should().ThrowAsync<OperationCanceledException>();
+            await donorImporter.Invoking(i => i.ImportDonors(cancelled.Token)).Should().ThrowAsync<OperationCanceledException>();
 
             await donorImportRepository.DidNotReceive().InsertBatchOfDonors(Arg.Any<IEnumerable<DonorInfo>>());
         }
@@ -242,9 +228,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             var cancelled = new CancellationTokenSource();
             await cancelled.CancelAsync();
 
-            await donorImporter.Invoking(i => i.ImportDonors(false, cancelled.Token)).Should()
+            await donorImporter.Invoking(i => i.ImportDonors(cancelled.Token)).Should()
                 .ThrowAsync<OperationCanceledException>();
-            await donorImporter.Invoking(i => i.ImportDonors(false, cancelled.Token)).Should()
+            await donorImporter.Invoking(i => i.ImportDonors(cancelled.Token)).Should()
                 .NotThrowAsync<DonorImportHttpException>();
         }
 
@@ -259,7 +245,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             var cancellationTokenSource = new CancellationTokenSource();
             donorImportRepository.WhenForAnyArgs(r => r.InsertBatchOfDonors(default)).Do(_ => cancellationTokenSource.Cancel());
 
-            await donorImporter.Invoking(i => i.ImportDonors(false, cancellationTokenSource.Token)).Should()
+            await donorImporter.Invoking(i => i.ImportDonors(cancellationTokenSource.Token)).Should()
                 .ThrowAsync<OperationCanceledException>();
 
             await donorImportRepository.Received(1).InsertBatchOfDonors(Arg.Any<IEnumerable<DonorInfo>>());

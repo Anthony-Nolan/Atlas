@@ -99,28 +99,15 @@ public class DonorImportTests
     }
         
     [Test]
-    public async Task DonorImport_WhenDonorsShouldBeMarkedAsUpdated_AddsNewDonorLogsToDatabase()
+    public async Task DonorImport_AddsNewDonorLogsToDatabase()
     {
         var donorInfo = IncrementingDonorBuilder.Build();
 
         MockDonorReader.StreamAllDonors().Returns(new List<Donor> {donorInfo});
 
-        await donorImporter.ImportDonors(true);
+        await donorImporter.ImportDonors();
 
         var log = (await importLogRepository.GetDonorManagementLogBatch(new[] {donorInfo.AtlasDonorId})).SingleOrDefault();
         log.Should().NotBeNull();
-    }
-        
-    [Test]
-    public async Task DonorImport_WhenDonorsShouldNotBeMarkedAsUpdated_DoesNotAddNewDonorLogsToDatabase()
-    {
-        var donorInfo = IncrementingDonorBuilder.Build();
-
-        MockDonorReader.StreamAllDonors().Returns(new List<Donor> {donorInfo});
-
-        await donorImporter.ImportDonors(false);
-
-        var log = (await importLogRepository.GetDonorManagementLogBatch(new[] {donorInfo.AtlasDonorId})).SingleOrDefault();
-        log.Should().BeNull();
     }
 }

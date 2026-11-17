@@ -68,13 +68,6 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
         public string SupportComments { get; set; }
 
         /// <summary>
-        /// If set, all donors will be marked as updated as part of the refresh process, meaning any repeat searches will return all donors on first run after the refresh.
-        /// This has a significant impact on repeat search performance, so if it can be avoided (e.g. if a refresh is run on the same nomenclature version again), it can
-        /// be disabled via this configuration option
-        /// </summary>
-        public bool ShouldMarkAllDonorsAsUpdated { get; set; }
-
-        /// <summary>
         /// Identifies the invocation currently processing this record. Null when no invocation holds the lease.
         /// A refresh runs for far longer than the Azure Service Bus lock can be held, so the message lock cannot be
         /// relied upon to keep two invocations of the same record apart - this lease is what does that.
