@@ -173,7 +173,11 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                         ? $" AND d.RegistryCode in @{nameof(filteringOptions.RegistryCodes)}"
                         : string.Empty;
 
-                    var donorTypeFilteredJoin = $@"INNER JOIN Donors d ON m.DonorId = d.DonorId AND d.DonorType = {(int)filteringOptions.DonorType} {donorRegistryCodeFilteringPostfix}";
+                    // ATL-526 experiment: limit matching to one donor ID range ("piece"), only when the setting is on.
+                    var donorIdRange = DonorIdRangeExperiment.Current;
+                    var donorIdRangeFilteringPostfix = donorIdRange == null ? string.Empty : $" AND {donorIdRange.SqlCondition("m.DonorId")}";
+
+                    var donorTypeFilteredJoin = $@"INNER JOIN Donors d ON m.DonorId = d.DonorId AND d.DonorType = {(int)filteringOptions.DonorType} {donorRegistryCodeFilteringPostfix}{donorIdRangeFilteringPostfix}";
 
                     var donorUpdatedJoin = cutOffDate != null
                         ? $@"INNER JOIN DonorManagementLogs dml ON m.DonorId = dml.DonorId AND dml.LastUpdateDateTime >= @{nameof(cutOffDate)}"

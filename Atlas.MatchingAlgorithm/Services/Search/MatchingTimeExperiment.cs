@@ -8,6 +8,7 @@ using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 
 namespace Atlas.MatchingAlgorithm.Services.Search
 {
@@ -139,6 +140,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
             var properties = DescribeRequest(request);
             properties["Mode"] = mode.ToString();
+            properties["DonorIdRange"] = DonorIdRangeExperiment.Current?.ToString() ?? "all";
             properties["Instance"] = InstanceName();
             properties["Outcome"] = failure == null ? "Completed" : "Failed";
             if (failure != null)
