@@ -231,6 +231,8 @@ resource "azurerm_container_app" "atlas_match_prediction" {
         initial_delay    = 10
         interval_seconds = 30
         timeout          = 3
+        // A busy replica can miss the 3 s timeout while it warms up; restart only after about 5 minutes without an answer.
+        failure_count_threshold = 10
       }
 
       readiness_probe {
