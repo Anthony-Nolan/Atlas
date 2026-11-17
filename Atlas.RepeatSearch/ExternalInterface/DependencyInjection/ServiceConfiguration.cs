@@ -17,7 +17,9 @@ using Atlas.RepeatSearch.Services.ResultSetTracking;
 using Atlas.RepeatSearch.Services.Search;
 using Atlas.RepeatSearch.Settings;
 using Atlas.RepeatSearch.Settings.ServiceBus;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 using Atlas.RepeatSearch.Data.Settings;
 using ConnectionStrings = Atlas.RepeatSearch.Data.Settings.ConnectionStrings;
@@ -105,6 +107,7 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             Func<IServiceProvider, Settings.Azure.AzureStorageSettings> fetchAzureStorageSettings)
         {
             services.AddScoped<IOriginalSearchResultSetTracker, OriginalSearchResultSetTracker>();
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<ITelemetryInitializer, OriginalSearchResultsStoredTelemetryInitializer>());
             services.AddScoped<IBlobDownloader>(sp =>
             {
                 var storageSettings = sp.GetService<RepeatSearch.Settings.Azure.AzureStorageSettings>();

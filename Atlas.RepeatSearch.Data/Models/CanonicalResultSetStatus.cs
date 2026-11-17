@@ -1,8 +1,7 @@
-namespace Atlas.RepeatSearch.Data.Models
+namespace Atlas.RepeatSearch.Data.Models;
+
+public enum CanonicalResultSetStatus
 {
-    public enum CanonicalResultSetStatus
-    {
-        InProgress = 0,
-        Complete = 1
-    }
+    InProgress = 0,
+    Complete = 1
 }

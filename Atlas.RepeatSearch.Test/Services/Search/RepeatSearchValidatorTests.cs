@@ -123,9 +123,9 @@ namespace Atlas.RepeatSearch.Test.Services.Search
             canonicalResultSetRepository.GetCanonicalResultSetSummary(searchId)
                 .Returns(new CanonicalResultSet { Status = CanonicalResultSetStatus.InProgress });
 
-            await repeatSearchValidator
-                .Invoking(v => v.ValidateRepeatSearchAndThrow(repeatSearch))
-                .Should().ThrowAsync<ValidationException>();
+            var act = () => repeatSearchValidator.ValidateRepeatSearchAndThrow(repeatSearch);
+
+            await act.Should().ThrowAsync<ValidationException>();
         }
     }
 }

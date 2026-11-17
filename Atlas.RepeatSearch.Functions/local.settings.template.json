@@ -31,7 +31,7 @@
     "SearchTrackingServiceBus:ConnectionString": "override-this",
     "SearchTrackingServiceBus:SearchTrackingTopic": "search-tracking-events",
     "StoreOriginalSearchResultsBulkCopy:BatchSize": 10000,
-    "StoreOriginalSearchResultsBulkCopy:ChunkSize": 50000,
+    "StoreOriginalSearchResultsBulkCopy:ChunkSize": 10000,
     "StoreOriginalSearchResultsBulkCopy:Timeout": 30
   },
 

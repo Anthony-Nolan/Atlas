@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
@@ -29,6 +30,9 @@ namespace Atlas.RepeatSearch.Services.ResultSetTracking
 
     internal class OriginalSearchResultSetTracker : IOriginalSearchResultSetTracker
     {
+        /// <summary>
+        /// Kept out of sampling by <see cref="OriginalSearchResultsStoredTelemetryInitializer"/>.
+        /// </summary>
         internal const string StoredEventName = "Original search results stored";
 
         private readonly IBlobDownloader blobDownloader;
@@ -50,6 +54,33 @@ namespace Atlas.RepeatSearch.Services.ResultSetTracking
         }
 
         public async Task StoreOriginalSearchResults(MatchingResultsNotification notification)
+        {
+            var searchRequestId = notification.SearchRequestId;
+            var storeProperties = new Dictionary<string, string>
+            {
+                {"SearchRequestId", searchRequestId},
+                {"NumberOfResults", notification.NumberOfResults?.ToString(CultureInfo.InvariantCulture)},
+                {"ResultsBatched", notification.ResultsBatched.ToString()}
+            };
+
+            // SearchRequestTelemetryInitializer adds the search id to all telemetry of this store, for example its SQL dependencies.
+            SearchRequestContext.SearchRequestId = searchRequestId;
+            logger.SendTrace($"Storing the original search results of search {searchRequestId}.", LogLevel.Info, storeProperties);
+
+            try
+            {
+                await StoreResultSet(notification);
+            }
+            catch (Exception exception)
+            {
+                // The host logs the failure of the function outside this async flow, so without the search id. This log has it, and
+                // the size of the search, for example for a SQL timeout or a lost claim.
+                logger.SendException(exception, LogLevel.Error, storeProperties);
+                throw;
+            }
+        }
+
+        private async Task StoreResultSet(MatchingResultsNotification notification)
         {
             var stopwatch = Stopwatch.StartNew();
             var searchRequestId = notification.SearchRequestId;

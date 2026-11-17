@@ -120,6 +120,7 @@ namespace Atlas.RepeatSearch.Data.Repositories
 
         public async Task AddResultsChunk(CanonicalResultSetStoreClaim claim, IReadOnlyCollection<string> externalDonorCodes)
         {
+            // Not atomic with the insert: see CanonicalResultSet.StoreAttemptId for why the unique index of SearchResults keeps the set correct.
             await ThrowIfClaimLost(claim);
 
             if (externalDonorCodes.Count == 0)
