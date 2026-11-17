@@ -133,6 +133,7 @@ It's highly recommended that you read the sections outside ZtH in parallel with 
 - Open up Service Bus Explorer and connect to your local development Service Bus.
   - Create the topic, `matching-requests` with subscription `matching-algorithm`.
   - Create the topic, `matching-results-ready` with subscription `match-prediction-orchestration`.
+  - For parallel match prediction, create the topic `parallel-match-prediction-requests` with subscription `match-prediction`. Set its max delivery count to `MatchPredictionWorker:RequestsMaxDeliveryCount` of the worker (`10` in `appsettings.json`): with a different value, the worker never sends a failure for a batch, or sends it too early.
 - Run `Atlas.Functions.PublicApi`, `Atlas.Functions`, and `Atlas.MatchingAlgorithm.Functions` all in parallel.
   - To do this in VisualStudio first set your default project to `Atlas.Functions.PublicApi` and then run it.
   - Then in solution explorer right click on `Atlas.Functions`, and `Atlas.MatchingAlgorithm.Functions` and select `Debug -> Start New Instance`.

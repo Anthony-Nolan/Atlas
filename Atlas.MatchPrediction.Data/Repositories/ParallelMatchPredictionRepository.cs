@@ -61,7 +61,10 @@ public interface IParallelMatchPredictionRepository
     /// <see cref="ParallelMatchPredictionRunStatus"/>), clearing any recorded failure detail.
     /// A <see cref="ParallelMatchPredictionBatchStatus.Failed"/> batch is left as it is: the failure may already have
     /// been sent to the consumer, and a success after it, for example from a Worker attempt that lost its message lock,
-    /// would be a second notification for the same search (ATL-546). A replay of a dead-lettered batch therefore first
+    /// would be a second notification for the same search (ATL-546).
+    /// Known trade-off: while the run is still <see cref="ParallelMatchPredictionRunStatus.Running"/>, nothing has been
+    /// sent yet, but the late success is ignored too, so the search fails although a result exists. This is rare, and
+    /// the rule stays simple: a recorded failure is final. A replay of a dead-lettered batch therefore first
     /// sets the batch back to <see cref="ParallelMatchPredictionBatchStatus.Requested"/> by hand (README_Support.md).
     /// Idempotent — a batch that already has an outcome is a no-op returning <c>false</c>, and a success is never
     /// regressed by a later <see cref="RecordBatchFailure"/>.
@@ -227,6 +230,7 @@ public class ParallelMatchPredictionRepository : IParallelMatchPredictionReposit
 
         var rowsUpdated = await context.ParallelMatchPredictionBatches
             // Not from Failed: a failure is final once recorded, because the finaliser may already have sent it.
+            // Known trade-off: a late success is ignored also while the run is still Running (see the interface).
             // A replay first sets the batch back to Requested by hand (README_Support.md). ATL-546.
             .Where(b => b.Id == batchId
                      && (b.BatchStatus == ParallelMatchPredictionBatchStatus.Requested
