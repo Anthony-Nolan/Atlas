@@ -111,6 +111,10 @@ resource "azurerm_container_app" "atlas_match_prediction" {
         value = azurerm_servicebus_subscription.parallel-match-prediction-request-runner.name
       }
       env {
+        name  = "MatchPredictionWorker__RequestsMaxDeliveryCount"
+        value = tostring(azurerm_servicebus_subscription.parallel-match-prediction-request-runner.max_delivery_count)
+      }
+      env {
         name  = "MatchPredictionRequests__RequestsTopic"
         value = azurerm_servicebus_topic.parallel-match-prediction-requests.name
       }

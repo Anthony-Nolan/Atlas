@@ -649,6 +649,45 @@ If a search has not yet returned results after a reasonable period of time, ther
         * (a) reducing the number of concurrent activity functions
         * (b) increasing the amount of memory available by scaling up the app service plan
 
+### Replaying a dead-lettered match prediction batch
+
+A search is split into match prediction batches. Each batch is a message on the `parallel-match-prediction-requests`
+topic, in the `match-prediction` subscription, and a row in `[MatchPrediction].[ParallelMatchPredictionBatches]`.
+Service Bus delivers a batch that fails again, up to the max delivery count of the subscription (10 by default). After
+the last failed delivery:
+- the message is in the dead-letter queue of the subscription;
+- the batch row is `Failed`, with the error in `FailureMessage` and `FailureException`;
+- once every other batch of the run has an outcome, the consumer gets a failure notification
+  (`StageReached = MatchPredictionBatchProcessing`, `WillRetry = false`).
+
+A failed batch takes no later result (ATL-546): a late success, for example from a worker that lost its message lock,
+would be a second notification for the same search. So before you replay the message, set the batch back to `Requested`.
+`@BatchId` is the `BatchId` in the body of the message.
+
+```sql
+DECLARE @BatchId int = <BatchId>;
+
+UPDATE [MatchPrediction].[ParallelMatchPredictionBatches]
+SET BatchStatus = 'Requested',
+    BatchStatusDate = SYSUTCDATETIME(),
+    ResultReceivedTimeUtc = NULL,
+    FailureMessage = NULL,
+    FailureException = NULL
+WHERE Id = @BatchId AND BatchStatus = 'Failed';
+```
+
+If the statement updates no row, read the `BatchStatus` of the batch:
+- `ResultsReceived`: the batch has a result, so there is nothing to replay. Remove the message from the dead-letter queue.
+- `Requested` or `Abandoned`: no failure was recorded, for example because the worker could not send it. The run is
+  abandoned after `AtlasFunction:Orchestration:AbandonBatchAfterMinutes`, with a failure notification. You can replay
+  the message without the statement.
+
+Then resubmit the message from the dead-letter queue to the topic, for example with Service Bus Explorer.
+- If the batch works, and every other batch of the run has a result, the finaliser sends a success notification. The
+  consumer gets it after the earlier failure notification for the same search.
+- If the batch fails on every delivery again, the message is dead-lettered again and the batch is `Failed` again. No
+  new notification is sent.
+
 ### Repeat search or rerun probabilities differ from the original search
 
 Match prediction can read precomputed (stored) donor genotype sets, or compute every donor live. The Atlas Public API

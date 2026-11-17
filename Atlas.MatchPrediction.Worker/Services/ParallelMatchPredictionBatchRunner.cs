@@ -11,7 +11,11 @@ namespace Atlas.MatchPrediction.Worker.Services;
 
 public interface IParallelMatchPredictionBatchRunner
 {
-    Task RunBatch(ParallelMatchPredictionBatchRequest request);
+    /// <param name="request">The batch to run.</param>
+    /// <param name="isLastDelivery">
+    /// <c>true</c> when the batch will not be retried after this run, so a failure must be reported now.
+    /// </param>
+    Task RunBatch(ParallelMatchPredictionBatchRequest request, bool isLastDelivery);
 }
 
 internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatchRunner
@@ -42,16 +46,21 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
         this.logger = logger;
     }
 
-    public async Task RunBatch(ParallelMatchPredictionBatchRequest request)
+    public async Task RunBatch(ParallelMatchPredictionBatchRequest request, bool isLastDelivery)
     {
+        // 1. Compute the batch. Only an error here is a batch failure.
+        // Before the last delivery the error just goes up: the batch will be retried, so nothing is reported, and the
+        // search gets one notification. The worker logs the error and abandons the message. See ATL-546.
+        ParallelMatchPredictionBatchOutput batchOutput;
         try
         {
-            await ProcessBatch(request);
+            batchOutput = await ComputeBatch(request);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (isLastDelivery)
         {
-            logger.LogError(ex,
-                "Error processing batch {BatchSequenceNumber} for run {ParallelRunId}, search {SearchRequestId}. " +
+            // Last delivery: no retries are left, so report the batch as failed and let the run be finalised as failed.
+            logger.LogInformation(
+                "Batch {BatchSequenceNumber} for run {ParallelRunId}, search {SearchRequestId} failed on its last delivery. " +
                 "Publishing failure result so the batch is recorded as Failed.",
                 request.BatchSequenceNumber, request.ParallelRunId, request.SearchRequestId
             );
@@ -69,6 +78,10 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
             };
 
             // Publish the failure result so the aggregator records the batch as Failed and the run can still be finalised.
+            // An earlier delivery that lost its message lock may still be running; if it succeeds later, the aggregator
+            // keeps this failure, because the first outcome of a batch stays (ATL-546).
+            // If this publish fails, the message is dead-lettered with the batch still Requested, and the abandonment
+            // sweep fails the run after AbandonBatchAfterMinutes.
             await resultPublisher.PublishWithSession(failureResult, sessionId: request.SearchRequestId);
 
             logger.LogInformation(
@@ -76,13 +89,19 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
                 request.BatchSequenceNumber, request.ParallelRunId, request.SearchRequestId
             );
             
-            // Rethrow so the worker's message handler abandons the Service Bus message (for redelivery/dead-lettering)
-            // instead of completing it; a later successful retry overwrites the recorded failure. See ATL-251.
+            // Rethrow so the worker abandons the message instead of completing it: on the last delivery Service Bus
+            // moves it to the dead-letter queue, where it can be replayed by hand. See ATL-251, ATL-148.
             throw;
         }
+
+        // 2. Send the result. Outside the catch above: the result exists, so an error from here on is not a batch
+        // failure. It is rethrown, and Service Bus delivers the batch again. After the last delivery nothing records
+        // the batch, and the abandonment sweep fails the run after AbandonBatchAfterMinutes. ATL-546.
+        await PublishSuccess(request, batchOutput);
     }
 
-    private async Task ProcessBatch(ParallelMatchPredictionBatchRequest request)
+    /// <summary>Downloads the batch input and runs match prediction on it; the results are stored in a blob.</summary>
+    private async Task<ParallelMatchPredictionBatchOutput> ComputeBatch(ParallelMatchPredictionBatchRequest request)
     {
         logger.LogInformation(
             "Downloading batch blob {BlobLocation} for search {SearchRequestId}",
@@ -96,23 +115,24 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
             batchInput.Donors?.Count, request.SearchRequestId, request.BlobLocation
         );
 
-        var searchIdentifier = request.IsRepeatSearch
-            ? Guid.Parse(request.RepeatSearchRequestId)
-            : Guid.Parse(request.SearchRequestId);
-        var originalSearchIdentifier = request.IsRepeatSearch
-            ? Guid.Parse(request.SearchRequestId)
-            : (Guid?)null;
-
+        var (searchIdentifier, originalSearchIdentifier) = TrackingIdentifiers(request);
         await trackingDispatcher.ProcessRunningBatchesStarted(searchIdentifier, originalSearchIdentifier);
 
         var batchOutput = await parallelMatchPredictionAlgorithm.RunBatch(batchInput, maxDegreeOfParallelism, request.BatchId);
-
-        await trackingDispatcher.ProcessRunningBatchesEnded(searchIdentifier, originalSearchIdentifier);
 
         logger.LogInformation(
             "Completed match prediction for batch {BatchId} ({DonorCount} donors) for search {SearchRequestId}; stored results in single blob {ResultLocation}",
             request.BatchId, batchInput.Donors?.Count, request.SearchRequestId, batchOutput.ResultLocation
         );
+
+        return batchOutput;
+    }
+
+    /// <summary>Tells search tracking that the batch has ended, and publishes its result for the aggregator.</summary>
+    private async Task PublishSuccess(ParallelMatchPredictionBatchRequest request, ParallelMatchPredictionBatchOutput batchOutput)
+    {
+        var (searchIdentifier, originalSearchIdentifier) = TrackingIdentifiers(request);
+        await trackingDispatcher.ProcessRunningBatchesEnded(searchIdentifier, originalSearchIdentifier);
 
         var batchResult = new ParallelMatchPredictionBatchResult
         {
@@ -134,4 +154,10 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
             request.BatchId, request.SearchRequestId
         );
     }
+
+    /// <summary>Search tracking keys a repeat search on its own id, with the original search as the second id.</summary>
+    private static (Guid SearchIdentifier, Guid? OriginalSearchIdentifier) TrackingIdentifiers(ParallelMatchPredictionBatchRequest request) =>
+        request.IsRepeatSearch
+            ? (Guid.Parse(request.RepeatSearchRequestId), Guid.Parse(request.SearchRequestId))
+            : (Guid.Parse(request.SearchRequestId), null);
 }

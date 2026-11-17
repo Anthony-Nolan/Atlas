@@ -37,8 +37,9 @@ How to run functions via Swagger using Visual Studio:
     - the `MessageReceiverFactory` gives a working receiver after an earlier one for the same subscription was disposed, so receivers are not cached;
     - disposing a `MessageProcessor` closes its link at the broker: messages locked on that link go back to the subscription at once, and stay locked when it is not disposed. The test uses a prefetching receiver to hold them, and first checks that another receiver cannot get them;
     - the ATL-482 scenario: without prefetch, an open processor whose receive returned before the batch was full holds no messages. The broker still sends it messages for the link credit left over, but the client (Azure.Messaging.ServiceBus 7.20.1) releases each one at once, with no lock and no delivery count, so another receiver gets them. If an SDK upgrade changes that, this test fails.
+  - `Atlas.MatchPrediction.Worker.Test.Integration` runs the real match prediction worker, with only the batch work faked, and checks the ATL-546 scenario: a batch that fails is delivered again by Service Bus, and the worker publishes one result for it. That is a success if any delivery works; otherwise one failure on the last delivery, and the request is dead-lettered.
 
-    The tests themselves do not use SQL. The emulator does, so its pipeline job starts a SQL Server container for the emulator and sets `RUN_SERVICE_BUS_EMULATOR_TESTS`. Locally, start the emulator and set that variable before running the project.
+    The tests themselves do not use SQL. The emulator does, so its pipeline job starts a SQL Server container for the emulator and sets `RUN_SERVICE_BUS_EMULATOR_TESTS`. Locally, start the emulator and set that variable before running the projects.
 
 ### Alerts & Notifications
 - On the bus instance used for local dev, manually create two topics, `notifications` and `alerts`
@@ -132,6 +133,7 @@ It's highly recommended that you read the sections outside ZtH in parallel with 
 - Open up Service Bus Explorer and connect to your local development Service Bus.
   - Create the topic, `matching-requests` with subscription `matching-algorithm`.
   - Create the topic, `matching-results-ready` with subscription `match-prediction-orchestration`.
+  - For parallel match prediction, create the topic `parallel-match-prediction-requests` with subscription `match-prediction`. Set its max delivery count to `MatchPredictionWorker:RequestsMaxDeliveryCount` of the worker (`10` in `appsettings.json`): with a different value, the worker never sends a failure for a batch, or sends it too early.
 - Run `Atlas.Functions.PublicApi`, `Atlas.Functions`, and `Atlas.MatchingAlgorithm.Functions` all in parallel.
   - To do this in VisualStudio first set your default project to `Atlas.Functions.PublicApi` and then run it.
   - Then in solution explorer right click on `Atlas.Functions`, and `Atlas.MatchingAlgorithm.Functions` and select `Debug -> Start New Instance`.

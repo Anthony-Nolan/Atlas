@@ -40,9 +40,9 @@ public class ParallelMatchPredictionAggregatorFunctions
     }
 
     /// <summary>
-    /// Session-aware Service Bus trigger. Persists a single batch result row keyed by <c>BatchId</c>; duplicate
-    /// deliveries are ignored via the batch status. Failure results are recorded as <c>Failed</c> so the run can
-    /// still be finalised.
+    /// Session-aware Service Bus trigger. Persists a single batch result row keyed by <c>BatchId</c>; the first
+    /// outcome of a batch stays, so duplicate deliveries and a success after a recorded failure are ignored via the
+    /// batch status. Failure results are recorded as <c>Failed</c> so the run can still be finalised.
     /// </summary>
     [Function(nameof(StoreParallelMatchPredictionBatchResult))]
     public async Task StoreParallelMatchPredictionBatchResult(
@@ -72,8 +72,9 @@ public class ParallelMatchPredictionAggregatorFunctions
             }
             else
             {
+                // A duplicate delivery, or a late success after a recorded failure (ATL-546): the first outcome stays.
                 logger.LogWarning(
-                    "Duplicate parallel MPA batch result ignored. BatchId={BatchId}, RunId={RunId}, BatchSequenceNumber={BatchSequenceNumber}, Search={SearchIdentifier}.",
+                    "Parallel MPA batch result ignored: the batch already has an outcome. BatchId={BatchId}, RunId={RunId}, BatchSequenceNumber={BatchSequenceNumber}, Search={SearchIdentifier}.",
                     message.BatchId, message.ParallelRunId, message.BatchSequenceNumber, message.SearchIdentifier
                 );
             }

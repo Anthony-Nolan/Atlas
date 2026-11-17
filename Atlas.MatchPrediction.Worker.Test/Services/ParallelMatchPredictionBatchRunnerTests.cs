@@ -20,6 +20,8 @@ namespace Atlas.MatchPrediction.Worker.Test.Services;
 internal class ParallelMatchPredictionBatchRunnerTests
 {
     private const int MaxParallelism = 4;
+    private const bool RetriesLeft = false;
+    private const bool LastDelivery = true;
 
     private IBlobDownloader blobDownloader;
     private IParallelMatchPredictionAlgorithm algorithm;
@@ -61,7 +63,7 @@ internal class ParallelMatchPredictionBatchRunnerTests
         algorithm.RunBatch(Arg.Any<MultipleDonorMatchProbabilityInput>(), MaxParallelism, request.BatchId)
             .Returns(new ParallelMatchPredictionBatchOutput(resultLocation, fixture.Create<int>(), new Dictionary<int, int>()));
 
-        await runner.RunBatch(request);
+        await runner.RunBatch(request, RetriesLeft);
 
         await resultPublisher.Received(1).PublishWithSession(
             Arg.Is<ParallelMatchPredictionBatchResult>(r =>
@@ -82,7 +84,7 @@ internal class ParallelMatchPredictionBatchRunnerTests
         algorithm.RunBatch(Arg.Any<MultipleDonorMatchProbabilityInput>(), MaxParallelism, request.BatchId)
             .Returns(new ParallelMatchPredictionBatchOutput(fixture.Create<string>(), patientGenotypeCount, donorGenotypeCounts));
 
-        await runner.RunBatch(request);
+        await runner.RunBatch(request, RetriesLeft);
 
         await resultPublisher.Received(1).PublishWithSession(
             Arg.Is<ParallelMatchPredictionBatchResult>(r =>
@@ -99,7 +101,7 @@ internal class ParallelMatchPredictionBatchRunnerTests
     {
         var request = BuildRequest(isRepeatSearch: false);
 
-        await runner.RunBatch(request);
+        await runner.RunBatch(request, RetriesLeft);
 
         await trackingDispatcher.Received(1).ProcessRunningBatchesStarted(Guid.Parse(request.SearchRequestId), null);
         await trackingDispatcher.Received(1).ProcessRunningBatchesEnded(Guid.Parse(request.SearchRequestId), null);
@@ -110,7 +112,7 @@ internal class ParallelMatchPredictionBatchRunnerTests
     {
         var request = BuildRequest(isRepeatSearch: true);
 
-        await runner.RunBatch(request);
+        await runner.RunBatch(request, RetriesLeft);
 
         var expectedSearchIdentifier = Guid.Parse(request.RepeatSearchRequestId);
         var expectedOriginalIdentifier = Guid.Parse(request.SearchRequestId);
@@ -122,17 +124,27 @@ internal class ParallelMatchPredictionBatchRunnerTests
             request.SearchRequestId);
     }
 
-    [Test]
-    public async Task RunBatch_WhenProcessingThrows_PublishesFailureResult_AndRethrows()
+    /// <remarks>
+    /// Before the last delivery the batch will be retried, so nothing is reported: a failure result would make the
+    /// finaliser send a failure notification, and a successful retry would then send a success for the same search.
+    /// The rethrow is what makes Service Bus retry (or dead-letter) the message.
+    /// </remarks>
+    [TestCase(RetriesLeft, 0)]
+    [TestCase(LastDelivery, 1)]
+    public async Task RunBatch_WhenProcessingThrows_PublishesFailureResultOnlyOnLastDelivery_AndRethrows(
+        bool isLastDelivery,
+        int expectedFailureResultCount)
     {
         var request = BuildRequest(isRepeatSearch: false);
         var thrown = new InvalidOperationException(fixture.Create<string>());
         blobDownloader.Download<MultipleDonorMatchProbabilityInput>(Arg.Any<string>(), Arg.Any<string>()).ThrowsAsync(thrown);
 
-        var act = () => runner.RunBatch(request);
+        var act = () => runner.RunBatch(request, isLastDelivery);
 
         await act.Should().ThrowAsync<InvalidOperationException>();
-        await resultPublisher.Received(1).PublishWithSession(
+        await resultPublisher.Received(expectedFailureResultCount)
+            .PublishWithSession(Arg.Any<ParallelMatchPredictionBatchResult>(), Arg.Any<string>());
+        await resultPublisher.Received(expectedFailureResultCount).PublishWithSession(
             Arg.Is<ParallelMatchPredictionBatchResult>(r =>
                 !r.IsSuccessful
                 && r.FailureMessage == thrown.Message
@@ -144,6 +156,34 @@ internal class ParallelMatchPredictionBatchRunnerTests
             request.SearchRequestId);
     }
 
+    /// <remarks>
+    /// ATL-546: once the batch is computed, its result is in a blob, so an error while reporting it is not a batch
+    /// failure, even on the last delivery. The error is rethrown, so Service Bus delivers the batch again.
+    /// </remarks>
+    [TestCase(true, TestName = "RunBatch_WhenSuccessResultPublishThrowsOnLastDelivery_PublishesNoFailureResult_AndRethrows")]
+    [TestCase(false, TestName = "RunBatch_WhenEndedTrackingThrowsOnLastDelivery_PublishesNoFailureResult_AndRethrows")]
+    public async Task RunBatch_WhenReportingComputedBatchThrows_PublishesNoFailureResult_AndRethrows(bool successPublishThrows)
+    {
+        var request = BuildRequest(isRepeatSearch: false);
+        var thrown = new InvalidOperationException(fixture.Create<string>());
+        if (successPublishThrows)
+        {
+            resultPublisher.PublishWithSession(Arg.Is<ParallelMatchPredictionBatchResult>(r => r.IsSuccessful), Arg.Any<string>())
+                .ThrowsAsync(thrown);
+        }
+        else
+        {
+            trackingDispatcher.ProcessRunningBatchesEnded(Arg.Any<Guid>(), Arg.Any<Guid?>()).ThrowsAsync(thrown);
+        }
+
+        var act = () => runner.RunBatch(request, LastDelivery);
+
+        (await act.Should().ThrowAsync<InvalidOperationException>()).Which.Should().BeSameAs(thrown);
+        await algorithm.Received(1).RunBatch(Arg.Any<MultipleDonorMatchProbabilityInput>(), MaxParallelism, request.BatchId);
+        await resultPublisher.DidNotReceive()
+            .PublishWithSession(Arg.Is<ParallelMatchPredictionBatchResult>(r => !r.IsSuccessful), Arg.Any<string>());
+    }
+
     [Test]
     public async Task RunBatch_WhenFailureResultPublishItselfThrows_Propagates()
     {
@@ -153,7 +193,7 @@ internal class ParallelMatchPredictionBatchRunnerTests
         resultPublisher.PublishWithSession(Arg.Any<ParallelMatchPredictionBatchResult>(), Arg.Any<string>())
             .ThrowsAsync(new Exception(fixture.Create<string>()));
 
-        var act = () => runner.RunBatch(request);
+        var act = () => runner.RunBatch(request, LastDelivery);
 
         await act.Should().ThrowAsync<Exception>();
     }

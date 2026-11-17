@@ -7,6 +7,13 @@ public class MatchPredictionWorkerSettings
     [Required(AllowEmptyStrings = false)]
     public required string RequestsSubscription { get; set; }
 
+    /// <summary>
+    /// Max delivery count of <see cref="RequestsSubscription"/>; must match the subscription (terraform passes it in).
+    /// A failed batch is reported as failed only on this delivery: earlier deliveries are retried by Service Bus.
+    /// </summary>
+    [Range(1, int.MaxValue)]
+    public required int RequestsMaxDeliveryCount { get; set; }
+
     /// <summary>Maximum number of messages the processor will handle concurrently.</summary>
     [Range(1, int.MaxValue)]
     public required int MaxConcurrentCalls { get; set; }

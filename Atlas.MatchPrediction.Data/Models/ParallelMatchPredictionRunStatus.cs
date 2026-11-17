@@ -18,7 +18,9 @@ namespace Atlas.MatchPrediction.Data.Models;
 /// batches — the finaliser re-picks the run and drives it to <see cref="Finalised"/>. The
 /// <see cref="FailedDuringBatchProcessing"/> replay is deliberately stricter: a failed run has already reported its
 /// failure downstream, so it is only re-picked on a full recovery to success, never re-notified while any batch is
-/// still failed.
+/// still failed. A failed batch takes a result only after support sets it back to Requested for the replay
+/// (README_Support.md), so a late result from a Worker attempt that lost its message lock cannot turn a reported
+/// failure into a success (ATL-546).
 /// </para>
 /// <para>
 /// <b>Dispatch failure.</b> If publishing the batch-request messages fails, the run is left in <see cref="Running"/>
