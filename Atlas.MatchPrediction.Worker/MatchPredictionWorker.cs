@@ -53,7 +53,7 @@ public class MatchPredictionWorker(
             await using var scope = serviceScopeFactory.CreateAsyncScope();
             var runner = scope.ServiceProvider.GetRequiredService<IParallelMatchPredictionBatchRunner>();
 
-            await runner.RunBatch(request);
+            await runner.RunBatch(request, args.Message.DeliveryCount);
 
             await args.CompleteMessageAsync(args.Message, args.CancellationToken);
         }

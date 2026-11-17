@@ -344,6 +344,40 @@ namespace Atlas.Functions.Test.Services
             await notificationSender.DidNotReceiveWithAnyArgs().SendNotification(default, default, default);
         }
 
+        /// <remarks>
+        /// ATL-546: the worker reports a batch as failed only on its last delivery, so a batch that failed and then
+        /// succeeded on a retry reaches the finaliser with no failed batches. Either way the search gets exactly one
+        /// notification, and search tracking records the same outcome.
+        /// </remarks>
+        [TestCase(false, TestName = "FinaliseRun_BatchSucceededOnRetry_SendsOnlySuccessNotification")]
+        [TestCase(true, TestName = "FinaliseRun_BatchFailedOnEveryDelivery_SendsOnlyFailureNotificationWithoutRetry")]
+        public async Task FinaliseRun_SendsOneNotificationAndTrackingEventForBatchOutcome(bool batchFailedOnEveryDelivery)
+        {
+            var runId = fixture.Create<int>();
+            repository.GetRunWithResults(runId).Returns(RunResults(
+                status: ParallelMatchPredictionRunStatus.Running,
+                failedBatch: batchFailedOnEveryDelivery
+            ));
+            StubSuccessfulCompletionPipeline();
+            var expectedSuccessCount = batchFailedOnEveryDelivery ? 0 : 1;
+            var expectedFailureCount = batchFailedOnEveryDelivery ? 1 : 0;
+
+            await completionService.FinaliseRun(runId);
+
+            await searchCompletionMessageSender.Received(expectedSuccessCount)
+                .PublishResultsMessage(Arg.Any<SearchResultSet>(), Arg.Any<DateTime>(), Arg.Any<string>());
+            // No matching failure info is sent, so the consumer sees WillRetry = false: this failure is final.
+            await searchCompletionMessageSender.Received(expectedFailureCount).PublishFailureMessage(
+                Arg.Is<SendFailureNotificationParameters>(p => p.MatchingAlgorithmFailureInfo == null)
+            );
+            await searchCompletionMessageSender.Received(expectedFailureCount)
+                .PublishFailureMessage(Arg.Any<SendFailureNotificationParameters>());
+            await trackingDispatcher.Received(1).ProcessCompleted(
+                Arg.Is<(Guid SearchIdentifier, Guid? OriginalSearchIdentifier, bool IsSuccessful, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches)>(
+                    e => e.IsSuccessful == !batchFailedOnEveryDelivery)
+            );
+        }
+
         [TestCase(true)]
         [TestCase(false)]
         public async Task FinaliseRun_WithTwelveBatchedMatchingFiles_KeepsReadOrderInFinalResults(bool finalResultsBatched)

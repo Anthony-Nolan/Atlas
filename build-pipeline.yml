@@ -398,6 +398,7 @@ stages:
         Atlas.MatchPrediction.Test.Integration
         Atlas.MultipleAlleleCodeDictionary.Test.Integration
         Atlas.Common.Test.Integration
+        Atlas.MatchPrediction.Worker.Test.Integration
     steps:
     - checkout: self
       fetchDepth: 1
@@ -559,6 +560,10 @@ stages:
         tests:
         - project: Atlas.Common.Test.Integration
           testRunTitle: 'Service Bus Emulator Tests'
+          env:
+            RUN_SERVICE_BUS_EMULATOR_TESTS: '1'
+        - project: Atlas.MatchPrediction.Worker.Test.Integration
+          testRunTitle: 'Match Prediction Worker Service Bus Emulator Tests'
           env:
             RUN_SERVICE_BUS_EMULATOR_TESTS: '1'
 

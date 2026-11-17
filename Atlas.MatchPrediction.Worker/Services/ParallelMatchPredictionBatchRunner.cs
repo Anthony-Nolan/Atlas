@@ -4,6 +4,7 @@ using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
+using Atlas.MatchPrediction.Worker.Settings;
 using Atlas.SearchTracking.Common.Dispatchers;
 using Microsoft.Extensions.Options;
 
@@ -11,7 +12,9 @@ namespace Atlas.MatchPrediction.Worker.Services;
 
 public interface IParallelMatchPredictionBatchRunner
 {
-    Task RunBatch(ParallelMatchPredictionBatchRequest request);
+    /// <param name="request">The batch to run.</param>
+    /// <param name="deliveryCount">How many times Service Bus has delivered this message, including this delivery.</param>
+    Task RunBatch(ParallelMatchPredictionBatchRequest request, int deliveryCount);
 }
 
 internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatchRunner
@@ -22,6 +25,7 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
     private readonly IMatchPredictionSearchTrackingDispatcher trackingDispatcher;
     private readonly string requestsContainer;
     private readonly int maxDegreeOfParallelism;
+    private readonly int maxDeliveryCount;
     private readonly ILogger<ParallelMatchPredictionBatchRunner> logger;
 
     public ParallelMatchPredictionBatchRunner(
@@ -31,6 +35,7 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
         IMatchPredictionSearchTrackingDispatcher trackingDispatcher,
         IOptions<AzureStorageSettings> azureStorageSettings,
         IOptions<MatchPredictionRequestsSettings> matchPredictionRequestsSettings,
+        IOptions<MatchPredictionWorkerSettings> workerSettings,
         ILogger<ParallelMatchPredictionBatchRunner> logger)
     {
         this.blobDownloader = blobDownloader;
@@ -39,21 +44,34 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
         this.trackingDispatcher = trackingDispatcher;
         requestsContainer = azureStorageSettings.Value.MatchPredictionRequestsBlobContainer;
         maxDegreeOfParallelism = matchPredictionRequestsSettings.Value.MaxParallelism;
+        maxDeliveryCount = workerSettings.Value.RequestsMaxDeliveryCount;
         this.logger = logger;
     }
 
-    public async Task RunBatch(ParallelMatchPredictionBatchRequest request)
+    public async Task RunBatch(ParallelMatchPredictionBatchRequest request, int deliveryCount)
     {
         try
         {
             await ProcessBatch(request);
         }
+        catch (Exception ex) when (deliveryCount < maxDeliveryCount)
+        {
+            // Retries are left: report nothing, so the run waits for the retry and the search gets one notification.
+            // Rethrow so the worker abandons the message and Service Bus delivers it again. See ATL-546.
+            logger.LogWarning(ex,
+                "Error processing batch {BatchSequenceNumber} for run {ParallelRunId}, search {SearchRequestId} " +
+                "on delivery {DeliveryCount} of {MaxDeliveryCount}. The batch will be retried.",
+                request.BatchSequenceNumber, request.ParallelRunId, request.SearchRequestId, deliveryCount, maxDeliveryCount
+            );
+            throw;
+        }
         catch (Exception ex)
         {
+            // Last delivery: no retries are left, so report the batch as failed and let the run be finalised as failed.
             logger.LogError(ex,
-                "Error processing batch {BatchSequenceNumber} for run {ParallelRunId}, search {SearchRequestId}. " +
-                "Publishing failure result so the batch is recorded as Failed.",
-                request.BatchSequenceNumber, request.ParallelRunId, request.SearchRequestId
+                "Error processing batch {BatchSequenceNumber} for run {ParallelRunId}, search {SearchRequestId} " +
+                "on the last delivery ({DeliveryCount} of {MaxDeliveryCount}). Publishing failure result so the batch is recorded as Failed.",
+                request.BatchSequenceNumber, request.ParallelRunId, request.SearchRequestId, deliveryCount, maxDeliveryCount
             );
 
             var failureResult = new ParallelMatchPredictionBatchResult
@@ -76,8 +94,8 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
                 request.BatchSequenceNumber, request.ParallelRunId, request.SearchRequestId
             );
             
-            // Rethrow so the worker's message handler abandons the Service Bus message (for redelivery/dead-lettering)
-            // instead of completing it; a later successful retry overwrites the recorded failure. See ATL-251.
+            // Rethrow so the worker abandons the message instead of completing it: on the last delivery Service Bus
+            // moves it to the dead-letter queue, where it can be replayed by hand. See ATL-251, ATL-148.
             throw;
         }
     }

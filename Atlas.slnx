@@ -249,4 +249,7 @@
   <Project Path="Atlas.Functions/Atlas.Functions.csproj">
     <BuildType Solution="Development|*" Project="Debug" />
   </Project>
+  <Project Path="Atlas.MatchPrediction.Worker.Test.Integration/Atlas.MatchPrediction.Worker.Test.Integration.csproj">
+    <BuildType Solution="Development|*" Project="Debug" />
+  </Project>
 </Solution>
