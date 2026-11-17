@@ -299,7 +299,6 @@ internal class MatchPredictionWorkerEmulatorTests
                 sp.GetRequiredService<ILogger<SessionMessagePublisher<ParallelMatchPredictionBatchResult>>>()));
         services.AddSingleton(Options.Create(new AzureStorageSettings { MatchPredictionRequestsBlobContainer = "requests" }));
         services.AddSingleton(Options.Create(new MatchPredictionRequestsSettings { MaxParallelism = 1 }));
-        services.AddSingleton(Options.Create(workerSettings));
         services.AddScoped<IParallelMatchPredictionBatchRunner, ParallelMatchPredictionBatchRunner>();
         var serviceProvider = services.BuildServiceProvider();
 
@@ -314,6 +313,7 @@ internal class MatchPredictionWorkerEmulatorTests
         return new MatchPredictionWorker(
             processor,
             serviceProvider.GetRequiredService<IServiceScopeFactory>(),
+            Options.Create(workerSettings),
             NullLogger<MatchPredictionWorker>.Instance);
     }
 

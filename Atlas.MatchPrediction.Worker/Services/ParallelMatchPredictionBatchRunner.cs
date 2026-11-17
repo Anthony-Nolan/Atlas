@@ -4,7 +4,6 @@ using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
-using Atlas.MatchPrediction.Worker.Settings;
 using Atlas.SearchTracking.Common.Dispatchers;
 using Microsoft.Extensions.Options;
 
@@ -13,8 +12,10 @@ namespace Atlas.MatchPrediction.Worker.Services;
 public interface IParallelMatchPredictionBatchRunner
 {
     /// <param name="request">The batch to run.</param>
-    /// <param name="deliveryCount">How many times Service Bus has delivered this message, including this delivery.</param>
-    Task RunBatch(ParallelMatchPredictionBatchRequest request, int deliveryCount);
+    /// <param name="isLastDelivery">
+    /// <c>true</c> when the batch will not be retried after this run, so a failure must be reported now.
+    /// </param>
+    Task RunBatch(ParallelMatchPredictionBatchRequest request, bool isLastDelivery);
 }
 
 internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatchRunner
@@ -25,7 +26,6 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
     private readonly IMatchPredictionSearchTrackingDispatcher trackingDispatcher;
     private readonly string requestsContainer;
     private readonly int maxDegreeOfParallelism;
-    private readonly int maxDeliveryCount;
     private readonly ILogger<ParallelMatchPredictionBatchRunner> logger;
 
     public ParallelMatchPredictionBatchRunner(
@@ -35,7 +35,6 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
         IMatchPredictionSearchTrackingDispatcher trackingDispatcher,
         IOptions<AzureStorageSettings> azureStorageSettings,
         IOptions<MatchPredictionRequestsSettings> matchPredictionRequestsSettings,
-        IOptions<MatchPredictionWorkerSettings> workerSettings,
         ILogger<ParallelMatchPredictionBatchRunner> logger)
     {
         this.blobDownloader = blobDownloader;
@@ -44,36 +43,26 @@ internal class ParallelMatchPredictionBatchRunner : IParallelMatchPredictionBatc
         this.trackingDispatcher = trackingDispatcher;
         requestsContainer = azureStorageSettings.Value.MatchPredictionRequestsBlobContainer;
         maxDegreeOfParallelism = matchPredictionRequestsSettings.Value.MaxParallelism;
-        maxDeliveryCount = workerSettings.Value.RequestsMaxDeliveryCount;
         this.logger = logger;
     }
 
-    public async Task RunBatch(ParallelMatchPredictionBatchRequest request, int deliveryCount)
+    public async Task RunBatch(ParallelMatchPredictionBatchRequest request, bool isLastDelivery)
     {
         // 1. Compute the batch. Only an error here is a batch failure.
+        // Before the last delivery the error just goes up: the batch will be retried, so nothing is reported, and the
+        // search gets one notification. The worker logs the error and abandons the message. See ATL-546.
         ParallelMatchPredictionBatchOutput batchOutput;
         try
         {
             batchOutput = await ComputeBatch(request);
         }
-        catch (Exception ex) when (deliveryCount < maxDeliveryCount)
-        {
-            // Retries are left: report nothing, so the run waits for the retry and the search gets one notification.
-            // Rethrow so the worker abandons the message and Service Bus delivers it again. See ATL-546.
-            logger.LogWarning(ex,
-                "Error processing batch {BatchSequenceNumber} for run {ParallelRunId}, search {SearchRequestId} " +
-                "on delivery {DeliveryCount} of {MaxDeliveryCount}. The batch will be retried.",
-                request.BatchSequenceNumber, request.ParallelRunId, request.SearchRequestId, deliveryCount, maxDeliveryCount
-            );
-            throw;
-        }
-        catch (Exception ex)
+        catch (Exception ex) when (isLastDelivery)
         {
             // Last delivery: no retries are left, so report the batch as failed and let the run be finalised as failed.
-            logger.LogError(ex,
-                "Error processing batch {BatchSequenceNumber} for run {ParallelRunId}, search {SearchRequestId} " +
-                "on the last delivery ({DeliveryCount} of {MaxDeliveryCount}). Publishing failure result so the batch is recorded as Failed.",
-                request.BatchSequenceNumber, request.ParallelRunId, request.SearchRequestId, deliveryCount, maxDeliveryCount
+            logger.LogInformation(
+                "Batch {BatchSequenceNumber} for run {ParallelRunId}, search {SearchRequestId} failed on its last delivery. " +
+                "Publishing failure result so the batch is recorded as Failed.",
+                request.BatchSequenceNumber, request.ParallelRunId, request.SearchRequestId
             );
 
             var failureResult = new ParallelMatchPredictionBatchResult
