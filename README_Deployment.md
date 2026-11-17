@@ -398,15 +398,30 @@ does steps 2 to 4.
 1. **No data refresh in progress.** Make sure that no record in `[MatchingAlgorithmPersistent].[DataRefreshHistory]`
    has `RefreshEndUtc` as `NULL`. If `DataRefresh:AutoRunDataRefresh` is on, make sure that no refresh starts during the
    release.
-2. **Stop searches (optional).** Stage 65 does not need this step: it writes only to the dormant database, and the swap
-   at the end of the refresh is the same as for every refresh. Search does not need it either. Until the full data
-   refresh is complete, the active database has stored genotype sets for some donors only, and search computes the
-   other donors live, as it does today. While the Public API switch is off (the default), search does not read the
-   stored sets.
+2. **Stop searches and donor updates.** This step is required. Do the release in off-hours.
+   - Why: the persistent migration of this release drops the column `ShouldMarkAllDonorsAsUpdated` from
+     `DataRefreshHistory` ([ATL-490](https://anthonynolan.atlassian.net/browse/ATL-490)). The 4.0 apps read the whole
+     data refresh record to find the active transient database and the active HLA nomenclature version. Each search and
+     each donor update batch does this read. After the migration runs, these reads fail with
+     `Invalid column name 'ShouldMarkAllDonorsAsUpdated'` until the new apps run. The other order fails too: the new
+     apps need the new columns of the migration (see step 3).
+   - Stop searches before the persistent migration runs. Stop new search requests (the `Search` and `RepeatSearch`
+     functions of the Public API app), then wait until the running searches are complete.
+   - Pause donor update processing for the same time: stop the `ProcessDifferentialDonorUpdatesForMatchingDbA` and
+     `ProcessDifferentialDonorUpdatesForMatchingDbB` functions of the Donor Management app. The donor updates stay on
+     their subscriptions and are applied when the functions start again.
+   - Start searches and donor update processing again when the new apps run (step 3).
+   - Stage 65 itself does not need searches to stop: it writes only to the dormant database, and the swap at the end of
+     the refresh is the same as for every refresh. Until the full data refresh is complete, the active database has
+     stored genotype sets for some donors only, and search computes the other donors live, as it does today. While the
+     Public API switch is off (the default), search does not read the stored sets.
 3. **Release.** Apply Terraform, run the database migrations, and release the function apps and the worker image.
    - Migrate the two transient databases (A and B) and the persistent database. The persistent database gets the
      columns `DonorGenotypePrecomputationCompleted`, `AwaitingManualDecisionSinceUtc` and `PendingManualDecision`,
-     which the new Data Refresh code needs. Run the persistent migration before the new Data Refresh code starts.
+     which the new Data Refresh code needs, and loses the column `ShouldMarkAllDonorsAsUpdated`. Run the persistent
+     migration before the new apps start, and only after searches and donor updates are stopped (step 2).
+   - If you stop the functions with app settings (`AzureWebJobs.<FunctionName>.Disabled`), apply Terraform first:
+     a Terraform apply can remove app settings that it does not manage.
    - The new worker image can start before the migrations. It reads no database when it starts.
 4. **Full data refresh.** Trigger `SubmitDataRefreshRequestManual` with `forceDataRefresh` set to `true`.
 5. **Watch stage 65.** See [Normal progress](README_Support.md#normal-progress) in the Support README.
