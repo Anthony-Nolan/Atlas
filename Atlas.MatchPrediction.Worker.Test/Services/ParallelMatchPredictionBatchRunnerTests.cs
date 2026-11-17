@@ -165,6 +165,34 @@ internal class ParallelMatchPredictionBatchRunnerTests
             request.SearchRequestId);
     }
 
+    /// <remarks>
+    /// ATL-546: once the batch is computed, its result is in a blob, so an error while reporting it is not a batch
+    /// failure, even on the last delivery. The error is rethrown, so Service Bus delivers the batch again.
+    /// </remarks>
+    [TestCase(true, TestName = "RunBatch_WhenSuccessResultPublishThrowsOnLastDelivery_PublishesNoFailureResult_AndRethrows")]
+    [TestCase(false, TestName = "RunBatch_WhenEndedTrackingThrowsOnLastDelivery_PublishesNoFailureResult_AndRethrows")]
+    public async Task RunBatch_WhenReportingComputedBatchThrows_PublishesNoFailureResult_AndRethrows(bool successPublishThrows)
+    {
+        var request = BuildRequest(isRepeatSearch: false);
+        var thrown = new InvalidOperationException(fixture.Create<string>());
+        if (successPublishThrows)
+        {
+            resultPublisher.PublishWithSession(Arg.Is<ParallelMatchPredictionBatchResult>(r => r.IsSuccessful), Arg.Any<string>())
+                .ThrowsAsync(thrown);
+        }
+        else
+        {
+            trackingDispatcher.ProcessRunningBatchesEnded(Arg.Any<Guid>(), Arg.Any<Guid?>()).ThrowsAsync(thrown);
+        }
+
+        var act = () => runner.RunBatch(request, LastDelivery);
+
+        (await act.Should().ThrowAsync<InvalidOperationException>()).Which.Should().BeSameAs(thrown);
+        await algorithm.Received(1).RunBatch(Arg.Any<MultipleDonorMatchProbabilityInput>(), MaxParallelism, request.BatchId);
+        await resultPublisher.DidNotReceive()
+            .PublishWithSession(Arg.Is<ParallelMatchPredictionBatchResult>(r => !r.IsSuccessful), Arg.Any<string>());
+    }
+
     [Test]
     public async Task RunBatch_WhenFailureResultPublishItselfThrows_Propagates()
     {

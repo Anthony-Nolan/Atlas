@@ -212,7 +212,9 @@ The files in the batched results folder are numbered: `000001.json`, `000002.jso
 > (b) Several failure notifications in a row (In the case of an unexpected error that is present for all retries of a search - e.g. an Azure outage, or unexpected error with a specific search)
 >
 > Match prediction batch failures (`StageReached = MatchPredictionBatchProcessing`) are different: a failed batch is retried first, and a failure notification is sent only when the batch has no retries left (`WillRetry = false`).
-> A success notification can follow it only if support replays the dead-lettered batch by hand.
+> A success notification can still follow it in two cases:
+> (c) A batch did not return within the configured time (`AbandonBatchAfterMinutes`), so the run was abandoned with a failure notification, and the batch returned later.
+> (d) Support replayed a dead-lettered batch by hand.
 
 
 #### Receiving matching results early

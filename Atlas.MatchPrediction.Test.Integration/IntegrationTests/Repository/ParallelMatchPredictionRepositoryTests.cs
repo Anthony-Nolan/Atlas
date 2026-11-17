@@ -329,25 +329,44 @@ public class ParallelMatchPredictionRepositoryTests
         await act.Should().ThrowAsync<InvalidOperationException>();
     }
 
-    [Test]
-        public async Task RecordBatchResult_ForFailedBatch_RecoversToResultsReceivedAndClearsFailureDetail()
+    /// <remarks>
+    /// ATL-546: a recorded failure may already have been sent to the consumer, so a late success - for example from a
+    /// Worker attempt that lost its message lock - must not replace it. Only a replay, after support has set the batch
+    /// back to Requested, records the success.
+    /// </remarks>
+    [TestCase(false, TestName = "RecordBatchResult_ForFailedBatch_IgnoresLateResultAndKeepsFailure")]
+    [TestCase(true, TestName = "RecordBatchResult_ForFailedBatchResetForReplay_RecordsResultAndClearsFailureDetail")]
+    public async Task RecordBatchResult_ForFailedBatch_RecordsResultOnlyAfterResetForReplay(bool resetForReplay)
+    {
+        var created = await CreateRun(totalBatchCount: 1);
+        var batchId = created.BatchIdsBySequence[0];
+        var failureMessage = fixture.Create<string>();
+        // The batch first fails on its last delivery, recording failure detail on the row.
+        await repository.RecordBatchFailure(batchId, failureMessage, fixture.Create<string>());
+        if (resetForReplay)
         {
-            var created = await CreateRun(totalBatchCount: 1);
-            // The batch first fails (e.g. an OOM in the Worker), recording failure detail on the row.
-            await repository.RecordBatchFailure(created.BatchIdsBySequence[0], fixture.Create<string>(), fixture.Create<string>());
+            await ResetFailedBatchForReplay(batchId);
+        }
 
-            // Dead-letter replay of the batch: the re-processed batch now succeeds.
-            var resultLocation = fixture.Create<string>();
-            var recorded = await repository.RecordBatchResult(created.BatchIdsBySequence[0], resultLocation);
+        var resultLocation = fixture.Create<string>();
+        var recorded = await repository.RecordBatchResult(batchId, resultLocation);
 
-            recorded.Should().BeTrue();
-            var batch = await GetSingleBatch(created.RunId);
+        recorded.Should().Be(resetForReplay);
+        var batch = await GetSingleBatch(created.RunId);
+        if (resetForReplay)
+        {
             batch.BatchStatus.Should().Be(ParallelMatchPredictionBatchStatus.ResultsReceived);
             batch.ResultLocation.Should().Be(resultLocation);
-            // The recovery script relies on the failure columns being cleared (expects NULL).
             batch.FailureMessage.Should().BeNull();
             batch.FailureException.Should().BeNull();
         }
+        else
+        {
+            batch.BatchStatus.Should().Be(ParallelMatchPredictionBatchStatus.Failed);
+            batch.ResultLocation.Should().BeNull();
+            batch.FailureMessage.Should().Be(failureMessage);
+        }
+    }
 
         [Test]
         public async Task RecordBatchResult_PersistsPatientAndDonorGenotypeCounts()
@@ -369,6 +388,7 @@ public class ParallelMatchPredictionRepositoryTests
         {
             var created = await CreateRun(totalBatchCount: 1);
             await repository.RecordBatchFailure(created.BatchIdsBySequence[0], fixture.Create<string>(), fixture.Create<string>());
+            await ResetFailedBatchForReplay(created.BatchIdsBySequence[0]);
 
             (await repository.RecordBatchResult(created.BatchIdsBySequence[0], fixture.Create<string>())).Should().BeTrue();
             // A duplicate delivery of the (now recovered) result must be a no-op, not a second overwrite.
@@ -622,10 +642,12 @@ public class ParallelMatchPredictionRepositoryTests
             (await repository.GetRunIdsAwaitingFinalisationAndNotLeased()).Should().NotContain(created.RunId);
 
             // One of two failed batches recovers; a partial recovery is still not finalisation-eligible.
+            await ResetFailedBatchForReplay(created.BatchIdsBySequence[0]);
             await repository.RecordBatchResult(created.BatchIdsBySequence[0], fixture.Create<string>());
             (await repository.GetRunIdsAwaitingFinalisationAndNotLeased()).Should().NotContain(created.RunId);
 
             // Only once EVERY failed batch has been replayed to success does the run become re-finalisable.
+            await ResetFailedBatchForReplay(created.BatchIdsBySequence[1]);
             await repository.RecordBatchResult(created.BatchIdsBySequence[1], fixture.Create<string>());
             (await repository.GetRunIdsAwaitingFinalisationAndNotLeased()).Should().Contain(created.RunId);
         }
@@ -778,7 +800,8 @@ public class ParallelMatchPredictionRepositoryTests
             await repository.RecordBatchResult(created.BatchIdsBySequence[1], fixture.Create<string>());
             await repository.MarkRunFailed(created.RunId, DateTime.UtcNow);
 
-            // Dead-letter replay of the failed batch.
+            // Dead-letter replay of the failed batch: support sets it back to Requested, then the replayed result arrives.
+            await ResetFailedBatchForReplay(created.BatchIdsBySequence[0]);
             await repository.RecordBatchResult(created.BatchIdsBySequence[0], fixture.Create<string>());
 
             (await repository.GetRunIdsAwaitingFinalisationAndNotLeased()).Should().Contain(created.RunId);
@@ -791,6 +814,25 @@ public class ParallelMatchPredictionRepositoryTests
         }
 
         // ── helpers ──────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// The statement that support runs before a dead-letter replay, copied from README_Support.md: keep the two the same.
+    /// </summary>
+    private const string ResetFailedBatchForReplaySql = @"
+UPDATE [MatchPrediction].[ParallelMatchPredictionBatches]
+SET BatchStatus = 'Requested',
+    BatchStatusDate = SYSUTCDATETIME(),
+    ResultReceivedTimeUtc = NULL,
+    FailureMessage = NULL,
+    FailureException = NULL
+WHERE Id = @BatchId AND BatchStatus = 'Failed';";
+
+    private async Task ResetFailedBatchForReplay(int batchId)
+    {
+        var updated = await context.Database.ExecuteSqlRawAsync(
+            ResetFailedBatchForReplaySql, new Microsoft.Data.SqlClient.SqlParameter("@BatchId", batchId));
+        updated.Should().Be(1, "the batch should be Failed before the reset");
+    }
 
     private async Task<CreateParallelMatchPredictionRunResult> CreateRun(int totalBatchCount)
     {

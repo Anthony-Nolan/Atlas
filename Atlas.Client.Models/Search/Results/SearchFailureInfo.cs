@@ -25,7 +25,8 @@ namespace Atlas.Client.Models.Search.Results
         /// At present, search will only be retried from the beginning if the failure occurred within the matching algorithm & there are retries remaining on matching request.
         /// Failures that occur within the Search Orchestrator are retried on the Activity Function level and not at the search request level, and so <see cref="WillRetry"/> will be `false`.
         /// Failures in match prediction batch processing are sent only once the failed batch has no retries left, so <see cref="WillRetry"/> is `false` for them too.
-        /// A success can still follow such a failure only if support replays the dead-lettered batch by hand.
+        /// A success can still follow such a failure in two cases: the run was abandoned because a batch had not returned within the configured time, and the batch returned later;
+        /// or support replayed a dead-lettered batch by hand.
         /// </summary>
         public bool WillRetry => MatchingAlgorithmFailureInfo is { RemainingRetriesCount: > 0 };
 

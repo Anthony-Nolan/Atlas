@@ -43,6 +43,8 @@ internal class MatchPredictionWorkerEmulatorTests
     // as terraform gives them.
     private const int MaxDeliveryCount = 3;
 
+    // The shortest lock Service Bus allows, so that a lock runs out quickly in the test where it must.
+    private static readonly TimeSpan ShortLockDuration = TimeSpan.FromSeconds(5);
     // Long enough for every delivery of one batch on the emulator.
     private static readonly TimeSpan ResultWait = TimeSpan.FromMinutes(1);
     // The results are already on the subscription by then, so a short wait is enough to see that no more come.
@@ -68,9 +70,8 @@ internal class MatchPredictionWorkerEmulatorTests
 
         try
         {
+            // Each test creates the requests subscription, with the delivery count and lock it needs.
             await admin.CreateTopicAsync(requestsTopic);
-            await admin.CreateSubscriptionAsync(
-                new CreateSubscriptionOptions(requestsTopic, RequestsSubscription) { MaxDeliveryCount = MaxDeliveryCount });
             // Without sessions, unlike the deployed aggregator subscription: the test only counts the results.
             await admin.CreateTopicAsync(resultsTopic);
             await admin.CreateSubscriptionAsync(new CreateSubscriptionOptions(resultsTopic, ResultsSubscription));
@@ -108,6 +109,7 @@ internal class MatchPredictionWorkerEmulatorTests
     {
         var batchSucceeds = failingDeliveries < MaxDeliveryCount;
         var expectedDeliveries = batchSucceeds ? failingDeliveries + 1 : MaxDeliveryCount;
+        await CreateRequestsSubscription(MaxDeliveryCount);
         var request = BuildRequest();
 
         // Take: a blob download that fails on the first deliveries.
@@ -130,7 +132,7 @@ internal class MatchPredictionWorkerEmulatorTests
         var results = new List<ParallelMatchPredictionBatchResult>();
         ServiceBusReceivedMessage deadLetteredRequest;
 
-        var worker = BuildWorker(blobDownloader, out var processor);
+        var worker = BuildWorker(blobDownloader, SuccessfulAlgorithm(), MaxDeliveryCount, out var processor);
         await worker.StartAsync(CancellationToken.None);
         try
         {
@@ -170,20 +172,117 @@ internal class MatchPredictionWorkerEmulatorTests
         }
     }
 
-    /// <summary>
-    /// The worker as Startup builds it, with the real processor options and result publisher; only the batch work is faked.
-    /// </summary>
-    private MatchPredictionWorker BuildWorker(IBlobDownloader blobDownloader, out ServiceBusProcessor processor)
+    /// <remarks>
+    /// ATL-546: the message lock of a delivery can run out while the worker still computes the batch. Service Bus then
+    /// delivers the batch again, and both deliveries run at once. Here the second delivery - the last one - fails while
+    /// the first still computes, and the first succeeds after it. The worker publishes both outcomes, the failure
+    /// first. The aggregator keeps the first outcome of a batch, so the search gets the failure only: see
+    /// RecordBatchResult_ForFailedBatch_IgnoresLateResultAndKeepsFailure in Atlas.MatchPrediction.Test.Integration.
+    /// </remarks>
+    [Test]
+    public async Task RunBatch_WhenLockRunsOutDuringBatch_PublishesLastDeliveryFailureBeforeLateSuccess()
+    {
+        const int maxDeliveryCount = 2;
+        await CreateRequestsSubscription(maxDeliveryCount, ShortLockDuration);
+        var request = BuildRequest();
+
+        // Take: the first delivery downloads the batch and computes until the test lets it finish;
+        // the second delivery fails on the download.
+        var downloads = 0;
+        var blobDownloader = Substitute.For<IBlobDownloader>();
+        blobDownloader.Download<MultipleDonorMatchProbabilityInput>(Arg.Any<string>(), Arg.Any<string>())
+            .Returns(_ => Interlocked.Increment(ref downloads) == 1
+                ? Task.FromResult(new MultipleDonorMatchProbabilityInput())
+                : throw new InvalidOperationException("Batch failed on purpose by the test."));
+        var finishFirstDelivery = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var algorithm = Substitute.For<IParallelMatchPredictionAlgorithm>();
+        algorithm.RunBatch(Arg.Any<MultipleDonorMatchProbabilityInput>(), Arg.Any<int>(), Arg.Any<int>())
+            .Returns(async _ =>
+            {
+                await finishFirstDelivery.Task;
+                return BatchOutput();
+            });
+
+        // Send: the batch request, to a worker that does not renew locks and runs two deliveries at once.
+        await using (var sender = client.CreateSender(requestsTopic))
+        {
+            await sender.SendMessageAsync(new ServiceBusMessage(JsonConvert.SerializeObject(request)));
+        }
+
+        await using var resultsReceiver = client.CreateReceiver(resultsTopic, ResultsSubscription);
+        await using var deadLetterReceiver = client.CreateReceiver(
+            requestsTopic, RequestsSubscription, new ServiceBusReceiverOptions { SubQueue = SubQueue.DeadLetter });
+        var results = new List<ParallelMatchPredictionBatchResult>();
+        ServiceBusReceivedMessage deadLetteredRequest;
+
+        var worker = BuildWorker(
+            blobDownloader, algorithm, maxDeliveryCount, out var processor, maxConcurrentCalls: 2, lockRenewal: TimeSpan.Zero);
+        await worker.StartAsync(CancellationToken.None);
+        try
+        {
+            // Why: the lock of the first delivery runs out, so Service Bus delivers the batch again, and that last
+            // delivery fails and is dead-lettered while the first delivery still computes.
+            results.AddRange(await ReceiveResultsUntil(resultsReceiver, r => !r.IsSuccessful, ResultWait));
+            deadLetteredRequest = await deadLetterReceiver.ReceiveMessageAsync(ResultWait);
+
+            // Why: only now let the first delivery finish, so its success comes after the failure.
+            finishFirstDelivery.SetResult();
+            results.AddRange(await ReceiveResultsUntil(resultsReceiver, r => r.IsSuccessful, ResultWait));
+        }
+        finally
+        {
+            finishFirstDelivery.TrySetResult();
+            await worker.StopAsync(CancellationToken.None);
+            await processor.DisposeAsync();
+        }
+
+        downloads.Should().Be(maxDeliveryCount, "the batch should be delivered again when the first lock runs out");
+        results.Select(r => r.IsSuccessful).Should().Equal([false, true],
+            "the last delivery reports its failure while the first delivery still computes");
+        results.Should().OnlyContain(r => r.BatchId == request.BatchId);
+        deadLetteredRequest.Should().NotBeNull("the failed last delivery should dead-letter the request for replay");
+    }
+
+    /// <summary>A batch computation that always works.</summary>
+    private static IParallelMatchPredictionAlgorithm SuccessfulAlgorithm()
     {
         var algorithm = Substitute.For<IParallelMatchPredictionAlgorithm>();
         algorithm.RunBatch(Arg.Any<MultipleDonorMatchProbabilityInput>(), Arg.Any<int>(), Arg.Any<int>())
-            .Returns(new ParallelMatchPredictionBatchOutput("batch-result.json", 1, new Dictionary<int, int>()));
+            .Returns(BatchOutput());
+        return algorithm;
+    }
 
+    private static ParallelMatchPredictionBatchOutput BatchOutput() => new("batch-result.json", 1, new Dictionary<int, int>());
+
+    /// <summary>The requests subscription, with the same max delivery count as the worker setting, as terraform sets them.</summary>
+    private Task CreateRequestsSubscription(int maxDeliveryCount, TimeSpan? lockDuration = null)
+    {
+        var options = new CreateSubscriptionOptions(requestsTopic, RequestsSubscription) { MaxDeliveryCount = maxDeliveryCount };
+        if (lockDuration.HasValue)
+        {
+            options.LockDuration = lockDuration.Value;
+        }
+
+        return admin.CreateSubscriptionAsync(options);
+    }
+
+    /// <summary>
+    /// The worker as Startup builds it, with the real processor options and result publisher; only the batch work is faked.
+    /// </summary>
+    /// <param name="lockRenewal">How long the processor renews a message lock; the Startup setting when <c>null</c>.</param>
+    private MatchPredictionWorker BuildWorker(
+        IBlobDownloader blobDownloader,
+        IParallelMatchPredictionAlgorithm algorithm,
+        int maxDeliveryCount,
+        out ServiceBusProcessor processor,
+        int maxConcurrentCalls = 1,
+        TimeSpan? lockRenewal = null)
+    {
         var workerSettings = new MatchPredictionWorkerSettings
         {
             RequestsSubscription = RequestsSubscription,
-            RequestsMaxDeliveryCount = MaxDeliveryCount,
-            MaxConcurrentCalls = 1,
+            RequestsMaxDeliveryCount = maxDeliveryCount,
+            MaxConcurrentCalls = maxConcurrentCalls,
         };
 
         var services = new ServiceCollection();
@@ -209,7 +308,7 @@ internal class MatchPredictionWorkerEmulatorTests
             AutoCompleteMessages = false,
             MaxConcurrentCalls = workerSettings.MaxConcurrentCalls,
             PrefetchCount = workerSettings.PrefetchCount,
-            MaxAutoLockRenewalDuration = TimeSpan.FromMinutes(workerSettings.MaxAutoLockRenewalMinutes),
+            MaxAutoLockRenewalDuration = lockRenewal ?? TimeSpan.FromMinutes(workerSettings.MaxAutoLockRenewalMinutes),
         });
 
         return new MatchPredictionWorker(
