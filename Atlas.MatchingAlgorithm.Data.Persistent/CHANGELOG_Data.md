@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   when it closes the record as failed.
 * Data workflow change: `SupportComments` is no longer only for manual use. The code appends one line for each manual
   decision. It never replaces the text.
+* `ShouldMarkAllDonorsAsUpdated` - column removed. The refresh always set it to true, and the donor import stage now
+  always writes the donor management log rows. The `Down` migration adds the column back as `bit`, not null, default
+  false.
  
 * Added nullable column `HlaMetadataDictionarySnapshotUtc` to `MatchingAlgorithmPersistent.DataRefreshHistory`.
   It holds the UTC time that identifies the HLA Metadata Dictionary tables a data refresh run created. Existing rows are not filled in.
