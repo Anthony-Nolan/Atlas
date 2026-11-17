@@ -131,4 +131,13 @@ public class SearchTrackingEventLoggerExtensionsTests
         sentProperties.Should().ContainKey("CompletionDetails.FailureInfo.Type")
             .And.NotContainKeys("CompletionDetails.FailureInfo.Message", "CompletionDetails.FailureInfo.ExceptionStacktrace");
     }
+
+    [Test]
+    public void SendSearchTrackingEvent_LeavesOutMatchPredictionFailureMessageAndStacktrace()
+    {
+        logger.SendSearchTrackingEvent(fixture.Create<MatchPredictionCompletedEvent>(), SearchTrackingEventType.MatchPredictionCompleted);
+
+        sentProperties.Should().ContainKey("CompletionDetails.FailureInfo.Type")
+            .And.NotContainKeys("CompletionDetails.FailureInfo.Message", "CompletionDetails.FailureInfo.ExceptionStacktrace");
+    }
 }
