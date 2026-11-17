@@ -5,6 +5,7 @@ using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
 using Atlas.RepeatSearch.Data.Models;
 using Atlas.RepeatSearch.Data.Repositories;
 using Atlas.RepeatSearch.Services.Search;
+using AutoFixture;
 using AwesomeAssertions;
 using FluentValidation;
 using NSubstitute;
@@ -18,10 +19,12 @@ namespace Atlas.RepeatSearch.Test.Services.Search
         private ICanonicalResultSetRepository canonicalResultSetRepository;
 
         private IRepeatSearchValidator repeatSearchValidator;
+        private Fixture fixture;
 
         [SetUp]
         public void SetUp()
         {
+            fixture = new Fixture();
             canonicalResultSetRepository = Substitute.For<ICanonicalResultSetRepository>();
 
             canonicalResultSetRepository.GetCanonicalResultSetSummary(default).ReturnsForAnyArgs(new CanonicalResultSet());
@@ -71,6 +74,25 @@ namespace Atlas.RepeatSearch.Test.Services.Search
             await repeatSearchValidator
                 .Invoking(v => v.ValidateRepeatSearchAndThrow(repeatSearch))
                 .Should().ThrowAsync<ValidationException>();
+        }
+
+        [Test]
+        public async Task IsOriginalSearchResultSetStored_WhenResultSetIsStored_ReturnsTrue()
+        {
+            var isStored = await repeatSearchValidator.IsOriginalSearchResultSetStored(fixture.Create<string>());
+
+            isStored.Should().BeTrue();
+        }
+
+        [Test]
+        public async Task IsOriginalSearchResultSetStored_WhenResultSetIsNotStored_ReturnsFalse()
+        {
+            var searchId = fixture.Create<string>();
+            canonicalResultSetRepository.GetCanonicalResultSetSummary(searchId).Returns(null as CanonicalResultSet);
+
+            var isStored = await repeatSearchValidator.IsOriginalSearchResultSetStored(searchId);
+
+            isStored.Should().BeFalse();
         }
     }
 }

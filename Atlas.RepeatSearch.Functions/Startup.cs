@@ -5,6 +5,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.RepeatSearch.ExternalInterface.DependencyInjection;
+using Atlas.RepeatSearch.Settings;
 using Atlas.RepeatSearch.Settings.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Atlas.RepeatSearch.Data.Settings;
@@ -33,6 +34,7 @@ namespace Atlas.RepeatSearch.Functions
                 OptionsReaderFor<SearchTrackingServiceBusSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 OptionsReaderFor<StoreOriginalSearchResultsBulkCopySettings>(),
+                OptionsReaderFor<RepeatSearchSettings>(),
                 ConnectionStringReader("RepeatSearchSql"),
                 ConnectionStringReader("MatchingPersistentSql"),
                 ConnectionStringReader("MatchingSqlA"),
@@ -54,6 +56,7 @@ namespace Atlas.RepeatSearch.Functions
             services.RegisterAsOptions<SearchTrackingServiceBusSettings>("SearchTrackingServiceBus");
             services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
             services.RegisterAsOptions<StoreOriginalSearchResultsBulkCopySettings>("StoreOriginalSearchResultsBulkCopy");
+            services.RegisterAsOptions<RepeatSearchSettings>("RepeatSearch");
         }
     }
 }

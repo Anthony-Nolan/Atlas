@@ -684,6 +684,18 @@ variable "REPEAT_SEARCH_MATCHING_MAX_SCALE_OUT" {
   description = "The maximum number of instances of the repeat search's matching algorithm that can be scaled out."
 }
 
+variable "REPEAT_SEARCH_MAX_WAIT_FOR_ORIGINAL_RESULTS_MINUTES" {
+  type        = number
+  default     = 1440
+  description = "How long a repeat search waits for the results of its original search to be stored, from its first request, in minutes. After this time, the repeat search fails with a validation error. 0 turns the wait off."
+}
+
+variable "REPEAT_SEARCH_ORIGINAL_RESULTS_WAIT_INTERVAL_SECONDS" {
+  type        = number
+  default     = 300
+  description = "While a repeat search waits for the results of its original search to be stored, how often it checks again, in seconds."
+}
+
 variable "RESULTS_BATCH_SIZE" {
   type        = number
   default     = 0

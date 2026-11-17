@@ -26,6 +26,8 @@
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications",
+    "RepeatSearch:MaxWaitForOriginalResultsMinutes": 1440,
+    "RepeatSearch:OriginalResultsWaitIntervalSeconds": 300,
     "SearchTrackingServiceBus:ConnectionString": "override-this",
     "SearchTrackingServiceBus:SearchTrackingTopic": "search-tracking-events",
     "StoreOriginalSearchResultsBulkCopy:BatchSize": 10000,

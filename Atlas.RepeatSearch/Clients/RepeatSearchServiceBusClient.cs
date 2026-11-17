@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using System.Threading.Tasks;
 using System.Transactions;
 using Atlas.Client.Models.Search.Results.Matching;
@@ -15,7 +16,9 @@ namespace Atlas.RepeatSearch.Clients
 {
     public interface IRepeatSearchServiceBusClient
     {
-        Task PublishToRepeatSearchRequestsTopic(IdentifiedRepeatSearchRequest searchRequest);
+        /// <param name="searchRequest">The request to publish.</param>
+        /// <param name="scheduledEnqueueTime">When set, Service Bus delivers the message at this time, not at once.</param>
+        Task PublishToRepeatSearchRequestsTopic(IdentifiedRepeatSearchRequest searchRequest, DateTimeOffset? scheduledEnqueueTime = null);
         Task PublishToResultsNotificationTopic(MatchingResultsNotification matchingResultsNotification);
     }
 
@@ -38,10 +41,15 @@ namespace Atlas.RepeatSearch.Clients
             this.logger = logger;
         }
 
-        public async Task PublishToRepeatSearchRequestsTopic(IdentifiedRepeatSearchRequest searchRequest)
+        public async Task PublishToRepeatSearchRequestsTopic(IdentifiedRepeatSearchRequest searchRequest, DateTimeOffset? scheduledEnqueueTime = null)
         {
             var json = JsonConvert.SerializeObject(searchRequest);
             var message = new ServiceBusMessage(Encoding.UTF8.GetBytes(json));
+
+            if (scheduledEnqueueTime.HasValue)
+            {
+                message.ScheduledEnqueueTime = scheduledEnqueueTime.Value;
+            }
 
             message.ApplicationProperties.Add("SearchRequestId", searchRequest.OriginalSearchId);
             message.ApplicationProperties.Add("RepeatSearchRequestId", searchRequest.RepeatSearchId);

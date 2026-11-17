@@ -178,7 +178,8 @@ Slightly more human-readable documentation of the rules is as follows:
   - In addition, this is expected to be identical to the search request detail used for the initial version of the search. If any of this data (e.g. patient hla, match criteria) changes, then a brand new search should be run, 
   not a repeat search. If the provided data differs to the original search, behaviour of the algorithm is undefined
 - `OriginalSearchId` must be provided, and must match a search request ID previously run through the initial search process
-  - If the search request id is not recognised, a failure notification will be sent asynchronously via the atlas repeat results topic
+  - If the search request id is not recognised, a failure notification will be sent asynchronously via the atlas repeat results topic.
+    It is sent only after the repeat search waits for the original search results to be stored, up to the maximum wait: 24 hours by default (`RepeatSearch:MaxWaitForOriginalResultsMinutes`).
 - `SearchCutoffDate` must be provided
 
 ### Receiving search results
