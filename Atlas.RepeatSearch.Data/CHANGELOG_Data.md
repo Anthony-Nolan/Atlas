@@ -8,6 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## 4.2.0
+* Added the column `Status` (`int`, not null, default `1`) to `CanonicalResultSets`: `0` = `InProgress` while the results of the original search
+  are stored in chunks, `1` = `Complete` when all of them are stored. Existing sets get the default, `Complete`. Repeat searches only use complete sets.
+* Added the nullable column `StoreAttemptId` (`uniqueidentifier`) to `CanonicalResultSets`: the delivery of the results message that is storing the set.
+  A later delivery that finds the set in progress takes it over with a new id; only the delivery with the current id can start a chunk and complete the set.
+  A chunk that a superseded delivery started just before the take-over can still commit: the unique index on (`ExternalDonorCode`, `CanonicalResultSetId`)
+  of `SearchResults` then makes one of the two inserts of the same code fail. Do not remove this index.
+
 ## 3.0.0
 * Updated .NET version from 6.0 to 8.0
 

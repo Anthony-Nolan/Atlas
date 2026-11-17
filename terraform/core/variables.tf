@@ -767,13 +767,19 @@ variable "USE_PRECOMPUTED_GENOTYPE_SETS_REQUEST_PERCENTAGE" {
 variable "STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_BATCHSIZE" {
   type        = number
   default     = 10000
-  description = "Batch size for bulk copying repeat search results to the database"
+  description = "Batch size for bulk copying repeat search results to the database: the number of rows sent and committed at a time. Keep STORE_ORIGINAL_SEARCH_RESULTS_CHUNK_SIZE equal to it."
 }
 
 variable "STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_TIMEOUT" {
   type        = number
   default     = 30
-  description = "Timeout for bulk copying repeat search results to the database, in seconds"
+  description = "Timeout for bulk copying repeat search results to the database, in seconds. It applies to the bulk copy of each chunk of an original search result set (see STORE_ORIGINAL_SEARCH_RESULTS_CHUNK_SIZE)."
+}
+
+variable "STORE_ORIGINAL_SEARCH_RESULTS_CHUNK_SIZE" {
+  type        = number
+  default     = 10000
+  description = "Number of donor codes in each chunk when the repeat search app stores the results of an original search: how many donor codes the app holds in memory at once. Each chunk is inserted with its own bulk copy, which commits every STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_BATCHSIZE rows. Keep the two equal, so that each chunk is one commit."
 }
 
 variable "TERRAFORM_RESOURCE_GROUP_NAME" {

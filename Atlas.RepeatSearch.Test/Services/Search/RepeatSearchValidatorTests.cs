@@ -27,7 +27,8 @@ namespace Atlas.RepeatSearch.Test.Services.Search
             fixture = new Fixture();
             canonicalResultSetRepository = Substitute.For<ICanonicalResultSetRepository>();
 
-            canonicalResultSetRepository.GetCanonicalResultSetSummary(default).ReturnsForAnyArgs(new CanonicalResultSet());
+            canonicalResultSetRepository.GetCanonicalResultSetSummary(default)
+                .ReturnsForAnyArgs(new CanonicalResultSet { Status = CanonicalResultSetStatus.Complete });
             
             repeatSearchValidator = new RepeatSearchValidator(canonicalResultSetRepository);
         }
@@ -93,6 +94,38 @@ namespace Atlas.RepeatSearch.Test.Services.Search
             var isStored = await repeatSearchValidator.IsOriginalSearchResultSetStored(searchId);
 
             isStored.Should().BeFalse();
+        }
+
+        [Test]
+        public async Task IsOriginalSearchResultSetStored_WhenResultSetIsInProgress_ReturnsFalse()
+        {
+            var searchId = fixture.Create<string>();
+            canonicalResultSetRepository.GetCanonicalResultSetSummary(searchId)
+                .Returns(new CanonicalResultSet { Status = CanonicalResultSetStatus.InProgress });
+
+            var isStored = await repeatSearchValidator.IsOriginalSearchResultSetStored(searchId);
+
+            isStored.Should().BeFalse();
+        }
+
+        [Test]
+        public async Task ValidateRepeatSearchRequest_WhenOriginalResultSetIsInProgress_ThrowsException()
+        {
+            var searchId = fixture.Create<string>();
+
+            var repeatSearch = new RepeatSearchRequest
+            {
+                SearchRequest = new SearchRequestBuilder().Build(),
+                OriginalSearchId = searchId,
+                SearchCutoffDate = DateTimeOffset.Now
+            };
+
+            canonicalResultSetRepository.GetCanonicalResultSetSummary(searchId)
+                .Returns(new CanonicalResultSet { Status = CanonicalResultSetStatus.InProgress });
+
+            var act = () => repeatSearchValidator.ValidateRepeatSearchAndThrow(repeatSearch);
+
+            await act.Should().ThrowAsync<ValidationException>();
         }
     }
 }

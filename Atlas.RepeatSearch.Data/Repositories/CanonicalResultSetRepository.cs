@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.Utils;
 using Atlas.RepeatSearch.Data.Models;
 using Atlas.RepeatSearch.Data.Settings;
 using Dapper;
@@ -11,9 +11,35 @@ using MoreLinq;
 
 namespace Atlas.RepeatSearch.Data.Repositories
 {
+    /// <summary>
+    /// The right of one delivery of a results message to store the canonical result set of a search.
+    /// </summary>
+    /// <param name="SetId">Id of the canonical result set.</param>
+    /// <param name="StoreAttemptId">Id of this delivery's attempt: the set must still have it to take chunks and to be completed.</param>
+    /// <param name="TookOver">True if the set was already in progress, from an earlier delivery, so its rows were deleted.</param>
+    public record CanonicalResultSetStoreClaim(int SetId, Guid StoreAttemptId, bool TookOver);
+
     public interface ICanonicalResultSetRepository
     {
-        Task CreateCanonicalResultSet(string searchRequestId, IReadOnlyCollection<string> externalDonorCodes);
+        /// <summary>
+        /// Starts storing the canonical result set of an original search.
+        /// Creates the set as <see cref="CanonicalResultSetStatus.InProgress"/>, or takes over a set that is still in progress from an
+        /// earlier delivery and deletes its rows.
+        /// </summary>
+        /// <returns>The claim to add chunks with, or null if the set is already complete.</returns>
+        Task<CanonicalResultSetStoreClaim> StartStoringResultSet(string searchRequestId);
+
+        /// <summary>
+        /// Inserts one chunk of donor codes, committed on its own.
+        /// Throws <see cref="CanonicalResultSetClaimLostException"/> if another delivery has taken over the set.
+        /// </summary>
+        Task AddResultsChunk(CanonicalResultSetStoreClaim claim, IReadOnlyCollection<string> externalDonorCodes);
+
+        /// <summary>
+        /// Marks the set as <see cref="CanonicalResultSetStatus.Complete"/>.
+        /// Throws <see cref="CanonicalResultSetClaimLostException"/> if another delivery has taken over the set.
+        /// </summary>
+        Task CompleteResultSet(CanonicalResultSetStoreClaim claim);
 
         /// <returns>
         /// A <see cref="CanonicalResultSet"/> with no search results populated.
@@ -29,6 +55,8 @@ namespace Atlas.RepeatSearch.Data.Repositories
 
     public class CanonicalResultSetRepository : ICanonicalResultSetRepository
     {
+        private const int DeleteBatchSize = 10000;
+
         private readonly string connectionString;
         private readonly int sqlBulkCopyBatchSize;
         private readonly int sqlBulkCopyBatchTimeout;
@@ -40,23 +68,100 @@ namespace Atlas.RepeatSearch.Data.Repositories
             sqlBulkCopyBatchTimeout = settings.Timeout;
         }
 
-        public async Task CreateCanonicalResultSet(string searchRequestId, IReadOnlyCollection<string> externalDonorCodes)
+        public async Task<CanonicalResultSetStoreClaim> StartStoringResultSet(string searchRequestId)
         {
-            using (var transactionScope = new AsyncTransactionScope())
-            {
-                var resultSetId = await CreateResultSetIfNotExists(searchRequestId);
-                if (resultSetId is null) // null is returned - results are already saved
-                    return;
+            var storeAttemptId = Guid.NewGuid();
 
-                await AddResultsToSet(externalDonorCodes, resultSetId.Value);
-                transactionScope.Complete();
+            // The insert is tried first, without a check: the set rarely exists, and a check before the insert would need range locks
+            // (updlock, serializable) to be safe. On a duplicate key, the set is taken over if it is still in progress.
+            var sql = @$"
+                BEGIN TRY
+                    INSERT INTO {CanonicalResultSet.QualifiedTableName}
+                    ({nameof(CanonicalResultSet.OriginalSearchRequestId)}, {nameof(CanonicalResultSet.Status)}, {nameof(CanonicalResultSet.StoreAttemptId)})
+                    VALUES (@{nameof(searchRequestId)}, @InProgress, @{nameof(storeAttemptId)});
+
+                    SELECT CAST(SCOPE_IDENTITY() AS int) AS SetId, CAST(0 AS bit) AS TookOver;
+                END TRY
+                BEGIN CATCH
+                    IF ERROR_NUMBER() NOT IN (2601, 2627)
+                        THROW;
+
+                    UPDATE {CanonicalResultSet.QualifiedTableName}
+                    SET {nameof(CanonicalResultSet.StoreAttemptId)} = @{nameof(storeAttemptId)}
+                    OUTPUT inserted.{nameof(CanonicalResultSet.Id)} AS SetId, CAST(1 AS bit) AS TookOver
+                    WHERE {nameof(CanonicalResultSet.OriginalSearchRequestId)} = @{nameof(searchRequestId)}
+                    AND {nameof(CanonicalResultSet.Status)} = @InProgress;
+                END CATCH";
+
+            StartedSet started;
+            await using (var conn = new SqlConnection(connectionString))
+            {
+                started = await conn.QuerySingleOrDefaultAsync<StartedSet>(sql, new
+                {
+                    searchRequestId,
+                    storeAttemptId,
+                    InProgress = (int)CanonicalResultSetStatus.InProgress
+                });
+            }
+
+            // No row: the set exists and is complete.
+            if (started == null)
+            {
+                return null;
+            }
+
+            if (started.TookOver)
+            {
+                await DeleteAllResultsFromSet(started.SetId);
+            }
+
+            return new CanonicalResultSetStoreClaim(started.SetId, storeAttemptId, started.TookOver);
+        }
+
+        public async Task AddResultsChunk(CanonicalResultSetStoreClaim claim, IReadOnlyCollection<string> externalDonorCodes)
+        {
+            // Not atomic with the insert: see CanonicalResultSet.StoreAttemptId for why the unique index of SearchResults keeps the set correct.
+            await ThrowIfClaimLost(claim);
+
+            if (externalDonorCodes.Count == 0)
+            {
+                return;
+            }
+
+            await AddResultsToSet(externalDonorCodes, claim.SetId, SqlBulkCopyOptions.UseInternalTransaction);
+        }
+
+        public async Task CompleteResultSet(CanonicalResultSetStoreClaim claim)
+        {
+            var sql = @$"
+                UPDATE {CanonicalResultSet.QualifiedTableName}
+                SET {nameof(CanonicalResultSet.Status)} = @Complete
+                WHERE {nameof(CanonicalResultSet.Id)} = @{nameof(claim.SetId)}
+                AND {nameof(CanonicalResultSet.StoreAttemptId)} = @{nameof(claim.StoreAttemptId)}
+                AND {nameof(CanonicalResultSet.Status)} = @InProgress";
+
+            int updatedRows;
+            await using (var conn = new SqlConnection(connectionString))
+            {
+                updatedRows = await conn.ExecuteAsync(sql, new
+                {
+                    claim.SetId,
+                    claim.StoreAttemptId,
+                    InProgress = (int)CanonicalResultSetStatus.InProgress,
+                    Complete = (int)CanonicalResultSetStatus.Complete
+                });
+            }
+
+            if (updatedRows == 0)
+            {
+                throw new CanonicalResultSetClaimLostException(claim);
             }
         }
 
         public async Task<CanonicalResultSet> GetCanonicalResultSetSummary(string searchRequestId)
         {
             var sql = @$"
-                SELECT * FROM {CanonicalResultSet.QualifiedTableName} 
+                SELECT * FROM {CanonicalResultSet.QualifiedTableName}
                 WHERE {nameof(CanonicalResultSet.OriginalSearchRequestId)} = @{nameof(searchRequestId)}";
 
             await using (var conn = new SqlConnection(connectionString))
@@ -69,7 +174,7 @@ namespace Atlas.RepeatSearch.Data.Repositories
         {
             var sql = @$"
                 SELECT * FROM {SearchResult.QualifiedTableName} sr
-                JOIN {CanonicalResultSet.QualifiedTableName} crs on crs.{nameof(CanonicalResultSet.Id)} = sr.{nameof(SearchResult.CanonicalResultSetId)} 
+                JOIN {CanonicalResultSet.QualifiedTableName} crs on crs.{nameof(CanonicalResultSet.Id)} = sr.{nameof(SearchResult.CanonicalResultSetId)}
                 WHERE crs.{nameof(CanonicalResultSet.OriginalSearchRequestId)} = @{nameof(searchRequestId)}";
 
             await using (var conn = new SqlConnection(connectionString))
@@ -82,8 +187,8 @@ namespace Atlas.RepeatSearch.Data.Repositories
         {
             var sql = @$"
                 DELETE sr FROM {SearchResult.QualifiedTableName} sr
-                JOIN {CanonicalResultSet.QualifiedTableName} crs on crs.{nameof(CanonicalResultSet.Id)} = sr.{nameof(SearchResult.CanonicalResultSetId)} 
-                WHERE crs.{nameof(CanonicalResultSet.OriginalSearchRequestId)} = @{nameof(searchRequestId)} 
+                JOIN {CanonicalResultSet.QualifiedTableName} crs on crs.{nameof(CanonicalResultSet.Id)} = sr.{nameof(SearchResult.CanonicalResultSetId)}
+                WHERE crs.{nameof(CanonicalResultSet.OriginalSearchRequestId)} = @{nameof(searchRequestId)}
                 AND sr.{nameof(SearchResult.ExternalDonorCode)} IN @Ids
                 ";
 
@@ -102,49 +207,65 @@ namespace Atlas.RepeatSearch.Data.Repositories
             await AddResultsToSet(donorCodesToAdd, setId);
         }
 
-        private async Task AddResultsToSet(IReadOnlyCollection<string> externalDonorCodes, int resultSetId)
+        private async Task AddResultsToSet(
+            IReadOnlyCollection<string> externalDonorCodes,
+            int resultSetId,
+            SqlBulkCopyOptions options = SqlBulkCopyOptions.Default)
         {
             var resultEntryDataTable = BuildResultsInsertDataTable(resultSetId, externalDonorCodes);
-            using (var sqlBulk = BuildResultsBulkCopy())
+            using (var sqlBulk = BuildResultsBulkCopy(options))
             {
                 await sqlBulk.WriteToServerAsync(resultEntryDataTable);
             }
         }
 
-        /// <returns>The id of created result set entity or null if it already exists</returns>
-        private async Task<int?> CreateResultSetIfNotExists(string searchRequestId)
+        private async Task ThrowIfClaimLost(CanonicalResultSetStoreClaim claim)
         {
-            // Don't use early return approach because it won't work without query hints: record may appear in database
-            // after we checked if it exists, but before we insert 'our' record.
-            // With hints (updlock, serializable), it will use update lock and range locks which may prevent 
-            // from inserting results from other searches until we commit current transaction (i.e. when we insert all donor ids)
-            // With all above and the fact that existing record for search request id is rare case, we're tring to insert the record first. 
-            // Then in case of exception, we're checking if records exists and return null idicating that new record wasn't created.
             var sql = @$"
-                BEGIN TRY
-                    INSERT INTO {CanonicalResultSet.QualifiedTableName}
-                    ({nameof(CanonicalResultSet.OriginalSearchRequestId)})
-                    VALUES(@{nameof(searchRequestId)});
+                SELECT COUNT(*) FROM {CanonicalResultSet.QualifiedTableName}
+                WHERE {nameof(CanonicalResultSet.Id)} = @{nameof(claim.SetId)}
+                AND {nameof(CanonicalResultSet.StoreAttemptId)} = @{nameof(claim.StoreAttemptId)}
+                AND {nameof(CanonicalResultSet.Status)} = @InProgress";
 
-                    SELECT CAST(SCOPE_IDENTITY() as int);
-                END TRY
-                BEGIN CATCH 
-                    IF EXISTS (SELECT id FROM RepeatSearch.CanonicalResultSets WHERE OriginalSearchRequestId = @searchRequestId)
-                        SELECT null
-                    ELSE
-                    THROW
-                END CATCH
-                ";
-
+            int claimedSets;
             await using (var conn = new SqlConnection(connectionString))
             {
-                return await conn.QuerySingleAsync<int?>(sql, new {searchRequestId});
+                claimedSets = await conn.ExecuteScalarAsync<int>(sql, new
+                {
+                    claim.SetId,
+                    claim.StoreAttemptId,
+                    InProgress = (int)CanonicalResultSetStatus.InProgress
+                });
+            }
+
+            if (claimedSets == 0)
+            {
+                throw new CanonicalResultSetClaimLostException(claim);
             }
         }
 
-        private SqlBulkCopy BuildResultsBulkCopy()
+        /// <summary>
+        /// Deletes in batches, so that a large set does not fill the transaction log in one statement.
+        /// </summary>
+        private async Task DeleteAllResultsFromSet(int resultSetId)
         {
-            var sqlBulk = new SqlBulkCopy(connectionString) {BatchSize = sqlBulkCopyBatchSize, DestinationTableName = SearchResult.QualifiedTableName};
+            var sql = @$"
+                DELETE TOP ({DeleteBatchSize}) FROM {SearchResult.QualifiedTableName}
+                WHERE {nameof(SearchResult.CanonicalResultSetId)} = @{nameof(resultSetId)}";
+
+            await using (var conn = new SqlConnection(connectionString))
+            {
+                int deletedRows;
+                do
+                {
+                    deletedRows = await conn.ExecuteAsync(sql, new {resultSetId}, commandTimeout: sqlBulkCopyBatchTimeout);
+                } while (deletedRows == DeleteBatchSize);
+            }
+        }
+
+        private SqlBulkCopy BuildResultsBulkCopy(SqlBulkCopyOptions options)
+        {
+            var sqlBulk = new SqlBulkCopy(connectionString, options) {BatchSize = sqlBulkCopyBatchSize, DestinationTableName = SearchResult.QualifiedTableName};
             sqlBulk.BulkCopyTimeout = sqlBulkCopyBatchTimeout;
             sqlBulk.ColumnMappings.Add(nameof(SearchResult.Id), nameof(SearchResult.Id));
             sqlBulk.ColumnMappings.Add(nameof(SearchResult.ExternalDonorCode), nameof(SearchResult.ExternalDonorCode));
@@ -165,6 +286,20 @@ namespace Atlas.RepeatSearch.Data.Repositories
             }
 
             return dataTable;
+        }
+
+        private class StartedSet
+        {
+            public int SetId { get; set; }
+            public bool TookOver { get; set; }
+        }
+    }
+
+    public class CanonicalResultSetClaimLostException : Exception
+    {
+        public CanonicalResultSetClaimLostException(CanonicalResultSetStoreClaim claim)
+            : base($"Another delivery has taken over or completed canonical result set {claim.SetId}, so store attempt {claim.StoreAttemptId} stops.")
+        {
         }
     }
 }

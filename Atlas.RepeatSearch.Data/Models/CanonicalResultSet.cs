@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Atlas.RepeatSearch.Data.Context;
@@ -22,7 +23,24 @@ namespace Atlas.RepeatSearch.Data.Models
         [MaxLength(200)]
         [Required]
         public string OriginalSearchRequestId { get; set; }
-        
+
+        /// <summary>
+        /// A set is <see cref="CanonicalResultSetStatus.InProgress"/> while the results of the original search are stored in chunks,
+        /// and <see cref="CanonicalResultSetStatus.Complete"/> when all of them are stored. Repeat searches only use complete sets.
+        /// Sets stored before this column existed are complete.
+        /// </summary>
+        public CanonicalResultSetStatus Status { get; set; }
+
+        /// <summary>
+        /// Identifies the delivery that is storing the set. A delivery of the same results message that finds the set in progress
+        /// takes it over with a new id; only the delivery with the current id can start a chunk and complete the set.
+        /// The claim check and the insert of a chunk are two statements, so a chunk of a superseded delivery that passed the check just
+        /// before the take-over can still commit. The unique index on (ExternalDonorCode, CanonicalResultSetId) of
+        /// <see cref="SearchResult"/> makes one of the two inserts of the same code fail, and a failed current delivery starts again.
+        /// Do not remove that index.
+        /// </summary>
+        public Guid? StoreAttemptId { get; set; }
+
         /// <summary>
         /// Donors in the canonical result set.
         /// </summary>
