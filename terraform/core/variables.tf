@@ -245,6 +245,12 @@ variable "KEY_VAULT_SECRETS_OFFICER_OBJECTIDS" {
   description = "Object IDs granted 'Key Vault Secrets Officer' on the Atlas Key Vault, so that secrets which are deliberately not managed by Terraform can be seeded and rotated by hand - typically an ops AD group, plus anyone who needs to run a plan that reads existing secrets. The principal running Terraform is granted the role separately and does not need listing here. Leave empty to grant nobody."
 }
 
+variable "KEY_VAULT_SECRETS_USER_OBJECTIDS" {
+  type        = list(string)
+  default     = []
+  description = "Object IDs granted 'Key Vault Secrets User' (read only) on the Atlas Key Vault - typically the 'Atlas Key Vault Readers - <ENV>' AD group, whose members are the SPNs of the release pipeline's service connections, so that a Key Vault-linked ADO variable group can read the hand-seeded secrets. Leave empty to grant nobody."
+}
+
 variable "KEY_VAULT_PURGE_PROTECTION_ENABLED" {
   type        = bool
   default     = false

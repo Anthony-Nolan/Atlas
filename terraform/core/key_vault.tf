@@ -60,6 +60,18 @@ resource "azurerm_role_assignment" "kv_secrets_officers" {
   principal_id         = each.value
 }
 
+// Read-only access for named principals - typically the "Atlas Key Vault Readers - <ENV>" AD group, whose members are
+// the SPNs of the release pipeline's service connections. A Key Vault-linked ADO variable group signs in as one of
+// those SPNs to read the hand-seeded secrets at the start of a release, before Terraform runs - so this must stay in
+// every version that can be deployed, or deploying one without it removes the access the next release needs.
+resource "azurerm_role_assignment" "kv_secrets_users" {
+  for_each = toset(var.KEY_VAULT_SECRETS_USER_OBJECTIDS)
+
+  scope                = azurerm_key_vault.atlas.id
+  role_definition_name = "Key Vault Secrets User"
+  principal_id         = each.value
+}
+
 // Data-plane role assignments take up to a minute to propagate. Without this pause the first apply in a new
 // environment fails with a 403 when it tries to write the secrets below.
 resource "time_sleep" "wait_for_key_vault_rbac" {
