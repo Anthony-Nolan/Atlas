@@ -770,8 +770,8 @@ variable "STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_BATCHSIZE" {
 
 variable "STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_TIMEOUT" {
   type        = number
-  default     = 30
-  description = "Timeout for bulk copying repeat search results to the database, in seconds. It applies to the bulk copy of each chunk of an original search result set (see STORE_ORIGINAL_SEARCH_RESULTS_CHUNK_SIZE)."
+  default     = 300
+  description = "Timeout for bulk copying repeat search results to the database, in seconds. It applies to the bulk copy of each chunk of an original search result set (see STORE_ORIGINAL_SEARCH_RESULTS_CHUNK_SIZE), to the batched delete of the rows of a set that a new delivery takes over, and to the inserts of a repeat search. On a large SearchResults table, a chunk of 10,000 rows can take more than 30 seconds, because each new row is written to a random page of the unique index on (ExternalDonorCode, CanonicalResultSetId)."
 }
 
 variable "STORE_ORIGINAL_SEARCH_RESULTS_CHUNK_SIZE" {
