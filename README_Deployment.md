@@ -142,6 +142,11 @@ on the vault. The same applies if you want to run a `terraform plan` locally: th
 manages, and fails with a 403 if you cannot read them. If the list is left empty, only the deploy service principal
 that runs Terraform can write secrets.
 
+Principals that only need to read secrets go in the `KEY_VAULT_SECRETS_USER_OBJECTIDS` terraform variable instead, which
+grants **Key Vault Secrets User**. Each release stage sets it to the Entra group "Atlas Key Vault Readers - <DEV|UAT|LIVE>",
+whose members are the service principals of the stage's Azure service connections, so that a Key Vault-linked
+variable group can read the hand-seeded secrets when a release starts.
+
 Rotating a hand-seeded secret is a matter of running the command above again. The platform caches resolved Key Vault
 references for up to 24 hours, so restart the function apps if the new value is needed immediately. Secrets that
 Terraform manages are rotated by the next apply, which updates the app setting to the new secret version and restarts
