@@ -33,9 +33,14 @@ locals {
   }
 
   // Seeded outside Terraform - see "Key Vault bootstrap" in README_Deployment.md. Referenced by vault and secret name
-  // so the value never enters Terraform state; a data "azurerm_key_vault_secret" would read it into state and defeat
-  // the purpose. Consumed by the matching algorithm module, not by the root function apps.
+  // so the values never enter Terraform state; a data "azurerm_key_vault_secret" would read them into state and defeat
+  // the purpose. Unversioned, so a rotation is a vault write: the apps pick up the new version on restart, or when the
+  // platform's 24 hour reference cache expires.
+  // azure-client-secret is consumed by the matching algorithm module, not by the root function apps.
   azure_client_secret_kv_ref = "@Microsoft.KeyVault(VaultName=${azurerm_key_vault.atlas.name};SecretName=azure-client-secret)"
+  // A vendor licence with its own renewal cycle, consumed by the root function apps and the matching algorithm and
+  // search tracking modules.
+  automapper_license_key_kv_ref = "@Microsoft.KeyVault(VaultName=${azurerm_key_vault.atlas.name};SecretName=automapper-license-key)"
 }
 
 locals {
@@ -44,8 +49,11 @@ locals {
   // Passing the references pre-built keeps the choice of a versioned SecretUri in one place, and makes each module's
   // app settings implicitly depend on the secrets existing.
   key_vault_module_handoff = {
-    id          = azurerm_key_vault.atlas.id
-    secret_refs = merge(local.kv_ref, { "azure-client-secret" = local.azure_client_secret_kv_ref })
+    id = azurerm_key_vault.atlas.id
+    secret_refs = merge(local.kv_ref, {
+      "azure-client-secret"    = local.azure_client_secret_kv_ref
+      "automapper-license-key" = local.automapper_license_key_kv_ref
+    })
 
     // Container Apps take a Key Vault secret ID rather than an "@Microsoft.KeyVault(...)" string. Versioned, for the same
     // reason as local.kv_ref. Modules whose key_vault variable does not declare this attribute simply drop it.

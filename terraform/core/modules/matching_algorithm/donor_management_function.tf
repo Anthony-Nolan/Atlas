@@ -2,7 +2,7 @@ locals {
   donor_func_app_settings = {
     "ApplicationInsights:LogLevel" = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
-    "AutoMapper:LicenseKey" = var.AUTOMAPPER_LICENSE_KEY
+    "AutoMapper:LicenseKey" = var.key_vault.secret_refs["automapper-license-key"]
 
     "AzureStorage:ConnectionString" = var.key_vault.secret_refs["azure-storage-connection-string"]
 

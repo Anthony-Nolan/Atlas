@@ -97,8 +97,13 @@ output "sql-server-admin-login" {
   value = var.USE_EXTERNAL_SQL ? var.EXTERNAL_SQL_SERVER_ADMIN_LOGIN : var.DATABASE_SERVER_ADMIN_LOGIN
 }
 
+// Deprecated: no release step reads this any more - they take the password from the Key Vault-linked variable group
+// (see "Release variable group" in README_Deployment.md). Marked sensitive rather than deleted, because deleting an
+// output that state holds as non-sensitive prints its old value in the plan. Remove it once every environment has
+// applied this version.
 output "sql-server-admin-login-password" {
-  value = var.DATABASE_SERVER_ADMIN_LOGIN_PASSWORD
+  value     = var.DATABASE_SERVER_ADMIN_LOGIN_PASSWORD
+  sensitive = true
 }
 
 output "match-prediction-container-app-name" {

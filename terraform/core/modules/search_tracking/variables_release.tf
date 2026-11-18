@@ -4,13 +4,9 @@ variable "APPLICATION_INSIGHTS_LOG_LEVEL" {
   type = string
 }
 
-variable "AUTOMAPPER_LICENSE_KEY" {
+variable "DATABASE_PASSWORD" {
   type      = string
   sensitive = true
-}
-
-variable "DATABASE_PASSWORD" {
-  type = string
 }
 
 variable "DATABASE_USERNAME" {

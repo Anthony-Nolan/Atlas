@@ -5,7 +5,8 @@ variable "APPLICATION_INSIGHTS_LOG_LEVEL" {
 }
 
 variable "DATABASE_PASSWORD" {
-  type = string
+  type      = string
+  sensitive = true
 }
 
 variable "DATABASE_USERNAME" {

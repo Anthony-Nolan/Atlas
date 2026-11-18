@@ -27,9 +27,9 @@ The following are the steps that are required to be taken manually when deployin
     - e.g. The matching algorithm Data Refresh needs to be able to scale azure databases at runtime.
     - It also allows Terraform to fetch function keys.
     - This registration must have the role of `Contributor` and `App Configuration Data Owner` on the Atlas resource group (this can be set at the Azure subscription level before the resources are deployed).
-    - App registration info must be provided via the following terraform release vars:
-      - `AZURE_CLIENT_ID`
-      - `AZURE_CLIENT_SECRET`.
+    - App registration info must be provided via:
+      - the `AZURE_CLIENT_ID` terraform release var;
+      - the `azure-client-secret` Key Vault secret - see [Key Vault bootstrap](#key-vault-bootstrap).
 - An *Azure Active Directory (AD) group* should be created to control admin access to the Atlas SQL Server (one AD group per release environment).
   - AD group info must be provided via the following terraform release vars:
     - `DATABASE_SERVER_AZUREAD_ADMINISTRATOR_LOGIN_USERNAME` - Name of the AD group used to control admin access to the Atlas SQL server, e.g., `DEV SQL Server Administrators`
@@ -125,34 +125,117 @@ Split of responsibility:
 | `servicebus-read-only-connection-string` | Terraform |
 | `servicebus-write-only-connection-string` | Terraform |
 | `servicebus-manage-connection-string` | Terraform |
-| `azure-client-secret` | **Seeded by hand** - see below |
+| `azure-client-secret` | **Seeded by hand** - read by the apps |
+| `automapper-license-key` | **Seeded by hand** - read by the apps |
+| `database-server-admin-login-password` | **Seeded by hand** - read by the release, see [Release variable group](#release-variable-group) |
+| `donor-database-password` | **Seeded by hand** - read by the release |
+| `matching-database-password` | **Seeded by hand** - read by the release |
+| `matching-password-for-donor-import-database` | **Seeded by hand** - read by the release |
+| `match-prediction-database-password` | **Seeded by hand** - read by the release |
+| `repeat-search-database-password` | **Seeded by hand** - read by the release |
+| `search-tracking-database-password` | **Seeded by hand** - read by the release |
 
-`azure-client-secret` is the client secret of the app registration used by Atlas at runtime. Terraform never reads it,
-so that its value stays out of Terraform state; app settings reference it by vault and secret name instead. It must be
-seeded once per environment, after the first apply that creates the vault:
+The hand-seeded secrets are listed in `hand_seeded_key_vault_secret_names` in
+`terraform/core/key_vault_hand_seeded_secrets.tf`.
+
+- `azure-client-secret` is the client secret of the app registration used by Atlas at runtime, and
+  `automapper-license-key` is the AutoMapper commercial licence key, which has its own renewal cycle. Terraform never
+  reads either: app settings reference them by vault and secret name, so their values stay out of Terraform state.
+- The SQL passwords are inputs to Terraform and to the database steps of the release. They reach Terraform as
+  `TF_VAR_*` through the release variable group, and still end up in Terraform state inside the connection-string
+  secrets that the component modules write.
+
+Each secret is seeded once per environment, and must exist before the apply that needs it. Terraform reads every
+hand-seeded secret as an ephemeral resource, so a missing or disabled one fails `terraform plan` with an error naming
+the secret and the vault, instead of an app silently getting the literal `@Microsoft.KeyVault(...)` string at runtime.
+Ephemeral values are never written to state or to the plan file.
 
 ```bash
+read -rs SECRET_VALUE   # paste the value, then Enter - keeps it out of your shell history
 az keyvault secret set \
   --vault-name an-<environment>-atlas-kv \
-  --name azure-client-secret \
-  --value "<the AZURE_CLIENT_SECRET release variable for that environment>"
+  --name <secret-name> \
+  --value "$SECRET_VALUE" \
+  --output none
+unset SECRET_VALUE
 ```
 
-To be able to run this, your object ID - or that of an AD group you belong to - must be listed in the
-`KEY_VAULT_SECRETS_OFFICER_OBJECTIDS` terraform variable; everything listed there is granted Key Vault Secrets Officer
-on the vault. The same applies if you want to run a `terraform plan` locally: the plan refreshes the secrets Terraform
-manages, and fails with a 403 if you cannot read them. If the list is left empty, only the deploy service principal
-that runs Terraform can write secrets.
+To be able to run this, your object ID - or that of an AD group you belong to, such as
+"Atlas Key Vault Officers - <DEV|UAT|LIVE>" - must be listed in the `KEY_VAULT_SECRETS_OFFICER_OBJECTIDS` terraform
+variable; everything listed there is granted Key Vault Secrets Officer on the vault. The same applies if you want to
+run a `terraform plan` locally: the plan refreshes the secrets Terraform manages and reads the hand-seeded ones, and
+fails with a 403 if you cannot read them. If the list is left empty, only the deploy service principal that runs
+Terraform can write secrets.
 
 Principals that only need to read secrets go in the `KEY_VAULT_SECRETS_USER_OBJECTIDS` terraform variable instead, which
 grants **Key Vault Secrets User**. Each release stage sets it to the Entra group "Atlas Key Vault Readers - <DEV|UAT|LIVE>",
 whose members are the service principals of the stage's Azure service connections, so that a Key Vault-linked
 variable group can read the hand-seeded secrets when a release starts.
 
-Rotating a hand-seeded secret is a matter of running the command above again. The platform caches resolved Key Vault
-references for up to 24 hours, so restart the function apps if the new value is needed immediately. Secrets that
-Terraform manages are rotated by the next apply, which updates the app setting to the new secret version and restarts
-the app automatically.
+A local plan also needs the SQL passwords as `TF_VAR_*`, from your local tfvars or from the vault, e.g.
+`export TF_VAR_MATCHING_DATABASE_PASSWORD="$(az keyvault secret show --vault-name an-dev-atlas-kv --name matching-database-password --query value -o tsv)"`.
+
+#### A brand-new environment
+
+The vault is created by Terraform, but the release needs the hand-seeded secrets before Terraform runs. In a new
+environment:
+
+1. Apply only the vault and its role assignments, with the SQL password `TF_VAR_*` values set in your shell:
+   `terraform apply -target=azurerm_key_vault.atlas -target=azurerm_role_assignment.terraform_kv_secrets_officer -target=azurerm_role_assignment.kv_secrets_officers -target=azurerm_role_assignment.kv_secrets_users`
+2. Seed every hand-seeded secret, as above.
+3. Create and link the [release variable group](#release-variable-group).
+4. Run the release.
+
+#### Rotation
+
+| Secret | How to rotate |
+| --- | --- |
+| `azure-client-secret`, `automapper-license-key` | Write a new version to the vault. The platform caches resolved Key Vault references for up to 24 hours, so restart the function apps if the new value is needed immediately. |
+| The SQL passwords | Write a new version to the vault, then run the release. Terraform writes new connection-string secret versions and Add DB Users runs `ALTER USER ... WITH PASSWORD`, so the apps can fail to sign in to SQL for the minutes between the two steps. Rotate outside busy hours. |
+| Terraform-managed secrets | Rotated by the next apply, which updates the app setting to the new secret version and restarts the app automatically. |
+
+No pipeline or variable edit is needed for any of them.
+
+### Release variable group
+
+The release reads the hand-seeded secrets from the vault, not from release variables. Each deploy stage has its own
+variable group, "Atlas Key Vault - <ENV>", linked to `an-<environment>-atlas-kv` and scoped to that stage. It signs in
+through the stage's Azure service connection, whose service principal is a member of the Entra group
+"Atlas Key Vault Readers - <DEV|UAT|LIVE>". That group is listed in the `KEY_VAULT_SECRETS_USER_OBJECTIDS` terraform
+variable for the stage, which grants it **Key Vault Secrets User** (read only) on the vault.
+
+| Stage | Service connection | Readers group |
+| --- | --- | --- |
+| DEV | Atlas Dev WIF | Atlas Key Vault Readers - DEV |
+| UAT, WMDA UAT | Atlas Uat WIF | Atlas Key Vault Readers - UAT |
+| LIVE, WMDA LIVE | Atlas Live WIF | Atlas Key Vault Readers - LIVE |
+
+Key Vault rejects underscores in secret names, so a linked group cannot expose a variable named `TF_VAR_*`. Variables
+from a linked group are also secret, and ADO does not pass secret variables to tasks as environment variables unless
+they are mapped explicitly. The mapping lives in the `environment` block of the "plan terraform" and "apply terraform"
+steps of the "Atlas - Plan Terraform" and "Atlas - Apply Terraform" task groups:
+
+| Environment variable | Variable group (vault secret) |
+| --- | --- |
+| `TF_VAR_DATABASE_SERVER_ADMIN_LOGIN_PASSWORD` | `$(database-server-admin-login-password)` |
+| `TF_VAR_DONOR_DATABASE_PASSWORD` | `$(donor-database-password)` |
+| `TF_VAR_MATCHING_DATABASE_PASSWORD` | `$(matching-database-password)` |
+| `TF_VAR_MATCHING_PASSWORD_FOR_DONOR_IMPORT_DATABASE` | `$(matching-password-for-donor-import-database)` |
+| `TF_VAR_MATCH_PREDICTION_DATABASE_PASSWORD` | `$(match-prediction-database-password)` |
+| `TF_VAR_REPEAT_SEARCH_DATABASE_PASSWORD` | `$(repeat-search-database-password)` |
+| `TF_VAR_SEARCH_TRACKING_DATABASE_PASSWORD` | `$(search-tracking-database-password)` |
+
+"Add DB Users" and the five component Deploy task groups take the SQL passwords from the same variables, e.g.
+`$(database-server-admin-login-password)`, rather than from Terraform outputs. The "Make Terraform Output Variables
+Available to Azure" step publishes only non-sensitive outputs and logs their names, not their values. The
+`sql-server-admin-login-password` output is deprecated and marked sensitive, and will be removed once every environment
+has applied the version that marks it.
+
+A task group version with these mappings must only be used by a stage that has its variable group linked: in a stage
+without it, `$(secret-name)` is passed through as the literal string.
+
+To add a new hand-seeded secret: add it to `hand_seeded_key_vault_secret_names`, seed it in every environment, select
+it in each stage's variable group, and map it in the task group if Terraform needs it.
 
 ### Distributed cache (Azure Managed Redis)
 

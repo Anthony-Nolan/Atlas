@@ -50,7 +50,7 @@ resource "azurerm_windows_function_app" "atlas_function" {
   app_settings = {
     "ApplicationInsights:LogLevel" = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
-    "AutoMapper:LicenseKey" = var.AUTOMAPPER_LICENSE_KEY
+    "AutoMapper:LicenseKey" = local.automapper_license_key_kv_ref
 
     "AzureFunctionsJobHost__extensions__durableTask__maxConcurrentActivityFunctions" = var.MAX_CONCURRENT_ACTIVITY_FUNCTIONS
 
@@ -210,7 +210,7 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
   app_settings = {
     "ApplicationInsights:LogLevel" = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
-    "AutoMapper:LicenseKey"                                            = var.AUTOMAPPER_LICENSE_KEY
+    "AutoMapper:LicenseKey"                                            = local.automapper_license_key_kv_ref
     "AtlasFunction:Search:DefaultParallelMatchPrediction"              = var.DEFAULT_PARALLEL_MATCH_PREDICTION
     "AtlasFunction:Search:ParallelMatchPredictionRequestPercentage"    = var.PARALLEL_MATCH_PREDICTION_REQUEST_PERCENTAGE
     "AtlasFunction:Search:DefaultUsePrecomputedGenotypeSets"           = var.DEFAULT_USE_PRECOMPUTED_GENOTYPE_SETS
