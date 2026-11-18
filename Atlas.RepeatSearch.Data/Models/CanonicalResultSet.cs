@@ -35,7 +35,7 @@ namespace Atlas.RepeatSearch.Data.Models
         /// Identifies the delivery that is storing the set. A delivery of the same results message that finds the set in progress
         /// takes it over with a new id; only the delivery with the current id can start a chunk and complete the set.
         /// The claim check and the insert of a chunk are two statements, so a chunk of a superseded delivery that passed the check just
-        /// before the take-over can still commit. The unique index on (ExternalDonorCode, CanonicalResultSetId) of
+        /// before the take-over can still commit. The unique index on (CanonicalResultSetId, ExternalDonorCode) of
         /// <see cref="SearchResult"/> makes one of the two inserts of the same code fail, and a failed current delivery starts again.
         /// Do not remove that index.
         /// </summary>

@@ -13,8 +13,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   are stored in chunks, `1` = `Complete` when all of them are stored. Existing sets get the default, `Complete`. Repeat searches only use complete sets.
 * Added the nullable column `StoreAttemptId` (`uniqueidentifier`) to `CanonicalResultSets`: the delivery of the results message that is storing the set.
   A later delivery that finds the set in progress takes it over with a new id; only the delivery with the current id can start a chunk and complete the set.
-  A chunk that a superseded delivery started just before the take-over can still commit: the unique index on (`ExternalDonorCode`, `CanonicalResultSetId`)
+  A chunk that a superseded delivery started just before the take-over can still commit: the unique index on (`CanonicalResultSetId`, `ExternalDonorCode`)
   of `SearchResults` then makes one of the two inserts of the same code fail. Do not remove this index.
+* Replaced the unique index of `SearchResults` on (`ExternalDonorCode`, `CanonicalResultSetId`) by a unique index on (`CanonicalResultSetId`, `ExternalDonorCode`),
+  `IX_SearchResults_CanonicalResultSetId_ExternalDonorCode`, and dropped `IX_SearchResults_CanonicalResultSetId`, which the new index makes redundant.
+  Set ids grow, so the rows of a new set now go to the end of the index, and an insert no longer reads a random page of the index for each row.
+  * The migration builds the new index online (`ONLINE = ON`) before it drops the old ones, so the apps can keep working during the build.
+    The build reads the whole table, and needs free space in the database for the new index, about the size of the old unique index,
+    until the old indexes are dropped. After the migration, the indexes of the table are smaller by about the size of `IX_SearchResults_CanonicalResultSetId`.
+  * The release runs the whole migration script in one transaction. On a large table, build the new index by hand before the release,
+    out of hours, with the SQL below. The migration then skips the build, and only drops the old indexes. `RESUMABLE = ON` lets you pause the build
+    (`ALTER INDEX ... PAUSE`) and resume it later (`ALTER INDEX ... RESUME`).
+    ```sql
+    CREATE UNIQUE INDEX [IX_SearchResults_CanonicalResultSetId_ExternalDonorCode]
+    ON [RepeatSearch].[SearchResults] ([CanonicalResultSetId], [ExternalDonorCode])
+    WITH (ONLINE = ON, RESUMABLE = ON);
+    ```
 
 ## 3.0.0
 * Updated .NET version from 6.0 to 8.0
