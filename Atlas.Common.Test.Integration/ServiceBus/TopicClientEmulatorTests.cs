@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ServiceBus;
+using Atlas.Common.ServiceBus.DependencyInjection;
 using AutoFixture;
 using AwesomeAssertions;
 using Azure.Messaging.ServiceBus;
@@ -24,6 +25,7 @@ public class TopicClientEmulatorTests
 {
     private const string ServiceKey = "emulator";
     private const int Scopes = 20;
+    private const int PerMessageClients = 20;
     private const int SendRetryCount = 1;
     private const int SendRetryCooldownSeconds = 0;
 
@@ -88,6 +90,54 @@ public class TopicClientEmulatorTests
         links.Open.Should().Be(0, "closing the connection closes its links, and the counter sees them close");
     }
 
+    /// <summary>
+    /// The publishers with <see cref="TopicClientFactory"/>: all the publishers of the topic share one sender, and so one
+    /// link. The callers that build, use and dispose a client for each message, as SearchServiceBusClient does, share it
+    /// too: disposing their client does not close the sender, else the sends after it would fail.
+    /// </summary>
+    [Test]
+    public async Task ScopedPublishers_WithTopicClientFactory_ShareOneLinkPerTopic()
+    {
+        using var links = new SendLinkCounter(topic);
+        await using var provider = BuildProvider(RegisterTopicClientFactory);
+
+        await PublishInScopes(provider);
+        await SendWithClientPerMessage(provider);
+        await CollectGarbageAndWait();
+
+        links.Open.Should().Be(1, "all the publishers and callers of the topic share one sender, and nothing closed it");
+    }
+
+    /// <summary>
+    /// At host shutdown, the service provider disposes <see cref="TopicClientFactory"/>, and the factory closes the senders
+    /// that it built. The provider does not dispose the <see cref="ServiceBusClient"/> of the test, so only the factory can
+    /// close the link here.
+    /// </summary>
+    [Test]
+    public async Task DisposeAsync_OnServiceProvider_ClosesTheFactorysLinks()
+    {
+        using var links = new SendLinkCounter(topic);
+        var provider = BuildProvider(RegisterTopicClientFactory);
+        await provider.GetRequiredKeyedService<ITopicClientFactory>(ServiceKey).BuildTopicClient(topic)
+            .SendAsync(new ServiceBusMessage(fixture.Create<string>()));
+        links.Open.Should().Be(1, "the send opened the link of the factory's sender");
+
+        await provider.DisposeAsync();
+        await WaitUntil(() => links.Open == 0);
+
+        links.Open.Should().Be(0, "disposing the provider disposes the factory, which closes its sender");
+        client.IsClosed.Should().BeFalse("the factory closes its senders, not the connection");
+    }
+
+    private void RegisterTopicClientFactory(IServiceCollection services)
+    {
+        services.RegisterServiceBusAsKeyedServices(ServiceKey, _ => ServiceBusEmulator.ConnectionString);
+
+        // The last registration of a key wins, so the factory gets the client of the test. The provider does not dispose a
+        // client that it did not build.
+        services.AddKeyedSingleton(ServiceKey, client);
+    }
+
     private ServiceProvider BuildProvider(Action<IServiceCollection> registerTopicClientFactory)
     {
         var services = new ServiceCollection();
@@ -120,6 +170,21 @@ public class TopicClientEmulatorTests
                 .PublishWithSession(fixture.Create<string>(), fixture.Create<string>());
             await scope.ServiceProvider.GetRequiredService<IMessageBatchPublisher<string>>()
                 .BatchPublish(fixture.CreateMany<string>());
+        }
+    }
+
+    /// <summary>
+    /// Sends with a client for each message, as SearchServiceBusClient does: each caller builds a client, sends one message
+    /// and disposes the client.
+    /// </summary>
+    private async Task SendWithClientPerMessage(IServiceProvider provider)
+    {
+        var factory = provider.GetRequiredKeyedService<ITopicClientFactory>(ServiceKey);
+
+        for (var i = 0; i < PerMessageClients; i++)
+        {
+            await using var topicClient = factory.BuildTopicClient(topic);
+            await topicClient.SendAsync(new ServiceBusMessage(fixture.Create<string>()));
         }
     }
 

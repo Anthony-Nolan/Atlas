@@ -1,9 +1,7 @@
 ﻿using System;
 using Atlas.Common.ApplicationInsights;
-using Atlas.Common.ServiceBus;
 using Atlas.Common.ServiceBus.DependencyInjection;
 using Atlas.Common.Utils.Extensions;
-using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.Common.Notifications
@@ -23,7 +21,6 @@ namespace Atlas.Common.Notifications
             services.MakeSettingsAvailableForUse(fetchNotificationSettings);
             services.RegisterAtlasLogger(fetchInsightsSettings);
 
-            services.AddKeyedSingleton<ITopicClientFactory>(serviceKey, (sp, key) => new TopicClientFactory(sp.GetRequiredKeyedService<ServiceBusClient>(key)));
             services.AddScoped<INotificationsClient, NotificationsClient>();
             services.AddScoped<INotificationSender, NotificationSender>();
         }
