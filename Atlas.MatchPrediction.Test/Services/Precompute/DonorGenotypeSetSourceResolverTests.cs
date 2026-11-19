@@ -19,6 +19,7 @@ internal class DonorGenotypeSetSourceResolverTests
     private static readonly IReadOnlyCollection<DonorInput> Donors = [new() { DonorIds = [1, 2] }];
 
     private IPrecomputedDonorGenotypeSetReader reader;
+    private IGenotypeSetReadRecorder readRecorder;
     private IDonorGenotypeSetSourceResolver resolver;
 
     [SetUp]
@@ -28,7 +29,9 @@ internal class DonorGenotypeSetSourceResolverTests
         reader.GetDonorGenotypeSets(default, default, default, default).ReturnsForAnyArgs(
             new PrecomputedDonorGenotypeSetLookup("ABCDrb1Dqb1", null, new Dictionary<int, PrecomputedDonorGenotypeSetRow>()));
 
-        resolver = new DonorGenotypeSetSourceResolver(reader, Substitute.For<IAtlasLogger>());
+        readRecorder = Substitute.For<IGenotypeSetReadRecorder>();
+
+        resolver = new DonorGenotypeSetSourceResolver(reader, readRecorder, Substitute.For<IAtlasLogger>());
     }
 
     [TestCase(null, false)]
@@ -127,6 +130,40 @@ internal class DonorGenotypeSetSourceResolverTests
         await reader.DidNotReceiveWithAnyArgs().GetDonorGenotypeSets(default, default, default, default);
         context.PatientGenotypeSetKey.Should().Be(request.PatientGenotypeSetKey);
         context.TryGetPrecomputedPatientGenotypeSet(7, out _).Should().Be(PatientGenotypeSetSource.PrecomputeDisabled);
+    }
+
+    /// <summary>The ATL-347 measurement needs live batches too, so the batch is recorded on both paths (ATL-571).</summary>
+    [TestCase(true)]
+    [TestCase(false)]
+    [TestCase(null)]
+    public async Task Resolve_RecordsTheBatchWithItsResolvedContext(bool? usePrecomputedGenotypeSets)
+    {
+        var request = Request(usePrecomputedGenotypeSets);
+
+        var context = await resolver.Resolve(request, Donors);
+
+        readRecorder.Received(1).Record(request, Donors, context);
+    }
+
+    [Test]
+    public async Task Resolve_WhenTheReadFails_StillRecordsTheBatch()
+    {
+        reader.GetDonorGenotypeSets(default, default, default, default).ThrowsAsyncForAnyArgs(new Exception("sql is down"));
+
+        var context = await resolver.Resolve(Request(true), Donors);
+
+        readRecorder.Received(1).Record(Arg.Any<IdentifiedMatchProbabilityRequest>(), Donors, context);
+    }
+
+    [Test]
+    public async Task Resolve_WhenRecordingThrows_ReturnsTheContextRatherThanFailing()
+    {
+        readRecorder.WhenForAnyArgs(r => r.Record(default, default, default)).Throw(new Exception("recording broke"));
+
+        var context = await resolver.Resolve(Request(true), Donors);
+
+        context.BatchFallbackReason.Should().BeNull();
+        context.AllowedLociKey.Should().Be("ABCDrb1Dqb1");
     }
 
     private static IdentifiedMatchProbabilityRequest Request(bool? usePrecomputedGenotypeSets) => new()

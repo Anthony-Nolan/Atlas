@@ -307,6 +307,25 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             services.AddScoped<IPatientGenotypeSetWarmer, PatientGenotypeSetWarmer>();
             services.TryAddScoped<IPrecomputedDonorGenotypeSetReader, NoOpPrecomputedDonorGenotypeSetReader>();
             services.TryAddScoped<IPrecomputedDonorGenotypeSetWriter, NoOpPrecomputedDonorGenotypeSetWriter>();
+            services.TryAddScoped<IGenotypeSetReadRecorder, NoOpGenotypeSetReadRecorder>();
+        }
+
+        /// <summary>
+        /// Records which donor inputs each search batch would read precomputed genotype sets for, to blob storage, when
+        /// <see cref="GenotypeSetReadRecordingSettings.Enabled"/> is on (ATL-571, input of the ATL-347 measurement).
+        /// </summary>
+        /// <remarks>
+        /// For hosts that run search batches and read precomputed genotype sets. Call it after
+        /// <see cref="RegisterMatchPredictionAlgorithm"/>, whose no-op recorder this replaces. Writes to the results
+        /// storage account of <see cref="AzureStorageSettings"/>.
+        /// </remarks>
+        public static void RegisterGenotypeSetReadRecording(
+            this IServiceCollection services,
+            Func<IServiceProvider, GenotypeSetReadRecordingSettings> fetchGenotypeSetReadRecordingSettings)
+        {
+            services.MakeSettingsAvailableForUse(fetchGenotypeSetReadRecordingSettings);
+            services.AddScoped<IGenotypeSetReadRecordWriter, GenotypeSetReadRecordWriter>();
+            services.Replace(ServiceDescriptor.Scoped<IGenotypeSetReadRecorder, GenotypeSetReadRecorder>());
         }
     }
 }

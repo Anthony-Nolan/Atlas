@@ -85,6 +85,12 @@ namespace Atlas.Functions
                 ConnectionStringReader("Matching:Sql:B")
             );
 
+            // Off unless MatchPrediction:GenotypeSetReadRecording:Enabled is set: records the donor inputs each batch would
+            // read precomputed sets for, for the ATL-347 cache measurement (ATL-571). After RegisterMatchPredictionAlgorithm,
+            // whose no-op this replaces.
+            services.RegisterGenotypeSetReadRecording(
+                OptionsReaderFor<MatchPrediction.ExternalInterface.Settings.GenotypeSetReadRecordingSettings>());
+
             // This app caches HLA Metadata Dictionary data, so it has to be told when the dictionary is recreated.
             services.RegisterHlaMetadataDictionaryCacheInvalidation();
 
@@ -117,6 +123,7 @@ namespace Atlas.Functions
             services.RegisterAsOptions<MatchPrediction.ExternalInterface.Settings.AzureStorageSettings>("MatchPrediction:AzureStorage");
             services.RegisterAsOptions<MatchPrediction.ExternalInterface.Settings.HaplotypeFrequencySetCacheSettings>("HaplotypeFrequencySetCache");
             services.RegisterAsOptions<MatchPrediction.ExternalInterface.Settings.GenotypeImputationSettings>("MatchPrediction:GenotypeImputation");
+            services.RegisterAsOptions<MatchPrediction.ExternalInterface.Settings.GenotypeSetReadRecordingSettings>("MatchPrediction:GenotypeSetReadRecording");
         }
 
         private static void RegisterTopLevelFunctionServices(IServiceCollection services)

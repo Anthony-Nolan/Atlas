@@ -315,6 +315,12 @@ variable "MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT" {
   description = "Genotype-truncation limit: the maximum number of expanded genotypes retained per patient/donor before match calculation. Must be identical across every host that runs imputation; increasing it beyond 2000 trades performance/memory for accuracy."
 }
 
+variable "MATCH_PREDICTION_RECORD_GENOTYPE_SET_READS" {
+  type        = bool
+  default     = false
+  description = "When true, search batches record which donor inputs they would read precomputed genotype sets for, to blob storage, for the ATL-347 cache hit-rate measurement (ATL-571). A temporary measurement: switch it on only for the measurement window."
+}
+
 variable "MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS" {
   type        = number
   default     = 4
