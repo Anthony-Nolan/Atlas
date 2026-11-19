@@ -52,8 +52,9 @@ The output has one row per donor input: `RefreshRecordId, RecordedAtUtc, SearchR
 AllowedLociKey, DonorIdCount, Status, ValueKeyHash, SizeBytes`.
 
 - `Stored`: a value row exists. These are the cache candidates.
-- `NotStored`: not stored by design (ATL-478, unambiguous typing). Always computed live, never cached.
-- `NoRow`: no assignment row for the donor ids.
+- `NoRow`: no assignment row for the donor ids. These are never cache hits. They include the donors that are not stored
+  by design (ATL-478, unambiguous typing): after the refresh those donors have no row either, so the script cannot tell
+  them apart.
 
 Blobs under `unknown/` come from requests with no refresh record id. They cannot be resolved.
 

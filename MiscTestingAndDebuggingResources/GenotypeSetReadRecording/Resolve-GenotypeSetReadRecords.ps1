@@ -24,8 +24,8 @@
 .OUTPUTS
     CSV columns:
       RefreshRecordId, RecordedAtUtc, SearchRequestId, UsePrecomputedGenotypeSets, AllowedLociKey, DonorIdCount,
-      Status     - Stored (a value row exists), NotStored (not stored by design, ATL-478: computed live, never cached),
-                   NoRow (no assignment row for the donor ids)
+      Status     - Stored (a value row exists) or NoRow (no assignment row for the donor ids). NoRow includes the
+                   donors not stored by design (ATL-478, unambiguous typing): after the refresh they have no row either.
       ValueKeyHash - SHA-256 of "HlaTypingKey|HaplotypeFrequencySetId|AllowedLociKey"; empty unless Stored
       SizeBytes  - DATALENGTH of the stored payload; 0 unless Stored
 
@@ -88,7 +88,7 @@ try {
     $command = $persistent.CreateCommand()
     $command.CommandText = @'
 SELECT TOP 1 Id, [Database]
-FROM DataRefreshHistory
+FROM [MatchingAlgorithmPersistent].[DataRefreshHistory]
 WHERE RefreshEndUtc IS NOT NULL AND WasSuccessful = 1
 ORDER BY RefreshEndUtc DESC
 '@
@@ -219,15 +219,14 @@ SELECT
     i.UsePrecomputedGenotypeSets,
     i.AllowedLociKey,
     i.DonorIdCount,
-    CASE WHEN iv.ValueId IS NULL THEN 'NoRow' WHEN iv.ValueId = 0 THEN 'NotStored' ELSE 'Stored' END AS Status,
+    CASE WHEN iv.ValueId IS NULL THEN 'NoRow' ELSE 'Stored' END AS Status,
     CASE WHEN v.Id IS NULL THEN '' ELSE CONVERT(varchar(64), HASHBYTES('SHA2_256',
         CONCAT(v.HlaTypingKey, '|', v.HaplotypeFrequencySetId, '|', v.AllowedLociKey)), 2) END AS ValueKeyHash,
     ISNULL(DATALENGTH(v.SubjectGenotypeSetData), 0) AS SizeBytes
 FROM #DonorInputs i
 INNER JOIN InputValues iv ON iv.DonorInputId = i.DonorInputId
 LEFT JOIN SubjectGenotypeSetValues v
-    ON iv.ValueId > 0
-   AND v.Id = iv.ValueId
+    ON v.Id = iv.ValueId
    AND v.Bucket = CAST(iv.ValueId % 16 AS tinyint)
 ORDER BY i.RecordedAtUtc, i.DonorInputId;
 '@
@@ -237,7 +236,7 @@ ORDER BY i.RecordedAtUtc, i.DonorInputId;
     $writer = New-Object System.IO.StreamWriter($OutFile, $false, (New-Object System.Text.UTF8Encoding($false)))
     try {
         $writer.WriteLine('RefreshRecordId,RecordedAtUtc,SearchRequestId,UsePrecomputedGenotypeSets,AllowedLociKey,DonorIdCount,Status,ValueKeyHash,SizeBytes')
-        $counts = @{ Stored = 0L; NotStored = 0L; NoRow = 0L }
+        $counts = @{ Stored = 0L; NoRow = 0L }
         while ($reader.Read()) {
             $status = $reader.GetString(5)
             $counts[$status]++
@@ -258,7 +257,7 @@ ORDER BY i.RecordedAtUtc, i.DonorInputId;
         $reader.Close()
     }
 
-    Write-Host ("Wrote {0}: Stored {1}, NotStored {2}, NoRow {3}." -f $OutFile, $counts.Stored, $counts.NotStored, $counts.NoRow)
+    Write-Host ("Wrote {0}: Stored {1}, NoRow {2}." -f $OutFile, $counts.Stored, $counts.NoRow)
 }
 finally {
     $transient.Dispose()
