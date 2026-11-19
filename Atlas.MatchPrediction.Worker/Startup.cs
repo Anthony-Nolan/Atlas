@@ -51,6 +51,10 @@ public static class Startup
             ConnectionStringReader("MatchingTransientBSql")
         );
 
+        // Off unless GenotypeSetReadRecording:Enabled is set: records the donor inputs each batch would read precomputed
+        // sets for, for the ATL-347 cache measurement (ATL-571). After RegisterMatchPredictionAlgorithm, whose no-op this replaces.
+        services.RegisterGenotypeSetReadRecording(OptionsReaderFor<GenotypeSetReadRecordingSettings>());
+
         // This app caches HLA Metadata Dictionary data, so it has to be told when the dictionary is recreated.
         services.RegisterHlaMetadataDictionaryCacheInvalidation();
 
