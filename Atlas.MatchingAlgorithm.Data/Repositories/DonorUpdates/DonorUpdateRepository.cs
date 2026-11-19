@@ -128,7 +128,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                     innerNonHlaTransactionScope.Complete();
                 }
 
-                var hlaLookup = await hlaImportRepository.ImportHla(donorsWhereHlaHasChanged.Select(d => d.Item1).ToList(), pGroupsInsertedUpfront: false);
+                var hlaLookup = await hlaImportRepository.ImportHla(
+                    donorsWhereHlaHasChanged.Select(d => d.Item1).ToList(),
+                    pGroupsInsertedUpfront: false);
                 var donorUpdates = donorsWhereHlaHasChanged.Select(d =>
                 {
                     var donorUpdate = d.Item1.ToDonorInfoForPreProcessing(hla => hlaLookup[hla]);

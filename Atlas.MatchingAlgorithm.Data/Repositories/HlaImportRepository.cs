@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -10,6 +9,7 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Common.Config;
+using Atlas.MatchingAlgorithm.Data.Exceptions;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
@@ -45,21 +45,6 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
     /// so that they cannot be transposed at a call site without the compiler noticing.
     /// </summary>
     internal record HlaImportLookups(IDictionary<string, int> HlaNames, IDictionary<string, int> PGroups);
-
-    /// <summary>
-    /// A donor's HLA has a P-group that is not in the <c>PGroupNames</c> table. Data Refresh inserts every P-group of the HLA
-    /// nomenclature version before HLA processing starts, so during a refresh this means that the upfront insert is wrong, for
-    /// example that it used another nomenclature version than the HLA expansion. The P-group is not inserted silently.
-    /// </summary>
-    public class MissingPGroupException : Exception
-    {
-        public MissingPGroupException(string pGroup, string hlaName, Locus locus)
-            : base($"P-group '{pGroup}' of HLA '{hlaName}' at locus {locus} is not in the PGroupNames table. " +
-                   "Data Refresh inserts every P-group of the HLA nomenclature version before HLA processing starts, " +
-                   "so the upfront P-group insert is wrong, or used another nomenclature version than the HLA expansion.")
-        {
-        }
-    }
 
     public class HlaImportRepository : Repository, IHlaImportRepository
     {

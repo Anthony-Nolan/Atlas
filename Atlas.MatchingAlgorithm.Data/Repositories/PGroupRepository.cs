@@ -5,9 +5,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Sql;
-using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories
@@ -19,7 +17,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
         /// </summary>
         Task InsertPGroups(IEnumerable<string> pGroups);
         Task<IEnumerable<int>> GetPGroupIds(IEnumerable<string> pGroupNames);
-        Task<IDictionary<string, int>> EnsureAllPGroupsExist(IList<string> allPGroups, LongStopwatchCollection timerCollection = null);
+        Task<IDictionary<string, int>> EnsureAllPGroupsExist(IList<string> allPGroups);
 
         /// <summary>
         /// The in-memory map of P-group name to id, read from the database on first use. Unlike <see cref="EnsureAllPGroupsExist"/>,
@@ -102,19 +100,15 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
         /// Thus it should not be possible for this code to receive a PGroup that isn't already in the DB ... in prod.
         /// In *TESTS* however, we don't pre-populate PGroups, so the "or create" branch of the code is necessary.
         ///
-        /// Data Refresh does not call this method: it is a no-op there, and over a 2M donor import it checked ~1B P-group strings,
-        /// which took ~10 minutes (ATL-216). Data Refresh uses <see cref="GetPGroupLookup"/> instead (ATL-312).
+        /// Data Refresh does not call this method, and uses <see cref="GetPGroupLookup"/> instead (ATL-312). There it would find no
+        /// new P-group, but over a 2M donor import it checked ~1B P-group strings, which took ~10 minutes (ATL-216).
         /// </remarks>
-        public async Task<IDictionary<string, int>> EnsureAllPGroupsExist(
-            IList<string> allPGroups,
-            LongStopwatchCollection timerCollection = null)
+        public async Task<IDictionary<string, int>> EnsureAllPGroupsExist(IList<string> allPGroups)
         {
             EnsurePGroupDictionaryCacheIsPopulated();
 
-            var dictionaryCheckTimer = timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.NewPGroupInsertion_FindNew_TimerKey);
             // Note that it turns out that it's quicker to run this WITHOUT a .Distinct() in it.
             var newPGroups = allPGroups.Where(pGrp => !pGroupNameToIdDictionary.ContainsKey(pGrp)).ToList();
-            dictionaryCheckTimer?.Dispose();
 
             if (newPGroups.Any())
             {
