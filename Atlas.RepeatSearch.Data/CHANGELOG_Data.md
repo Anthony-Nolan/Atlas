@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * The migration builds the new index online (`ONLINE = ON`) before it drops the old ones, so the apps can keep working during the build.
     The build reads the whole table, and needs free space in the database for the new index, about the size of the old unique index,
     until the old indexes are dropped. After the migration, the indexes of the table are smaller by about the size of `IX_SearchResults_CanonicalResultSetId`.
-  * The release runs the whole migration script in one transaction. On a large table, build the new index by hand before the release,
+  * The release runs each migration in its own transaction, so the build runs in the transaction of this migration. On a large table, build the new index by hand before the release,
     out of hours, with the SQL below. The migration then skips the build, and only drops the old indexes. `RESUMABLE = ON` lets you pause the build
     (`ALTER INDEX ... PAUSE`) and resume it later (`ALTER INDEX ... RESUME`).
     On a copy of the WMDA LIVE repeat search database (741 million rows in `SearchResults`, Azure SQL S7), the build took about 5.5 hours.
@@ -31,6 +31,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     CREATE UNIQUE INDEX [IX_SearchResults_CanonicalResultSetId_ExternalDonorCode]
     ON [RepeatSearch].[SearchResults] ([CanonicalResultSetId], [ExternalDonorCode])
     WITH (ONLINE = ON, RESUMABLE = ON);
+    ```
+  * Just before the release, check that the manual build is complete: this query must return no row.
+    A pause, or a failure such as a failover, leaves a resumable build paused, not rolled back. While it is paused, DDL on the table is not allowed,
+    so the migration would fail in the release.
+    ```sql
+    SELECT name, state_desc, percent_complete FROM sys.index_resumable_operations;
+    ```
+    To continue a paused build, run the `CREATE INDEX` statement above again, or:
+    ```sql
+    ALTER INDEX [IX_SearchResults_CanonicalResultSetId_ExternalDonorCode] ON [RepeatSearch].[SearchResults] RESUME;
     ```
 
 ## 3.0.0
