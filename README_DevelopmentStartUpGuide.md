@@ -179,6 +179,12 @@ It can be useful to run the Matching Algorithm API when locally debugging and te
     LocalDB and the Express edition cannot run them.
 - `Atlas.MultipleAlleleCodeDictionary.Test.Integration` requires a connection to an Azure Storage instance.
   By default, it will look for a local storage instance, which would require Azurite to be running.
+- `Atlas.Common.Test.Integration` runs `BlobUploader` and `BlobDownloader` against Azurite, with a new container for each test. It checks that:
+  - an upload creates a missing container, a second upload to it works, and a real 409 from creating an existing container has the error code that the catch in `CreateContainerIfMissing` accepts;
+  - every upload and download method round-trips the same JSON: `Download`, `OpenRead`, `DownloadMultipleBlobs` (in batches), and the folder reads after `ChunkAndUpload`;
+  - both folder reads return files in number order, also for old file names without zero padding, which Azure lists in name order, and leave out a folder whose name starts with the same text;
+  - a blob that is not there gives a `BlobNotFoundException` from `Download`, `OpenRead` and `DownloadMultipleBlobs`, so the real error code is the one the downloader looks for.
+  Its pipeline job starts Azurite and sets `RUN_AZURITE_TESTS`. Locally, start Azurite and set that variable; without it the blob tests are skipped.
 - The connection strings default to a local SQL Server, in each test project's `appsettings.json`.
   They can be overridden with environment variables, e.g. `ConnectionStrings__SqlA`, as the system tests pipeline does.
 
@@ -214,6 +220,7 @@ Give each test project its own databases, so that one project's tests cannot cla
 | `Atlas.DonorImport.Test.Integration` | `ConnectionStrings__DonorStoreSql` |
 | `Atlas.MatchPrediction.Test.Integration` | `ConnectionStrings__MatchPredictionSql` |
 | `Atlas.MultipleAlleleCodeDictionary.Test.Integration` | none: it only needs Azurite |
+| `Atlas.Common.Test.Integration` (blob tests) | `RUN_AZURITE_TESTS=1`: it only needs Azurite |
 | `Atlas.RepeatSearch.Test.Integration` | `ConnectionStrings__RepeatSearchSql` |
 
 Each connection string has the form:

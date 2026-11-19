@@ -530,7 +530,7 @@ stages:
 
   # The smaller suites, one after the other, each in its own database.
   - job: Other_Integration_Tests
-    displayName: 'Donor Import, Match Prediction, MAC Dictionary and Repeat Search Integration Tests'
+    displayName: 'Donor Import, Match Prediction, MAC Dictionary, Blob Storage and Repeat Search Integration Tests'
     pool:
       vmImage: 'ubuntu-latest'
     steps:
@@ -548,6 +548,10 @@ stages:
             ConnectionStrings__MatchPredictionSql: '$(sqlServerConnection)Initial Catalog=AtlasMatchPredictionIntegrationTests;'
         - project: Atlas.MultipleAlleleCodeDictionary.Test.Integration
           testRunTitle: 'MAC Dictionary Integration Tests'
+        - project: Atlas.Common.Test.Integration
+          testRunTitle: 'Blob Storage Integration Tests'
+          env:
+            RUN_AZURITE_TESTS: '1'
         - project: Atlas.RepeatSearch.Test.Integration
           testRunTitle: 'Repeat Search Integration Tests'
           env:

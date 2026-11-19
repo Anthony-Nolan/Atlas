@@ -14,7 +14,7 @@ parameters:
     type: boolean
     default: true
   # Azurite, the Azure Storage emulator, which the tests' default "UseDevelopmentStorage=true" connection string points at.
-  # The tests create their own tables.
+  # The tests create their own tables and blob containers.
   - name: azurite
     type: boolean
     default: false
