@@ -539,7 +539,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         /// </summary>
         private async Task AddMatchingRelationsFor(DonorInfoWithExpandedHla donor, IDonorImportRepository repository = null)
         {
-            var hlaLookup = await hlaImportRepository.ImportHla(new List<DonorInfoWithExpandedHla> {donor});
+            var hlaLookup = await hlaImportRepository.ImportHla(new List<DonorInfoWithExpandedHla> {donor}, pGroupsInsertedUpfront: false);
             var donorEntry = donor.ToDonorInfoForPreProcessing(hla => hlaLookup[hla]);
 
             await (repository ?? donorImportRepository).AddMatchingRelationsForExistingDonorBatch(

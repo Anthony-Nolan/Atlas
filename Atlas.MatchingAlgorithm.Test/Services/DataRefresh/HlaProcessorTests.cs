@@ -38,6 +38,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         private IDataRefreshRepository dataRefreshRepository;
         private IDonorImportRepository donorImportRepository;
         private IHlaImportRepository hlaImportRepository;
+        private IPGroupRepository pGroupRepository;
         private IDonorHlaExpander donorHlaExpander;
         private IMatchingAlgorithmImportLogger logger;
 
@@ -49,13 +50,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             dataRefreshRepository = Substitute.For<IDataRefreshRepository>();
             donorImportRepository = Substitute.For<IDonorImportRepository>();
             hlaImportRepository = Substitute.For<IHlaImportRepository>();
-            hlaImportRepository.ImportHla(default).ReturnsForAnyArgs(new Dictionary<string, int>());
+            hlaImportRepository.ImportHla(default, default).ReturnsForAnyArgs(new Dictionary<string, int>());
 
             var repositoryFactory = Substitute.For<IDormantRepositoryFactory>();
             repositoryFactory.GetDataRefreshRepository().Returns(dataRefreshRepository);
             repositoryFactory.GetDonorImportRepository().Returns(donorImportRepository);
             repositoryFactory.GetHlaImportRepository().Returns(hlaImportRepository);
-            repositoryFactory.GetPGroupRepository().Returns(Substitute.For<IPGroupRepository>());
+            pGroupRepository = Substitute.For<IPGroupRepository>();
+            repositoryFactory.GetPGroupRepository().Returns(pGroupRepository);
             repositoryFactory.GetHlaNamesRepository().Returns(Substitute.For<IHlaNamesRepository>());
 
             donorHlaExpander = Substitute.For<IDonorHlaExpander>();
@@ -128,6 +130,26 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             await hlaProcessor.UpdateDonorHla(HlaNomenclatureVersion, _ => Task.CompletedTask);
 
             await donorImportRepository.ReceivedWithAnyArgs(4).AddMatchingRelationsForExistingDonorBatch(default, default, default);
+        }
+
+        /// <summary>
+        /// The refresh inserts every P-group of the version before the batches, so each batch skips the check for new
+        /// P-groups (ATL-312). That is only safe while the insert comes first.
+        /// </summary>
+        [Test]
+        public async Task UpdateDonorHla_InsertsAllPGroupsUpfront_ThenImportsHlaWithoutCheckingForNewPGroups()
+        {
+            GivenDonorBatches(2);
+
+            await hlaProcessor.UpdateDonorHla(HlaNomenclatureVersion, _ => Task.CompletedTask);
+
+            Received.InOrder(() =>
+            {
+                pGroupRepository.InsertPGroups(Arg.Any<IEnumerable<string>>());
+                hlaImportRepository.ImportHla(Arg.Any<IList<DonorInfoWithExpandedHla>>(), true);
+                hlaImportRepository.ImportHla(Arg.Any<IList<DonorInfoWithExpandedHla>>(), true);
+            });
+            await hlaImportRepository.DidNotReceive().ImportHla(Arg.Any<IList<DonorInfoWithExpandedHla>>(), false);
         }
 
         [Test]

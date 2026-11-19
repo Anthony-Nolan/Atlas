@@ -180,9 +180,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             // @formatter:off
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.BatchProgress_TimerKey, "Hla Batch Overall Processing. Inner Operation is UpdateDonorBatch", null, progressReports)) 
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaExpansion_TimerKey, " * Hla Expansion, during HlaProcessing")) 
-            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewPGroupInsertion_Overall_TimerKey, " * Ensuring all PGroups exist in the DB, during HlaProcessing (no actual DB writing, just processing)")) 
-            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewPGroupInsertion_Flattening_TimerKey, " * * Flatten the donors' PGroups, during EnsureAllPGroupsExist, during HlaProcessing")) 
-            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewPGroupInsertion_FindNew_TimerKey, " * * Check PGroups against known dictionary, during EnsureAllPGroupsExist, during HlaProcessing"))
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewHlaNameInsertion_Overall_TimerKey, " * * Check HLA Names against known dictionary, during HlaProcessing"))
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewHlaNameInsertion_Flattening_TimerKey, " * * Flatten HLA Names, during HlaProcessing"))
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewHlaNameInsertion_FindNew_TimerKey, " * * Check HLA Names against known dictionary, during EnsureAllHlaNamesExist, during HlaProcessing"))
@@ -378,7 +375,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             var hlaExpansionResults = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorBatch, HlaFailureEventName);
             timedInnerOperation.Dispose();
 
-            var hlaNameLookup = await hlaImportRepository.ImportHla(hlaExpansionResults.ProcessingResults);
+            var hlaNameLookup = await hlaImportRepository.ImportHla(hlaExpansionResults.ProcessingResults, pGroupsInsertedUpfront: true);
 
             var donorEntries = hlaExpansionResults.ProcessingResults.Select(r => r.ToDonorInfoForPreProcessing(hlaName => hlaNameLookup[hlaName]));
 
