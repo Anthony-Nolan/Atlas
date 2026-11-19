@@ -175,7 +175,7 @@ It can be useful to run the Matching Algorithm API when locally debugging and te
 
 ## Integration Tests
 - The integration test suites that use a database create and migrate it themselves; they only need a SQL Server to connect to.
-  - The matching and donor import migrations use `ONLINE` index operations, which need the Developer or Enterprise edition of SQL Server.
+  - The matching, donor import and repeat search migrations use `ONLINE` index operations, which need the Developer or Enterprise edition of SQL Server.
     LocalDB and the Express edition cannot run them.
 - `Atlas.MultipleAlleleCodeDictionary.Test.Integration` requires a connection to an Azure Storage instance.
   By default, it will look for a local storage instance, which would require Azurite to be running.

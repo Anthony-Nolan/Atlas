@@ -106,6 +106,20 @@ public class CanonicalResultSetRepositoryTests
     }
 
     [Test]
+    public async Task AddResultsChunk_WithDonorCodeAlreadyInSet_Throws()
+    {
+        // The unique index on (CanonicalResultSetId, ExternalDonorCode) stops a chunk of a superseded delivery from adding a code twice (ATL-528).
+        var donorCode = fixture.Create<string>();
+        var claim = await repository.StartStoringResultSet(searchRequestId);
+        await repository.AddResultsChunk(claim, new List<string> { donorCode });
+
+        var act = () => repository.AddResultsChunk(claim, new List<string> { donorCode });
+
+        await act.Should().ThrowAsync<SqlException>().Where(e => e.Number == 2601);
+        (await GetStoredDonorCodes()).Should().ContainSingle();
+    }
+
+    [Test]
     public async Task CompleteResultSet_AfterAnotherDeliveryTookOver_ThrowsAndLeavesSetInProgress()
     {
         var lostClaim = await repository.StartStoringResultSet(searchRequestId);

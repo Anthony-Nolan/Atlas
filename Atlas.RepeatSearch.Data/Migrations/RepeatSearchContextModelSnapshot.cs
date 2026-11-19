@@ -106,9 +106,7 @@ namespace Atlas.RepeatSearch.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CanonicalResultSetId");
-
-                    b.HasIndex("ExternalDonorCode", "CanonicalResultSetId")
+                    b.HasIndex("CanonicalResultSetId", "ExternalDonorCode")
                         .IsUnique();
 
                     b.ToTable("SearchResults", "RepeatSearch");

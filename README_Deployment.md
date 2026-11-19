@@ -340,7 +340,7 @@ Its stages:
 
 The integration tests need no Azure resources, and no pipeline variables or secrets:
 - Each job of the Integration Tests stage starts what its tests need in a container on the build agent (see "build-pipeline-run-tests.yml"):
-  SQL Server, in its Developer edition, which supports the `ONLINE` index operations of the matching migrations; Azurite, the Azure Storage emulator; or the Service Bus emulator.
+  SQL Server, in its Developer edition, which supports the `ONLINE` index operations of the matching, donor import and repeat search migrations; Azurite, the Azure Storage emulator; or the Service Bus emulator.
   The Service Bus emulator has its own job. The tests do not use SQL, but the emulator stores its entities in a SQL Server container, so that job starts one. The other tests create and migrate their own databases, and create their own tables. The Service Bus tests create their own topics.
 - Connection strings are passed as environment variables (e.g., `ConnectionStrings__SqlA`), which override the local defaults in each test project's `appsettings.json`.
 - The matching validation tests read the HLA Metadata Dictionary, at version 3330, and the MAC Dictionary from the same files as the integration tests,
