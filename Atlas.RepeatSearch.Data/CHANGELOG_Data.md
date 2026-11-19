@@ -24,6 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * The release runs the whole migration script in one transaction. On a large table, build the new index by hand before the release,
     out of hours, with the SQL below. The migration then skips the build, and only drops the old indexes. `RESUMABLE = ON` lets you pause the build
     (`ALTER INDEX ... PAUSE`) and resume it later (`ALTER INDEX ... RESUME`).
+    On a copy of the WMDA LIVE repeat search database (741 million rows in `SearchResults`, Azure SQL S7), the build took about 5.5 hours.
+    It was limited by the log write rate of the database, and used up to about 44 GB more space. Dropping the old indexes then took less than a second.
+    After the change, storing the results of an original search with 275,527 donors took 24 seconds instead of 447 seconds.
     ```sql
     CREATE UNIQUE INDEX [IX_SearchResults_CanonicalResultSetId_ExternalDonorCode]
     ON [RepeatSearch].[SearchResults] ([CanonicalResultSetId], [ExternalDonorCode])
