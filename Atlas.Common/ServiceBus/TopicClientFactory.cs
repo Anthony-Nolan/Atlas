@@ -20,6 +20,8 @@ internal sealed class TopicClientFactory : ITopicClientFactory, IAsyncDisposable
     private readonly ServiceBusClient client;
 
     // Lazy, so that callers that ask for a new topic at the same time make one sender, not one each.
+    // Lazy also keeps an exception from CreateSender. That changes nothing: CreateSender only checks the topic name and that the
+    // client is open, and the link opens on the first send, so it fails the same way on every call.
     private readonly ConcurrentDictionary<string, Lazy<TopicClient>> topicClients = new();
 
     public TopicClientFactory(ServiceBusClient client)
