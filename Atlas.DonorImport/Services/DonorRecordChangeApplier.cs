@@ -108,7 +108,6 @@ namespace Atlas.DonorImport.Services
                     case (ImportDonorChangeType.Create, _):
                         var creationMessages = await ProcessDonorCreations(
                             updatesOfSameOperationType.ToList(),
-                            externalCodes,
                             file.FileLocation,
                             updateMode
                         );
@@ -152,11 +151,12 @@ namespace Atlas.DonorImport.Services
             DonorImportFile file,
             UpdateMode updateMode)
         {
-            var existingDonors = await donorInspectionRepository.GetDonorIdsByExternalDonorCodes(externalCodes);
+            // One read gives both the split into new and existing donors, and the stored rows that the edits are compared with.
+            var existingDonors = await donorInspectionRepository.GetDonorsByExternalDonorCodes(externalCodes);
             var (edits, creates) = updates.ReifyAndSplit(du => existingDonors.ContainsKey(du.RecordId));
 
-            var editMessages = await ProcessDonorEdits(edits, externalCodes, file);
-            var createMessages = await ProcessDonorCreations(creates, externalCodes, file.FileLocation, updateMode);
+            var editMessages = await ApplyDonorEdits(edits, existingDonors, file);
+            var createMessages = await ProcessDonorCreations(creates, file.FileLocation, updateMode);
 
             return createMessages.Concat(editMessages).ToList();
         }
@@ -164,7 +164,6 @@ namespace Atlas.DonorImport.Services
         /// <returns>A collection of donor updates to be published for import into the matching component's data store.</returns>
         private async Task<List<SearchableDonorUpdate>> ProcessDonorCreations(
             List<DonorUpdate> creationUpdates,
-            List<string> externalCodes,
             string fileLocation,
             UpdateMode updateMode)
         {
@@ -178,7 +177,9 @@ namespace Atlas.DonorImport.Services
                 return new List<SearchableDonorUpdate>();
             }
 
-            var newAtlasDonorIds = await donorInspectionRepository.GetDonorIdsByExternalDonorCodes(externalCodes);
+            // The insert assigns the Atlas ids, so they are read back for the inserted donors only.
+            var insertedCodes = creationsWithoutAtlasIds.Select(creation => creation.ExternalDonorCode).ToList();
+            var newAtlasDonorIds = await donorInspectionRepository.GetDonorIdsByExternalDonorCodes(insertedCodes);
 
             return creationsWithoutAtlasIds.Select(creation =>
             {
@@ -194,6 +195,18 @@ namespace Atlas.DonorImport.Services
             DonorImportFile file)
         {
             var existingAtlasDonors = await donorInspectionRepository.GetDonorsByExternalDonorCodes(externalCodes);
+            return await ApplyDonorEdits(editUpdates, existingAtlasDonors, file);
+        }
+
+        /// <param name="editUpdates">Donor updates of donors that are in <paramref name="existingAtlasDonors"/></param>
+        /// <param name="existingAtlasDonors">Stored donors by external donor code, which the edits are compared with</param>
+        /// <param name="file">The donor import file being imported</param>
+        /// <returns>A collection of donor updates to be published for import into the matching component's data store.</returns>
+        private async Task<List<SearchableDonorUpdate>> ApplyDonorEdits(
+            List<DonorUpdate> editUpdates,
+            IReadOnlyDictionary<string, Donor> existingAtlasDonors,
+            DonorImportFile file)
+        {
             var existingAtlasDonorIds = existingAtlasDonors.ToDictionary(d => d.Key, d => d.Value.AtlasId);
             var existingAtlasDonorHashes = existingAtlasDonors.Select(r => r.Value.Hash).ToHashSet();
 
