@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -28,7 +29,15 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
         /// A dictionary for quick lookup of the provided HLA.
         /// Key = HLA lookup name. Value = processed Atlas ID for this HLA. 
         /// </returns>
-        Task<IDictionary<string, int>> ImportHla(IList<DonorInfoWithExpandedHla> donorsToImport);
+        /// <param name="donorsToImport">The donors whose HLA is imported.</param>
+        /// <param name="pGroupsInsertedUpfront">
+        /// True when every P-group of the HLA nomenclature version is already in the database, as Data Refresh inserts them all
+        /// before HLA processing starts. Then the per-batch check for new P-groups is skipped: the batch is not flattened into
+        /// its P-group names, and they are not each looked up. A P-group that is still missing fails the import (see
+        /// <see cref="MissingPGroupException"/>). False on every other path, for example donor updates: then any new P-group
+        /// is inserted first.
+        /// </param>
+        Task<IDictionary<string, int>> ImportHla(IList<DonorInfoWithExpandedHla> donorsToImport, bool pGroupsInsertedUpfront);
     }
 
     /// <summary>
@@ -36,6 +45,21 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
     /// so that they cannot be transposed at a call site without the compiler noticing.
     /// </summary>
     internal record HlaImportLookups(IDictionary<string, int> HlaNames, IDictionary<string, int> PGroups);
+
+    /// <summary>
+    /// A donor's HLA has a P-group that is not in the <c>PGroupNames</c> table. Data Refresh inserts every P-group of the HLA
+    /// nomenclature version before HLA processing starts, so during a refresh this means that the upfront insert is wrong, for
+    /// example that it used another nomenclature version than the HLA expansion. The P-group is not inserted silently.
+    /// </summary>
+    public class MissingPGroupException : Exception
+    {
+        public MissingPGroupException(string pGroup, string hlaName, Locus locus)
+            : base($"P-group '{pGroup}' of HLA '{hlaName}' at locus {locus} is not in the PGroupNames table. " +
+                   "Data Refresh inserts every P-group of the HLA nomenclature version before HLA processing starts, " +
+                   "so the upfront P-group insert is wrong, or used another nomenclature version than the HLA expansion.")
+        {
+        }
+    }
 
     public class HlaImportRepository : Repository, IHlaImportRepository
     {
@@ -53,11 +77,16 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             this.pGroupRepository = pGroupRepository;
         }
 
-        public async Task<IDictionary<string, int>> ImportHla(IList<DonorInfoWithExpandedHla> donorsToImport)
+        /// <inheritdoc />
+        public async Task<IDictionary<string, int>> ImportHla(IList<DonorInfoWithExpandedHla> donorsToImport, bool pGroupsInsertedUpfront)
         {
             await EnsureProcessedHlaCacheIsUpToDate();
 
-            var pGroupLookup = await pGroupRepository.EnsureAllPGroupsExist(donorsToImport.AllPGroupNames());
+            // In Data Refresh the check below can never find a new P-group, but it cost ~10 minutes per full refresh (ATL-216
+            // measurement: 27 ms per batch over ~22k batches), all of it flattening the batch and looking up each name.
+            var pGroupLookup = pGroupsInsertedUpfront
+                ? pGroupRepository.GetPGroupLookup()
+                : await pGroupRepository.EnsureAllPGroupsExist(donorsToImport.AllPGroupNames());
             var hlaNameLookup = await hlaNamesRepository.EnsureAllHlaNamesExist(donorsToImport.AllHlaNames());
 
             var lookups = new HlaImportLookups(HlaNames: hlaNameLookup, PGroups: pGroupLookup);
@@ -123,10 +152,15 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
 
                         foreach (var pGroup in hla.MatchingPGroups)
                         {
+                            if (!lookups.PGroups.TryGetValue(pGroup, out var pGroupId))
+                            {
+                                throw new MissingPGroupException(pGroup, hlaName, locus);
+                            }
+
                             relationsAtLocus.Add(new HlaNamePGroupRelation
                             {
                                 HlaNameId = hlaNameId,
-                                PGroupId = lookups.PGroups[pGroup]
+                                PGroupId = pGroupId
                             });
                         }
                     }

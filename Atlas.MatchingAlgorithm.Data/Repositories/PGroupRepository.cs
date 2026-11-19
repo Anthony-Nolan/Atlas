@@ -20,6 +20,12 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
         Task InsertPGroups(IEnumerable<string> pGroups);
         Task<IEnumerable<int>> GetPGroupIds(IEnumerable<string> pGroupNames);
         Task<IDictionary<string, int>> EnsureAllPGroupsExist(IList<string> allPGroups, LongStopwatchCollection timerCollection = null);
+
+        /// <summary>
+        /// The in-memory map of P-group name to id, read from the database on first use. Unlike <see cref="EnsureAllPGroupsExist"/>,
+        /// it inserts nothing: use it only when every P-group needed is known to be in the database already.
+        /// </summary>
+        IDictionary<string, int> GetPGroupLookup();
         int FindOrCreatePGroup(string pGroupName);
     }
 
@@ -96,8 +102,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
         /// Thus it should not be possible for this code to receive a PGroup that isn't already in the DB ... in prod.
         /// In *TESTS* however, we don't pre-populate PGroups, so the "or create" branch of the code is necessary.
         ///
-        /// **Note that this method gets used *heavily* during DataRefresh (despite being a no-op!) and has been aggressively optimised for that use-case.**
-        /// Over the course of a 2M donor import, we must check ~1B pGroup strings, which ends up taking 2-3 minutes. All in the actual dictionary lookup line.
+        /// Data Refresh does not call this method: it is a no-op there, and over a 2M donor import it checked ~1B P-group strings,
+        /// which took ~10 minutes (ATL-216). Data Refresh uses <see cref="GetPGroupLookup"/> instead (ATL-312).
         /// </remarks>
         public async Task<IDictionary<string, int>> EnsureAllPGroupsExist(
             IList<string> allPGroups,
@@ -115,6 +121,13 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
                 await InsertPGroups(newPGroups); //This method refreshes the Cache after adding.
             }
 
+            return pGroupNameToIdDictionary;
+        }
+
+        /// <inheritdoc />
+        public IDictionary<string, int> GetPGroupLookup()
+        {
+            EnsurePGroupDictionaryCacheIsPopulated();
             return pGroupNameToIdDictionary;
         }
 

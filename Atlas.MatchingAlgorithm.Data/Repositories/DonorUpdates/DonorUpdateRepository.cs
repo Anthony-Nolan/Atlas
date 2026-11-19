@@ -53,7 +53,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                 return;
             }
 
-            var hlaLookup = await hlaImportRepository.ImportHla(donors.ToList());
+            var hlaLookup = await hlaImportRepository.ImportHla(donors.ToList(), pGroupsInsertedUpfront: false);
             var processedDonorRecords = donors.Select(d => d.ToDonorInfoForPreProcessing(hla => hlaLookup[hla]));
             using (var transactionScope = new OptionalAsyncTransactionScope(runAllHlaInsertionsInASingleTransactionScope))
             {
@@ -128,7 +128,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                     innerNonHlaTransactionScope.Complete();
                 }
 
-                var hlaLookup = await hlaImportRepository.ImportHla(donorsWhereHlaHasChanged.Select(d => d.Item1).ToList());
+                var hlaLookup = await hlaImportRepository.ImportHla(donorsWhereHlaHasChanged.Select(d => d.Item1).ToList(), pGroupsInsertedUpfront: false);
                 var donorUpdates = donorsWhereHlaHasChanged.Select(d =>
                 {
                     var donorUpdate = d.Item1.ToDonorInfoForPreProcessing(hla => hlaLookup[hla]);
