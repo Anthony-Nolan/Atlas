@@ -74,7 +74,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 _ => new AzureAuthenticationSettings(),
                 _ => new AzureDatabaseManagementSettings(),
                 OptionsReaderFor<DataRefreshSettings>(),
-                _ => new DonorGenotypePrecomputationSettings(),
+                // The real TopicClientFactory keeps a client for each topic name, so the topic needs a name, also with the substitute
+                // ServiceBusClient.
+                _ => new DonorGenotypePrecomputationSettings { RequestsTopic = "donor-genotype-precomputation-requests" },
                 _ => new DonorGenotypePrecomputationSwitchSettings(),
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),

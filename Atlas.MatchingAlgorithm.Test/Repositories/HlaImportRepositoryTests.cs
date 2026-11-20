@@ -3,6 +3,7 @@ using System.Linq;
 using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
+using Atlas.MatchingAlgorithm.Data.Exceptions;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Repositories;
@@ -183,6 +184,47 @@ public class HlaImportRepositoryTests
             NothingProcessed());
 
         hla.LookupNameReads.Should().BeLessThanOrEqualTo(MatchingPositionCount);
+    }
+
+    /// <summary>
+    /// Data Refresh no longer checks each batch for new P-groups, as it inserts them all upfront. A P-group missing from the
+    /// lookup then means the upfront insert is wrong: it must fail with a clear error, not a bare KeyNotFoundException.
+    /// </summary>
+    [Test]
+    public void BuildHlaRelations_WhenPGroupIsMissingFromLookup_ThrowsMissingPGroupException()
+    {
+        var hlaName = fixture.Create<string>();
+        var knownPGroup = fixture.Create<string>();
+        var missingPGroup = fixture.Create<string>();
+        var hla = new CountingHlaMetadata(hlaName, new List<string> { knownPGroup, missingPGroup });
+
+        var act = () => BuildRelations(
+            new[] { DonorWithHlaAt(Locus.B, LocusPosition.Two, hla) },
+            new Dictionary<string, int> { { hlaName, fixture.Create<int>() } },
+            LookupOf(new[] { knownPGroup }),
+            NothingProcessed());
+
+        act.Should().Throw<MissingPGroupException>()
+            .Which.Message.Should().Contain(missingPGroup).And.Contain(hlaName).And.Contain(nameof(Locus.B));
+    }
+
+    /// <summary>
+    /// The relations of an HLA name that is already processed are in the database, so its P-groups are not looked up.
+    /// </summary>
+    [Test]
+    public void BuildHlaRelations_WhenHlaAlreadyProcessed_DoesNotThrowForPGroupMissingFromLookup()
+    {
+        var hlaName = fixture.Create<string>();
+        var hla = new CountingHlaMetadata(hlaName, fixture.CreateMany<string>(3).ToList());
+        var hlaNameId = fixture.Create<int>();
+
+        var act = () => BuildRelations(
+            new[] { DonorWithHlaAt(Locus.A, LocusPosition.One, hla) },
+            new Dictionary<string, int> { { hlaName, hlaNameId } },
+            new Dictionary<string, int>(),
+            AlreadyProcessed(hlaNameId));
+
+        act.Should().NotThrow();
     }
 
     private static LociInfo<ISet<HlaNamePGroupRelation>> BuildRelations(

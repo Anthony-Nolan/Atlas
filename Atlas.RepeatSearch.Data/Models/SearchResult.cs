@@ -24,7 +24,10 @@ namespace Atlas.RepeatSearch.Data.Models
     {
         public static void SetUpSearchResultModel(this EntityTypeBuilder<SearchResult> searchResult)
         {
-            searchResult.HasIndex(r => new {r.ExternalDonorCode, r.CanonicalResultSetId}).IsUnique();
+            // The set id comes first: set ids grow, so the rows of a new set go to the end of the index, and every query filters by set.
+            // This index is also the index of the foreign key to CanonicalResultSets, and keeps a set free of duplicate codes
+            // (see CanonicalResultSet.StoreAttemptId).
+            searchResult.HasIndex(r => new {r.CanonicalResultSetId, r.ExternalDonorCode}).IsUnique();
         }
     }
 }

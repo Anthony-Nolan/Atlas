@@ -292,7 +292,7 @@ internal class MatchPredictionWorkerEmulatorTests
         services.AddSingleton(Substitute.For<IMatchPredictionSearchTrackingDispatcher>());
         services.AddSingleton<ISessionMessagePublisher<ParallelMatchPredictionBatchResult>>(sp =>
             new SessionMessagePublisher<ParallelMatchPredictionBatchResult>(
-                new EmulatorTopicClientFactory(client),
+                new TopicClientFactory(client),
                 resultsTopic,
                 sendRetryCount: 1,
                 sendRetryCooldownSeconds: 1,
@@ -369,10 +369,5 @@ internal class MatchPredictionWorkerEmulatorTests
                 await admin.DeleteTopicAsync(topic);
             }
         }
-    }
-
-    private class EmulatorTopicClientFactory(ServiceBusClient client) : ITopicClientFactory
-    {
-        public ITopicClient BuildTopicClient(string topicName) => new TopicClient(client.CreateSender(topicName));
     }
 }

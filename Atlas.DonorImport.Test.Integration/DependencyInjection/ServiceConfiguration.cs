@@ -38,9 +38,17 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
             SetUpConfiguration(services);
             services.RegisterDonorImport(
                 sp => new ApplicationInsightsSettings { LogLevel = "Info" },
-                sp => new MessagingServiceBusSettings(),
+                // The real TopicClientFactory keeps a client for each topic name, so the topics that the services send to need names,
+                // also with the substitute ServiceBusClient.
+                sp => new MessagingServiceBusSettings
+                {
+                    UpdatedSearchableDonorsTopic = "updated-searchable-donors",
+                    DonorIdCheckerResultsTopic = "donor-id-checker-results",
+                    DonorInfoCheckerResultsTopic = "donor-info-checker-results",
+                    DonorImportResultsTopic = "donor-import-results",
+                },
                 sp => new NotificationConfigurationSettings(),
-                sp => new NotificationsServiceBusSettings(),
+                sp => new NotificationsServiceBusSettings { NotificationsTopic = "notifications", AlertsTopic = "alerts" },
                 sp => new DonorImportSettings { HoursToCheckStalledFiles = 2, AllowFullModeImport = true },
                 sp => new PublishDonorUpdatesSettings(),
                 sp => new AzureStorageSettings(),

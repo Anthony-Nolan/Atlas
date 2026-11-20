@@ -33,10 +33,13 @@ How to run functions via Swagger using Visual Studio:
 - Microsoft ships a [Service Bus emulator](https://learn.microsoft.com/azure/service-bus-messaging/overview-emulator) as a Linux container. It is for local tests of Service Bus code, not a stand-in for that namespace.
   - It speaks AMQP over TCP only, allows 10 concurrent connections, and does not work with Service Bus Explorer. Partitioned entities and AMQP over WebSockets are not supported. Entities disappear when the container restarts.
   - Start it with the Docker Compose steps in [Test locally by using the Azure Service Bus emulator](https://learn.microsoft.com/azure/service-bus-messaging/test-locally-with-service-bus-emulator). The data-plane connection string on the same machine is `Endpoint=sb://localhost;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;`. Management operations use the same string with port `5300`.
-  - `Atlas.Common.Test.Integration` checks three things:
+  - `Atlas.Common.Test.Integration` checks these things:
     - the `MessageReceiverFactory` gives a working receiver after an earlier one for the same subscription was disposed, so receivers are not cached;
     - disposing a `MessageProcessor` closes its link at the broker: messages locked on that link go back to the subscription at once, and stay locked when it is not disposed. The test uses a prefetching receiver to hold them, and first checks that another receiver cannot get them;
-    - the ATL-482 scenario: without prefetch, an open processor whose receive returned before the batch was full holds no messages. The broker still sends it messages for the link credit left over, but the client (Azure.Messaging.ServiceBus 7.20.1) releases each one at once, with no lock and no delivery count, so another receiver gets them. If an SDK upgrade changes that, this test fails.
+    - the ATL-482 scenario: without prefetch, an open processor whose receive returned before the batch was full holds no messages. The broker still sends it messages for the link credit left over, but the client (Azure.Messaging.ServiceBus 7.20.1) releases each one at once, with no lock and no delivery count, so another receiver gets them. If an SDK upgrade changes that, this test fails;
+    - a sender that nobody closes keeps its link: when each publisher that lives in a DI scope makes its own sender, as `TopicClientFactory` did before ATL-208, neither the end of the scope nor garbage collection closes the send links. Only closing the connection does. The test counts the open send links from the events of the client library (`SendLinkCounter`), because the emulator does not show links;
+    - `TopicClientFactory` gives all callers of a topic one sender: after many scopes of the publishers, and many clients that are built, used and disposed for each message, one send link of the topic is open, and every send works. So disposing a client does not close the shared sender;
+    - when the service provider is disposed, as at host shutdown, `TopicClientFactory` closes the send links of its senders itself. The test keeps its `ServiceBusClient` open, so only the factory can close them.
   - `Atlas.MatchPrediction.Worker.Test.Integration` runs the real match prediction worker, with only the batch work faked, and checks the ATL-546 scenario: a batch that fails is delivered again by Service Bus, and the worker publishes one result for it. That is a success if any delivery works; otherwise one failure on the last delivery, and the request is dead-lettered.
 
     The tests themselves do not use SQL. The emulator does, so its pipeline job starts a SQL Server container for the emulator and sets `RUN_SERVICE_BUS_EMULATOR_TESTS`. Locally, start the emulator and set that variable before running the projects.
@@ -175,16 +178,11 @@ It can be useful to run the Matching Algorithm API when locally debugging and te
 
 ## Integration Tests
 - The integration test suites that use a database create and migrate it themselves; they only need a SQL Server to connect to.
-  - The matching and donor import migrations use `ONLINE` index operations, which need the Developer or Enterprise edition of SQL Server.
+  - The matching, donor import and repeat search migrations use `ONLINE` index operations, which need the Developer or Enterprise edition of SQL Server.
     LocalDB and the Express edition cannot run them.
 - `Atlas.MultipleAlleleCodeDictionary.Test.Integration` requires a connection to an Azure Storage instance.
   By default, it will look for a local storage instance, which would require Azurite to be running.
-- `Atlas.Common.Test.Integration` runs `BlobUploader` and `BlobDownloader` against Azurite, with a new container for each test. It checks that:
-  - an upload creates a missing container, a second upload to it works, and a real 409 from creating an existing container has the error code that the catch in `CreateContainerIfMissing` accepts;
-  - every upload and download method round-trips the same JSON: `Download`, `OpenRead`, `DownloadMultipleBlobs` (in batches), and the folder reads after `ChunkAndUpload`;
-  - both folder reads return files in number order, also for old file names without zero padding, which Azure lists in name order, and leave out a folder whose name starts with the same text;
-  - a blob that is not there gives a `BlobNotFoundException` from `Download`, `OpenRead` and `DownloadMultipleBlobs`, so the real error code is the one the downloader looks for.
-  Its pipeline job starts Azurite and sets `RUN_AZURITE_TESTS`. Locally, start Azurite and set that variable; without it the blob tests are skipped.
+- `Atlas.Common.Test.Integration` also runs `BlobUploader` and `BlobDownloader` against Azurite. To run these blob tests locally, start Azurite and set `RUN_AZURITE_TESTS`; without it they are skipped.
 - The connection strings default to a local SQL Server, in each test project's `appsettings.json`.
   They can be overridden with environment variables, e.g. `ConnectionStrings__SqlA`, as the system tests pipeline does.
 
@@ -201,24 +199,26 @@ These are the image versions the pipeline uses (see `build-pipeline-run-tests.ym
 SQL Server is published on port 14330, so that it does not clash with a SQL Server installed locally on 1433.
 
 ```bash
-docker run -d --name atlas-sql -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD=Atlas-System-Tests-1 -p 14330:1433 --tmpfs /var/opt/mssql/data:rw,noexec,nosuid,size=4g mcr.microsoft.com/mssql/server:2022-CU27-ubuntu-22.04
+docker run -d --name atlas-sql -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD=Atlas-System-Tests-1 -p 14330:1433 mcr.microsoft.com/mssql/server:2022-CU27-ubuntu-22.04
 docker run -d --name atlas-azurite -p 10000-10002:10000-10002 mcr.microsoft.com/azure-storage/azurite:3.37.0 azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --skipApiVersionCheck
 ```
 
 SQL Server takes up to half a minute to accept connections after it starts.
-SQL Server keeps its databases in memory (`--tmpfs`), so they are lost when the container stops; the tests create them again.
-The tests make many small commits, and each one waits for its write to the disk. With Docker Desktop on Windows that disk is slow:
-locally, `Atlas.MatchingAlgorithm.Test.Integration` took 254 s on disk, 206 s with delayed durability, and 184 s in memory.
-To make commits faster also when the data is on disk, turn on delayed durability for the databases the tests create:
-
-```bash
-docker exec atlas-sql /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P Atlas-System-Tests-1 -Q "ALTER DATABASE model SET DELAYED_DURABILITY = FORCED"
-```
-
-It applies to databases created afterwards.
-The pipeline does neither: on its Linux agents writes to the disk are fast, and the tests took as long with both (build 79517).
-
 Azurite listens on the standard ports, so the default `UseDevelopmentStorage=true` connection string needs no change.
+
+#### Optional: faster commits on Docker Desktop
+The tests make many small commits, and each one waits for its write to the disk. With Docker Desktop on Windows that disk is slow:
+locally, `Atlas.MatchingAlgorithm.Test.Integration` took 254 s on disk, 206 s with delayed durability, and 184 s with the databases in memory.
+The pipeline uses neither tip: on its Linux agents writes to the disk are fast, and the tests were no faster with them.
+
+- Delayed durability, for the databases the tests create afterwards:
+
+  ```bash
+  docker exec atlas-sql /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P Atlas-System-Tests-1 -Q "ALTER DATABASE model SET DELAYED_DURABILITY = FORCED"
+  ```
+- Databases in memory: add `--tmpfs /var/opt/mssql/data:rw,noexec,nosuid,size=4g` to the `docker run` of SQL Server.
+  They are lost when the container stops, and the tests create them again.
+  SQL Server needs `O_DIRECT`, which tmpfs supports from Linux kernel 6.6, so on an older Linux host or WSL kernel the container may not start.
 
 ### Point the tests at the containers
 The tests create and migrate their own databases, so the server only needs to be running.

@@ -9,6 +9,7 @@ using Atlas.Common.Public.Models.GeneticData;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Common.Config;
+using Atlas.MatchingAlgorithm.Data.Exceptions;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
@@ -28,7 +29,15 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
         /// A dictionary for quick lookup of the provided HLA.
         /// Key = HLA lookup name. Value = processed Atlas ID for this HLA. 
         /// </returns>
-        Task<IDictionary<string, int>> ImportHla(IList<DonorInfoWithExpandedHla> donorsToImport);
+        /// <param name="donorsToImport">The donors whose HLA is imported.</param>
+        /// <param name="pGroupsInsertedUpfront">
+        /// True when every P-group of the HLA nomenclature version is already in the database, as Data Refresh inserts them all
+        /// before HLA processing starts. Then the per-batch check for new P-groups is skipped: the batch is not flattened into
+        /// its P-group names, and they are not each looked up. A P-group that is still missing fails the import (see
+        /// <see cref="MissingPGroupException"/>). False on every other path, for example donor updates: then any new P-group
+        /// is inserted first.
+        /// </param>
+        Task<IDictionary<string, int>> ImportHla(IList<DonorInfoWithExpandedHla> donorsToImport, bool pGroupsInsertedUpfront);
     }
 
     /// <summary>
@@ -53,11 +62,16 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             this.pGroupRepository = pGroupRepository;
         }
 
-        public async Task<IDictionary<string, int>> ImportHla(IList<DonorInfoWithExpandedHla> donorsToImport)
+        /// <inheritdoc />
+        public async Task<IDictionary<string, int>> ImportHla(IList<DonorInfoWithExpandedHla> donorsToImport, bool pGroupsInsertedUpfront)
         {
             await EnsureProcessedHlaCacheIsUpToDate();
 
-            var pGroupLookup = await pGroupRepository.EnsureAllPGroupsExist(donorsToImport.AllPGroupNames());
+            // In Data Refresh the check below can never find a new P-group, but it cost ~10 minutes per full refresh (ATL-216
+            // measurement: 27 ms per batch over ~22k batches), all of it flattening the batch and looking up each name.
+            var pGroupLookup = pGroupsInsertedUpfront
+                ? pGroupRepository.GetPGroupLookup()
+                : await pGroupRepository.EnsureAllPGroupsExist(donorsToImport.AllPGroupNames());
             var hlaNameLookup = await hlaNamesRepository.EnsureAllHlaNamesExist(donorsToImport.AllHlaNames());
 
             var lookups = new HlaImportLookups(HlaNames: hlaNameLookup, PGroups: pGroupLookup);
@@ -123,10 +137,15 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
 
                         foreach (var pGroup in hla.MatchingPGroups)
                         {
+                            if (!lookups.PGroups.TryGetValue(pGroup, out var pGroupId))
+                            {
+                                throw new MissingPGroupException(pGroup, hlaName, locus);
+                            }
+
                             relationsAtLocus.Add(new HlaNamePGroupRelation
                             {
                                 HlaNameId = hlaNameId,
-                                PGroupId = lookups.PGroups[pGroup]
+                                PGroupId = pGroupId
                             });
                         }
                     }

@@ -509,7 +509,7 @@ stages:
   # The validation scenarios are split across two jobs, each with its own SQL Server, and its own copy of the test data.
   # Running them in parallel within one process does not help: the searches compete for the agent's few cores.
   # The features are split so that both jobs take about as long, with the Service Bus emulator tests in the second one.
-  # Test time per feature in builds 79513 and 79517: AdultSearch 90 s, CordSearch 16 s, NullAlleles 15 s, Scoring 60 s,
+  # Test time per feature: AdultSearch 90 s, CordSearch 16 s, NullAlleles 15 s, Scoring 60 s,
   # the rest 3 s; each job also loads the test data, about 16 s.
   - job: Matching_Algorithm_Validation_Tests_Searches
     displayName: 'Matching Algorithm Validation Tests (Adult, Cord and Null Allele Searches)'
