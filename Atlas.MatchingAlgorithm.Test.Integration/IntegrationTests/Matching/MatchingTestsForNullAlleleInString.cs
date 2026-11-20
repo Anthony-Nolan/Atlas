@@ -29,8 +29,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
     /// either patient and/or donor has a null allele within an allele string typing.
     /// Only one locus is under test to keep things simple.
     /// </summary>
-    [NonParallelizable]
-    public class MatchingTestsForNullAlleleInString
+    public class MatchingTestsForNullAlleleInString : FixtureWithPooledDatabases
     {
         private const Locus LocusUnderTest = Locus.A;
         private const DonorType MatchingDonorType = DonorType.Adult;

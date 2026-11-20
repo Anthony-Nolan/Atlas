@@ -38,9 +38,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute;
 /// The batch processor of the precomputation workers against a real database: what one batch message writes, and that a
 /// batch that runs again writes nothing twice. The imputation and the frequency set lookup are substituted.
 /// </summary>
-[NonParallelizable]
 [TestFixture]
-public class DonorGenotypePrecomputationBatchProcessorTests
+public class DonorGenotypePrecomputationBatchProcessorTests : FixtureWithPooledDatabases
 {
     private const TransientDatabase Database = TransientDatabase.DatabaseA;
     private const int MaxBatchRetries = 3;

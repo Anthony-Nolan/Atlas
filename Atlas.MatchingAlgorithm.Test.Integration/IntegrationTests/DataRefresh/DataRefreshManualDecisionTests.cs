@@ -9,6 +9,7 @@ using AutoFixture;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh;
 
@@ -17,9 +18,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh;
 /// because the guarantees under test are those of single conditional UPDATEs: the pause is fenced by the lease owner, and
 /// a decision is a compare-and-swap that only one caller can win.
 /// </summary>
-[NonParallelizable]
 [TestFixture]
-internal class DataRefreshManualDecisionTests
+internal class DataRefreshManualDecisionTests : FixtureWithPooledDatabases
 {
     private static readonly TimeSpan LeaseDuration = TimeSpan.FromMinutes(30);
 

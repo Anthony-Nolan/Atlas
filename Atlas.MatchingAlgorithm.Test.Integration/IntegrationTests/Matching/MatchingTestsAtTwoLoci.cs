@@ -19,7 +19,6 @@ using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 {
-    [NonParallelizable]
     [TestFixture(Locus.A, Locus.B)]
     [TestFixture(Locus.A, Locus.C)]
     [TestFixture(Locus.A, Locus.Drb1)]
@@ -30,7 +29,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
     [TestFixture(Locus.Drb1, Locus.C)]
     [TestFixture(Locus.Drb1, Locus.Dqb1)]
     [TestFixture(Locus.C, Locus.Dqb1)]
-    public class MatchingTestsAtTwoLoci
+    public class MatchingTestsAtTwoLoci : FixtureWithPooledDatabases
     {
         private IMatchingService matchingService;
 

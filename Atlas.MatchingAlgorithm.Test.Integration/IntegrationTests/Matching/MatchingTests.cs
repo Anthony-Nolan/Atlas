@@ -23,8 +23,7 @@ using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 {
-    [NonParallelizable]
-    public class MatchingTests
+    public class MatchingTests : FixtureWithPooledDatabases
     {
         private IMatchingService matchingService;
 

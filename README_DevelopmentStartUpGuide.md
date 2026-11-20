@@ -264,16 +264,20 @@ The variables of a `.runsettings` file apply to every test project run with it, 
 So with one such file, run one test project at a time: each project clears its databases when its tests start.
 
 ### Run the suites in parallel
-The fixtures of `Atlas.MatchingAlgorithm.Test.Integration` run at the same time (`[assembly: Parallelizable]`), except those marked `[NonParallelizable]`,
-which need its databases to themselves: they expect them empty, clear them, or change the data refresh records. NUnit runs as many fixtures at once
+The fixtures of `Atlas.MatchingAlgorithm.Test.Integration` run at the same time (`[assembly: Parallelizable]`). NUnit runs as many at once
 as there are cores; the pipeline sets the number, as the tests spend much of their time waiting for SQL Server:
 
 ```bash
 dotnet test Atlas.MatchingAlgorithm.Test.Integration -- NUnit.NumberOfTestWorkers=4
 ```
 
-A fixture that runs at the same time as others must only look at its own data: donor ids from `DonorIdGenerator`, its own DI scope
-(`DependencyInjection.Provider` gives each fixture one), and no assertions on whole tables. Otherwise mark it `[NonParallelizable]`.
+Most fixtures share the databases of the configuration, so they must only look at their own data: donor ids from `DonorIdGenerator`,
+their own DI scope (`DependencyInjection.Provider` gives each fixture one), and no assertions on whole tables.
+A fixture that needs the databases to itself (it expects them empty, clears them, checks whole tables, or changes the data refresh records,
+which decide the active database) derives from `FixtureWithPooledDatabases`. It then gets a set of databases that no other fixture uses meanwhile,
+from a pool of one set per NUnit worker, which the global set-up restores from a backup of the configured databases (`TestHelpers/DatabasePool.cs`).
+The pool's databases are named after the configured ones, with `_Pool0`, `_Pool1`, ... appended.
+On 2 cores, as on a build agent, the matching integration tests took 89 s with 4 workers, instead of 145 s with 1.
 
 The other projects run their tests one after another. Several projects can also run at the same time, against the same containers,
 as long as each has its own databases: set their connection strings (see the table above) to different database names, and build first,

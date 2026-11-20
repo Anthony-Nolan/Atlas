@@ -28,9 +28,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute;
 /// The precomputation repository against a real database: the compare-and-swap rules of the batch state machine, and the reads
 /// and writes that a worker makes for one batch.
 /// </summary>
-[NonParallelizable]
 [TestFixture]
-public class DonorGenotypePrecomputationRepositoryTests
+public class DonorGenotypePrecomputationRepositoryTests : FixtureWithPooledDatabases
 {
     private const int MaxBatchRetries = 3;
     private static readonly TimeSpan LeaseDuration = TimeSpan.FromMinutes(30);

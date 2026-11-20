@@ -24,8 +24,7 @@ using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 {
-    [NonParallelizable]
-    public class MatchingByCutOffDateTimeTests
+    public class MatchingByCutOffDateTimeTests : FixtureWithPooledDatabases
     {
         private const DonorType DefaultDonorType = DonorType.Adult;
         private static readonly DateTimeOffset CutOffDateTime = new DateTimeOffset(2020, 1, 1, 1, 1, 1, TimeSpan.Zero);

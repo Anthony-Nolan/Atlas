@@ -8,6 +8,7 @@ using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
 {
@@ -16,9 +17,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
     /// These run against a real database because the guarantee being tested is the atomicity of a single conditional
     /// UPDATE - which is a property of the SQL these methods emit, not of the C# around it.
     /// </summary>
-    [NonParallelizable]
     [TestFixture]
-    internal class DataRefreshLeaseTests
+    internal class DataRefreshLeaseTests : FixtureWithPooledDatabases
     {
         private static readonly TimeSpan LeaseDuration = TimeSpan.FromMinutes(30);
 

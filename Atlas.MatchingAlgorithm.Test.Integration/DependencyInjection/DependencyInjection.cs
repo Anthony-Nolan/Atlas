@@ -56,17 +56,22 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
         /// <summary>
         /// The id of the fixture the current test belongs to, or of the current suite (e.g. the set-up fixture) outside any fixture.
         /// </summary>
-        private static string CurrentFixtureId()
+        internal static string CurrentFixtureId() => CurrentFixture()?.Id ?? string.Empty;
+
+        /// <summary>
+        /// The fixture the current test belongs to, or the current suite (e.g. the set-up fixture) outside any fixture.
+        /// </summary>
+        internal static ITest CurrentFixture()
         {
             ITest test = TestExecutionContext.CurrentContext.CurrentTest;
             for (var suite = test; suite != null; suite = suite.Parent)
             {
                 if (suite is TestFixture)
                 {
-                    return suite.Id;
+                    return suite;
                 }
             }
-            return test?.Id ?? string.Empty;
+            return test;
         }
     }
 }

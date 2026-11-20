@@ -4,6 +4,7 @@ using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedSt
 using Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
@@ -20,6 +21,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
                 DependencyInjection.DependencyInjection.BackingProvider = ServiceConfiguration.CreateProvider();
                 ResetDatabase();
                 RunInitialDataRefresh();
+                DatabasePool.Create(DependencyInjection.DependencyInjection.Provider.GetService<IConfiguration>());
             });
         }
         

@@ -17,6 +17,7 @@ using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
+using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Azure.Messaging.ServiceBus;
@@ -42,6 +43,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
         private const string TransientASqlConnectionStringKey = "SqlA";
         private const string TransientBSqlConnectionStringKey = "SqlB";
         private const string DonorImportSqlConnectionStringKey = "DonorImportSql";
+
+        /// <summary>
+        /// Reads the connection string of the current fixture's pooled databases, if it has some (see <see cref="FixtureWithPooledDatabases"/>).
+        /// Hides <see cref="Atlas.Common.Utils.Extensions.DependencyInjectionUtils.ConnectionStringReader"/>.
+        /// </summary>
+        private static Func<IServiceProvider, string> ConnectionStringReader(string connectionStringName) =>
+            sp => DatabasePool.ConnectionString(sp, connectionStringName);
 
         public static IServiceProvider CreateProvider()
         {

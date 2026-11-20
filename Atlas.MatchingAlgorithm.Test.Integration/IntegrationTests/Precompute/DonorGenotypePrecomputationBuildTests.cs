@@ -29,9 +29,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute;
 /// The start and the build of a precomputation run against a real database: which donors share a group, the order of the
 /// group ids, the group → donor rows that the workers read, the batches, the cancel of a run, and the staging check.
 /// </summary>
-[NonParallelizable]
 [TestFixture]
-public class DonorGenotypePrecomputationBuildTests
+public class DonorGenotypePrecomputationBuildTests : FixtureWithPooledDatabases
 {
     /// <summary>The default of the stage.</summary>
     private const int GroupsPerBatch = 1000;

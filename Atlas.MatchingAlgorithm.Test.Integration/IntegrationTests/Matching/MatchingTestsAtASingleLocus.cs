@@ -19,13 +19,12 @@ using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching;
 
-[NonParallelizable]
 [TestFixture(Locus.A)]
 [TestFixture(Locus.B)]
 [TestFixture(Locus.Drb1)]
 [TestFixture(Locus.Dqb1)]
 [TestFixture(Locus.C)]
-public class MatchingTestsAtASingleLocus
+public class MatchingTestsAtASingleLocus : FixtureWithPooledDatabases
 {
     private IMatchingService matchingService;
 

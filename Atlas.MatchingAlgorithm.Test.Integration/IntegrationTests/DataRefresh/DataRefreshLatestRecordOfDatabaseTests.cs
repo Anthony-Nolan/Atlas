@@ -8,6 +8,7 @@ using AutoFixture;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh;
 
@@ -16,9 +17,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh;
 /// nomenclature version of the dormant database. Against a real database, because the filter is in the SQL that the
 /// query emits.
 /// </summary>
-[NonParallelizable]
 [TestFixture]
-internal class DataRefreshLatestRecordOfDatabaseTests
+internal class DataRefreshLatestRecordOfDatabaseTests : FixtureWithPooledDatabases
 {
     private Fixture fixture;
     private ITestDataRefreshHistoryRepository dataRefreshHistoryRepository;

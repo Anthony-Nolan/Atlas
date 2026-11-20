@@ -15,8 +15,7 @@ using Injection = Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection.D
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
 {
-    [NonParallelizable]
-    public class DonorImportRepositoryTests
+    public class DonorImportRepositoryTests : FixtureWithPooledDatabases
     {
         private Fixture fixture;
         private IDonorImportRepository donorImportRepository;

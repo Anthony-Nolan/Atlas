@@ -87,9 +87,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         }
     }
 
-    [NonParallelizable]
     [TestFixture]
-    public partial class DonorUpdateImportSmokeTestsAndPerformanceBaselines
+    public partial class DonorUpdateImportSmokeTestsAndPerformanceBaselines : FixtureWithPooledDatabases
     {
         private IDonorManagementService managementService;
         private TestDonorInspectionRepository donorInspectionRepository;
