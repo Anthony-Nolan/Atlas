@@ -26,6 +26,16 @@ parameters:
   - name: testWorkers
     type: number
     default: 4
+  # Whether SQL Server keeps the databases the tests create in memory, and is tuned for the tests' many small queries and temporary tables:
+  #  - the databases' files are in memory (tmpfs); SQL Server's own databases stay on disk, so that it can restart;
+  #  - delayed durability: a commit does not wait for its log write;
+  #  - forced parameterization: queries that differ only in their literals, such as the lists of donor ids, share one plan;
+  #  - statistics are updated in the background, not by the query that finds them out of date;
+  #  - tempdb's metadata is memory-optimized, so that creating temporary tables at the same time does not wait on its system pages.
+  #    It takes a restart of SQL Server, about 10 s.
+  - name: sqlServerTweaks
+    type: boolean
+    default: false
   # How long one category may take before its step is stopped. The longest takes about 3 minutes.
   - name: testTimeoutMinutes
     type: number
@@ -57,12 +67,20 @@ jobs:
     # SQL Server is the Developer edition, which supports the ONLINE index operations of the matching migrations.
     # The tests create and migrate their own databases, their own tables and blob containers, and their own topics.
     - bash: |
-        docker run -d --name atlas-sql -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD="$SQL_SA_PASSWORD" -p 1433:1433 mcr.microsoft.com/mssql/server:2022-CU27-ubuntu-22.04
+        inMemory=()
+        if [[ ${SQL_SERVER_TWEAKS,,} == true ]]; then
+          # New databases go to a tmpfs folder owned by SQL Server's user (10001); master and the other system databases stay on disk.
+          inMemory=(-e MSSQL_DATA_DIR=/var/opt/mssql/memory -e MSSQL_LOG_DIR=/var/opt/mssql/memory
+            --tmpfs /var/opt/mssql/memory:rw,noexec,nosuid,size=4g,uid=10001,gid=0,mode=0770)
+        fi
+        docker run -d --name atlas-sql -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD="$SQL_SA_PASSWORD" "${inMemory[@]}" -p 1433:1433 \
+          mcr.microsoft.com/mssql/server:2022-CU27-ubuntu-22.04
         docker run -d --name atlas-azurite -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/azure-storage/azurite:3.37.0 \
           azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --skipApiVersionCheck
       displayName: 'Start SQL Server and Azurite'
       env:
         SQL_SA_PASSWORD: $(sqlSaPassword)
+        SQL_SERVER_TWEAKS: '${{ parameters.sqlServerTweaks }}'
 
     # The same SDK as the Build Tests stage, rather than whichever the agent image has.
     - task: UseDotNet@2
@@ -90,18 +108,31 @@ jobs:
         path: '$(Pipeline.Workspace)/EarlierAttempts'
 
     - bash: |
-        for attempt in $(seq 1 60); do
-          if docker exec atlas-sql /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$SQL_SA_PASSWORD" -Q "SELECT 1" -b > /dev/null 2>&1; then
-            echo "SQL Server is ready"
-            break
-          fi
-          if [[ $attempt == 60 ]]; then
-            docker logs atlas-sql
-            echo "##vso[task.logissue type=error]SQL Server did not accept queries within 2 minutes"
-            exit 1
-          fi
-          sleep 2
-        done
+        sql() { docker exec atlas-sql /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$SQL_SA_PASSWORD" -b "$@"; }
+        wait_for_sql() {
+          for attempt in $(seq 1 60); do
+            if sql -Q "SELECT 1" > /dev/null 2>&1; then
+              echo "SQL Server is ready"
+              return 0
+            fi
+            sleep 2
+          done
+          docker logs atlas-sql
+          echo "##vso[task.logissue type=error]SQL Server did not accept queries within 2 minutes"
+          exit 1
+        }
+        wait_for_sql
+
+        if [[ ${SQL_SERVER_TWEAKS,,} == true ]]; then
+          # On model, which every database the tests create is copied from. See the sqlServerTweaks parameter.
+          sql -Q "ALTER DATABASE model SET DELAYED_DURABILITY = FORCED;
+            ALTER DATABASE model SET PARAMETERIZATION FORCED;
+            ALTER DATABASE model SET AUTO_UPDATE_STATISTICS_ASYNC ON;
+            ALTER SERVER CONFIGURATION SET MEMORY_OPTIMIZED TEMPDB_METADATA = ON;"
+          docker restart atlas-sql > /dev/null
+          wait_for_sql
+          sql -h -1 -Q "SET NOCOUNT ON; SELECT CONCAT('Memory-optimized tempdb metadata: ', CONVERT(int, value_in_use)) FROM sys.configurations WHERE name = 'tempdb metadata memory-optimized'"
+        fi
 
         for attempt in $(seq 1 30); do
           if (echo > /dev/tcp/127.0.0.1/10002) 2> /dev/null; then
@@ -116,6 +147,7 @@ jobs:
       displayName: 'Wait for SQL Server and Azurite'
       env:
         SQL_SA_PASSWORD: $(sqlSaPassword)
+        SQL_SERVER_TWEAKS: '${{ parameters.sqlServerTweaks }}'
 
     # Started after SQL Server accepts queries: the emulator keeps its entities in that server, reads it through the host port, and does not retry for long.
     # SQL_WAIT_INTERVAL is a fixed sleep before the emulator first connects to SQL, not a timeout, so it is 0: SQL is already up.
@@ -252,6 +284,17 @@ jobs:
               'PWAIT_ALL_COMPONENTS_INITIALIZED', 'DISPATCHER_QUEUE_SEMAPHORE', 'CHECKPOINT_QUEUE', 'LOGMGR_QUEUE', 'SP_SERVER_DIAGNOSTICS_SLEEP',
               'PWAIT_EXTENSIBILITY_CLEANUP_TASK', 'PREEMPTIVE_XE_DISPATCHER', 'PREEMPTIVE_OS_FLUSHFILEBUFFERS_ASYNC_DONE')
           ORDER BY wait_time_ms DESC;"
+        # Page latches are waits for a page in memory that another session is changing, not for the disk: where they were.
+        echo
+        echo "Page latch waits by table (tables truncated during the job lose their counts):"
+        docker exec atlas-sql /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$SQL_SA_PASSWORD" -W -s ' ' -Q "
+          SET NOCOUNT ON;
+          SELECT TOP 15 DB_NAME(s.database_id) AS [database], OBJECT_SCHEMA_NAME(s.object_id, s.database_id) + '.' + OBJECT_NAME(s.object_id, s.database_id) AS [table],
+            SUM(s.page_latch_wait_count) AS latch_waits, SUM(s.page_latch_wait_in_ms) AS latch_wait_ms, SUM(s.leaf_insert_count) AS inserts
+          FROM sys.dm_db_index_operational_stats(NULL, NULL, NULL, NULL) s
+          GROUP BY s.database_id, s.object_id
+          HAVING SUM(s.page_latch_wait_in_ms) > 0
+          ORDER BY SUM(s.page_latch_wait_in_ms) DESC;"
       displayName: 'SQL Server wait statistics'
       condition: always()
       continueOnError: true

@@ -349,6 +349,8 @@ The integration tests need no Azure resources, and no pipeline variables or secr
   a step each, against their own databases. Within a step, NUnit runs the fixtures that allow it (`[Parallelizable]`, so far the matching integration tests)
   at the same time, on as many workers as "Integration test workers" says when you run the pipeline (4 by default: an agent has 2 cores, and the tests wait for SQL Server).
   The matching validation tests are split in two by feature, so that no category is much longer than the others.
+  "Integration test SQL Server tweaks", off by default, keeps the test databases in memory and tunes SQL Server for the tests' many small queries
+  (delayed durability, forced parameterization, statistics updated in the background, memory-optimized tempdb metadata), to compare against the defaults.
   The categories, and the agent each runs on, are listed in "build-pipeline.yml". "Integration test agents", when you run the pipeline, runs them all on one agent instead.
 - Each category is published as its own test run, tagged with its area (e.g. `MatchingAlgorithm`), so the Tests tab of a build can be filtered by tag.
   "Rerun failed jobs" runs again only the categories that did not pass.

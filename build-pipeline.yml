@@ -25,6 +25,11 @@ parameters:
   displayName: 'Integration test workers'
   type: number
   default: 4
+# Whether the Integration Tests stage keeps the test databases in memory and tunes SQL Server for the tests (see build-pipeline-run-tests.yml).
+- name: integrationTestSqlServerTweaks
+  displayName: 'Integration test SQL Server tweaks'
+  type: boolean
+  default: false
 
 # Build and Build Tests run in parallel; Unit Tests and Integration Tests run the test projects that Build Tests built, in parallel.
 # Publish pushes the images only once the build and every test have succeeded.
@@ -510,6 +515,7 @@ stages:
       ${{ else }}:
         agents: [1, 2, 3, 4]
       testWorkers: ${{ parameters.integrationTestWorkers }}
+      sqlServerTweaks: ${{ parameters.integrationTestSqlServerTweaks }}
       # An agent has 2 cores, and the tests are bound by them: on 2 agents the stage took 7.6 min, against 3.6 min on 5 (builds 79530, 79511).
       # The categories are spread so that the agents take about as long. Test time of each category in build 79541,
       # where the categories of an agent ran at the same time: Matching Algorithm Integration 152 s (in two parts at once, 4 workers each);
