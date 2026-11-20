@@ -484,6 +484,11 @@ stages:
 - stage: Integration_Tests
   displayName: 'Integration Tests'
   dependsOn: Build_Tests
+  variables:
+    # All validation tests may share one database: each job has its own SQL Server.
+    validationSqlConnection: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
+    validationSearchesFilter: 'FullyQualifiedName~.ValidationTests.Features.AdultSearch.|FullyQualifiedName~.ValidationTests.Features.CordSearch.|FullyQualifiedName~.ValidationTests.Features.NullAlleles.'
+    validationScoringFilter: 'FullyQualifiedName!~.ValidationTests.Features.AdultSearch.&FullyQualifiedName!~.ValidationTests.Features.CordSearch.&FullyQualifiedName!~.ValidationTests.Features.NullAlleles.'
   jobs:
   # The tests share the state of their databases, so they cannot run in parallel within a process.
   - job: Matching_Algorithm_Integration_Tests
@@ -501,18 +506,13 @@ stages:
             ConnectionStrings__SqlB: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationTestsB;'
             ConnectionStrings__PersistentSql: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationTestsPersistent;'
 
-  - job: Matching_Algorithm_Validation_Tests
-    # The scenarios are split across agents, each shard with its own SQL Server, and its own copy of the test data.
-    # Running them in parallel within one process does not help: the searches compete for the agent's few cores.
-    # AdultSearch and the rest take about as long as each other.
-    strategy:
-      matrix:
-        AdultSearch:
-          validationTestFilter: 'FullyQualifiedName~.ValidationTests.Features.AdultSearch.'
-          validationShard: 'AdultSearch'
-        Other:
-          validationTestFilter: 'FullyQualifiedName!~.ValidationTests.Features.AdultSearch.'
-          validationShard: 'Other'
+  # The validation scenarios are split across two jobs, each with its own SQL Server, and its own copy of the test data.
+  # Running them in parallel within one process does not help: the searches compete for the agent's few cores.
+  # The features are split so that both jobs take about as long, with the Service Bus emulator tests in the second one.
+  # Test time per feature: AdultSearch 90 s, CordSearch 16 s, NullAlleles 15 s, Scoring 60 s,
+  # the rest 3 s; each job also loads the test data, about 16 s.
+  - job: Matching_Algorithm_Validation_Tests_Searches
+    displayName: 'Matching Algorithm Validation Tests (Adult, Cord and Null Allele Searches)'
     pool:
       vmImage: 'ubuntu-latest'
     steps:
@@ -520,17 +520,47 @@ stages:
       parameters:
         tests:
         - project: Atlas.MatchingAlgorithm.Test.Validation
-          testRunTitle: 'Matching Algorithm Validation Tests - $(validationShard)'
-          filter: '$(validationTestFilter)'
+          testRunTitle: 'Matching Algorithm Validation Tests - Adult, Cord and Null Allele Searches'
+          filter: '$(validationSearchesFilter)'
           env:
-            ConnectionStrings__DonorSql: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
-            ConnectionStrings__SqlA: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
-            ConnectionStrings__SqlB: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
-            ConnectionStrings__PersistentSql: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
+            ConnectionStrings__DonorSql: '$(validationSqlConnection)'
+            ConnectionStrings__SqlA: '$(validationSqlConnection)'
+            ConnectionStrings__SqlB: '$(validationSqlConnection)'
+            ConnectionStrings__PersistentSql: '$(validationSqlConnection)'
+
+  # The Service Bus emulator tests run here, not on an agent of their own: they take under a minute.
+  # They run first, so the emulator is idle while the validation searches use the cores.
+  # The tests do not use SQL. The emulator does: it keeps its entities in this job's SQL Server.
+  - job: Matching_Algorithm_Validation_Tests_Scoring
+    displayName: 'Matching Algorithm Validation Tests (Scoring and the rest) and Service Bus Emulator Tests'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - template: build-pipeline-run-tests.yml
+      parameters:
+        serviceBusEmulator: true
+        tests:
+        - project: Atlas.Common.Test.Integration
+          testRunTitle: 'Service Bus Emulator Tests'
+          env:
+            RUN_SERVICE_BUS_EMULATOR_TESTS: '1'
+        - project: Atlas.MatchPrediction.Worker.Test.Integration
+          testRunTitle: 'Match Prediction Worker Service Bus Emulator Tests'
+          env:
+            RUN_SERVICE_BUS_EMULATOR_TESTS: '1'
+        - project: Atlas.MatchingAlgorithm.Test.Validation
+          testRunTitle: 'Matching Algorithm Validation Tests - Scoring and the rest'
+          # Every validation test that the first job does not run.
+          filter: '$(validationScoringFilter)'
+          env:
+            ConnectionStrings__DonorSql: '$(validationSqlConnection)'
+            ConnectionStrings__SqlA: '$(validationSqlConnection)'
+            ConnectionStrings__SqlB: '$(validationSqlConnection)'
+            ConnectionStrings__PersistentSql: '$(validationSqlConnection)'
 
   # The smaller suites, one after the other, each in its own database.
   - job: Other_Integration_Tests
-    displayName: 'Donor Import, Match Prediction, MAC Dictionary and Repeat Search Integration Tests'
+    displayName: 'Donor Import, Match Prediction, MAC Dictionary, Blob Storage and Repeat Search Integration Tests'
     pool:
       vmImage: 'ubuntu-latest'
     steps:
@@ -548,29 +578,14 @@ stages:
             ConnectionStrings__MatchPredictionSql: '$(sqlServerConnection)Initial Catalog=AtlasMatchPredictionIntegrationTests;'
         - project: Atlas.MultipleAlleleCodeDictionary.Test.Integration
           testRunTitle: 'MAC Dictionary Integration Tests'
+        - project: Atlas.Common.Test.Integration
+          testRunTitle: 'Blob Storage Integration Tests'
+          env:
+            RUN_AZURITE_TESTS: '1'
         - project: Atlas.RepeatSearch.Test.Integration
           testRunTitle: 'Repeat Search Integration Tests'
           env:
             ConnectionStrings__RepeatSearchSql: '$(sqlServerConnection)Initial Catalog=AtlasRepeatSearchIntegrationTests;'
-
-  # The tests do not use SQL. The Service Bus emulator does: it keeps its entities in a SQL Server container.
-  - job: Service_Bus_Emulator_Tests
-    displayName: 'Service Bus Emulator Tests'
-    pool:
-      vmImage: 'ubuntu-latest'
-    steps:
-    - template: build-pipeline-run-tests.yml
-      parameters:
-        serviceBusEmulator: true
-        tests:
-        - project: Atlas.Common.Test.Integration
-          testRunTitle: 'Service Bus Emulator Tests'
-          env:
-            RUN_SERVICE_BUS_EMULATOR_TESTS: '1'
-        - project: Atlas.MatchPrediction.Worker.Test.Integration
-          testRunTitle: 'Match Prediction Worker Service Bus Emulator Tests'
-          env:
-            RUN_SERVICE_BUS_EMULATOR_TESTS: '1'
 
 # The images are built from the sources, in Docker, so this stage needs nothing from the Build stage.
 - stage: Publish

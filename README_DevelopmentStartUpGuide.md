@@ -182,6 +182,7 @@ It can be useful to run the Matching Algorithm API when locally debugging and te
     LocalDB and the Express edition cannot run them.
 - `Atlas.MultipleAlleleCodeDictionary.Test.Integration` requires a connection to an Azure Storage instance.
   By default, it will look for a local storage instance, which would require Azurite to be running.
+- `Atlas.Common.Test.Integration` also runs `BlobUploader` and `BlobDownloader` against Azurite. To run these blob tests locally, start Azurite and set `RUN_AZURITE_TESTS`; without it they are skipped.
 - The connection strings default to a local SQL Server, in each test project's `appsettings.json`.
   They can be overridden with environment variables, e.g. `ConnectionStrings__SqlA`, as the system tests pipeline does.
 
@@ -205,6 +206,20 @@ docker run -d --name atlas-azurite -p 10000-10002:10000-10002 mcr.microsoft.com/
 SQL Server takes up to half a minute to accept connections after it starts.
 Azurite listens on the standard ports, so the default `UseDevelopmentStorage=true` connection string needs no change.
 
+#### Optional: faster commits on Docker Desktop
+The tests make many small commits, and each one waits for its write to the disk. With Docker Desktop on Windows that disk is slow:
+locally, `Atlas.MatchingAlgorithm.Test.Integration` took 254 s on disk, 206 s with delayed durability, and 184 s with the databases in memory.
+The pipeline uses neither tip: on its Linux agents writes to the disk are fast, and the tests were no faster with them.
+
+- Delayed durability, for the databases the tests create afterwards:
+
+  ```bash
+  docker exec atlas-sql /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P Atlas-System-Tests-1 -Q "ALTER DATABASE model SET DELAYED_DURABILITY = FORCED"
+  ```
+- Databases in memory: add `--tmpfs /var/opt/mssql/data:rw,noexec,nosuid,size=4g` to the `docker run` of SQL Server.
+  They are lost when the container stops, and the tests create them again.
+  SQL Server needs `O_DIRECT`, which tmpfs supports from Linux kernel 6.6, so on an older Linux host or WSL kernel the container may not start.
+
 ### Point the tests at the containers
 The tests create and migrate their own databases, so the server only needs to be running.
 Set the connection strings as environment variables, which override the defaults in each test project's `appsettings.json`.
@@ -217,6 +232,7 @@ Give each test project its own databases, so that one project's tests cannot cla
 | `Atlas.DonorImport.Test.Integration` | `ConnectionStrings__DonorStoreSql` |
 | `Atlas.MatchPrediction.Test.Integration` | `ConnectionStrings__MatchPredictionSql` |
 | `Atlas.MultipleAlleleCodeDictionary.Test.Integration` | none: it only needs Azurite |
+| `Atlas.Common.Test.Integration` (blob tests) | `RUN_AZURITE_TESTS=1`: it only needs Azurite |
 | `Atlas.RepeatSearch.Test.Integration` | `ConnectionStrings__RepeatSearchSql` |
 
 Each connection string has the form:
