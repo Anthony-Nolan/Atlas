@@ -28,7 +28,8 @@ category_processes() {
     local pid=${environ#/proc/}
     pid=${pid%/environ}
     local category
-    category=$(tr '\0' '\n' < "$environ" 2> /dev/null | sed -n 's/^TEST_CATEGORY=//p') || continue
+    # In braces, so that the shell's own error for an environ it may not open (a process of another user) goes to /dev/null too.
+    category=$({ tr '\0' '\n' < "$environ"; } 2> /dev/null | sed -n 's/^TEST_CATEGORY=//p') || continue
     [[ -n "$category" ]] || continue
     # Fields after the command name, which is in brackets and may contain spaces: utime and stime are the 12th and 13th.
     local stat

@@ -12,14 +12,14 @@ variables:
 pr: none
 
 parameters:
-# How many agents the Integration Tests stage runs on: with 2, each test category runs on the agent of its "agent" number.
+# How many agents the Integration Tests stage runs on: with 4, each test category runs on the agent of its "agent" number.
 - name: integrationTestAgents
   displayName: 'Integration test agents'
   type: number
-  default: 2
+  default: 4
   values:
   - 1
-  - 2
+  - 4
 
 # Build and Build Tests run in parallel; Unit Tests and Integration Tests run the test projects that Build Tests built, in parallel.
 # Publish pushes the images only once the build and every test have succeeded.
@@ -504,8 +504,9 @@ stages:
       ${{ if eq(parameters.integrationTestAgents, 1) }}:
         agents: [0]
       ${{ else }}:
-        agents: [1, 2]
-      # The categories are spread so that both agents take about as long. Test time of each suite run on its own, in builds 79513-79518:
+        agents: [1, 2, 3, 4]
+      # An agent has 2 cores, and the tests are bound by them: on 2 agents the stage took 7.6 min, against 3.6 min on 5 (builds 79530, 79511).
+      # The categories are spread so that the agents take about as long. Test time of each suite run on its own, in builds 79513-79518:
       # Matching Algorithm Integration 150 s (Precompute and Search 83 s, the rest 68 s); Validation AdultSearch 90 s, Scoring 60 s,
       # CordSearch 16 s, NullAlleles 15 s, the rest 3 s, plus about 16 s of test data load per category; Match Prediction 70 s,
       # Donor Import 39 s, Service Bus emulator tests 43 s, MAC Dictionary, Blob Storage and Repeat Search about 10 s each.
@@ -538,21 +539,21 @@ stages:
         title: 'Match Prediction Integration Tests'
         tag: MatchPrediction
         project: Atlas.MatchPrediction.Test.Integration
-        agent: 1
+        agent: 4
         env:
           ConnectionStrings__MatchPredictionSql: '$(sqlServerConnection)Initial Catalog=AtlasMatchPredictionIntegrationTests;'
       - name: DonorImport
         title: 'Donor Import Integration Tests'
         tag: DonorImport
         project: Atlas.DonorImport.Test.Integration
-        agent: 1
+        agent: 4
         env:
           ConnectionStrings__DonorStoreSql: '$(sqlServerConnection)Initial Catalog=AtlasDonorImportIntegrationTests;'
       - name: RepeatSearch
         title: 'Repeat Search Integration Tests'
         tag: RepeatSearch
         project: Atlas.RepeatSearch.Test.Integration
-        agent: 1
+        agent: 4
         env:
           ConnectionStrings__RepeatSearchSql: '$(sqlServerConnection)Initial Catalog=AtlasRepeatSearchIntegrationTests;'
 
@@ -574,7 +575,7 @@ stages:
         title: 'Matching Algorithm Validation Tests - Scoring and the rest'
         tag: MatchingAlgorithm
         project: Atlas.MatchingAlgorithm.Test.Validation
-        agent: 2
+        agent: 3
         # Every validation test that the other category does not run.
         filter: 'FullyQualifiedName!~.ValidationTests.Features.AdultSearch.&FullyQualifiedName!~.ValidationTests.Features.CordSearch.&FullyQualifiedName!~.ValidationTests.Features.NullAlleles.'
         env:
@@ -587,26 +588,26 @@ stages:
         title: 'Service Bus Emulator Tests'
         tag: Common
         project: Atlas.Common.Test.Integration
-        agent: 2
+        agent: 3
         env:
           RUN_SERVICE_BUS_EMULATOR_TESTS: '1'
       - name: MatchPredictionWorkerServiceBusEmulator
         title: 'Match Prediction Worker Service Bus Emulator Tests'
         tag: MatchPrediction
         project: Atlas.MatchPrediction.Worker.Test.Integration
-        agent: 2
+        agent: 3
         env:
           RUN_SERVICE_BUS_EMULATOR_TESTS: '1'
       - name: MacDictionary
         title: 'MAC Dictionary Integration Tests'
         tag: MultipleAlleleCodeDictionary
         project: Atlas.MultipleAlleleCodeDictionary.Test.Integration
-        agent: 2
+        agent: 4
       - name: BlobStorage
         title: 'Blob Storage Integration Tests'
         tag: Common
         project: Atlas.Common.Test.Integration
-        agent: 2
+        agent: 4
         env:
           RUN_AZURITE_TESTS: '1'
 
