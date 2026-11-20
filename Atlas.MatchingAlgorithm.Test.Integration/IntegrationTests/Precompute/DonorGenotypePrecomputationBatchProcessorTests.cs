@@ -39,7 +39,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute;
 /// batch that runs again writes nothing twice. The imputation and the frequency set lookup are substituted.
 /// </summary>
 [TestFixture]
-public class DonorGenotypePrecomputationBatchProcessorTests
+public class DonorGenotypePrecomputationBatchProcessorTests : FixtureWithOwnDatabases
 {
     private const TransientDatabase Database = TransientDatabase.DatabaseA;
     private const int MaxBatchRetries = 3;

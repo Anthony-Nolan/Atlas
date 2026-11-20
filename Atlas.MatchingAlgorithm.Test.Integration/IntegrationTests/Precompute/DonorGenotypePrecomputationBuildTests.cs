@@ -30,7 +30,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute;
 /// group ids, the group → donor rows that the workers read, the batches, the cancel of a run, and the staging check.
 /// </summary>
 [TestFixture]
-public class DonorGenotypePrecomputationBuildTests
+public class DonorGenotypePrecomputationBuildTests : FixtureWithOwnDatabases
 {
     /// <summary>The default of the stage.</summary>
     private const int GroupsPerBatch = 1000;
@@ -44,13 +44,11 @@ public class DonorGenotypePrecomputationBuildTests
     private Fixture fixture;
     private StaticallyChosenTransientSqlConnectionStringProviderFactory connectionStringFactory;
     private IDonorGenotypePrecomputationRepository repository;
-    private int nextDonorId;
 
     [SetUp]
     public void SetUp()
     {
         fixture = new Fixture();
-        nextDonorId = 1;
 
         connectionStringFactory = Injection.Provider.GetService<StaticallyChosenTransientSqlConnectionStringProviderFactory>();
         repository = Injection.Provider.GetService<IStaticallyChosenDatabaseRepositoryFactory>()
@@ -604,7 +602,7 @@ public class DonorGenotypePrecomputationBuildTests
 
     private Donor NewDonor(string registryCode, string ethnicityCode) => new()
     {
-        DonorId = nextDonorId++,
+        DonorId = DonorIdGenerator.NextId(),
         DonorType = fixture.Create<DonorType>(),
         IsAvailableForSearch = true,
         ExternalDonorCode = fixture.Create<string>(),

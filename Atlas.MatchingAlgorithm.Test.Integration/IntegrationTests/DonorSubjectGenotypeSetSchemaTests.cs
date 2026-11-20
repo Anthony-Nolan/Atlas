@@ -21,6 +21,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
     public class DonorSubjectGenotypeSetSchemaTests
     {
         private string transientConnectionString;
+        private int donorId;
+        private string hlaTypingKey;
 
         [SetUp]
         public void SetUp()
@@ -28,17 +30,18 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             var connStringFactory = Injection.Provider.GetService<StaticallyChosenTransientSqlConnectionStringProviderFactory>();
             transientConnectionString = connStringFactory.GenerateConnectionStringProvider(TransientDatabase.DatabaseA).GetConnectionString();
 
-            DatabaseManager.ClearTransientDatabases();
+            donorId = DonorIdGenerator.NextId();
+            hlaTypingKey = DonorIdGenerator.NewExternalCode;
         }
 
         [Test]
         public async Task DonorSubjectGenotypeSets_DuplicateDonorIdAndAllowedLociKey_IsRejected()
         {
-            await Insert(new DonorSubjectGenotypeSet { DonorId = 1, AllowedLociKey = AllowedLociKey.ABCDrb1Dqb1, SubjectGenotypeSetValueId = 10 });
+            await Insert(new DonorSubjectGenotypeSet { DonorId = donorId, AllowedLociKey = AllowedLociKey.ABCDrb1Dqb1, SubjectGenotypeSetValueId = 10 });
 
             // Same (DonorId, AllowedLociKey); differing on a non-key column must not make it a distinct row.
             Func<Task> act = () =>
-                Insert(new DonorSubjectGenotypeSet { DonorId = 1, AllowedLociKey = AllowedLociKey.ABCDrb1Dqb1, SubjectGenotypeSetValueId = 20 });
+                Insert(new DonorSubjectGenotypeSet { DonorId = donorId, AllowedLociKey = AllowedLociKey.ABCDrb1Dqb1, SubjectGenotypeSetValueId = 20 });
 
             await act.Should().ThrowAsync<DbUpdateException>();
         }
@@ -46,10 +49,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         [Test]
         public async Task DonorSubjectGenotypeSets_SameDonorDifferentAllowedLociKey_IsAllowed()
         {
-            await Insert(new DonorSubjectGenotypeSet { DonorId = 1, AllowedLociKey = AllowedLociKey.ABCDrb1Dqb1, SubjectGenotypeSetValueId = 10 });
+            await Insert(new DonorSubjectGenotypeSet { DonorId = donorId, AllowedLociKey = AllowedLociKey.ABCDrb1Dqb1, SubjectGenotypeSetValueId = 10 });
 
             Func<Task> act = () =>
-                Insert(new DonorSubjectGenotypeSet { DonorId = 1, AllowedLociKey = AllowedLociKey.ABDrb1, SubjectGenotypeSetValueId = 20 });
+                Insert(new DonorSubjectGenotypeSet { DonorId = donorId, AllowedLociKey = AllowedLociKey.ABDrb1, SubjectGenotypeSetValueId = 20 });
 
             await act.Should().NotThrowAsync();
         }
@@ -75,10 +78,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             await act.Should().NotThrowAsync();
         }
 
-        private static SubjectGenotypeSetValue NewValue(AllowedLociKey allowedLociKey = AllowedLociKey.ABCDrb1Dqb1) =>
+        private SubjectGenotypeSetValue NewValue(AllowedLociKey allowedLociKey = AllowedLociKey.ABCDrb1Dqb1) =>
             new()
             {
-                HlaTypingKey = "typing-key",
+                HlaTypingKey = hlaTypingKey,
                 HaplotypeFrequencySetId = 1,
                 AllowedLociKey = allowedLociKey,
                 IsUnrepresented = true,

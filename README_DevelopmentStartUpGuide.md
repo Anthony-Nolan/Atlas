@@ -195,8 +195,7 @@ Instead of installing SQL Server and Azurite, you can run them in containers, as
 This needs a container runtime, e.g., Docker Desktop, Rancher Desktop or Podman.
 
 ### Start the containers
-These are the image versions the pipeline uses (see `build-pipeline-run-tests.yml`); keep them in step with it.
-SQL Server is published on port 14330, so that it does not clash with a SQL Server installed locally on 1433.
+These are the image versions the pipeline uses (see `build-pipeline-run-tests.yml`); keep them in step with it.SQL Server is published on port 14330, so that it does not clash with a SQL Server installed locally on 1433.
 
 ```bash
 docker run -d --name atlas-sql -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD=Atlas-System-Tests-1 -p 14330:1433 mcr.microsoft.com/mssql/server:2022-CU27-ubuntu-22.04
@@ -263,6 +262,42 @@ To run the tests from Rider or Visual Studio, put the same variables in a `.runs
 
 The variables of a `.runsettings` file apply to every test project run with it, and several projects share names such as `SqlA`.
 So with one such file, run one test project at a time: each project clears its databases when its tests start.
+
+### Run the suites in parallel
+The tests of one `dotnet test` process run one after another, and use about one core between them and SQL Server.
+So, as the pipeline does, you can run several processes at the same time, against the same containers, as long as each has its own databases.
+Locally, the suites took about 400 s all at once, instead of about 630 s one after another.
+A project can also be split into parts with `--filter`, each with its own databases. The pipeline splits the two matching projects in two (see `build-pipeline.yml`):
+
+| Part | Filter |
+|---|---|
+| Matching integration, Precompute and Search | `FullyQualifiedName~.IntegrationTests.Precompute.\|FullyQualifiedName~.IntegrationTests.Search.` |
+| Matching integration, the rest | `FullyQualifiedName!~.IntegrationTests.Precompute.&FullyQualifiedName!~.IntegrationTests.Search.` |
+| Matching validation, searches | `FullyQualifiedName~.ValidationTests.Features.AdultSearch.\|FullyQualifiedName~.ValidationTests.Features.CordSearch.\|FullyQualifiedName~.ValidationTests.Features.NullAlleles.` |
+| Matching validation, the rest | the same three features with `!~`, joined with `&` |
+
+For example, the two parts of the matching integration tests, from PowerShell, each in its own job:
+
+```powershell
+$server = 'Server=localhost,14330;User ID=sa;Password=Atlas-System-Tests-1;MultipleActiveResultSets=True;TrustServerCertificate=True;'
+$parts = @{
+    PrecomputeAndSearch = 'FullyQualifiedName~.IntegrationTests.Precompute.|FullyQualifiedName~.IntegrationTests.Search.'
+    Other = 'FullyQualifiedName!~.IntegrationTests.Precompute.&FullyQualifiedName!~.IntegrationTests.Search.'
+}
+$jobs = foreach ($part in $parts.Keys) {
+    Start-Job -ArgumentList $part, $parts[$part], $server, $PWD -ScriptBlock {
+        param($part, $filter, $server, $folder)
+        $env:ConnectionStrings__SqlA = "${server}Initial Catalog=AtlasMatchingIntegration${part}A;"
+        $env:ConnectionStrings__SqlB = "${server}Initial Catalog=AtlasMatchingIntegration${part}B;"
+        $env:ConnectionStrings__PersistentSql = "${server}Initial Catalog=AtlasMatchingIntegration${part}Persistent;"
+        dotnet test "$folder/Atlas.MatchingAlgorithm.Test.Integration" --filter $filter *> "$folder/$part.log"
+        "${part}: exit code $LASTEXITCODE"
+    }
+}
+$jobs | Receive-Job -Wait -AutoRemoveJob
+```
+
+Build the project first, or the two jobs build it at the same time and clash.
 
 ### Stop the containers
 ```bash

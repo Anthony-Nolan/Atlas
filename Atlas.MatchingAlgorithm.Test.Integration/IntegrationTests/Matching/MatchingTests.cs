@@ -23,7 +23,7 @@ using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 {
-    public class MatchingTests
+    public class MatchingTests : FixtureWithOwnDatabases
     {
         private IMatchingService matchingService;
 

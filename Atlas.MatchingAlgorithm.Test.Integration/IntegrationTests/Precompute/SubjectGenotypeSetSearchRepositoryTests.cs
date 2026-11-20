@@ -28,7 +28,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute;
 /// The repository methods search uses to read stored donor genotype sets and to store the ones it computed live (ATL-221).
 /// </summary>
 [TestFixture]
-public class SubjectGenotypeSetSearchRepositoryTests
+public class SubjectGenotypeSetSearchRepositoryTests : FixtureWithOwnDatabases
 {
     private const AllowedLociKey Key = AllowedLociKey.ABCDrb1Dqb1;
     private const string DefaultRegistryCode = "reg";

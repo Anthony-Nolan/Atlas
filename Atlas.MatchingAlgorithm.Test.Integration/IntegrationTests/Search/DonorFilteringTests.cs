@@ -6,6 +6,7 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Public.Models.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers;
+using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
@@ -72,7 +73,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 };
                 donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donorAtRegistryA, donorAtRegistryB }, false).Wait();
 
-                ServiceConfiguration.MockDonorReader.GetDonors(Arg.Is<IEnumerable<int>>(ids =>
+                DependencyInjection.DependencyInjection.Provider.GetService<IDonorReader>().GetDonors(Arg.Is<IEnumerable<int>>(ids =>
                         ids.ToHashSet().SetEquals(new HashSet<int> { donorAtRegistryA.DonorId, donorAtRegistryB.DonorId })
                     ))
                     .Returns(new Dictionary<int, Donor>

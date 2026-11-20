@@ -48,7 +48,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute;
 /// run, and the stage reports the run. The imputation, the frequency set lookup and the message bus are substituted.
 /// </summary>
 [TestFixture]
-public class DonorGenotypePrecomputationStageTests
+public class DonorGenotypePrecomputationStageTests : FixtureWithOwnDatabases
 {
     /// <summary>
     /// The set-up of the suite makes a successful refresh of A, so A is active and B is dormant. The refresh of a test
@@ -76,7 +76,6 @@ public class DonorGenotypePrecomputationStageTests
     private DonorGenotypePrecomputationBatchDispatcher dispatcher;
     private DonorGenotypePrecomputationSettings settings;
     private DataRefreshRecord record;
-    private int nextDonorId;
 
     private DonorGenotypePrecomputationStage stage;
     private DonorGenotypePrecomputationSweeper sweeper;
@@ -86,7 +85,6 @@ public class DonorGenotypePrecomputationStageTests
     public async Task SetUp()
     {
         fixture = new Fixture();
-        nextDonorId = 1;
         DatabaseManager.ClearTransientDatabases();
 
         // A scope of its own, so that the active database is read after the records of other tests are gone.
@@ -338,7 +336,7 @@ public class DonorGenotypePrecomputationStageTests
 
     private Donor NewDonor(string registryCode, string ethnicityCode) => new()
     {
-        DonorId = nextDonorId++,
+        DonorId = DonorIdGenerator.NextId(),
         DonorType = fixture.Create<DonorType>(),
         IsAvailableForSearch = true,
         ExternalDonorCode = fixture.Create<string>(),

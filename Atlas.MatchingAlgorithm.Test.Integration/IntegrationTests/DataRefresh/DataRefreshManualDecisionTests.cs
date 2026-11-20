@@ -9,6 +9,7 @@ using AutoFixture;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh;
 
@@ -18,7 +19,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh;
 /// a decision is a compare-and-swap that only one caller can win.
 /// </summary>
 [TestFixture]
-internal class DataRefreshManualDecisionTests
+internal class DataRefreshManualDecisionTests : FixtureWithOwnDatabases
 {
     private static readonly TimeSpan LeaseDuration = TimeSpan.FromMinutes(30);
 

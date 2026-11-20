@@ -24,10 +24,10 @@ public class DonorManagementLogRepositoryTests
     public void SetUp()
     {
         fixture = new Fixture();
+        fixture.Customize<DonorManagementInfo>(c => c.With(i => i.DonorId, () => DonorIdGenerator.NextId()));
 
         repository = Injection.Provider.GetService<IActiveRepositoryFactory>().GetDonorManagementLogRepository();
 
-        DatabaseManager.ClearTransientDatabases();
     }
 
     [Test]

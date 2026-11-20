@@ -29,7 +29,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute;
 /// and writes that a worker makes for one batch.
 /// </summary>
 [TestFixture]
-public class DonorGenotypePrecomputationRepositoryTests
+public class DonorGenotypePrecomputationRepositoryTests : FixtureWithOwnDatabases
 {
     private const int MaxBatchRetries = 3;
     private static readonly TimeSpan LeaseDuration = TimeSpan.FromMinutes(30);

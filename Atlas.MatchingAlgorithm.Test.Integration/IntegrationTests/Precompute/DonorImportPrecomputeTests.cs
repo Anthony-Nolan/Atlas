@@ -42,7 +42,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute;
 /// The Match Prediction pipeline (imputation, frequency set lookup) is substituted; everything that writes is real.
 /// </summary>
 [TestFixture]
-public class DonorImportPrecomputeTests
+public class DonorImportPrecomputeTests : FixtureWithOwnDatabases
 {
     /// <summary>Not the active database, so the test proves the rows follow the import, not the active database.</summary>
     private const TransientDatabase TargetDatabase = TransientDatabase.DatabaseB;

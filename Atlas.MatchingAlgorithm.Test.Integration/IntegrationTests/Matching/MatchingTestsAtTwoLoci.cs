@@ -29,7 +29,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
     [TestFixture(Locus.Drb1, Locus.C)]
     [TestFixture(Locus.Drb1, Locus.Dqb1)]
     [TestFixture(Locus.C, Locus.Dqb1)]
-    public class MatchingTestsAtTwoLoci
+    public class MatchingTestsAtTwoLoci : FixtureWithOwnDatabases
     {
         private IMatchingService matchingService;
 

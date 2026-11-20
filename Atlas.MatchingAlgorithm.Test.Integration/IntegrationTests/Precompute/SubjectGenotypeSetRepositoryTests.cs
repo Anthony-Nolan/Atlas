@@ -36,7 +36,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute;
 /// </para>
 /// </summary>
 [TestFixture]
-public class SubjectGenotypeSetRepositoryTests
+public class SubjectGenotypeSetRepositoryTests : FixtureWithOwnDatabases
 {
     private const int LargePayloadSizeInBytes = 400_000;
 

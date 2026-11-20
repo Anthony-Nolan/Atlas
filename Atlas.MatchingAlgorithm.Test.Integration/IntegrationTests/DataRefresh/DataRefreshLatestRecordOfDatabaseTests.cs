@@ -8,6 +8,7 @@ using AutoFixture;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh;
 
@@ -17,7 +18,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh;
 /// query emits.
 /// </summary>
 [TestFixture]
-internal class DataRefreshLatestRecordOfDatabaseTests
+internal class DataRefreshLatestRecordOfDatabaseTests : FixtureWithOwnDatabases
 {
     private Fixture fixture;
     private ITestDataRefreshHistoryRepository dataRefreshHistoryRepository;

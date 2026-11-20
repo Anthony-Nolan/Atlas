@@ -39,7 +39,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute.D
 /// write of the matching databases is real.
 /// </summary>
 [TestFixture]
-internal class GenotypeSetDebugServiceTests
+internal class GenotypeSetDebugServiceTests : FixtureWithOwnDatabases
 {
     private Fixture fixture;
     private ActiveDataRefreshRecord activeRecord;

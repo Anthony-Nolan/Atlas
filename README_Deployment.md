@@ -339,15 +339,20 @@ Its stages:
 - Publish builds and pushes the Docker images, only once the build and every test have succeeded.
 
 The integration tests need no Azure resources, and no pipeline variables or secrets:
-- Each job of the Integration Tests stage starts what its tests need in a container on the build agent (see "build-pipeline-run-tests.yml"):
-  SQL Server, in its Developer edition, which supports the `ONLINE` index operations of the matching, donor import and repeat search migrations; Azurite, the Azure Storage emulator; or the Service Bus emulator.
-  The Service Bus emulator has its own job. The tests do not use SQL, but the emulator stores its entities in a SQL Server container, so that job starts one. The other tests create and migrate their own databases, and create their own tables. The Service Bus tests create their own topics.
+- Each agent of the Integration Tests stage starts SQL Server, Azurite and the Service Bus emulator in containers (see "build-pipeline-run-tests.yml").
+  SQL Server is the Developer edition, which supports the `ONLINE` index operations of the matching, donor import and repeat search migrations. The Service Bus tests do not use SQL,
+  but the emulator stores its entities in the agent's SQL Server. The tests create and migrate their own databases, their own tables and blob containers, and their own topics.
 - Connection strings are passed as environment variables (e.g., `ConnectionStrings__SqlA`), which override the local defaults in each test project's `appsettings.json`.
 - The matching validation tests read the HLA Metadata Dictionary, at version 3330, and the MAC Dictionary from the same files as the integration tests,
   so nothing needs to be prepared for them in advance. A MAC used by a new validation test must be added to `LargeMacDictionary.csv`.
-- The jobs are sized to take about 4 minutes each, so that the tests use few of the organisation's parallel jobs without making the build much longer:
-  the matching validation tests are split across two jobs, by namespace, and the smaller suites run one after the other in one job.
-  The matching validation split has a shard named "Other", which runs every test that the other shard does not.
+- The tests are grouped in test categories: a test project, or part of one (by `--filter`). Each agent runs its categories at the same time,
+  each in its own `dotnet test` process, against its own databases: one category leaves most of an agent idle.
+  The two matching projects are each split in two, so that no category is much longer than the others.
+  The categories, and the agent each runs on, are listed in "build-pipeline.yml". "Integration test agents", when you run the pipeline, runs them all on one agent instead.
+- Each category is published as its own test run, tagged with its area (e.g. `MatchingAlgorithm`), so the Tests tab of a build can be filtered by tag.
+  "Rerun failed jobs" runs again only the categories that did not pass.
+- Each job logs, at its end, the CPU and memory of the agent, of each category and of each container ("CPU and memory"),
+  and what SQL Server waited for ("SQL Server wait statistics"). The logs and TRX files of the categories are published as the `IntegrationTestResults-<job>-<attempt>` artifact.
 
 ### E2E tests after a deploy (optional)
 

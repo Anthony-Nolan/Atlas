@@ -8,6 +8,7 @@ using AutoFixture;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh;
 
@@ -17,7 +18,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh;
 /// message. Against a real database, because the filter on open records is in the SQL that the query emits.
 /// </summary>
 [TestFixture]
-internal class DataRefreshOpenRecordDatabaseTests
+internal class DataRefreshOpenRecordDatabaseTests : FixtureWithOwnDatabases
 {
     private Fixture fixture;
     private ITestDataRefreshHistoryRepository dataRefreshHistoryRepository;

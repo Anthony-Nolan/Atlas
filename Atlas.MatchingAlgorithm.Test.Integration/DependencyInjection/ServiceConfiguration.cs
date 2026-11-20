@@ -17,6 +17,7 @@ using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
+using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Azure.Messaging.ServiceBus;
@@ -38,12 +39,17 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
 {
     internal static class ServiceConfiguration
     {
-        internal static IDonorReader MockDonorReader;
-
         private const string PersistentSqlConnectionStringKey = "PersistentSql";
         private const string TransientASqlConnectionStringKey = "SqlA";
         private const string TransientBSqlConnectionStringKey = "SqlB";
         private const string DonorImportSqlConnectionStringKey = "DonorImportSql";
+
+        /// <summary>
+        /// Reads the connection string of the current fixture's own database, if it has one (see <see cref="OwnDatabasesAttribute"/>).
+        /// Hides <see cref="Atlas.Common.Utils.Extensions.DependencyInjectionUtils.ConnectionStringReader"/>.
+        /// </summary>
+        private static Func<IServiceProvider, string> ConnectionStringReader(string connectionStringName) =>
+            sp => FixtureDatabases.ConnectionString(sp, connectionStringName);
 
         public static IServiceProvider CreateProvider()
         {
@@ -150,13 +156,17 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
 
             services.AddKeyedSingleton<ServiceBusClient>(typeof(MessagingServiceBusSettings), (sp, _) => Substitute.For<ServiceBusClient>());
 
-            MockDonorReader = Substitute.For<IDonorReader>();
-            MockDonorReader.GetDonors(default).ReturnsForAnyArgs(callInfo =>
+            // One for each scope, as fixtures that run at the same time set up what it returns.
+            services.AddScoped(_ =>
             {
-                var ids = callInfo.Arg<IEnumerable<int>>();
-                return ids.ToDictionary(id => id, id => new Donor {AtlasDonorId = id, ExternalDonorCode = id.ToString()});
+                var donorReader = Substitute.For<IDonorReader>();
+                donorReader.GetDonors(default).ReturnsForAnyArgs(callInfo =>
+                {
+                    var ids = callInfo.Arg<IEnumerable<int>>();
+                    return ids.ToDictionary(id => id, id => new Donor {AtlasDonorId = id, ExternalDonorCode = id.ToString()});
+                });
+                return donorReader;
             });
-            services.AddScoped(_ => MockDonorReader);
 
             // Log to file, not to ApplicationInsights!
             services.AddSingleton<IAtlasLogger, FileBasedLogger>();

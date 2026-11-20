@@ -1,75 +1,98 @@
-# Runs integration or validation test projects, built by the Build Tests stage, against the dependencies they need, started in containers on the build agent.
-# Templates are expanded before the job runs, so the job needs nothing from the repository but the build output.
+# The jobs of the Integration Tests stage. Each job starts SQL Server, Azurite and the Service Bus emulator in containers on its agent,
+# then runs its test categories at the same time, each in its own dotnet test process, against its own databases.
+# One test category at a time leaves most of an agent idle: its tests and SQL Server use about one core between them.
+# The categories run from the build output of the Build Tests stage (the "Tests" artifact); scripts are in its "Pipeline" folder (pipeline/ in the repository).
+#
+# Each category is published as its own test run, tagged with its area, for the Tests tab of the build.
+# "Rerun failed jobs" runs again only the categories that did not pass in an earlier attempt of the job.
 parameters:
-  # The test projects, run one after the other, each with:
-  #  - project: the test project. Its build output is in the "Tests" artifact, in the "Integration" folder, in a folder of the same name.
-  #  - testRunTitle
-  #  - filter (optional)
-  #  - env (optional): environment variables for the test run, such as connection strings that override the local defaults in appsettings.json.
-  - name: tests
+  # The agents, by number: one job per agent, which runs the categories with that agent number. Agent 0 runs every category.
+  - name: agents
     type: object
-  # SQL Server, in its Developer edition, which supports the ONLINE index operations used by the matching migrations.
-  # The tests create and migrate their own databases, so an empty server is enough.
-  - name: sqlServer
-    type: boolean
-    default: true
-  # Azurite, the Azure Storage emulator, which the tests' default "UseDevelopmentStorage=true" connection string points at.
-  # The tests create their own tables and blob containers.
-  - name: azurite
-    type: boolean
-    default: false
-  # The Service Bus emulator. It stores its own data in the SQL Server container this template starts,
-  # so it is only valid when sqlServer is true. The tests create their own topics.
-  - name: serviceBusEmulator
-    type: boolean
-    default: false
+  # The test categories. Each has:
+  #  - name: an identifier, unique in the stage. Its folder, its log and its TRX file are named after it.
+  #  - title: the title of its test run.
+  #  - tag: the tag of its test run, for its area.
+  #  - project: the test project. Its build output is in the "Tests" artifact, in the "Integration" folder, in a folder of the same name.
+  #  - agent: the number of the agent it runs on.
+  #  - filter (optional): the dotnet test filter, for a category that runs part of a project.
+  #  - env (optional): environment variables, such as connection strings that override the local defaults in appsettings.json.
+  #    Categories run at the same time against one SQL Server, so each needs its own databases.
+  - name: categories
+    type: object
+  # How long the categories of a job may take, all together, before the job stops waiting for them. They take about 3 minutes.
+  - name: testTimeoutMinutes
+    type: number
+    default: 20
 
-steps:
-  - checkout: none
+jobs:
+- ${{ each agent in parameters.agents }}:
+  - job: Integration_Tests_${{ agent }}
+    ${{ if eq(agent, 0) }}:
+      displayName: 'Integration Tests'
+    ${{ else }}:
+      displayName: 'Integration Tests (agent ${{ agent }})'
+    pool:
+      vmImage: 'ubuntu-latest'
+    variables:
+      testsFolder: '$(Pipeline.Workspace)/Tests'
+      # A folder per category: its title, tag, log, exit code and TRX file.
+      categoriesFolder: '$(Agent.TempDirectory)/IntegrationTests'
+      resultsArtifactPrefix: 'IntegrationTestResults-Integration_Tests_${{ agent }}-'
+    steps:
+    - checkout: none
 
-  # The dependencies are pinned to versions, so that a new image cannot break the tests unannounced.
-  # They are started first and waited for last, so that they start up while the .NET SDK installs and the build output downloads.
-  - ${{ if parameters.sqlServer }}:
-    - bash: docker run -d --name atlas-sql -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD="$SQL_SA_PASSWORD" -p 1433:1433 mcr.microsoft.com/mssql/server:2022-CU27-ubuntu-22.04
-      displayName: 'Start SQL Server'
+    # The containers are pinned to versions, so that a new image cannot break the tests unannounced.
+    # They are started first and waited for later, so that they start up while the .NET SDK installs and the build output downloads.
+    # SQL Server is the Developer edition, which supports the ONLINE index operations of the matching migrations.
+    # The tests create and migrate their own databases, their own tables and blob containers, and their own topics.
+    - bash: |
+        docker run -d --name atlas-sql -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD="$SQL_SA_PASSWORD" -p 1433:1433 mcr.microsoft.com/mssql/server:2022-CU27-ubuntu-22.04
+        docker run -d --name atlas-azurite -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/azure-storage/azurite:3.37.0 \
+          azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --skipApiVersionCheck
+      displayName: 'Start SQL Server and Azurite'
       env:
         SQL_SA_PASSWORD: $(sqlSaPassword)
-  - ${{ if parameters.azurite }}:
-    - bash: >
-        docker run -d --name atlas-azurite -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/azure-storage/azurite:3.37.0
-        azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --skipApiVersionCheck
-      displayName: 'Start Azurite'
 
-  # The same SDK as the Build Tests stage, rather than whichever the agent image has.
-  - task: UseDotNet@2
-    displayName: 'Use .Net sdk'
-    inputs:
-      version: 10.0.x
+    # The same SDK as the Build Tests stage, rather than whichever the agent image has.
+    - task: UseDotNet@2
+      displayName: 'Use .Net sdk'
+      inputs:
+        version: 10.0.x
 
-  - ${{ each test in parameters.tests }}:
+    # Every integration test project: one download is quicker than one per project, even if this agent runs only some of them.
     - download: current
       artifact: Tests
-      patterns: 'Integration/${{ test.project }}/**'
-      displayName: 'Download ${{ test.project }}'
+      patterns: |
+        Integration/**
+        Pipeline/**
+      displayName: 'Download test projects'
 
-  - ${{ if parameters.sqlServer }}:
+    # The outcomes of the categories in earlier attempts of this job, which each attempt publishes; none on the first attempt.
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Download outcomes of earlier attempts'
+      condition: and(succeeded(), gt(variables['System.JobAttempt'], 1))
+      # Without them, every category runs again.
+      continueOnError: true
+      inputs:
+        buildType: current
+        itemPattern: '$(resultsArtifactPrefix)*/*/outcome'
+        path: '$(Pipeline.Workspace)/EarlierAttempts'
+
     - bash: |
         for attempt in $(seq 1 60); do
           if docker exec atlas-sql /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$SQL_SA_PASSWORD" -Q "SELECT 1" -b > /dev/null 2>&1; then
             echo "SQL Server is ready"
-            exit 0
+            break
+          fi
+          if [[ $attempt == 60 ]]; then
+            docker logs atlas-sql
+            echo "##vso[task.logissue type=error]SQL Server did not accept queries within 2 minutes"
+            exit 1
           fi
           sleep 2
         done
 
-        docker logs atlas-sql
-        echo "##vso[task.logissue type=error]SQL Server did not accept queries within 2 minutes"
-        exit 1
-      displayName: 'Wait for SQL Server'
-      env:
-        SQL_SA_PASSWORD: $(sqlSaPassword)
-  - ${{ if parameters.azurite }}:
-    - bash: |
         for attempt in $(seq 1 30); do
           if (echo > /dev/tcp/127.0.0.1/10002) 2> /dev/null; then
             echo "Azurite is ready"
@@ -77,14 +100,16 @@ steps:
           fi
           sleep 2
         done
-
         docker logs atlas-azurite
         echo "##vso[task.logissue type=error]Azurite did not start within a minute"
         exit 1
-      displayName: 'Wait for Azurite'
-  - ${{ if parameters.serviceBusEmulator }}:
-    # Started after SQL Server accepts queries. The emulator reads that server through the host port and will not retry for long.
+      displayName: 'Wait for SQL Server and Azurite'
+      env:
+        SQL_SA_PASSWORD: $(sqlSaPassword)
+
+    # Started after SQL Server accepts queries: the emulator keeps its entities in that server, reads it through the host port, and does not retry for long.
     # SQL_WAIT_INTERVAL is a fixed sleep before the emulator first connects to SQL, not a timeout, so it is 0: SQL is already up.
+    # It allows 10 connections at a time, enough for the two emulator categories.
     - bash: |
         config="$(Agent.TempDirectory)/service-bus-emulator-config.json"
         cat > "$config" <<'JSON'
@@ -132,10 +157,7 @@ steps:
           -e EMULATOR_HTTP_PORT=5300 \
           -v "$config:/ServiceBus_Emulator/ConfigFiles/Config.json" \
           mcr.microsoft.com/azure-messaging/servicebus-emulator:2.0.1
-      displayName: 'Start Service Bus emulator'
-      env:
-        SQL_SA_PASSWORD: $(sqlSaPassword)
-    - bash: |
+
         for attempt in $(seq 1 60); do
           if curl --fail --silent http://localhost:5300/health > /dev/null; then
             echo "Service Bus emulator is ready"
@@ -143,31 +165,148 @@ steps:
           fi
           sleep 2
         done
-
         docker logs atlas-servicebus-emulator
         echo "##vso[task.logissue type=error]Service Bus emulator did not become healthy within 2 minutes"
         exit 1
-      displayName: 'Wait for Service Bus emulator'
+      displayName: 'Start Service Bus emulator'
+      env:
+        SQL_SA_PASSWORD: $(sqlSaPassword)
 
-  # Each project runs even if the one before it failed, and publishes its results as its own test run.
-  - ${{ each test in parameters.tests }}:
-    # Run from the build output, where the tests read appsettings.json from.
+    - bash: bash "$(testsFolder)/Pipeline/measure-agent-resources.sh" start "$(Agent.TempDirectory)/Resources"
+      displayName: 'Start sampling CPU and memory'
+
+    # Each category starts in the background, and runs while the next ones start. "Wait for the tests" waits for them all.
+    # TEST_CATEGORY marks its processes for the CPU and memory samples.
+    - ${{ each category in parameters.categories }}:
+      - ${{ if or(eq(agent, 0), eq(category.agent, agent)) }}:
+        - bash: |
+            if grep -qsx passed "$(Pipeline.Workspace)"/EarlierAttempts/*/"$TEST_CATEGORY"/outcome; then
+              echo "Passed in an earlier attempt of this job, so not run again"
+              exit 0
+            fi
+
+            folder="$(categoriesFolder)/$TEST_CATEGORY"
+            mkdir -p "$folder"
+            echo "$TEST_RUN_TITLE" > "$folder/title"
+            echo "$TEST_RUN_TAG" > "$folder/tag"
+            date +%s > "$folder/started"
+            # Run from the build output, where the tests read appsettings.json from.
+            # The exit code is written once the tests end, and renamed into place, so that the wait never reads half of it.
+            nohup bash -c '
+              dotnet test ${{ category.project }}.dll --logger "trx;LogFileName=$TEST_CATEGORY.trx" --results-directory "$1" ${2:+--filter "$2"}
+              echo $? > "$1/exit-code.tmp"
+              mv "$1/exit-code.tmp" "$1/exit-code"
+            ' run-tests "$folder" "$TEST_FILTER" > "$folder/output.log" 2>&1 < /dev/null &
+            echo "Started; its output is in the log of \"Wait for the tests\""
+          displayName: 'Start ${{ category.title }}'
+          workingDirectory: '$(testsFolder)/Integration/${{ category.project }}'
+          env:
+            TEST_CATEGORY: '${{ category.name }}'
+            TEST_RUN_TITLE: '${{ category.title }}'
+            TEST_RUN_TAG: '${{ category.tag }}'
+            TEST_FILTER: '${{ category.filter }}'
+            ${{ if category.env }}:
+              ${{ each variable in category.env }}:
+                ${{ variable.key }}: ${{ variable.value }}
+
+    # Prints each category's outcome and time as it ends, then each category's output, and fails if any category failed.
     - bash: |
-        filter='${{ test.filter }}'
-        dotnet test ${{ test.project }}.dll \
-          --logger trx --results-directory "$(Agent.TempDirectory)/TestResults/${{ test.project }}" \
-          ${filter:+--filter "$filter"}
-      displayName: '${{ test.testRunTitle }}'
-      condition: succeededOrFailed()
-      workingDirectory: '$(Pipeline.Workspace)/Tests/Integration/${{ test.project }}'
-      ${{ if test.env }}:
-        env: ${{ test.env }}
+        shopt -s nullglob
+        categories=("$(categoriesFolder)"/*/)
+        if (( ${#categories[@]} == 0 )); then
+          echo "No category to run: all passed in earlier attempts"
+          echo "##vso[task.setvariable variable=testsRan]false"
+          exit 0
+        fi
 
-    - task: PublishTestResults@2
-      displayName: 'Publish results: ${{ test.testRunTitle }}'
+        declare -A reported=()
+        while (( ${#reported[@]} < ${#categories[@]} )); do
+          for folder in "${categories[@]}"; do
+            category=$(basename "$folder")
+            if [[ -z "${reported[$category]:-}" && -f "$folder/exit-code" ]]; then
+              reported[$category]=1
+              outcome=$([[ $(cat "$folder/exit-code") == 0 ]] && echo passed || echo failed)
+              echo "$outcome" > "$folder/outcome"
+              took=$(( $(date +%s) - $(cat "$folder/started") ))
+              echo "$(date +%T) $category $outcome in $(( took / 60 )) min $(( took % 60 )) s"
+            fi
+          done
+          sleep 2
+        done
+
+        failed=0
+        for folder in "${categories[@]}"; do
+          echo "##[group]$(cat "$folder/title"): $(cat "$folder/outcome")"
+          cat "$folder/output.log"
+          echo "##[endgroup]"
+          if [[ $(cat "$folder/outcome") != passed ]]; then
+            echo "##vso[task.logissue type=error]$(cat "$folder/title") failed: see its group in this log"
+            failed=1
+          fi
+        done
+        exit $failed
+      displayName: 'Wait for the tests'
+      timeoutInMinutes: ${{ parameters.testTimeoutMinutes }}
+
+    - bash: bash "$(testsFolder)/Pipeline/measure-agent-resources.sh" stop "$(Agent.TempDirectory)/Resources"
+      displayName: 'CPU and memory'
+      condition: always()
+      continueOnError: true
+
+    # What SQL Server's threads waited for during the job, the most first, leaving out the waits of threads that idle until there is work.
+    # Signal wait is the time a thread waited for a core once what it waited for was ready.
+    - bash: |
+        docker exec atlas-sql /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$SQL_SA_PASSWORD" -W -s ' ' -Q "
+          SET NOCOUNT ON;
+          SELECT TOP 20 wait_type, waiting_tasks_count AS waits, wait_time_ms / 1000 AS wait_s, signal_wait_time_ms / 1000 AS signal_wait_s, max_wait_time_ms AS max_wait_ms
+          FROM sys.dm_os_wait_stats
+          WHERE wait_time_ms > 0
+            AND wait_type NOT LIKE '%SLEEP%' AND wait_type NOT LIKE '%IDLE%' AND wait_type NOT LIKE '%QUEUE%'
+            AND wait_type NOT LIKE 'BROKER[_]%' AND wait_type NOT LIKE 'XE[_]%' AND wait_type NOT LIKE 'SQLTRACE[_]%'
+            AND wait_type NOT LIKE 'HADR[_]%' AND wait_type NOT LIKE 'QDS[_]%' AND wait_type NOT LIKE 'PARALLEL[_]REDO[_]%'
+            AND wait_type NOT IN ('DIRTY_PAGE_POLL', 'REQUEST_FOR_DEADLOCK_SEARCH', 'WAITFOR', 'SOS_WORK_DISPATCHER',
+              'PWAIT_ALL_COMPONENTS_INITIALIZED', 'DISPATCHER_QUEUE_SEMAPHORE', 'CHECKPOINT_QUEUE', 'LOGMGR_QUEUE', 'SP_SERVER_DIAGNOSTICS_SLEEP',
+              'PWAIT_EXTENSIBILITY_CLEANUP_TASK', 'PREEMPTIVE_XE_DISPATCHER', 'PREEMPTIVE_OS_FLUSHFILEBUFFERS_ASYNC_DONE')
+          ORDER BY wait_time_ms DESC;"
+      displayName: 'SQL Server wait statistics'
+      condition: always()
+      continueOnError: true
+      env:
+        SQL_SA_PASSWORD: $(sqlSaPassword)
+
+    # Each category as its own test run. The time of each publish is kept for "Tag test runs", which looks for the runs created since.
+    - bash: |
+        shopt -s nullglob
+        for folder in "$(categoriesFolder)"/*/; do
+          title=$(cat "$folder/title")
+          trx=("$folder"*.trx)
+          if (( ${#trx[@]} == 0 )); then
+            echo "##vso[task.logissue type=warning]$title wrote no test results: its log in \"Wait for the tests\" shows what ran"
+            continue
+          fi
+          echo "##vso[results.publish type=VSTest;mergeResults=false;publishRunAttachments=true;runTitle=$title;resultFiles=${trx[0]};]"
+          printf '%s\t%s\t%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$title" "$(cat "$folder/tag")" >> "$(categoriesFolder)/published-test-runs.txt"
+        done
+      displayName: 'Publish test results'
       condition: succeededOrFailed()
+
+    # Read by "Download outcomes of earlier attempts" of a rerun, with the logs and TRX files for anyone looking into a failure.
+    - publish: '$(categoriesFolder)'
+      artifact: '$(resultsArtifactPrefix)$(System.JobAttempt)'
+      displayName: 'Publish outcomes, logs and test results'
+      condition: and(succeededOrFailed(), ne(variables['testsRan'], 'false'))
+
+    - task: PowerShell@2
+      displayName: 'Tag test runs'
+      condition: succeededOrFailed()
+      continueOnError: true
       inputs:
-        testResultsFormat: VSTest
-        testResultsFiles: '**/*.trx'
-        searchFolder: '$(Agent.TempDirectory)/TestResults/${{ test.project }}'
-        testRunTitle: '${{ test.testRunTitle }}'
+        pwsh: true
+        filePath: '$(testsFolder)/Pipeline/Add-TestRunTags.ps1'
+        arguments: >-
+          -CollectionUri '$(System.CollectionUri)'
+          -Project '$(System.TeamProject)'
+          -BuildId $(Build.BuildId)
+          -PublishedRunsFile '$(categoriesFolder)/published-test-runs.txt'
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)

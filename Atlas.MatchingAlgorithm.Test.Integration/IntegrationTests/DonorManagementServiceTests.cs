@@ -23,7 +23,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
 {
     public class DonorManagementServiceTests
     {
-        private const int DonorId = 1;
+        private int donorId;
 
         private IDonorManagementService service;
         private IDonorManagementLogRepository donorManagementLogRepository;
@@ -37,7 +37,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             service = Injection.Provider.GetService<IDonorManagementService>();
             donorManagementLogRepository = Injection.Provider.GetService<IActiveRepositoryFactory>().GetDonorManagementLogRepository();
 
-            DatabaseManager.ClearTransientDatabases();
+            donorId = DonorIdGenerator.NextId();
 
             var dbProvider = Injection.Provider.GetService<IActiveDatabaseProvider>();
             activeDb = dbProvider.GetActiveDatabase();
@@ -48,7 +48,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         public async Task ApplyDonorUpdatesToDatabase_WhenDonorHlaIsInvalid_DonorManagementLogIsntUpdated()
         {
             var expectedSequenceNumber = await AddDonorUpdateToDatabase();
-            var update = new DonorInfoBuilder(DonorId)
+            var update = new DonorInfoBuilder(donorId)
                 .WithHlaAtLocus(Locus.A, LocusPosition.One, "*01:ZZZZZZZ")
                 .Build()
                 .ToUpdate();
@@ -58,13 +58,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             // Act
             await service.ApplyDonorUpdatesToDatabase(new[] { update }, activeDb, FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion, false);
 
-            var logEntry = (await donorManagementLogRepository.GetDonorManagementLogBatch(new[] { DonorId })).Single();
+            var logEntry = (await donorManagementLogRepository.GetDonorManagementLogBatch(new[] { donorId })).Single();
             logEntry.SequenceNumberOfLastUpdate.Should().Be(expectedSequenceNumber);
         }
 
         private async Task<long> AddDonorUpdateToDatabase()
         {
-            var update = new DonorInfoBuilder(DonorId).Build().ToUpdate();
+            var update = new DonorInfoBuilder(donorId).Build().ToUpdate();
             var sequenceNumber = update.UpdateSequenceNumber;
 
             await service.ApplyDonorUpdatesToDatabase(new[] { update }, activeDb, FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion, false);

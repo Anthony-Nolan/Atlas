@@ -8,6 +8,7 @@ using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
 {
@@ -17,7 +18,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
     /// the COALESCE over two nullable columns - rather than any C# around it.
     /// </summary>
     [TestFixture]
-    internal class DataRefreshStalledRecordTests
+    internal class DataRefreshStalledRecordTests : FixtureWithOwnDatabases
     {
         private static readonly TimeSpan LeaseDuration = TimeSpan.FromMinutes(30);
         private static readonly TimeSpan GraceDuration = TimeSpan.FromMinutes(60);

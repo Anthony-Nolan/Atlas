@@ -48,7 +48,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
     [TestFixture(Zygosity.HomozygousByExpression, TestHlaPhenotypeCategory.SixLocusExpressingAllelesWithTruncatedNames)]
     [TestFixture(Zygosity.HomozygousByExpression, TestHlaPhenotypeCategory.SixLocusXxCodes)]
     [TestFixture(Zygosity.HomozygousByExpression, TestHlaPhenotypeCategory.FiveLocusSerologies)]
-    public class MatchingTestsForHomozygousPatient
+    public class MatchingTestsForHomozygousPatient : FixtureWithOwnDatabases
     {
         private class LocusTypingInfo
         {
