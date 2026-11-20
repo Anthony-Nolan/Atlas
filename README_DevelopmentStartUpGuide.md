@@ -206,15 +206,17 @@ docker run -d --name atlas-azurite -p 10000-10002:10000-10002 mcr.microsoft.com/
 ```
 
 SQL Server takes up to half a minute to accept connections after it starts.
-SQL Server keeps its databases in memory (`--tmpfs`), as in the pipeline, so they are lost when the container stops; the tests create them again.
-The tests make many small commits, and on a disk each one waits for its write: locally, `Atlas.MatchingAlgorithm.Test.Integration` took 254 s on disk, 206 s with delayed durability, and 184 s in memory.
-As the pipeline does, also turn on delayed durability for the databases the tests create:
+SQL Server keeps its databases in memory (`--tmpfs`), so they are lost when the container stops; the tests create them again.
+The tests make many small commits, and each one waits for its write to the disk. With Docker Desktop on Windows that disk is slow:
+locally, `Atlas.MatchingAlgorithm.Test.Integration` took 254 s on disk, 206 s with delayed durability, and 184 s in memory.
+To make commits faster also when the data is on disk, turn on delayed durability for the databases the tests create:
 
 ```bash
 docker exec atlas-sql /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P Atlas-System-Tests-1 -Q "ALTER DATABASE model SET DELAYED_DURABILITY = FORCED"
 ```
 
 It applies to databases created afterwards.
+The pipeline does neither: on its Linux agents writes to the disk are fast, and the tests took as long with both (build 79517).
 
 Azurite listens on the standard ports, so the default `UseDevelopmentStorage=true` connection string needs no change.
 

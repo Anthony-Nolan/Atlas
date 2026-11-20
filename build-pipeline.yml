@@ -487,6 +487,8 @@ stages:
   variables:
     # All validation tests may share one database: each job has its own SQL Server.
     validationSqlConnection: '$(sqlServerConnection)Initial Catalog=AtlasMatchingValidationTests;'
+    validationSearchesFilter: 'FullyQualifiedName~.ValidationTests.Features.AdultSearch.|FullyQualifiedName~.ValidationTests.Features.CordSearch.|FullyQualifiedName~.ValidationTests.Features.NullAlleles.'
+    validationScoringFilter: 'FullyQualifiedName!~.ValidationTests.Features.AdultSearch.&FullyQualifiedName!~.ValidationTests.Features.CordSearch.&FullyQualifiedName!~.ValidationTests.Features.NullAlleles.'
   jobs:
   # The tests share the state of their databases, so they cannot run in parallel within a process.
   - job: Matching_Algorithm_Integration_Tests
@@ -506,9 +508,11 @@ stages:
 
   # The validation scenarios are split across two jobs, each with its own SQL Server, and its own copy of the test data.
   # Running them in parallel within one process does not help: the searches compete for the agent's few cores.
-  # AdultSearch and the rest take about as long as each other.
-  - job: Matching_Algorithm_Validation_Tests_AdultSearch
-    displayName: 'Matching Algorithm Validation Tests (AdultSearch)'
+  # The features are split so that both jobs take about as long, with the Service Bus emulator tests in the second one.
+  # Test time per feature in builds 79513 and 79517: AdultSearch 90 s, CordSearch 16 s, NullAlleles 15 s, Scoring 60 s,
+  # the rest 3 s; each job also loads the test data, about 16 s.
+  - job: Matching_Algorithm_Validation_Tests_Searches
+    displayName: 'Matching Algorithm Validation Tests (Adult, Cord and Null Allele Searches)'
     pool:
       vmImage: 'ubuntu-latest'
     steps:
@@ -516,19 +520,19 @@ stages:
       parameters:
         tests:
         - project: Atlas.MatchingAlgorithm.Test.Validation
-          testRunTitle: 'Matching Algorithm Validation Tests - AdultSearch'
-          filter: 'FullyQualifiedName~.ValidationTests.Features.AdultSearch.'
+          testRunTitle: 'Matching Algorithm Validation Tests - Adult, Cord and Null Allele Searches'
+          filter: '$(validationSearchesFilter)'
           env:
             ConnectionStrings__DonorSql: '$(validationSqlConnection)'
             ConnectionStrings__SqlA: '$(validationSqlConnection)'
             ConnectionStrings__SqlB: '$(validationSqlConnection)'
             ConnectionStrings__PersistentSql: '$(validationSqlConnection)'
 
-  # The Service Bus emulator tests run here, not on an agent of their own: they take under a minute, and this is the shortest job.
+  # The Service Bus emulator tests run here, not on an agent of their own: they take under a minute.
   # They run first, so the emulator is idle while the validation searches use the cores.
   # The tests do not use SQL. The emulator does: it keeps its entities in this job's SQL Server.
-  - job: Matching_Algorithm_Validation_Tests_Other
-    displayName: 'Matching Algorithm Validation Tests (Other) and Service Bus Emulator Tests'
+  - job: Matching_Algorithm_Validation_Tests_Scoring
+    displayName: 'Matching Algorithm Validation Tests (Scoring and the rest) and Service Bus Emulator Tests'
     pool:
       vmImage: 'ubuntu-latest'
     steps:
@@ -545,8 +549,9 @@ stages:
           env:
             RUN_SERVICE_BUS_EMULATOR_TESTS: '1'
         - project: Atlas.MatchingAlgorithm.Test.Validation
-          testRunTitle: 'Matching Algorithm Validation Tests - Other'
-          filter: 'FullyQualifiedName!~.ValidationTests.Features.AdultSearch.'
+          testRunTitle: 'Matching Algorithm Validation Tests - Scoring and the rest'
+          # Every validation test that the first job does not run.
+          filter: '$(validationScoringFilter)'
           env:
             ConnectionStrings__DonorSql: '$(validationSqlConnection)'
             ConnectionStrings__SqlA: '$(validationSqlConnection)'
