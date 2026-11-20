@@ -39,6 +39,8 @@ jobs:
       # A folder per category: its title, tag, log, exit code and TRX file.
       categoriesFolder: '$(Agent.TempDirectory)/IntegrationTests'
       resultsArtifactPrefix: 'IntegrationTestResults-Integration_Tests_${{ agent }}-'
+      # The CPU, memory and disk samples of the agent (see pipeline/measure-agent-resources.sh).
+      resourcesFolder: '$(Agent.TempDirectory)/Resources'
     steps:
     - checkout: none
 
@@ -172,8 +174,8 @@ jobs:
       env:
         SQL_SA_PASSWORD: $(sqlSaPassword)
 
-    - bash: bash "$(testsFolder)/Pipeline/measure-agent-resources.sh" start "$(Agent.TempDirectory)/Resources"
-      displayName: 'Start sampling CPU and memory'
+    - bash: bash "$(testsFolder)/Pipeline/measure-agent-resources.sh" start "$(resourcesFolder)"
+      displayName: 'Start sampling CPU, memory and disks'
 
     # Each category starts in the background, and runs while the next ones start. "Wait for the tests" waits for them all.
     # TEST_CATEGORY marks its processes for the CPU and memory samples.
@@ -248,8 +250,15 @@ jobs:
       displayName: 'Wait for the tests'
       timeoutInMinutes: ${{ parameters.testTimeoutMinutes }}
 
-    - bash: bash "$(testsFolder)/Pipeline/measure-agent-resources.sh" stop "$(Agent.TempDirectory)/Resources"
-      displayName: 'CPU and memory'
+    - bash: bash "$(testsFolder)/Pipeline/measure-agent-resources.sh" stop "$(resourcesFolder)"
+      displayName: 'CPU, memory and disks'
+      condition: always()
+      continueOnError: true
+
+    # The samples over time, to see when the agent was at its limit, not only for how long.
+    - publish: '$(resourcesFolder)'
+      artifact: 'AgentResources-Integration_Tests_${{ agent }}-$(System.JobAttempt)'
+      displayName: 'Publish CPU, memory and disk samples'
       condition: always()
       continueOnError: true
 

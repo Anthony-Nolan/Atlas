@@ -351,8 +351,10 @@ The integration tests need no Azure resources, and no pipeline variables or secr
   The categories, and the agent each runs on, are listed in "build-pipeline.yml". "Integration test agents", when you run the pipeline, runs them all on one agent instead.
 - Each category is published as its own test run, tagged with its area (e.g. `MatchingAlgorithm`), so the Tests tab of a build can be filtered by tag.
   "Rerun failed jobs" runs again only the categories that did not pass.
-- Each job logs, at its end, the CPU and memory of the agent, of each category and of each container ("CPU and memory"),
-  and what SQL Server waited for ("SQL Server wait statistics"). The logs and TRX files of the categories are published as the `IntegrationTestResults-<job>-<attempt>` artifact.
+- Each job logs, at its end, the CPU and memory of the agent, of each category and of each container, and the I/O of each disk
+  ("CPU, memory and disks"): the maximum, the average, the 95th percentile, and how long each was at its limit. It also logs what SQL Server waited for
+  ("SQL Server wait statistics"). The logs and TRX files of the categories are published as the `IntegrationTestResults-<job>-<attempt>` artifact,
+  and the samples over time as `AgentResources-<job>-<attempt>`.
 
 ### E2E tests after a deploy (optional)
 
