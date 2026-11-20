@@ -28,6 +28,8 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Atlas.Common.Test" />
+    <InternalsVisibleTo Include="Atlas.Common.Test.Integration" />
+    <InternalsVisibleTo Include="Atlas.MatchPrediction.Worker.Test.Integration" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 

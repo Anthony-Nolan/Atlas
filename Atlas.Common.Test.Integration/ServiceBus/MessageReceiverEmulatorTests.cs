@@ -12,17 +12,11 @@ using NUnit.Framework;
 namespace Atlas.Common.Test.Integration.ServiceBus
 {
     /// <summary>
-    /// Runs against the Azure Service Bus emulator. Its own build pipeline job starts the emulator and sets
-    /// RUN_SERVICE_BUS_EMULATOR_TESTS; without that variable the fixture ignores itself.
+    /// Runs against the Azure Service Bus emulator (see <see cref="ServiceBusEmulator"/>).
     /// </summary>
     [TestFixture]
     public class MessageReceiverEmulatorTests
     {
-        private const string EmulatorVariable = "RUN_SERVICE_BUS_EMULATOR_TESTS";
-        private const string ConnectionString =
-            "Endpoint=sb://localhost;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;";
-        private const string AdminConnectionString =
-            "Endpoint=sb://localhost:5300;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;";
         private const string Subscription = "receiver-check";
 
         // Long enough that no lock expires while a test waits, so a message can only come back by being released.
@@ -39,13 +33,10 @@ namespace Atlas.Common.Test.Integration.ServiceBus
         [SetUp]
         public async Task SetUp()
         {
-            if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(EmulatorVariable)))
-            {
-                Assert.Ignore($"Set {EmulatorVariable} and start the Service Bus emulator. See README_DevelopmentStartUpGuide.md.");
-            }
+            ServiceBusEmulator.IgnoreUnlessEnabled();
 
             topic = "receiver-" + Guid.NewGuid().ToString("N");
-            admin = new ServiceBusAdministrationClient(AdminConnectionString);
+            admin = new ServiceBusAdministrationClient(ServiceBusEmulator.AdminConnectionString);
             await admin.CreateTopicAsync(topic);
             try
             {
@@ -58,7 +49,7 @@ namespace Atlas.Common.Test.Integration.ServiceBus
                 throw;
             }
 
-            client = new ServiceBusClient(ConnectionString);
+            client = new ServiceBusClient(ServiceBusEmulator.ConnectionString);
         }
 
         [TearDown]

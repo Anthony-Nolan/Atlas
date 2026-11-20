@@ -11,7 +11,10 @@ namespace Atlas.Common.ServiceBus
         Task <ServiceBusMessageBatch> CreateMessageBatchAsync();
     }
 
-    public sealed class TopicClient : ITopicClient, IAsyncDisposable
+    /// <summary>
+    /// The client of one topic. <see cref="TopicClientFactory"/> builds one for each topic, and all callers of the topic share it.
+    /// </summary>
+    internal sealed class TopicClient : ITopicClient, IAsyncDisposable
     {
         private readonly ServiceBusSender serviceBusSender;
 
@@ -20,7 +23,13 @@ namespace Atlas.Common.ServiceBus
             this.serviceBusSender = serviceBusSender;
         }
 
-        public ValueTask DisposeAsync() => serviceBusSender.DisposeAsync();
+        /// <summary>
+        /// Does nothing: other callers share this client, and <see cref="TopicClientFactory"/> closes its sender when the factory is disposed.
+        /// </summary>
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+
+        /// <summary>Closes the sender, and so its link. Only <see cref="TopicClientFactory"/> calls this.</summary>
+        internal ValueTask CloseAsync() => serviceBusSender.DisposeAsync();
 
         public async Task SendAsync(ServiceBusMessage message)
         {

@@ -117,6 +117,9 @@ Feature flags permit greater control over the release of new features (see this 
   * If two apps make the same container at the same time, the upload no longer fails.
   * Do not delete a blob container while the apps run. An app that has checked a container does not make it again until the app restarts, and its uploads to that container fail.
 
+#### Service Bus
+* BF: Each app process now keeps one Service Bus sender for each topic that it sends to, for as long as it runs. Before, the apps made a new sender, with its own link to Service Bus, for each search request, repeat search request and results notification that they sent, and for each function call or worker batch that sent other messages. Some of these senders were never closed, for example the one for the batch results of the match prediction worker: each one kept its link open until Service Bus closed it, 10 minutes after its last message. Now each app process uses one link for each topic, and closes its links when it stops.
+
 ### 4.1.0
 
 #### Debug
