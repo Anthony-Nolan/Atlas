@@ -35,8 +35,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute;
 /// timing-dependent by nature: it catches the bug often, it does not prove the absence of one.
 /// </para>
 /// </summary>
+[NonParallelizable]
 [TestFixture]
-public class SubjectGenotypeSetRepositoryTests : FixtureWithOwnDatabases
+public class SubjectGenotypeSetRepositoryTests
 {
     private const int LargePayloadSizeInBytes = 400_000;
 

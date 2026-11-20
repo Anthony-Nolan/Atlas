@@ -40,6 +40,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
     /// Expected match counts are determined by the decision to use position 1 of the source phenotype
     /// as the expressed typing within the homozygous patient locus.
     /// </summary>
+    [NonParallelizable]
     [TestFixture(Zygosity.HomozygousByTyping, TestHlaPhenotypeCategory.SixLocusSingleExpressingAlleles)]
     [TestFixture(Zygosity.HomozygousByTyping, TestHlaPhenotypeCategory.SixLocusExpressingAllelesWithTruncatedNames)]
     [TestFixture(Zygosity.HomozygousByTyping, TestHlaPhenotypeCategory.SixLocusXxCodes)]
@@ -48,7 +49,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
     [TestFixture(Zygosity.HomozygousByExpression, TestHlaPhenotypeCategory.SixLocusExpressingAllelesWithTruncatedNames)]
     [TestFixture(Zygosity.HomozygousByExpression, TestHlaPhenotypeCategory.SixLocusXxCodes)]
     [TestFixture(Zygosity.HomozygousByExpression, TestHlaPhenotypeCategory.FiveLocusSerologies)]
-    public class MatchingTestsForHomozygousPatient : FixtureWithOwnDatabases
+    public class MatchingTestsForHomozygousPatient
     {
         private class LocusTypingInfo
         {

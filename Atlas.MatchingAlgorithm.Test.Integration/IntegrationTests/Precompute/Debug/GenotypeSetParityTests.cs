@@ -48,8 +48,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute.D
 /// as in <see cref="GenotypeSetDebugServiceTests"/>. The substitute of the engine gives one set for each input, so a row
 /// gives <c>Match</c> only when its writer and the endpoint give the engine the same input.
 /// </summary>
+[NonParallelizable]
 [TestFixture]
-internal class GenotypeSetParityTests : FixtureWithOwnDatabases
+internal class GenotypeSetParityTests
 {
     private Fixture fixture;
     private IDataRefreshHistoryRepository historyRepository;

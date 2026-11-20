@@ -8,7 +8,6 @@ using AutoFixture;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh;
 
@@ -17,8 +16,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh;
 /// record, for each batch message, and the HLA nomenclature version of each record, for the cache warm-up before the first
 /// message. Against a real database, because the filter on open records is in the SQL that the query emits.
 /// </summary>
+[NonParallelizable]
 [TestFixture]
-internal class DataRefreshOpenRecordDatabaseTests : FixtureWithOwnDatabases
+internal class DataRefreshOpenRecordDatabaseTests
 {
     private Fixture fixture;
     private ITestDataRefreshHistoryRepository dataRefreshHistoryRepository;

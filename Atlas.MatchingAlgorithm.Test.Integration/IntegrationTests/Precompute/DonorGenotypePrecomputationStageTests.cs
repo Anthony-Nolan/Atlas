@@ -47,8 +47,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute;
 /// batches, the batch processor of the workers computes them, the sweeper sends failed batches again and finalises the
 /// run, and the stage reports the run. The imputation, the frequency set lookup and the message bus are substituted.
 /// </summary>
+[NonParallelizable]
 [TestFixture]
-public class DonorGenotypePrecomputationStageTests : FixtureWithOwnDatabases
+public class DonorGenotypePrecomputationStageTests
 {
     /// <summary>
     /// The set-up of the suite makes a successful refresh of A, so A is active and B is dormant. The refresh of a test

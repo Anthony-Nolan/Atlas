@@ -41,8 +41,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute;
 /// ATL-232: genotype set precompute during a differential donor import, end to end against a real database.
 /// The Match Prediction pipeline (imputation, frequency set lookup) is substituted; everything that writes is real.
 /// </summary>
+[NonParallelizable]
 [TestFixture]
-public class DonorImportPrecomputeTests : FixtureWithOwnDatabases
+public class DonorImportPrecomputeTests
 {
     /// <summary>Not the active database, so the test proves the rows follow the import, not the active database.</summary>
     private const TransientDatabase TargetDatabase = TransientDatabase.DatabaseB;

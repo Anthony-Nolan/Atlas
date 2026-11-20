@@ -51,8 +51,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute;
 /// is one of the four precomputed keys. <see cref="DonorGenotypeSetSource.ReadFailed"/> is not here either: it needs a
 /// failing read, which the unit tests of the resolver cover.
 /// </remarks>
+[NonParallelizable]
 [TestFixture]
-internal class PrecomputedDonorGenotypeSetSearchTests : FixtureWithOwnDatabases
+internal class PrecomputedDonorGenotypeSetSearchTests
 {
     private const AllowedLociKey Key = AllowedLociKey.ABCDrb1Dqb1;
     private const int DonorFrequencySetId = 456;

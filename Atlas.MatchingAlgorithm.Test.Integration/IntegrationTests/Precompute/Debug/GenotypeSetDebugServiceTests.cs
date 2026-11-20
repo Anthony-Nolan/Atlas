@@ -38,8 +38,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute.D
 /// (imputation and the frequency set lookup) is substituted, as in <see cref="DonorImportPrecomputeTests"/>. Every read and
 /// write of the matching databases is real.
 /// </summary>
+[NonParallelizable]
 [TestFixture]
-internal class GenotypeSetDebugServiceTests : FixtureWithOwnDatabases
+internal class GenotypeSetDebugServiceTests
 {
     private Fixture fixture;
     private ActiveDataRefreshRecord activeRecord;
