@@ -201,11 +201,21 @@ These are the image versions the pipeline uses (see `build-pipeline-run-tests.ym
 SQL Server is published on port 14330, so that it does not clash with a SQL Server installed locally on 1433.
 
 ```bash
-docker run -d --name atlas-sql -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD=Atlas-System-Tests-1 -p 14330:1433 mcr.microsoft.com/mssql/server:2022-CU27-ubuntu-22.04
+docker run -d --name atlas-sql -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD=Atlas-System-Tests-1 -p 14330:1433 --tmpfs /var/opt/mssql/data:rw,noexec,nosuid,size=4g mcr.microsoft.com/mssql/server:2022-CU27-ubuntu-22.04
 docker run -d --name atlas-azurite -p 10000-10002:10000-10002 mcr.microsoft.com/azure-storage/azurite:3.37.0 azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --skipApiVersionCheck
 ```
 
 SQL Server takes up to half a minute to accept connections after it starts.
+SQL Server keeps its databases in memory (`--tmpfs`), as in the pipeline, so they are lost when the container stops; the tests create them again.
+The tests make many small commits, and on a disk each one waits for its write: locally, `Atlas.MatchingAlgorithm.Test.Integration` took 254 s on disk, 206 s with delayed durability, and 184 s in memory.
+As the pipeline does, also turn on delayed durability for the databases the tests create:
+
+```bash
+docker exec atlas-sql /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P Atlas-System-Tests-1 -Q "ALTER DATABASE model SET DELAYED_DURABILITY = FORCED"
+```
+
+It applies to databases created afterwards.
+
 Azurite listens on the standard ports, so the default `UseDevelopmentStorage=true` connection string needs no change.
 
 ### Point the tests at the containers
