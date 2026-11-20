@@ -60,7 +60,7 @@ jobs:
     # The tests create and migrate their own databases, their own tables and blob containers, and their own topics.
     #
     # The categories of the job are passed as one PROJECT_ and one SERVICES_ variable each, from which this step works out
-    # what to start and what to download: only the test projects of the job.
+    # what to start and what to download.
     - bash: |
         services=$(env | sed -n 's/^SERVICES_[^=]*=//p' | tr ' ' '\n')
         needs() { grep -qx "$1" <<< "$services"; }
@@ -82,12 +82,13 @@ jobs:
           fi
         ' start-containers "$needsAzurite" "$needsServiceBusEmulator" > "$(Agent.TempDirectory)/start-containers.log" 2>&1 < /dev/null &
 
-        # A minimatch pattern for the download: Integration/{A,B}/**, or Integration/A/** for one project, as braces need two.
+        # The pattern of the download: the one project of the job, or every integration test project. The download task does not
+        # expand braces (Integration/{A,B}/** matches nothing, build 79556), and a download per project is slower than one of them all.
         projects=($(env | sed -n 's/^PROJECT_[^=]*=//p' | sort -u))
-        if (( ${#projects[@]} > 1 )); then
-          pattern="Integration/{$(IFS=,; echo "${projects[*]}")}/**"
-        else
+        if (( ${#projects[@]} == 1 )); then
           pattern="Integration/${projects[0]}/**"
+        else
+          pattern="Integration/**"
         fi
         echo "Test projects: ${projects[*]}; Azurite: $needsAzurite; Service Bus emulator: $needsServiceBusEmulator"
         echo "##vso[task.setvariable variable=testProjectsPattern]$pattern"

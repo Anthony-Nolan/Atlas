@@ -341,7 +341,7 @@ Its stages:
 The integration tests need no Azure resources, and no pipeline variables or secrets:
 - Each agent of the Integration Tests stage starts SQL Server in a container, and Azurite and the Service Bus emulator if its categories need them
   (their `services` in "build-pipeline.yml"; see "build-pipeline-run-tests.yml"). They start in the background while the .NET SDK installs and the agent
-  downloads the build output of its categories' test projects, and no others.
+  downloads the build output of the test projects: only its own if it runs one project, else all of them.
   SQL Server is the Developer edition, which supports the `ONLINE` index operations of the matching, donor import and repeat search migrations. The Service Bus tests do not use SQL,
   but the emulator stores its entities in the agent's SQL Server. The tests create and migrate their own databases, their own tables and blob containers, and their own topics.
 - Connection strings are passed as environment variables (e.g., `ConnectionStrings__SqlA`), which override the local defaults in each test project's `appsettings.json`.
