@@ -21,7 +21,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
                 DependencyInjection.DependencyInjection.BackingProvider = ServiceConfiguration.CreateProvider();
                 ResetDatabase();
                 RunInitialDataRefresh();
-                DatabasePool.Create(DependencyInjection.DependencyInjection.Provider.GetService<IConfiguration>());
+                var connectionStrings = DependencyInjection.DependencyInjection.Provider.GetService<IConfiguration>().GetSection("ConnectionStrings");
+                WorkerDatabases.Create(new[] { connectionStrings["SqlA"], connectionStrings["SqlB"], connectionStrings["PersistentSql"] });
             });
         }
         

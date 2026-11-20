@@ -10,6 +10,8 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.StaticDataSelection;
+using Atlas.Common.Test.SharedTestHelpers;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using NLog;
@@ -60,6 +62,10 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
                 await AlgorithmTestingService.RunHlaRefresh();
                 logger.Log(LogLevel.Info, $"Run HLA refresh: {stopwatch.Elapsed}");
                 stopwatch.Restart();
+
+                // Once the test data is in place, each NUnit worker gets a copy of it, so that features can run at the same time.
+                var configuration = serviceProvider.GetRequiredService<IConfiguration>().GetSection("ConnectionStrings");
+                WorkerDatabases.Create(ServiceConfiguration.WorkerDatabaseConnectionStrings.Select(name => configuration[name]));
             }
             catch (Exception e)
             {

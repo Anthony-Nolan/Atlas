@@ -48,7 +48,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute;
 /// run, and the stage reports the run. The imputation, the frequency set lookup and the message bus are substituted.
 /// </summary>
 [TestFixture]
-public class DonorGenotypePrecomputationStageTests : FixtureWithPooledDatabases
+public class DonorGenotypePrecomputationStageTests
 {
     /// <summary>
     /// The set-up of the suite makes a successful refresh of A, so A is active and B is dormant. The refresh of a test

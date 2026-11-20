@@ -20,11 +20,12 @@ parameters:
   values:
   - 1
   - 4
-# How many test fixtures NUnit runs at the same time in each category of the Integration Tests stage (see build-pipeline-run-tests.yml).
+# How many test fixtures NUnit runs at the same time in each category of the Integration Tests stage (see build-pipeline-run-tests.yml):
+# a free text field, to compare runs with 2, 3, 4 or more.
 - name: integrationTestWorkers
   displayName: 'Integration test workers'
-  type: number
-  default: 4
+  type: string
+  default: '4'
 
 # Build and Build Tests run in parallel; Unit Tests and Integration Tests run the test projects that Build Tests built, in parallel.
 # Publish pushes the images only once the build and every test have succeeded.
@@ -493,7 +494,7 @@ stages:
         searchFolder: '$(Agent.TempDirectory)/TestResults'
         testRunTitle: 'Unit Tests'
 
-# Each agent starts SQL Server, Azurite and the Service Bus emulator in containers, and runs its test categories one after another,
+# Each agent starts SQL Server, and Azurite and the Service Bus emulator if its categories need them, in containers, and runs its test categories one after another,
 # a step each, against their own databases; within a step, NUnit runs fixtures at the same time (see build-pipeline-run-tests.yml).
 # Connection strings are passed as environment variables, which override the local defaults in each project's appsettings.json.
 # To also run the performance tests, define a RUN_CI_PERF_TESTS variable (see IgnoreExceptOnCiPerfTestAttribute.cs).
@@ -516,7 +517,7 @@ stages:
       # Validation Searches 136 s, the rest 102 s; Match Prediction 114 s, Donor Import 79 s, Service Bus emulator tests 38 s and 30 s,
       # Repeat Search 22 s, MAC Dictionary and Blob Storage about 10 s each.
       categories:
-      # Its fixtures run at the same time; those that need databases to themselves each get a set from a pool, one set per NUnit worker.
+      # Its fixtures run at the same time, each NUnit worker on its own copy of the databases (see WorkerDatabases in Atlas.Common.Test).
       - name: MatchingIntegration
         title: 'Matching Algorithm Integration Tests'
         tag: MatchingAlgorithm
@@ -532,6 +533,7 @@ stages:
         tag: MatchPrediction
         project: Atlas.MatchPrediction.Test.Integration
         agent: 4
+        services: [azurite]
         env:
           ConnectionStrings__MatchPredictionSql: '$(sqlServerConnection)Initial Catalog=AtlasMatchPredictionIntegrationTests;'
       - name: DonorImport
@@ -550,7 +552,8 @@ stages:
           ConnectionStrings__RepeatSearchSql: '$(sqlServerConnection)Initial Catalog=AtlasRepeatSearchIntegrationTests;'
 
       # The validation scenarios are split by feature into two categories, each with its own database and its own copy of the test data.
-      # Running them in parallel within one process does not help: the searches compete for the agent's few cores.
+      # Within a category, the features run at the same time, each NUnit worker on its own copy of the database;
+      # on 2 cores, the searches took 71-117 s with 4 workers, instead of 149 s with 1.
       - name: ValidationSearches
         title: 'Matching Algorithm Validation Tests - Adult, Cord and Null Allele Searches'
         tag: MatchingAlgorithm
@@ -581,6 +584,7 @@ stages:
         tag: Common
         project: Atlas.Common.Test.Integration
         agent: 3
+        services: [serviceBusEmulator]
         env:
           RUN_SERVICE_BUS_EMULATOR_TESTS: '1'
       - name: MatchPredictionWorkerServiceBusEmulator
@@ -588,6 +592,7 @@ stages:
         tag: MatchPrediction
         project: Atlas.MatchPrediction.Worker.Test.Integration
         agent: 3
+        services: [serviceBusEmulator]
         env:
           RUN_SERVICE_BUS_EMULATOR_TESTS: '1'
       - name: MacDictionary
@@ -595,11 +600,13 @@ stages:
         tag: MultipleAlleleCodeDictionary
         project: Atlas.MultipleAlleleCodeDictionary.Test.Integration
         agent: 4
+        services: [azurite]
       - name: BlobStorage
         title: 'Blob Storage Integration Tests'
         tag: Common
         project: Atlas.Common.Test.Integration
         agent: 4
+        services: [azurite]
         env:
           RUN_AZURITE_TESTS: '1'
 

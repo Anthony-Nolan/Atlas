@@ -1,4 +1,5 @@
 ﻿using Atlas.Client.Models.Search.Requests;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.Client.Models.Search.Results.Matching.ResultSet;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.FeatureManagement;
@@ -44,9 +45,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests
                     config.AddJsonFile("appsettings.json", true, true);
                     config.AddUserSecrets(Assembly.GetExecutingAssembly());
                     config.AddEnvironmentVariables();
+                    // The API reads and writes the copy of the database of the NUnit worker that sent the request: see WorkerDatabases.
+                    config.AddWorkerDatabases(Validation.DependencyInjection.ServiceConfiguration.WorkerDatabaseConnectionStrings);
                 })
                 .ConfigureWebHost(webHost => webHost
-                    .UseTestServer()
+                    // The request is handled with the context of the test that sent it, so that it knows the test's NUnit worker.
+                    .UseTestServer(options => options.PreserveExecutionContext = true)
                     .UseStartup<Startup>()
                     .ConfigureTestServices(RegisterTestServices))
                 .Start();

@@ -52,7 +52,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute;
 /// failing read, which the unit tests of the resolver cover.
 /// </remarks>
 [TestFixture]
-internal class PrecomputedDonorGenotypeSetSearchTests : FixtureWithPooledDatabases
+internal class PrecomputedDonorGenotypeSetSearchTests
 {
     private const AllowedLociKey Key = AllowedLociKey.ABCDrb1Dqb1;
     private const int DonorFrequencySetId = 456;

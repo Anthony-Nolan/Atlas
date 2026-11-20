@@ -1,3 +1,4 @@
+using Atlas.Common.Test.SharedTestHelpers;
 using System.Reflection;
 using Atlas.MatchingAlgorithm.Data.Context;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories;
@@ -18,6 +19,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection
     /// </summary>
     internal static class ServiceConfiguration
     {
+        /// <summary>
+        /// The connection strings of the test database, which each NUnit worker has a copy of. They are all the same database.
+        /// </summary>
+        internal static readonly string[] WorkerDatabaseConnectionStrings = { "DonorSql", "SqlA", "SqlB", "PersistentSql" };
+
         public static ServiceProvider CreateProvider()
         {
             var services = new ServiceCollection();
@@ -33,6 +39,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection
                 .AddJsonFile("appsettings.json")
                 .AddUserSecrets(Assembly.GetExecutingAssembly())
                 .AddEnvironmentVariables()
+                // Each NUnit worker reads and writes its own copy of the database: see WorkerDatabases.
+                .AddWorkerDatabases(WorkerDatabaseConnectionStrings)
                 .Build();
 
             services.AddSingleton<IConfiguration>(sp => configuration);

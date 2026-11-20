@@ -30,7 +30,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import;
 /// <remarks>
 /// The transient databases are cleared first, so that the P-groups in the database are only the ones the stage inserts.
 /// </remarks>
-public class HlaProcessorPGroupTests : FixtureWithPooledDatabases
+public class HlaProcessorPGroupTests
 {
     private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
 

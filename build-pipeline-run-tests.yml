@@ -1,5 +1,5 @@
-# The jobs of the Integration Tests stage. Each job starts SQL Server, Azurite and the Service Bus emulator in containers on its agent,
-# then runs its test categories one after another, a step each, against their own databases. Within a step, NUnit runs the fixtures
+# The jobs of the Integration Tests stage. Each job starts SQL Server, and Azurite and the Service Bus emulator if its categories need them,
+# in containers on its agent, then runs its test categories one after another, a step each, against their own databases. Within a step, NUnit runs the fixtures
 # that allow it at the same time, on as many workers as the testWorkers parameter says.
 # The categories run from the build output of the Build Tests stage (the "Tests" artifact); scripts are in its "Pipeline" folder (pipeline/ in the repository).
 #
@@ -18,14 +18,15 @@ parameters:
   #  - filter (optional): the dotnet test filter, for a category that runs part of a project.
   #  - env (optional): environment variables, such as connection strings that override the local defaults in appsettings.json.
   #    Each category has its own databases, so that it does not depend on what an earlier one left.
+  #  - services (optional): the containers it needs besides SQL Server, which every job starts: azurite, serviceBusEmulator.
   - name: categories
     type: object
   # How many test fixtures NUnit runs at the same time in a category (NUnit.NumberOfTestWorkers). Only fixtures that allow it run
   # at the same time ([Parallelizable]); in a project with none, the tests run one after another whatever this is.
   # An agent has 2 cores, and the tests spend much of their time waiting for SQL Server, so more workers than cores keep the cores busy.
   - name: testWorkers
-    type: number
-    default: 4
+    type: string
+    default: '4'
   # How long one category may take before its step is stopped. The longest takes about 3 minutes.
   - name: testTimeoutMinutes
     type: number
@@ -53,16 +54,50 @@ jobs:
     - checkout: none
 
     # The containers are pinned to versions, so that a new image cannot break the tests unannounced.
-    # They are started first and waited for later, so that they start up while the .NET SDK installs and the build output downloads.
+    # They start in the background, so that their images download while the .NET SDK installs and the build output downloads;
+    # "Wait for the containers" waits for them. Pulling the images takes most of the 40 s they take to start.
     # SQL Server is the Developer edition, which supports the ONLINE index operations of the matching migrations.
     # The tests create and migrate their own databases, their own tables and blob containers, and their own topics.
+    #
+    # The categories of the job are passed as one PROJECT_ and one SERVICES_ variable each, from which this step works out
+    # what to start and what to download: only the test projects of the job.
     - bash: |
-        docker run -d --name atlas-sql -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD="$SQL_SA_PASSWORD" -p 1433:1433 mcr.microsoft.com/mssql/server:2022-CU27-ubuntu-22.04
-        docker run -d --name atlas-azurite -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/azure-storage/azurite:3.37.0 \
-          azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --skipApiVersionCheck
-      displayName: 'Start SQL Server and Azurite'
+        services=$(env | sed -n 's/^SERVICES_[^=]*=//p' | tr ' ' '\n')
+        needs() { grep -qx "$1" <<< "$services"; }
+        needsAzurite=$(needs azurite && echo true || echo false)
+        needsServiceBusEmulator=$(needs serviceBusEmulator && echo true || echo false)
+        echo "##vso[task.setvariable variable=needsAzurite]$needsAzurite"
+        echo "##vso[task.setvariable variable=needsServiceBusEmulator]$needsServiceBusEmulator"
+
+        # Detached, with their output in a file: a background process that keeps the step's output open keeps the step running.
+        nohup bash -c '
+          docker run -d --name atlas-sql -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD="$SQL_SA_PASSWORD" -p 1433:1433 mcr.microsoft.com/mssql/server:2022-CU27-ubuntu-22.04
+          if [[ $1 == true ]]; then
+            docker run -d --name atlas-azurite -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/azure-storage/azurite:3.37.0 \
+              azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --skipApiVersionCheck
+          fi
+          # The emulator can only start once SQL Server accepts queries; its image downloads meanwhile.
+          if [[ $2 == true ]]; then
+            docker pull --quiet mcr.microsoft.com/azure-messaging/servicebus-emulator:2.0.1
+          fi
+        ' start-containers "$needsAzurite" "$needsServiceBusEmulator" > "$(Agent.TempDirectory)/start-containers.log" 2>&1 < /dev/null &
+
+        # A minimatch pattern for the download: Integration/{A,B}/**, or Integration/A/** for one project, as braces need two.
+        projects=($(env | sed -n 's/^PROJECT_[^=]*=//p' | sort -u))
+        if (( ${#projects[@]} > 1 )); then
+          pattern="Integration/{$(IFS=,; echo "${projects[*]}")}/**"
+        else
+          pattern="Integration/${projects[0]}/**"
+        fi
+        echo "Test projects: ${projects[*]}; Azurite: $needsAzurite; Service Bus emulator: $needsServiceBusEmulator"
+        echo "##vso[task.setvariable variable=testProjectsPattern]$pattern"
+      displayName: 'Start the containers'
       env:
         SQL_SA_PASSWORD: $(sqlSaPassword)
+        ${{ each category in parameters.categories }}:
+          ${{ if or(eq(agent, 0), eq(category.agent, agent)) }}:
+            PROJECT_${{ category.name }}: '${{ category.project }}'
+            SERVICES_${{ category.name }}: "${{ join(' ', category.services) }}"
 
     # The same SDK as the Build Tests stage, rather than whichever the agent image has.
     - task: UseDotNet@2
@@ -70,11 +105,10 @@ jobs:
       inputs:
         version: 10.0.x
 
-    # Every integration test project: one download is quicker than one per project, even if this agent runs only some of them.
     - download: current
       artifact: Tests
       patterns: |
-        Integration/**
+        $(testProjectsPattern)
         Pipeline/**
       displayName: 'Download test projects'
 
@@ -89,31 +123,35 @@ jobs:
         itemPattern: '$(resultsArtifactPrefix)*/*/outcome'
         path: '$(Pipeline.Workspace)/EarlierAttempts'
 
+    # The containers may still be downloading their images, so the wait allows for that.
     - bash: |
-        for attempt in $(seq 1 60); do
+        fail() {
+          cat "$(Agent.TempDirectory)/start-containers.log"
+          docker logs "$1" 2>&1 | tail -50
+          echo "##vso[task.logissue type=error]$2"
+          exit 1
+        }
+
+        for attempt in $(seq 1 90); do
           if docker exec atlas-sql /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$SQL_SA_PASSWORD" -Q "SELECT 1" -b > /dev/null 2>&1; then
             echo "SQL Server is ready"
             break
           fi
-          if [[ $attempt == 60 ]]; then
-            docker logs atlas-sql
-            echo "##vso[task.logissue type=error]SQL Server did not accept queries within 2 minutes"
-            exit 1
-          fi
+          (( attempt == 90 )) && fail atlas-sql "SQL Server did not accept queries within 3 minutes"
           sleep 2
         done
 
-        for attempt in $(seq 1 30); do
-          if (echo > /dev/tcp/127.0.0.1/10002) 2> /dev/null; then
-            echo "Azurite is ready"
-            exit 0
-          fi
-          sleep 2
-        done
-        docker logs atlas-azurite
-        echo "##vso[task.logissue type=error]Azurite did not start within a minute"
-        exit 1
-      displayName: 'Wait for SQL Server and Azurite'
+        if [[ $(needsAzurite) == true ]]; then
+          for attempt in $(seq 1 60); do
+            if (echo > /dev/tcp/127.0.0.1/10002) 2> /dev/null; then
+              echo "Azurite is ready"
+              break
+            fi
+            (( attempt == 60 )) && fail atlas-azurite "Azurite did not start within 2 minutes"
+            sleep 2
+          done
+        fi
+      displayName: 'Wait for the containers'
       env:
         SQL_SA_PASSWORD: $(sqlSaPassword)
 
@@ -179,6 +217,7 @@ jobs:
         echo "##vso[task.logissue type=error]Service Bus emulator did not become healthy within 2 minutes"
         exit 1
       displayName: 'Start Service Bus emulator'
+      condition: and(succeeded(), eq(variables['needsServiceBusEmulator'], 'true'))
       env:
         SQL_SA_PASSWORD: $(sqlSaPassword)
 

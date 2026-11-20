@@ -339,14 +339,16 @@ Its stages:
 - Publish builds and pushes the Docker images, only once the build and every test have succeeded.
 
 The integration tests need no Azure resources, and no pipeline variables or secrets:
-- Each agent of the Integration Tests stage starts SQL Server, Azurite and the Service Bus emulator in containers (see "build-pipeline-run-tests.yml").
+- Each agent of the Integration Tests stage starts SQL Server in a container, and Azurite and the Service Bus emulator if its categories need them
+  (their `services` in "build-pipeline.yml"; see "build-pipeline-run-tests.yml"). They start in the background while the .NET SDK installs and the agent
+  downloads the build output of its categories' test projects, and no others.
   SQL Server is the Developer edition, which supports the `ONLINE` index operations of the matching, donor import and repeat search migrations. The Service Bus tests do not use SQL,
   but the emulator stores its entities in the agent's SQL Server. The tests create and migrate their own databases, their own tables and blob containers, and their own topics.
 - Connection strings are passed as environment variables (e.g., `ConnectionStrings__SqlA`), which override the local defaults in each test project's `appsettings.json`.
 - The matching validation tests read the HLA Metadata Dictionary, at version 3330, and the MAC Dictionary from the same files as the integration tests,
   so nothing needs to be prepared for them in advance. A MAC used by a new validation test must be added to `LargeMacDictionary.csv`.
 - The tests are grouped in test categories: a test project, or part of one (by `--filter`). Each agent runs its categories one after another,
-  a step each, against their own databases. Within a step, NUnit runs the fixtures that allow it (`[Parallelizable]`, so far the matching integration tests)
+  a step each, against their own databases. Within a step, NUnit runs the fixtures that allow it (`[Parallelizable]`: the matching integration, donor import and matching validation tests), each NUnit worker on its own copy of the databases,
   at the same time, on as many workers as "Integration test workers" says when you run the pipeline (4 by default: an agent has 2 cores, and the tests wait for SQL Server).
   The matching validation tests are split in two by feature, so that no category is much longer than the others.
   The categories, and the agent each runs on, are listed in "build-pipeline.yml". "Integration test agents", when you run the pipeline, runs them all on one agent instead.

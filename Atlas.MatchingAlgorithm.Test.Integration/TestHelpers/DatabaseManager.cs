@@ -8,7 +8,6 @@ using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using ContextFactory = Atlas.MatchingAlgorithm.Data.Context.ContextFactory;
 
@@ -70,22 +69,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
                 ClearTransientDatabase(transientContextA),
                 ClearTransientDatabase(transientContextB)
             );
-        }
-
-        /// <summary>
-        /// Resets a set of databases of the pool to what the global set-up leaves: empty, with one successful data refresh record.
-        /// </summary>
-        public static void ResetDatabases(string transientConnectionStringA, string transientConnectionStringB, string persistentConnectionString)
-        {
-            using var transientContextA = new ContextFactory().Create(transientConnectionStringA);
-            using var transientContextB = new ContextFactory().Create(transientConnectionStringB);
-            using var persistentContext = new Atlas.MatchingAlgorithm.Data.Persistent.Context.ContextFactory().Create(persistentConnectionString);
-            Task.WaitAll(
-                ClearTransientDatabase(transientContextA),
-                ClearTransientDatabase(transientContextB),
-                ClearPersistentDatabase(persistentContext)
-            );
-            ((ITestDataRefreshHistoryRepository)new TestDataRefreshHistoryRepository(persistentContext)).InsertDummySuccessfulRefreshRecord();
         }
 
         private static Task ClearTransientDatabase(DbContext context)

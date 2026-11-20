@@ -30,7 +30,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import;
 /// Every name is new to the database, so that relations already written by other tests cannot hide what this import writes.
 /// <see cref="HlaProcessorPGroupTests"/> runs the whole HLA processing stage, with the upfront insert.
 /// </remarks>
-public class HlaImportRepositoryTests : FixtureWithPooledDatabases
+public class HlaImportRepositoryTests
 {
     private IDormantRepositoryFactory repositoryFactory;
     private IConnectionStringProvider dormantConnectionStringProvider;

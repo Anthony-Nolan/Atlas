@@ -30,7 +30,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute;
 /// group ids, the group → donor rows that the workers read, the batches, the cancel of a run, and the staging check.
 /// </summary>
 [TestFixture]
-public class DonorGenotypePrecomputationBuildTests : FixtureWithPooledDatabases
+public class DonorGenotypePrecomputationBuildTests
 {
     /// <summary>The default of the stage.</summary>
     private const int GroupsPerBatch = 1000;

@@ -31,7 +31,7 @@ using SqlException = Microsoft.Data.SqlClient.SqlException;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
 {
-    public class DonorStorageTests : FixtureWithPooledDatabases
+    public class DonorStorageTests
     {
         private IDonorImportRepository donorImportRepository;
         private IDonorUpdateRepository donorUpdateRepository;
@@ -414,7 +414,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         public void ClearConnectionPools()
         {
             // A KILL breaks pooled connections too. Clear the pools so that no later test gets a broken one.
-            SqlConnection.ClearAllPools();
+            ClearPoolsOfTheTestDatabase();
         }
 
         [Test]
@@ -475,23 +475,37 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
 
         private DonorImportRepository BuildRepositoryThatDoesNotReconnect(IAtlasLogger logger)
         {
-            var connectionString = new SqlConnectionStringBuilder(dormantConnectionStringProvider.GetConnectionString())
+            var connectionStringProvider = Substitute.For<IConnectionStringProvider>();
+            connectionStringProvider.GetConnectionString().Returns(ConnectionStringThatDoesNotReconnect());
+
+            return new DonorImportRepository(Substitute.For<IHlaNamesRepository>(), connectionStringProvider, logger);
+        }
+
+        private string ConnectionStringThatDoesNotReconnect() =>
+            new SqlConnectionStringBuilder(dormantConnectionStringProvider.GetConnectionString())
             {
                 ConnectRetryCount = 0,
                 MultipleActiveResultSets = false
             }.ConnectionString;
 
-            var connectionStringProvider = Substitute.For<IConnectionStringProvider>();
-            connectionStringProvider.GetConnectionString().Returns(connectionString);
-
-            return new DonorImportRepository(Substitute.For<IHlaNamesRepository>(), connectionStringProvider, logger);
+        /// <summary>
+        /// Clears the connection pools of the test database, and only those: fixtures of other NUnit workers run meanwhile, and clearing
+        /// their pools would end the connections their transactions hold, which then become distributed transactions.
+        /// </summary>
+        private void ClearPoolsOfTheTestDatabase()
+        {
+            foreach (var connectionString in new[] { dormantConnectionStringProvider.GetConnectionString(), ConnectionStringThatDoesNotReconnect() })
+            {
+                using var connection = new SqlConnection(connectionString);
+                SqlConnection.ClearPool(connection);
+            }
         }
 
         /// <summary>
         /// Kills every other user connection to the test database. The open session's bulk copies hold their
         /// connections open, so these are always among them. The SQL text of a connection cannot pick them out, because
-        /// the test connection strings use MARS, which hides it. Integration tests do not run in parallel, so no other
-        /// test is using these connections.
+        /// the test connection strings use MARS, which hides it. Each NUnit worker has its own copy of the databases, and
+        /// runs its fixtures one after another, so no other test is using these connections.
         /// </summary>
         /// <returns>The number of connections killed.</returns>
         private async Task<int> KillOtherConnectionsToTheTestDatabase()
@@ -516,7 +530,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
 
             // The idle pooled connections were killed too. Clear the pools so that the reads that follow this get new
             // ones. A connection that a bulk copy holds open is not in the pool, so this does not touch it.
-            SqlConnection.ClearAllPools();
+            ClearPoolsOfTheTestDatabase();
 
             return killed;
         }

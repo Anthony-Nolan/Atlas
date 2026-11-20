@@ -11,12 +11,11 @@ using EnumStringValues;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
 {
     [TestFixture]
-    internal class DataRefreshRunnerTests : FixtureWithPooledDatabases
+    internal class DataRefreshRunnerTests
     {
         private ITestDataRefreshHistoryRepository dataRefreshHistoryRepository;
 

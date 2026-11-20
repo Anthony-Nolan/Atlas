@@ -264,20 +264,32 @@ The variables of a `.runsettings` file apply to every test project run with it, 
 So with one such file, run one test project at a time: each project clears its databases when its tests start.
 
 ### Run the suites in parallel
-The fixtures of `Atlas.MatchingAlgorithm.Test.Integration` run at the same time (`[assembly: Parallelizable]`). NUnit runs as many at once
-as there are cores; the pipeline sets the number, as the tests spend much of their time waiting for SQL Server:
+The fixtures of the matching integration, donor import integration and matching validation tests run at the same time
+(`[assembly: Parallelizable]` in each project's `AssemblyInfo.cs`). NUnit runs as many at once as there are cores; the pipeline sets the number,
+as the tests spend much of their time waiting for SQL Server:
 
 ```bash
 dotnet test Atlas.MatchingAlgorithm.Test.Integration -- NUnit.NumberOfTestWorkers=4
 ```
 
-Most fixtures share the databases of the configuration, so they must only look at their own data: donor ids from `DonorIdGenerator`,
-their own DI scope (`DependencyInjection.Provider` gives each fixture one), and no assertions on whole tables.
-A fixture that needs the databases to itself (it expects them empty, clears them, checks whole tables, or changes the data refresh records,
-which decide the active database) derives from `FixtureWithPooledDatabases`. It then gets a set of databases that no other fixture uses meanwhile,
-from a pool of one set per NUnit worker, which the global set-up restores from a backup of the configured databases (`TestHelpers/DatabasePool.cs`).
-The pool's databases are named after the configured ones, with `_Pool0`, `_Pool1`, ... appended.
-On 2 cores, as on a build agent, the matching integration tests took 89 s with 4 workers, instead of 145 s with 1.
+Each NUnit worker has its own copy of the project's databases, so it runs its fixtures one after another, as a run with one worker does,
+and no fixture sees another's data (`WorkerDatabases` in `Atlas.Common.Test/SharedTestHelpers`):
+- Once the global set-up has migrated and reset the databases, it backs them up (`WorkerDatabases.Create`). The first time a worker reads
+  a connection string, its copies are restored from the backup. They are named after the configured databases and the worker
+  (e.g. `AtlasMatchingIntegrationTests_NUnitFwParallelWorker1`), and are not dropped: the next run replaces them.
+- The project's configuration hands out the copies' connection strings (`AddWorkerDatabases` on its `ConfigurationBuilder`), so no service
+  registration changes. The validation tests' API, which runs in the test process (`TestServer`), does the same, with
+  `PreserveExecutionContext` so that a request knows the worker of the test that sent it.
+- Each fixture has its own DI scope (`TestFixtureScopes`), so that fixtures do not share scoped services, which read the connection string
+  when they are made. A fixture that sets a service provider of its own sets it for itself only.
+
+What the workers still share is the process: a fixture must not change process-wide state that another worker relies on. For example, the
+donor storage tests clear the connection pools of their own database only, as clearing all pools ends the connections that other workers'
+transactions hold.
+
+The match prediction integration tests still run one after another. With a database per worker, they also need a frequency set cache per worker,
+as the production one is kept for the whole process by keys, such as set ids, that are the same in every worker's database; and then they were
+no faster (56-64 s with 4 workers against 54 s with 1, on 12 cores), as each worker loads the frequency sets again, and one test still failed.
 
 The other projects run their tests one after another. Several projects can also run at the same time, against the same containers,
 as long as each has its own databases: set their connection strings (see the table above) to different database names, and build first,

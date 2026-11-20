@@ -1,44 +1,28 @@
 using System;
-using Microsoft.Extensions.DependencyInjection;
+using Atlas.Common.Test.SharedTestHelpers;
 
 namespace Atlas.DonorImport.Test.Integration.DependencyInjection
 {
+    /// <summary>
+    /// One DI scope per test fixture, as fixtures run at the same time; a fixture that sets <see cref="BackingProvider"/> sets it for itself only.
+    /// See <see cref="TestFixtureScopes"/>.
+    /// </summary>
     public static class DependencyInjection
     {
-        private static IServiceProvider backingProvider;
-
-        private static AsyncServiceScope? scope;
-
         internal static IServiceProvider BackingProvider
         {
-            get
-            {
-                if (backingProvider == null)
-                {
-                    throw new Exception("Provider has not been set up");
-                }
-                return backingProvider;
-            }
-            set
-            {
-                backingProvider = value;
-                NewScope();
-            }
+            get => TestFixtureScopes.BackingProvider;
+            set => TestFixtureScopes.BackingProvider = value;
         }
 
         /// <summary>
-        /// Creates a new DI scope, to prevent all tests in the suite sharing any dependencies registered with "AddScoped".
-        /// If a previous scope existed, disposes it before creating the new one.
+        /// Creates a new DI scope for the current fixture, to prevent its tests sharing any dependencies registered with "AddScoped".
         ///
         /// Usage:
-        /// In the "SetUp" (or "OneTimeSetUp") of a test that needs to run on an independent scope, call this method. 
+        /// In the "SetUp" (or "OneTimeSetUp") of a test that needs to run on an independent scope, call this method.
         /// </summary>
-        internal static void NewScope()
-        {
-            scope?.DisposeAsync().AsTask().Wait();
-            scope = BackingProvider.CreateAsyncScope();
-        }
+        internal static void NewScope() => TestFixtureScopes.NewScope();
 
-        internal static IServiceProvider Provider => scope?.ServiceProvider;
+        internal static IServiceProvider Provider => TestFixtureScopes.Provider;
     }
 }

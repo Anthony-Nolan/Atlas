@@ -28,9 +28,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
     /// when run as part of the larger search algorithm service.
     /// Only explicitly null alleles should be treated as non-expressing;
     /// typings that only include null alleles in their expanded definition, e.g., MACs, should be treated as expressing.
-    /// The tests only read the donors stored once for the fixture, so they run at the same time.
     /// </summary>
-    [Parallelizable(ParallelScope.Children)]
     public class ScoringTestsForNullAllele
     {
         private const Locus LocusUnderTest = Locus.A;
@@ -104,6 +102,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
 
         private IDonorHlaExpander donorHlaExpander;
         private IDonorUpdateRepository donorRepository;
+        private ISearchService searchService;
 
         #endregion
 
@@ -119,6 +118,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
 
                 await BuildAndPersistTestData();
             });
+        }
+
+        [SetUp]
+        public void SetUp()
+        {
+            searchService = DependencyInjection.DependencyInjection.Provider.GetService<ISearchService>();
         }
 
         [Test]
@@ -354,9 +359,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 _ => throw new ArgumentException($"Mismatch count of {mismatchCount} is not supported")
             };
 
-            // A scope of its own for each search, as the tests share one fixture instance and run at the same time.
-            using var scope = DependencyInjection.DependencyInjection.BackingProvider.CreateScope();
-            var searchResults = await scope.ServiceProvider.GetService<ISearchService>().Search(searchRequest);
+            var searchResults = await searchService.Search(searchRequest);
             return searchResults.Single(d => d.AtlasDonorId == donorId);
         }
 

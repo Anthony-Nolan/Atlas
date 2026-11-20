@@ -1,3 +1,4 @@
+using Atlas.Common.Test.SharedTestHelpers;
 using System;
 using System.IO;
 using System.Transactions;
@@ -85,6 +86,8 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
                 .AddJsonFile("appsettings.json")
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddEnvironmentVariables()
+                // Each NUnit worker reads and writes its own copy of the database: see WorkerDatabases.
+                .AddWorkerDatabases(DonorStoreSqlConnectionString)
                 .Build();
 
             services.AddSingleton<IConfiguration>(sp => configuration);

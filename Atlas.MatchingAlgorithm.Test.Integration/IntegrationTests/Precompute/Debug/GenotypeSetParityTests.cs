@@ -49,7 +49,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Precompute.D
 /// gives <c>Match</c> only when its writer and the endpoint give the engine the same input.
 /// </summary>
 [TestFixture]
-internal class GenotypeSetParityTests : FixtureWithPooledDatabases
+internal class GenotypeSetParityTests
 {
     private Fixture fixture;
     private IDataRefreshHistoryRepository historyRepository;
