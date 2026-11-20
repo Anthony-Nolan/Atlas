@@ -5,6 +5,7 @@ using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.DonorImport.Validators;
+using AutoFixture;
 using AwesomeAssertions;
 using NUnit.Framework;
 
@@ -21,6 +22,14 @@ namespace Atlas.DonorImport.Test.Validators
             null,
             new ImportedHla()
         };
+
+        private Fixture fixture;
+
+        [SetUp]
+        public void SetUp()
+        {
+            fixture = new Fixture();
+        }
 
         [TestCaseSource(nameof(EmptyHla))]
         public void Validate_ChangeTypeIsDelete_AndHlaIsEmpty_ReturnsValid(ImportedHla emptyHla)
@@ -124,7 +133,24 @@ namespace Atlas.DonorImport.Test.Validators
             result.IsValid.Should().BeTrue();
         }
 
-        private SearchableDonorValidator CreateValidatorWithContext(string donorRecordId) =>
-            new(new SearchableDonorValidatorContext(new[] { donorRecordId }));
+        [Test]
+        public void IsCheckedAgainstDonorStore_IsTrueExactlyWhenValidationResultDependsOnDonorStore(
+            [Values] ImportDonorChangeType changeType,
+            [Values] UpdateMode updateMode)
+        {
+            var donorUpdate = DonorUpdateBuilder.New
+                .With(x => x.ChangeType, changeType)
+                .With(x => x.UpdateMode, updateMode)
+                .Build();
+            var isValidWhenDonorIsStored = CreateValidatorWithContext(donorUpdate.RecordId).Validate(donorUpdate).IsValid;
+            var isValidWhenDonorIsNotStored = CreateValidatorWithContext(fixture.Create<string>()).Validate(donorUpdate).IsValid;
+
+            var isChecked = SearchableDonorValidator.IsCheckedAgainstDonorStore(donorUpdate);
+
+            isChecked.Should().Be(isValidWhenDonorIsStored != isValidWhenDonorIsNotStored);
+        }
+
+        private static SearchableDonorValidator CreateValidatorWithContext(string donorRecordId) =>
+            new(new SearchableDonorValidatorContext(new HashSet<string> { donorRecordId }));
     }
 }

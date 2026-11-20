@@ -18,20 +18,34 @@ namespace Atlas.DonorImport.Validators
                     .SetValidator(new SearchableHlaValidator());
             });
 
-            When(donorUpdate => donorUpdate.ChangeType == ImportDonorChangeType.Edit, () =>
+            When(MustExistInDonorStore, () =>
             {
                 RuleFor(d => d.RecordId)
                     .Must(context.ExternalDonorCodes.Contains)
                     .WithMessage("Donor is not present in the database.");
             });
 
-            When(donorUpdate => donorUpdate.ChangeType == ImportDonorChangeType.Create && donorUpdate.UpdateMode == UpdateMode.Differential, () =>
+            When(MustNotExistInDonorStore, () =>
             {
                 RuleFor(d => d.RecordId)
                     .Must(id => !context.ExternalDonorCodes.Contains(id))
                     .WithMessage("Donor is already present in the database.");
             });
         }
+
+        /// <summary>
+        /// True when the validator checks the code of <paramref name="donorUpdate"/>
+        /// against <see cref="SearchableDonorValidatorContext.ExternalDonorCodes"/>.
+        /// Only these donor updates need the donor store to be read.
+        /// </summary>
+        internal static bool IsCheckedAgainstDonorStore(DonorUpdate donorUpdate) =>
+            MustExistInDonorStore(donorUpdate) || MustNotExistInDonorStore(donorUpdate);
+
+        private static bool MustExistInDonorStore(DonorUpdate donorUpdate) =>
+            donorUpdate.ChangeType == ImportDonorChangeType.Edit;
+
+        private static bool MustNotExistInDonorStore(DonorUpdate donorUpdate) =>
+            donorUpdate.ChangeType == ImportDonorChangeType.Create && donorUpdate.UpdateMode == UpdateMode.Differential;
     }
 
     internal class SearchableHlaValidator : AbstractValidator<ImportedHla>
@@ -107,11 +121,15 @@ namespace Atlas.DonorImport.Validators
     
     internal class SearchableDonorValidatorContext
     {
-        public SearchableDonorValidatorContext(IReadOnlyCollection<string> externalDonorCodes)
+        public SearchableDonorValidatorContext(IReadOnlySet<string> externalDonorCodes)
         {
             ExternalDonorCodes = externalDonorCodes;
         }
 
-        public IReadOnlyCollection<string> ExternalDonorCodes { get; }
+        /// <summary>
+        /// The codes of the checked donor updates whose donors are in the donor store.
+        /// A set, as the validator looks up the code of each donor update of a batch.
+        /// </summary>
+        public IReadOnlySet<string> ExternalDonorCodes { get; }
     }
 }

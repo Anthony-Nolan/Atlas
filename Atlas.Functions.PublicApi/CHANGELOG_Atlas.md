@@ -120,6 +120,9 @@ Feature flags permit greater control over the release of new features (see this 
 #### Service Bus
 * BF: Each app process now keeps one Service Bus sender for each topic that it sends to, for as long as it runs. Before, the apps made a new sender, with its own link to Service Bus, for each search request, repeat search request and results notification that they sent, and for each function call or worker batch that sent other messages. Some of these senders were never closed, for example the one for the batch results of the match prediction worker: each one kept its link open until Service Bus closed it, 10 minutes after its last message. Now each app process uses one link for each topic, and closes its links when it stops.
 
+#### Donor Import
+* E: Donor import reads less from the donor store for each batch, with the same results. The upserts (`NU`) of a batch read the stored donors once, not three times: one read gives both the split into new and existing donors and the rows that the changes are compared with. After the insert, the import reads the Atlas ids of the new donors only, not of all the upserts. The check that an edit (`U`) exists and that a differential create (`N`) does not exist reads only the codes of these records, and looks each code up in a set, not a list. So a batch of only upserts and deletions makes no read for this check.
+
 ### 4.1.0
 
 #### Debug

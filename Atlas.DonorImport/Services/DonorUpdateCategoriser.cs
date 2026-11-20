@@ -56,7 +56,7 @@ namespace Atlas.DonorImport.Services
                 return new DonorUpdateCategoriserResults();
             }
 
-            var existingExternalDonorCodes = await donorReadRepository.GetExistingExternalDonorCodes(donorUpdates.Select(d => d.RecordId));
+            var existingExternalDonorCodes = await ReadExistingExternalDonorCodes(donorUpdates);
             var searchableDonorValidator = new SearchableDonorValidator(new SearchableDonorValidatorContext(existingExternalDonorCodes));
             var validationResults = donorUpdates.Select(ValidateDonorIsSearchable).ToList();
             var (validDonors, invalidDonors) = validationResults.ReifyAndSplit(vr => vr.IsValid);
@@ -82,6 +82,26 @@ namespace Atlas.DonorImport.Services
                     ErrorMessage = !validationResult.IsValid ? string.Join(";", validationResult.Errors.Select(e => e.ErrorMessage)) : null
                 };
             }
+        }
+
+        /// <summary>
+        /// Reads which donors are in the donor store, only for the donor updates that the validator checks against it:
+        /// a batch of upserts and deletions reads nothing.
+        /// </summary>
+        private async Task<IReadOnlySet<string>> ReadExistingExternalDonorCodes(IEnumerable<DonorUpdate> donorUpdates)
+        {
+            var codesToCheck = donorUpdates
+                .Where(SearchableDonorValidator.IsCheckedAgainstDonorStore)
+                .Select(d => d.RecordId)
+                .ToList();
+
+            if (codesToCheck.Count == 0)
+            {
+                return new HashSet<string>();
+            }
+
+            var existingCodes = await donorReadRepository.GetExistingExternalDonorCodes(codesToCheck);
+            return existingCodes.ToHashSet();
         }
 
         private void LogErrors(IEnumerable<SearchableDonorValidationResult> validationResults)
