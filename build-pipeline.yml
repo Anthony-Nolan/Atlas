@@ -20,6 +20,11 @@ parameters:
   values:
   - 1
   - 4
+# How many test fixtures NUnit runs at the same time in each category of the Integration Tests stage (see build-pipeline-run-tests.yml).
+- name: integrationTestWorkers
+  displayName: 'Integration test workers'
+  type: number
+  default: 4
 
 # Build and Build Tests run in parallel; Unit Tests and Integration Tests run the test projects that Build Tests built, in parallel.
 # Publish pushes the images only once the build and every test have succeeded.
@@ -488,15 +493,14 @@ stages:
         searchFolder: '$(Agent.TempDirectory)/TestResults'
         testRunTitle: 'Unit Tests'
 
-# Each agent starts SQL Server, Azurite and the Service Bus emulator in containers, and runs its test categories at the same time,
-# each in its own dotnet test process, against its own databases (see build-pipeline-run-tests.yml).
+# Each agent starts SQL Server, Azurite and the Service Bus emulator in containers, and runs its test categories one after another,
+# a step each, against their own databases; within a step, NUnit runs fixtures at the same time (see build-pipeline-run-tests.yml).
 # Connection strings are passed as environment variables, which override the local defaults in each project's appsettings.json.
 # To also run the performance tests, define a RUN_CI_PERF_TESTS variable (see IgnoreExceptOnCiPerfTestAttribute.cs).
 - stage: Integration_Tests
   displayName: 'Integration Tests'
   dependsOn: Build_Tests
   variables:
-    matchingIntegrationPrecomputeAndSearchFilter: 'FullyQualifiedName~.IntegrationTests.Precompute.|FullyQualifiedName~.IntegrationTests.Search.'
     validationSearchesFilter: 'FullyQualifiedName~.ValidationTests.Features.AdultSearch.|FullyQualifiedName~.ValidationTests.Features.CordSearch.|FullyQualifiedName~.ValidationTests.Features.NullAlleles.'
   jobs:
   - template: build-pipeline-run-tests.yml
@@ -505,36 +509,24 @@ stages:
         agents: [0]
       ${{ else }}:
         agents: [1, 2, 3, 4]
+      testWorkers: ${{ parameters.integrationTestWorkers }}
       # An agent has 2 cores, and the tests are bound by them: on 2 agents the stage took 7.6 min, against 3.6 min on 5 (builds 79530, 79511).
-      # The categories are spread so that the agents take about as long. Test time of each suite run on its own, in builds 79513-79518:
-      # Matching Algorithm Integration 150 s (Precompute and Search 83 s, the rest 68 s); Validation AdultSearch 90 s, Scoring 60 s,
-      # CordSearch 16 s, NullAlleles 15 s, the rest 3 s, plus about 16 s of test data load per category; Match Prediction 70 s,
-      # Donor Import 39 s, Service Bus emulator tests 43 s, MAC Dictionary, Blob Storage and Repeat Search about 10 s each.
+      # The categories are spread so that the agents take about as long. Test time of each category in build 79541,
+      # where the categories of an agent ran at the same time: Matching Algorithm Integration 152 s (in two parts at once, 4 workers each);
+      # Validation Searches 136 s, the rest 102 s; Match Prediction 114 s, Donor Import 79 s, Service Bus emulator tests 38 s and 30 s,
+      # Repeat Search 22 s, MAC Dictionary and Blob Storage about 10 s each.
       categories:
-      # The matching integration tests of one process run one after another, and share the state of their databases.
-      # So they are split by namespace into two categories, each with its own databases. Neither needs data the other leaves.
-      - name: MatchingIntegrationPrecomputeAndSearch
-        title: 'Matching Algorithm Integration Tests - Precompute and Search'
+      # Its fixtures run at the same time, except those marked [NonParallelizable], which need the databases to themselves.
+      - name: MatchingIntegration
+        title: 'Matching Algorithm Integration Tests'
         tag: MatchingAlgorithm
         project: Atlas.MatchingAlgorithm.Test.Integration
         agent: 1
-        filter: '$(matchingIntegrationPrecomputeAndSearchFilter)'
         env:
           # A and B must be different databases: some tests check that the active database is left alone while the dormant one changes.
-          ConnectionStrings__SqlA: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationPrecomputeAndSearchA;'
-          ConnectionStrings__SqlB: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationPrecomputeAndSearchB;'
-          ConnectionStrings__PersistentSql: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationPrecomputeAndSearchPersistent;'
-      - name: MatchingIntegrationOther
-        title: 'Matching Algorithm Integration Tests - Other'
-        tag: MatchingAlgorithm
-        project: Atlas.MatchingAlgorithm.Test.Integration
-        agent: 1
-        # Every matching integration test that the other category does not run.
-        filter: 'FullyQualifiedName!~.IntegrationTests.Precompute.&FullyQualifiedName!~.IntegrationTests.Search.'
-        env:
-          ConnectionStrings__SqlA: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationOtherA;'
-          ConnectionStrings__SqlB: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationOtherB;'
-          ConnectionStrings__PersistentSql: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationOtherPersistent;'
+          ConnectionStrings__SqlA: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationA;'
+          ConnectionStrings__SqlB: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationB;'
+          ConnectionStrings__PersistentSql: '$(sqlServerConnection)Initial Catalog=AtlasMatchingIntegrationPersistent;'
       - name: MatchPrediction
         title: 'Match Prediction Integration Tests'
         tag: MatchPrediction

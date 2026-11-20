@@ -345,15 +345,16 @@ The integration tests need no Azure resources, and no pipeline variables or secr
 - Connection strings are passed as environment variables (e.g., `ConnectionStrings__SqlA`), which override the local defaults in each test project's `appsettings.json`.
 - The matching validation tests read the HLA Metadata Dictionary, at version 3330, and the MAC Dictionary from the same files as the integration tests,
   so nothing needs to be prepared for them in advance. A MAC used by a new validation test must be added to `LargeMacDictionary.csv`.
-- The tests are grouped in test categories: a test project, or part of one (by `--filter`). Each agent runs its categories at the same time,
-  each in its own `dotnet test` process, against its own databases: one category leaves most of an agent idle.
-  The two matching projects are each split in two, so that no category is much longer than the others.
+- The tests are grouped in test categories: a test project, or part of one (by `--filter`). Each agent runs its categories one after another,
+  a step each, against their own databases. Within a step, NUnit runs the fixtures that allow it (`[Parallelizable]`, so far the matching integration tests)
+  at the same time, on as many workers as "Integration test workers" says when you run the pipeline (4 by default: an agent has 2 cores, and the tests wait for SQL Server).
+  The matching validation tests are split in two by feature, so that no category is much longer than the others.
   The categories, and the agent each runs on, are listed in "build-pipeline.yml". "Integration test agents", when you run the pipeline, runs them all on one agent instead.
 - Each category is published as its own test run, tagged with its area (e.g. `MatchingAlgorithm`), so the Tests tab of a build can be filtered by tag.
   "Rerun failed jobs" runs again only the categories that did not pass.
 - Each job logs, at its end, the CPU and memory of the agent, of each category and of each container, and the I/O of each disk
   ("CPU, memory and disks"): the maximum, the average, the 95th percentile, and how long each was at its limit. It also logs what SQL Server waited for
-  ("SQL Server wait statistics"). The logs and TRX files of the categories are published as the `IntegrationTestResults-<job>-<attempt>` artifact,
+  ("SQL Server wait statistics"). The outcomes and TRX files of the categories are published as the `IntegrationTestResults-<job>-<attempt>` artifact,
   and the samples over time as `AgentResources-<job>-<attempt>`.
 
 ### E2E tests after a deploy (optional)

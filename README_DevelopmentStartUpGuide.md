@@ -264,40 +264,26 @@ The variables of a `.runsettings` file apply to every test project run with it, 
 So with one such file, run one test project at a time: each project clears its databases when its tests start.
 
 ### Run the suites in parallel
-The tests of one `dotnet test` process run one after another, and use about one core between them and SQL Server.
-So, as the pipeline does, you can run several processes at the same time, against the same containers, as long as each has its own databases.
-Locally, the suites took about 400 s all at once, instead of about 630 s one after another.
-A project can also be split into parts with `--filter`, each with its own databases. The pipeline splits the two matching projects in two (see `build-pipeline.yml`):
+The fixtures of `Atlas.MatchingAlgorithm.Test.Integration` run at the same time (`[assembly: Parallelizable]`), except those marked `[NonParallelizable]`,
+which need its databases to themselves: they expect them empty, clear them, or change the data refresh records. NUnit runs as many fixtures at once
+as there are cores; the pipeline sets the number, as the tests spend much of their time waiting for SQL Server:
+
+```bash
+dotnet test Atlas.MatchingAlgorithm.Test.Integration -- NUnit.NumberOfTestWorkers=4
+```
+
+A fixture that runs at the same time as others must only look at its own data: donor ids from `DonorIdGenerator`, its own DI scope
+(`DependencyInjection.Provider` gives each fixture one), and no assertions on whole tables. Otherwise mark it `[NonParallelizable]`.
+
+The other projects run their tests one after another. Several projects can also run at the same time, against the same containers,
+as long as each has its own databases: set their connection strings (see the table above) to different database names, and build first,
+or the `dotnet test` processes build the same projects at the same time and clash.
+The matching validation tests can be split by feature with `--filter`, each part with its own database, as the pipeline does (see `build-pipeline.yml`):
 
 | Part | Filter |
 |---|---|
-| Matching integration, Precompute and Search | `FullyQualifiedName~.IntegrationTests.Precompute.\|FullyQualifiedName~.IntegrationTests.Search.` |
-| Matching integration, the rest | `FullyQualifiedName!~.IntegrationTests.Precompute.&FullyQualifiedName!~.IntegrationTests.Search.` |
 | Matching validation, searches | `FullyQualifiedName~.ValidationTests.Features.AdultSearch.\|FullyQualifiedName~.ValidationTests.Features.CordSearch.\|FullyQualifiedName~.ValidationTests.Features.NullAlleles.` |
 | Matching validation, the rest | the same three features with `!~`, joined with `&` |
-
-For example, the two parts of the matching integration tests, from PowerShell, each in its own job:
-
-```powershell
-$server = 'Server=localhost,14330;User ID=sa;Password=Atlas-System-Tests-1;MultipleActiveResultSets=True;TrustServerCertificate=True;'
-$parts = @{
-    PrecomputeAndSearch = 'FullyQualifiedName~.IntegrationTests.Precompute.|FullyQualifiedName~.IntegrationTests.Search.'
-    Other = 'FullyQualifiedName!~.IntegrationTests.Precompute.&FullyQualifiedName!~.IntegrationTests.Search.'
-}
-$jobs = foreach ($part in $parts.Keys) {
-    Start-Job -ArgumentList $part, $parts[$part], $server, $PWD -ScriptBlock {
-        param($part, $filter, $server, $folder)
-        $env:ConnectionStrings__SqlA = "${server}Initial Catalog=AtlasMatchingIntegration${part}A;"
-        $env:ConnectionStrings__SqlB = "${server}Initial Catalog=AtlasMatchingIntegration${part}B;"
-        $env:ConnectionStrings__PersistentSql = "${server}Initial Catalog=AtlasMatchingIntegration${part}Persistent;"
-        dotnet test "$folder/Atlas.MatchingAlgorithm.Test.Integration" --filter $filter *> "$folder/$part.log"
-        "${part}: exit code $LASTEXITCODE"
-    }
-}
-$jobs | Receive-Job -Wait -AutoRemoveJob
-```
-
-Build the project first, or the two jobs build it at the same time and clash.
 
 ### Stop the containers
 ```bash

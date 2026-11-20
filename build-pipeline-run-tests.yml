@@ -1,6 +1,6 @@
 # The jobs of the Integration Tests stage. Each job starts SQL Server, Azurite and the Service Bus emulator in containers on its agent,
-# then runs its test categories at the same time, each in its own dotnet test process, against its own databases.
-# One test category at a time leaves most of an agent idle: its tests and SQL Server use about one core between them.
+# then runs its test categories one after another, a step each, against their own databases. Within a step, NUnit runs the fixtures
+# that allow it at the same time, on as many workers as the testWorkers parameter says.
 # The categories run from the build output of the Build Tests stage (the "Tests" artifact); scripts are in its "Pipeline" folder (pipeline/ in the repository).
 #
 # Each category is published as its own test run, tagged with its area, for the Tests tab of the build.
@@ -17,13 +17,19 @@ parameters:
   #  - agent: the number of the agent it runs on.
   #  - filter (optional): the dotnet test filter, for a category that runs part of a project.
   #  - env (optional): environment variables, such as connection strings that override the local defaults in appsettings.json.
-  #    Categories run at the same time against one SQL Server, so each needs its own databases.
+  #    Each category has its own databases, so that it does not depend on what an earlier one left.
   - name: categories
     type: object
-  # How long the categories of a job may take, all together, before the job stops waiting for them. They take about 3 minutes.
+  # How many test fixtures NUnit runs at the same time in a category (NUnit.NumberOfTestWorkers). Only fixtures that allow it run
+  # at the same time ([Parallelizable]); in a project with none, the tests run one after another whatever this is.
+  # An agent has 2 cores, and the tests spend much of their time waiting for SQL Server, so more workers than cores keep the cores busy.
+  - name: testWorkers
+    type: number
+    default: 4
+  # How long one category may take before its step is stopped. The longest takes about 3 minutes.
   - name: testTimeoutMinutes
     type: number
-    default: 20
+    default: 15
 
 jobs:
 - ${{ each agent in parameters.agents }}:
@@ -36,8 +42,10 @@ jobs:
       vmImage: 'ubuntu-latest'
     variables:
       testsFolder: '$(Pipeline.Workspace)/Tests'
-      # A folder per category: its title, tag, log, exit code and TRX file.
+      # A folder per category: its outcome and TRX file.
       categoriesFolder: '$(Agent.TempDirectory)/IntegrationTests'
+      # Set to true by the first category that runs; when all passed in earlier attempts, there is nothing to publish.
+      testsRan: 'false'
       resultsArtifactPrefix: 'IntegrationTestResults-Integration_Tests_${{ agent }}-'
       # The CPU, memory and disk samples of the agent (see pipeline/measure-agent-resources.sh).
       resourcesFolder: '$(Agent.TempDirectory)/Resources'
@@ -177,7 +185,8 @@ jobs:
     - bash: bash "$(testsFolder)/Pipeline/measure-agent-resources.sh" start "$(resourcesFolder)"
       displayName: 'Start sampling CPU, memory and disks'
 
-    # Each category starts in the background, and runs while the next ones start. "Wait for the tests" waits for them all.
+    # A step per category, one after another. Each runs even if an earlier one failed, so that one failure does not hide another.
+    # It publishes its test run itself; the time of each publish is kept for "Tag test runs", which looks for the runs created since.
     # TEST_CATEGORY marks its processes for the CPU and memory samples.
     - ${{ each category in parameters.categories }}:
       - ${{ if or(eq(agent, 0), eq(category.agent, agent)) }}:
@@ -186,21 +195,26 @@ jobs:
               echo "Passed in an earlier attempt of this job, so not run again"
               exit 0
             fi
+            echo "##vso[task.setvariable variable=testsRan]true"
 
             folder="$(categoriesFolder)/$TEST_CATEGORY"
             mkdir -p "$folder"
-            echo "$TEST_RUN_TITLE" > "$folder/title"
-            echo "$TEST_RUN_TAG" > "$folder/tag"
-            date +%s > "$folder/started"
             # Run from the build output, where the tests read appsettings.json from.
-            # The exit code is written once the tests end, and renamed into place, so that the wait never reads half of it.
-            nohup bash -c '
-              dotnet test ${{ category.project }}.dll --logger "trx;LogFileName=$TEST_CATEGORY.trx" --results-directory "$1" ${2:+--filter "$2"}
-              echo $? > "$1/exit-code.tmp"
-              mv "$1/exit-code.tmp" "$1/exit-code"
-            ' run-tests "$folder" "$TEST_FILTER" > "$folder/output.log" 2>&1 < /dev/null &
-            echo "Started; its output is in the log of \"Wait for the tests\""
-          displayName: 'Start ${{ category.title }}'
+            exitCode=0
+            dotnet test ${{ category.project }}.dll --logger "trx;LogFileName=$TEST_CATEGORY.trx" --results-directory "$folder" \
+              ${TEST_FILTER:+--filter "$TEST_FILTER"} -- NUnit.NumberOfTestWorkers=${{ parameters.testWorkers }} || exitCode=$?
+            if [[ $exitCode == 0 ]]; then echo passed > "$folder/outcome"; else echo failed > "$folder/outcome"; fi
+
+            if [[ -f "$folder/$TEST_CATEGORY.trx" ]]; then
+              echo "##vso[results.publish type=VSTest;mergeResults=false;publishRunAttachments=true;runTitle=$TEST_RUN_TITLE;resultFiles=$folder/$TEST_CATEGORY.trx;]"
+              printf '%s\t%s\t%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$TEST_RUN_TITLE" "$TEST_RUN_TAG" >> "$(categoriesFolder)/published-test-runs.txt"
+            else
+              echo "##vso[task.logissue type=warning]$TEST_RUN_TITLE wrote no test results"
+            fi
+            exit $exitCode
+          displayName: '${{ category.title }}'
+          condition: succeededOrFailed()
+          timeoutInMinutes: ${{ parameters.testTimeoutMinutes }}
           workingDirectory: '$(testsFolder)/Integration/${{ category.project }}'
           env:
             TEST_CATEGORY: '${{ category.name }}'
@@ -210,45 +224,6 @@ jobs:
             ${{ if category.env }}:
               ${{ each variable in category.env }}:
                 ${{ variable.key }}: ${{ variable.value }}
-
-    # Prints each category's outcome and time as it ends, then each category's output, and fails if any category failed.
-    - bash: |
-        shopt -s nullglob
-        categories=("$(categoriesFolder)"/*/)
-        if (( ${#categories[@]} == 0 )); then
-          echo "No category to run: all passed in earlier attempts"
-          echo "##vso[task.setvariable variable=testsRan]false"
-          exit 0
-        fi
-
-        declare -A reported=()
-        while (( ${#reported[@]} < ${#categories[@]} )); do
-          for folder in "${categories[@]}"; do
-            category=$(basename "$folder")
-            if [[ -z "${reported[$category]:-}" && -f "$folder/exit-code" ]]; then
-              reported[$category]=1
-              outcome=$([[ $(cat "$folder/exit-code") == 0 ]] && echo passed || echo failed)
-              echo "$outcome" > "$folder/outcome"
-              took=$(( $(date +%s) - $(cat "$folder/started") ))
-              echo "$(date +%T) $category $outcome in $(( took / 60 )) min $(( took % 60 )) s"
-            fi
-          done
-          sleep 2
-        done
-
-        failed=0
-        for folder in "${categories[@]}"; do
-          echo "##[group]$(cat "$folder/title"): $(cat "$folder/outcome")"
-          cat "$folder/output.log"
-          echo "##[endgroup]"
-          if [[ $(cat "$folder/outcome") != passed ]]; then
-            echo "##vso[task.logissue type=error]$(cat "$folder/title") failed: see its group in this log"
-            failed=1
-          fi
-        done
-        exit $failed
-      displayName: 'Wait for the tests'
-      timeoutInMinutes: ${{ parameters.testTimeoutMinutes }}
 
     - bash: bash "$(testsFolder)/Pipeline/measure-agent-resources.sh" stop "$(resourcesFolder)"
       displayName: 'CPU, memory and disks'
@@ -283,31 +258,15 @@ jobs:
       env:
         SQL_SA_PASSWORD: $(sqlSaPassword)
 
-    # Each category as its own test run. The time of each publish is kept for "Tag test runs", which looks for the runs created since.
-    - bash: |
-        shopt -s nullglob
-        for folder in "$(categoriesFolder)"/*/; do
-          title=$(cat "$folder/title")
-          trx=("$folder"*.trx)
-          if (( ${#trx[@]} == 0 )); then
-            echo "##vso[task.logissue type=warning]$title wrote no test results: its log in \"Wait for the tests\" shows what ran"
-            continue
-          fi
-          echo "##vso[results.publish type=VSTest;mergeResults=false;publishRunAttachments=true;runTitle=$title;resultFiles=${trx[0]};]"
-          printf '%s\t%s\t%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$title" "$(cat "$folder/tag")" >> "$(categoriesFolder)/published-test-runs.txt"
-        done
-      displayName: 'Publish test results'
-      condition: succeededOrFailed()
-
-    # Read by "Download outcomes of earlier attempts" of a rerun, with the logs and TRX files for anyone looking into a failure.
+    # Read by "Download outcomes of earlier attempts" of a rerun, with the TRX files for anyone looking into a failure.
     - publish: '$(categoriesFolder)'
       artifact: '$(resultsArtifactPrefix)$(System.JobAttempt)'
-      displayName: 'Publish outcomes, logs and test results'
-      condition: and(succeededOrFailed(), ne(variables['testsRan'], 'false'))
+      displayName: 'Publish outcomes and test results'
+      condition: and(succeededOrFailed(), eq(variables['testsRan'], 'true'))
 
     - task: PowerShell@2
       displayName: 'Tag test runs'
-      condition: succeededOrFailed()
+      condition: and(succeededOrFailed(), eq(variables['testsRan'], 'true'))
       continueOnError: true
       inputs:
         pwsh: true
