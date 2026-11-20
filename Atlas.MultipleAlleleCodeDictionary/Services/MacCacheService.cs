@@ -10,7 +10,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Services
 {
     public interface IMacCacheService
     {
-        Task<IEnumerable<string>> GetHlaFromMac(string firstField, string macCode);
+        Task<IEnumerable<string>> GetHlaFromMac(string macCode, string firstField);
         Task<Mac> GetMacCode(string macCode);
 
         /// <inheritdoc cref="ExternalInterface.IMacDictionary.PreWarmAllMacs" />

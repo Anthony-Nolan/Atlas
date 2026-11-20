@@ -60,7 +60,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
         /// <inheritdoc />
         public async Task<IEnumerable<string>> GetHlaFromMac(string firstField, string mac)
         {
-            return await macCacheService.GetHlaFromMac(firstField, mac);
+            return await macCacheService.GetHlaFromMac(macCode: mac, firstField: firstField);
         }
         
         /// <inheritdoc />
@@ -74,7 +74,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
             var firstField = parts[0];
             var mac = parts[1];
 
-            return await macCacheService.GetHlaFromMac(mac, firstField);
+            return await macCacheService.GetHlaFromMac(macCode: mac, firstField: firstField);
         }
 
         /// <inheritdoc />
