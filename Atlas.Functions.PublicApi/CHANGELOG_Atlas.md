@@ -120,6 +120,10 @@ Feature flags permit greater control over the release of new features (see this 
 #### Service Bus
 * BF: Each app process now keeps one Service Bus sender for each topic that it sends to, for as long as it runs. Before, the apps made a new sender, with its own link to Service Bus, for each search request, repeat search request and results notification that they sent, and for each function call or worker batch that sent other messages. Some of these senders were never closed, for example the one for the batch results of the match prediction worker: each one kept its link open until Service Bus closed it, 10 minutes after its last message. Now each app process uses one link for each topic, and closes its links when it stops.
 
+#### MAC Dictionary
+* BF: The `GetHlaFromMac` function of the top-level functions app (`<ENV>-ATLAS-FUNCTIONS`) now expands the MAC in its `macCode` query parameter, with the first field in `firstField`. Before, it used the first field as the MAC code: `GetHlaFromMac?macCode=AB&firstField=01` failed with HTTP 500, and only a request with the two values swapped returned the alleles. Searches, the HLA Metadata Dictionary and match prediction do not change: they expand MACs through another method, which was correct.
+  * A request with the two values swapped now fails. Send the MAC code in `macCode` and the first field in `firstField`.
+
 ### 4.1.0
 
 #### Debug

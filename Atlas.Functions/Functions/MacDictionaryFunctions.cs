@@ -72,7 +72,7 @@ namespace Atlas.Functions.Functions
         {
             var macCode = request.Query["macCode"];
             var firstField = request.Query["firstField"];
-            return new OkObjectResult(await macDictionary.GetHlaFromMac(firstField, macCode));
+            return new OkObjectResult(await macDictionary.GetHlaFromMac(firstField: firstField, mac: macCode));
         }
         
     }

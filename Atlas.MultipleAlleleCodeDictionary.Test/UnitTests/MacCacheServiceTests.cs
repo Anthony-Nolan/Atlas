@@ -80,7 +80,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.UnitTests
             macStore.AddMac(mac.Code, new MacValue(mac.Hla, mac.IsGeneric));
             mockExpander.ExpandMac(Arg.Is<Mac>(m => m.Hla == mac.Hla && m.IsGeneric == mac.IsGeneric), firstField).Returns(expandedHla);
 
-            var hla = await macCacheService.GetHlaFromMac(mac.Code, firstField);
+            // Named arguments bind to the names of the interface, so this fails if the class takes them in another order.
+            var hla = await macCacheService.GetHlaFromMac(macCode: mac.Code, firstField: firstField);
 
             hla.Should().BeEquivalentTo(expandedHla);
         }
