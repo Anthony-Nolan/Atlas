@@ -1,11 +1,13 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Test.SharedTestHelpers;
+using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
+using AutoFixture;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -17,6 +19,8 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Reading
     {
         private IDonorFileImporter donorFileImporter;
         private IDonorInspectionRepository donorRepository;
+        private IDonorReader donorReader;
+        private Fixture fixture;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -25,9 +29,16 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Reading
             {
                 donorFileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
                 donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
+                donorReader = new DonorReader(donorRepository);
             });
         }
-        
+
+        [SetUp]
+        public void SetUp()
+        {
+            fixture = new Fixture();
+        }
+
         [TearDown]
         public void OneTimeTearDown()
         {
@@ -79,6 +90,23 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Reading
             var donors = await donorRepository.GetDonorsByIds(allDonorIds);
 
             donors.Count.Should().Be(donorCount);
+        }
+
+        [Test]
+        public async Task GetExistingExternalDonorCodes_WithMoreCodesThanOneBatch_ReturnsOnlyCodesOfDonorsInStore()
+        {
+            // The codes are read in batches of 1500
+            const int donorCount = 1600;
+            var donorUpdates = DonorUpdateBuilder.New.Build(donorCount).ToArray();
+            var donorFile = DonorImportFileBuilder.NewWithoutContents.WithDonors(donorUpdates).Build();
+            await donorFileImporter.ImportDonorFile(donorFile);
+
+            var existingCodes = donorUpdates.Select(d => d.RecordId).ToList();
+            var missingCodes = fixture.CreateMany<string>(200).ToList();
+
+            var codes = await donorReader.GetExistingExternalDonorCodes(existingCodes.Concat(missingCodes));
+
+            codes.Should().BeEquivalentTo(existingCodes);
         }
     }
 }

@@ -20,11 +20,13 @@ namespace Atlas.DonorImport.ExternalInterface
         Task<IReadOnlyDictionary<int, Donor>> GetDonors(IEnumerable<int> donorIds);
 
         /// <summary>
-        /// Fetch donors by *external* donor codes
+        /// Finds which of the given *external* donor codes belong to donors in the donor store.
+        /// Reads only the codes, not the donor rows.
         /// </summary>
-        /// <param name="externalDonorCodes">External Donor Codes to fetch</param>
-        /// <returns>A dictionary of External Donor Code to full donor information.</returns>
-        Task<IReadOnlyDictionary<string, Donor>> GetDonorsByExternalDonorCodes(IEnumerable<string> externalDonorCodes);
+        /// <param name="externalDonorCodes">External Donor Codes to look for</param>
+        /// <returns>The given codes that belong to donors in the donor store.</returns>
+        Task<IReadOnlyCollection<string>> GetExistingExternalDonorCodes(IEnumerable<string> externalDonorCodes);
+
         /// <summary>
         /// Fetch donors added/updated since a certain date
         /// </summary>
@@ -54,10 +56,9 @@ namespace Atlas.DonorImport.ExternalInterface
         }
 
         /// <inheritdoc />
-        public async Task<IReadOnlyDictionary<string, Donor>> GetDonorsByExternalDonorCodes(IEnumerable<string> externalDonorCodes)
+        public async Task<IReadOnlyCollection<string>> GetExistingExternalDonorCodes(IEnumerable<string> externalDonorCodes)
         {
-            var donors = await donorReadRepository.GetDonorsByExternalDonorCodes(externalDonorCodes.ToList());
-            return donors.ToDictionary(d => d.Key, d => d.Value.ToPublicDonor());
+            return await donorReadRepository.GetExistingExternalDonorCodes(externalDonorCodes);
         }
 
         /// <inheritdoc />
