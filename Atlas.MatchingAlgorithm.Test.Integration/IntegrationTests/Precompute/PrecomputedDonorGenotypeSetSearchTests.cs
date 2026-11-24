@@ -135,6 +135,7 @@ internal class PrecomputedDonorGenotypeSetSearchTests
         resolver = new DonorGenotypeSetSourceResolver(
             new PrecomputedDonorGenotypeSetReader(historyRepository, repositoryFactory),
             frequencySetLookup,
+            Substitute.For<IGenotypeSetReadRecorder>(),
             logger);
         completer = new DonorGenotypeSetBatchCompleter(writer, logger);
 
