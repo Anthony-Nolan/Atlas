@@ -27,18 +27,28 @@ internal class DonorGenotypeSetSourceResolver : IDonorGenotypeSetSourceResolver
     internal const string ReadFailedEventName = "Precomputed genotype set read failed";
 
     private readonly IPrecomputedDonorGenotypeSetReader reader;
+    private readonly IGenotypeSetReadRecorder readRecorder;
     private readonly IAtlasLogger logger;
 
     public DonorGenotypeSetSourceResolver(
         IPrecomputedDonorGenotypeSetReader reader,
+        IGenotypeSetReadRecorder readRecorder,
         IAtlasLogger logger)
     {
         this.reader = reader;
+        this.readRecorder = readRecorder;
         this.logger = logger;
     }
 
     /// <inheritdoc />
     public async Task<DonorGenotypeSetBatchContext> Resolve(IdentifiedMatchProbabilityRequest request, IReadOnlyCollection<DonorInput> donors)
+    {
+        var context = await ResolveContext(request, donors);
+        Record(request, donors, context);
+        return context;
+    }
+
+    private async Task<DonorGenotypeSetBatchContext> ResolveContext(IdentifiedMatchProbabilityRequest request, IReadOnlyCollection<DonorInput> donors)
     {
         if (!UsesPrecomputedGenotypeSets(request))
         {
@@ -75,6 +85,22 @@ internal class DonorGenotypeSetSourceResolver : IDonorGenotypeSetSourceResolver
     /// </remarks>
     internal static bool UsesPrecomputedGenotypeSets(MatchProbabilityRequestBase request) =>
         request.UsePrecomputedGenotypeSets == true;
+
+    /// <summary>
+    /// On both paths, so the ATL-347 measurement covers live searches too (ATL-571). The recorder never throws, but it
+    /// is guarded here as well: recording must never fail the batch.
+    /// </summary>
+    private void Record(IdentifiedMatchProbabilityRequest request, IReadOnlyCollection<DonorInput> donors, DonorGenotypeSetBatchContext context)
+    {
+        try
+        {
+            readRecorder.Record(request, donors, context);
+        }
+        catch
+        {
+            // Recording is a measurement only.
+        }
+    }
 
     private void LogReadFailure(IdentifiedMatchProbabilityRequest request, Exception exception)
     {

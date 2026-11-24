@@ -122,6 +122,7 @@ internal class PrecomputedDonorGenotypeSetSearchTests
             .Do(call => usageMetrics = call.ArgAt<Dictionary<string, double>>(3));
         resolver = new DonorGenotypeSetSourceResolver(
             new PrecomputedDonorGenotypeSetReader(historyRepository, repositoryFactory),
+            Substitute.For<IGenotypeSetReadRecorder>(),
             logger);
         completer = new DonorGenotypeSetBatchCompleter(writer, logger);
 

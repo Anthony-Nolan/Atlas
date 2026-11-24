@@ -131,6 +131,10 @@ resource "azurerm_container_app" "atlas_match_prediction" {
         value = tostring(var.MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT)
       }
       env {
+        name  = "GenotypeSetReadRecording__Enabled"
+        value = tostring(var.MATCH_PREDICTION_RECORD_GENOTYPE_SET_READS)
+      }
+      env {
         name  = "HaplotypeFrequencySetCache__MaxCachedFrequencySets"
         value = tostring(var.MATCH_PREDICTION_WORKER_MAX_CACHED_FREQUENCY_SETS)
       }
