@@ -72,6 +72,8 @@
     "MatchPrediction:GenotypeImputation:MaximumExpandedGenotypesPerInput": 2000,
     "MatchPrediction:AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "MatchPrediction:AzureStorage:MatchPredictionResultsBlobContainer": "match-prediction-results",
+    "MatchPrediction:GenotypeSetReadRecording:Enabled": false,
+    "MatchPrediction:GenotypeSetReadRecording:BlobContainer": "genotype-set-read-records",
 
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",

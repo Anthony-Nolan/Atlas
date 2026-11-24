@@ -147,6 +147,10 @@ resource "azurerm_container_app" "atlas_match_prediction" {
         value = var.function_apps_identity.client_id
       }
       env {
+        name  = "GenotypeSetReadRecording__Enabled"
+        value = tostring(var.MATCH_PREDICTION_RECORD_GENOTYPE_SET_READS)
+      }
+      env {
         name  = "HaplotypeFrequencySetCache__ActiveSetCacheExpiryMinutes"
         value = tostring(var.ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES)
       }
