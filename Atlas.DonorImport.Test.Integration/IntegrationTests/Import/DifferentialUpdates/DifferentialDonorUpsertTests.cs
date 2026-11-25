@@ -16,6 +16,7 @@ using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
+using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 using Donor = Atlas.DonorImport.Data.Models.Donor;
 
 namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.DifferentialUpdates;
@@ -50,11 +51,14 @@ public class DifferentialDonorUpsertTests
     {
         TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
         {
-            donorReadRepositorySpy = BuildForwardingSpy(DependencyInjection.DependencyInjection.Provider.GetService<IDonorReadRepository>());
+            // A substitute that records its calls, and passes each call on to a real DonorReadRepository.
+            // It is scoped, so the fixture and the importer get the same instance from the fixture's scope.
             var services = DependencyInjection.ServiceConfiguration.BuildServiceCollection();
-            services.AddScoped(_ => donorReadRepositorySpy);
+            services.AddScoped(sp => Substitute.ForTypeForwardingTo<IDonorReadRepository, DonorReadRepository>(
+                ConnectionStringReader(DependencyInjection.ServiceConfiguration.DonorStoreSqlConnectionString)(sp)));
             DependencyInjection.DependencyInjection.BackingProvider = services.BuildServiceProvider();
 
+            donorReadRepositorySpy = DependencyInjection.DependencyInjection.Provider.GetService<IDonorReadRepository>();
             updatesInspectionRepository = DependencyInjection.DependencyInjection.Provider.GetService<IPublishableDonorUpdatesInspectionRepository>();
             donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
             fileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
@@ -318,21 +322,6 @@ public class DifferentialDonorUpsertTests
 
         var file = fileBuilder.WithDonors(newDonors.Concat(changedDonors).Append(unchangedDonor).ToArray()).Build();
         return new UpsertFile(file, newDonors, changedStoredDonors, unchangedStoredDonor);
-    }
-
-    /// <summary>
-    /// A substitute that records its calls, and passes the reads of a donor import on to <paramref name="donorReadRepository"/>.
-    /// </summary>
-    private static IDonorReadRepository BuildForwardingSpy(IDonorReadRepository donorReadRepository)
-    {
-        var spy = Substitute.For<IDonorReadRepository>();
-        spy.GetExistingExternalDonorCodes(default)
-            .ReturnsForAnyArgs(call => donorReadRepository.GetExistingExternalDonorCodes(call.Arg<IEnumerable<string>>()));
-        spy.GetDonorsByExternalDonorCodes(default)
-            .ReturnsForAnyArgs(call => donorReadRepository.GetDonorsByExternalDonorCodes(call.Arg<ICollection<string>>()));
-        spy.GetDonorIdsByExternalDonorCodes(default)
-            .ReturnsForAnyArgs(call => donorReadRepository.GetDonorIdsByExternalDonorCodes(call.Arg<ICollection<string>>()));
-        return spy;
     }
 
     private record UpsertFile(

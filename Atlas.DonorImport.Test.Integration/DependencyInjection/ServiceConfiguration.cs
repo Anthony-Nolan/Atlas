@@ -22,7 +22,7 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
 {
     internal static class ServiceConfiguration
     {
-        private const string DonorStoreSqlConnectionString = "DonorStoreSql";
+        internal const string DonorStoreSqlConnectionString = "DonorStoreSql";
 
         public static IServiceProvider CreateProvider()
         {
