@@ -23,6 +23,8 @@ The following are the steps that are required to be taken manually when deployin
 - An *Azure subscription* must exist into which the Atlas system will be deployed.
 - An *Azure storage account* must be available for Terraform to use as a backend.
 - An *App Registration* should be created within Azure Active Directory, to be used by Terraform for authentication.
+    - It has no client secret: the release signs in as it through workload identity federation - see [Terraform authentication](#terraform-authentication).
+    - It needs `Storage Blob Data Contributor` on the Terraform backend container, as the backend reads and writes state with Entra auth rather than the storage account key.
 - A second *App Registration* should be created within Azure Active Directory, to be used by the code itself for managing azure resources at runtime.
     - e.g. The matching algorithm Data Refresh needs to be able to scale azure databases at runtime.
     - It also allows Terraform to fetch function keys.
@@ -39,26 +41,51 @@ The following are the steps that are required to be taken manually when deployin
 ### Azure Devops Configuration
 
 #### 1. Create Variable Group
-A variable group named "Terraform" should be created, with the following variables.
+A variable group named "Terraform" should be created, with the following variables. None of them is a secret.
 
 ##### Azure Authentication
-These variables are used by Terraform for authentication so it can manage resources. They should be retrieved from the app registration created for Terraform:
+The client ID and tenant ID of the app registration created for Terraform:
   - `ARM_CLIENT_ID`
-  - `ARM_CLIENT_SECRET`
   - `ARM_TENANT_ID`
 
 ##### Terraform Backend
-These variables are used to access the storage container that hosts the Terraform backend.
-Note, these are currently duplicated as release variables; build and release must use the same values to ensure that both `validate` and `apply` use the same backend!
+The storage container that hosts the Terraform backend:
 
-- `ARM_ACCESS_KEY`
-  - Access key of the storage account
 - `BACKEND_RESOURCE_GROUP_NAME`
   - Resource group to which storage account belongs
 - `BACKEND_STORAGE_ACCOUNT_NAME`
   - Storage account name
 - `BACKEND_STORAGE_CONTAINER_NAME`
   - Name of storage container, e.g., `terraform-state`
+
+The build pipeline does not use this group: it validates the Terraform with `terraform init -backend=false`, which
+needs no state and no Azure credentials.
+
+##### Terraform authentication
+The release signs in to Azure as the Terraform app registration through workload identity federation, so there is no
+client secret or storage account key to store or rotate:
+
+- An Azure Resource Manager service connection, "Atlas Terraform WIF", uses the app registration (workload identity
+  federation, manual), and is authorised for the release pipeline. The app registration holds a federated credential
+  with the issuer and subject that the service connection dialog shows. One connection serves every stage: the
+  subscription comes from `TF_VAR_AZURE_SUBSCRIPTION_ID`.
+- "Allow scripts to access the OAuth token" is ticked on the agent job of each stage that runs Terraform.
+- Every step that runs Terraform - the "terraform init", "select terraform workspace" and "plan terraform"/"apply
+  terraform" steps of the "Atlas - Plan Terraform" and "Atlas - Apply Terraform" task groups, and the stage's "Make
+  Terraform Output Variables Available to Azure" step - sets these environment variables:
+
+| Environment variable | Value |
+| --- | --- |
+| `ARM_USE_OIDC` | `true` |
+| `ARM_USE_AZUREAD` | `true`, so that the backend uses Entra auth instead of the storage account key |
+| `ARM_ADO_PIPELINE_SERVICE_CONNECTION_ID` | The id of the "Atlas Terraform WIF" service connection |
+| `ARM_OIDC_REQUEST_TOKEN` | `$(System.AccessToken)` |
+
+With these, the provider and the backend request a fresh token from Azure DevOps whenever they need one, so a long
+apply does not outlive its token.
+
+People who run Terraform locally sign in with `az login`, and need a data-plane role, such as `Storage Blob Data
+Contributor`, on the backend container.
 
 #### 2. Remaining Steps
 - New Devops build pipelines should be created, using the checked in `<pipeline>.yml` files.
