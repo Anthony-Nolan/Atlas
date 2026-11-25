@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 
 namespace Atlas.HlaMetadataDictionary.WmdaDataAccess;
@@ -68,22 +69,26 @@ internal class WmdaFileDownloader : IWmdaFileReader
         // follow DNS changes.
         var httpClient = httpClientFactory.CreateClient(HttpClientName);
         using var request = new HttpRequestMessage(HttpMethod.Get, fileAddress);
-        var response = httpClient.Send(request, HttpCompletionOption.ResponseContentRead);
+        HttpResponseMessage response = null;
 
-        // Unlike WebClient, HttpClient does not throw on a non-success status. Without this check, the error page of a
-        // missing file would be parsed as its content.
         try
         {
+            response = httpClient.Send(request, HttpCompletionOption.ResponseContentRead);
+
+            // Unlike WebClient, HttpClient does not throw on a non-success status. Without this check, the error page of a
+            // missing file would be parsed as its content.
             response.EnsureSuccessStatusCode();
             return response;
         }
-        catch (HttpRequestException exception)
+        // Send gets no cancellation token, so a TaskCanceledException from it is always the timeout of the client. The
+        // messages of a timeout and of a connection failure do not have the file address, so the address is added here.
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException)
         {
-            response.Dispose();
+            response?.Dispose();
             throw new HttpRequestException(
                 $"Could not download the WMDA file {fileAddress}. {exception.Message}",
                 exception,
-                exception.StatusCode);
+                (exception as HttpRequestException)?.StatusCode);
         }
     }
 

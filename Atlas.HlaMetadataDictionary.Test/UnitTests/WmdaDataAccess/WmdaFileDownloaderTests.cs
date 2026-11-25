@@ -24,6 +24,7 @@ public class WmdaFileDownloaderTests
     private string sourceUrl;
     private string version;
     private string fileName;
+    private TimeSpan clientTimeout;
     private WmdaFileDownloader downloader;
 
     [SetUp]
@@ -34,9 +35,11 @@ public class WmdaFileDownloaderTests
         sourceUrl = fixture.Create<Uri>().ToString();
         version = fixture.Create<string>();
         fileName = fixture.Create<string>();
+        clientTimeout = WmdaFileDownloader.DownloadTimeout;
 
         var httpClientFactory = Substitute.For<IHttpClientFactory>();
-        httpClientFactory.CreateClient(WmdaFileDownloader.HttpClientName).Returns(_ => new HttpClient(handler, disposeHandler: false));
+        httpClientFactory.CreateClient(WmdaFileDownloader.HttpClientName)
+            .Returns(_ => new HttpClient(handler, disposeHandler: false) { Timeout = clientTimeout });
 
         downloader = new WmdaFileDownloader(httpClientFactory, new HlaMetadataDictionarySettings { HlaNomenclatureSourceUrl = sourceUrl });
     }
@@ -126,6 +129,32 @@ public class WmdaFileDownloaderTests
     }
 
     [Test]
+    public void GetFileContentsWithoutHeader_WhenSendFails_ThrowsWithFileAddress()
+    {
+        var sendException = new HttpRequestException(fixture.Create<string>());
+        handler.SendException = sendException;
+
+        var act = () => downloader.GetFileContentsWithoutHeader(version, fileName).ToList();
+
+        act.Should().ThrowExactly<HttpRequestException>()
+            .WithMessage($"*{FileAddress}*")
+            .Which.InnerException.Should().BeSameAs(sendException);
+    }
+
+    [Test]
+    public void GetFileContentsWithoutHeader_WhenClientTimesOut_ThrowsWithFileAddress()
+    {
+        clientTimeout = TimeSpan.FromMilliseconds(50);
+        handler.WaitsUntilCancelled = true;
+
+        var act = () => downloader.GetFileContentsWithoutHeader(version, fileName).ToList();
+
+        act.Should().ThrowExactly<HttpRequestException>()
+            .WithMessage($"*{FileAddress}*")
+            .WithInnerExceptionExactly<TaskCanceledException>();
+    }
+
+    [Test]
     public void GetFirstNonCommentLine_ReturnsFirstLineAfterCommentLines()
     {
         var firstLine = fixture.Create<string>();
@@ -181,14 +210,43 @@ public class WmdaFileDownloaderTests
             .Which.StatusCode.Should().Be(statusCode);
     }
 
+    [Test]
+    public void GetFirstNonCommentLine_WhenSendFails_ThrowsWithFileAddress()
+    {
+        var sendException = new HttpRequestException(fixture.Create<string>());
+        handler.SendException = sendException;
+
+        var act = () => downloader.GetFirstNonCommentLine(version, fileName);
+
+        act.Should().ThrowExactly<HttpRequestException>()
+            .WithMessage($"*{FileAddress}*")
+            .Which.InnerException.Should().BeSameAs(sendException);
+    }
+
+    [Test]
+    public void GetFirstNonCommentLine_WhenClientTimesOut_ThrowsWithFileAddress()
+    {
+        clientTimeout = TimeSpan.FromMilliseconds(50);
+        handler.WaitsUntilCancelled = true;
+
+        var act = () => downloader.GetFirstNonCommentLine(version, fileName);
+
+        act.Should().ThrowExactly<HttpRequestException>()
+            .WithMessage($"*{FileAddress}*")
+            .WithInnerExceptionExactly<TaskCanceledException>();
+    }
+
     /// <summary>
-    /// Answers each request with <see cref="StatusCode"/> and <see cref="Body"/>. It supports only the synchronous send,
-    /// so a test fails if the downloader sends asynchronously.
+    /// Answers each request with <see cref="StatusCode"/> and <see cref="Body"/>, throws <see cref="SendException"/>, or,
+    /// with <see cref="WaitsUntilCancelled"/>, waits until the client cancels the request. It supports only the
+    /// synchronous send, so a test fails if the downloader sends asynchronously.
     /// </summary>
     private sealed class FakeHttpMessageHandler : HttpMessageHandler
     {
         public HttpStatusCode StatusCode { get; set; } = HttpStatusCode.OK;
         public string Body { get; set; } = "";
+        public Exception SendException { get; set; }
+        public bool WaitsUntilCancelled { get; set; }
         public List<Uri> RequestUris { get; } = new();
         public DisposalTrackingResponse LastResponse { get; private set; }
         public ContentStream LastContentStream { get; private set; }
@@ -196,6 +254,20 @@ public class WmdaFileDownloaderTests
         protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             RequestUris.Add(request.RequestUri);
+
+            if (SendException != null)
+            {
+                throw SendException;
+            }
+
+            if (WaitsUntilCancelled)
+            {
+                // A limit, so that a test fails and does not hang if the client never cancels.
+                cancellationToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(30));
+                cancellationToken.ThrowIfCancellationRequested();
+                throw new InvalidOperationException("The client did not cancel the request.");
+            }
+
             LastContentStream = new ContentStream(Encoding.UTF8.GetBytes(Body));
             LastResponse = new DisposalTrackingResponse(StatusCode)
             {
