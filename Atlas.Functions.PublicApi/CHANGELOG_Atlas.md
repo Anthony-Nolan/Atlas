@@ -124,6 +124,9 @@ Feature flags permit greater control over the release of new features (see this 
 * BF: The `GetHlaFromMac` function of the top-level functions app (`<ENV>-ATLAS-FUNCTIONS`) now expands the MAC in its `macCode` query parameter, with the first field in `firstField`. Before, it used the first field as the MAC code: `GetHlaFromMac?macCode=AB&firstField=01` failed with HTTP 500, and only a request with the two values swapped returned the alleles. Searches, the HLA Metadata Dictionary and match prediction do not change: they expand MACs through another method, which was correct.
   * A request with the two values swapped now fails. Send the MAC code in `macCode` and the first field in `firstField`.
 
+#### Donor Import
+* E: Donor import reads less from the donor store for each batch, with the same results. The upserts (`NU`) of a batch read the stored donors once, not three times: one read gives both the split into new and existing donors and the rows that the changes are compared with. After the insert, the import reads the Atlas ids of the new donors only, not of all the upserts. The check that an edit (`U`) exists and that a differential create (`N`) does not exist reads only the codes of these records, and looks each code up in a set, not a list. So a batch of only upserts and deletions makes no read for this check.
+
 ### 4.1.0
 
 #### Debug

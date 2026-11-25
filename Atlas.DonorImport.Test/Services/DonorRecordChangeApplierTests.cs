@@ -11,8 +11,10 @@ using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Services.DonorUpdates;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
+using AutoFixture;
 using AwesomeAssertions;
 using NSubstitute;
+using NSubstitute.Extensions;
 using NUnit.Framework;
 using Donor = Atlas.DonorImport.Data.Models.Donor;
 
@@ -32,12 +34,14 @@ internal class DonorRecordChangeApplierTests
     private IDonorRecordChangeApplier donorOperationApplier;
 
     private IDonorUpdateMapper donorUpdateMapper;
+    private Fixture fixture;
 
     private readonly DonorImportFile defaultFile = new DonorImportFile { FileLocation = "file", UploadTime = DateTime.Now };
 
     [SetUp]
     public void SetUp()
     {
+        fixture = new Fixture();
         donorImportRepository = Substitute.For<IDonorImportRepository>();
         donorInspectionRepository = Substitute.For<IDonorReadRepository>();
         updatesSaver = Substitute.For<IDonorUpdatesSaver>();
@@ -165,22 +169,64 @@ internal class DonorRecordChangeApplierTests
     [Test]
     public async Task ApplyDonorOperationBatch_ForFullUpdate_DoesNotSavePublishableDonorUpdates()
     {
+        // The donors are new: the stored donor read set up in SetUp returns no donors.
         var donorUpdates = DonorUpdateBuilder.New
             .With(d => d.UpdateMode, UpdateMode.Full)
             .Build(2)
             .ToList();
 
-        donorInspectionRepository.GetDonorIdsByExternalDonorCodes(default).ReturnsForAnyArgs(new Dictionary<string, int>());
-
-        donorInspectionRepository.GetDonorsByExternalDonorCodes(default).ReturnsForAnyArgs(new Dictionary<string, Donor>
-        {
-            { donorUpdates[0].RecordId, new Donor { AtlasId = 1, ExternalDonorCode = donorUpdates[0].RegistryCode } },
-            { donorUpdates[1].RecordId, new Donor { AtlasId = 2, ExternalDonorCode = donorUpdates[1].RegistryCode } },
-        });
-
         await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile, 0);
 
+        await donorImportRepository.Received(1).InsertDonorBatch(Arg.Is<IEnumerable<Donor>>(donors => donors.Count() == donorUpdates.Count));
         await updatesSaver.DidNotReceiveWithAnyArgs().Save(default);
+    }
+
+    [Test]
+    public async Task ApplyDonorOperationBatch_ForDifferentialUpserts_ReadsStoredDonorsOnceBeforeWrites_AndIdsOfInsertedDonorsOnly()
+    {
+        var upsertBuilder = DonorUpdateBuilder.New
+            .With(d => d.UpdateMode, UpdateMode.Differential)
+            .With(d => d.ChangeType, ImportDonorChangeType.Upsert);
+        var newDonors = upsertBuilder.Build(2).ToList();
+        var changedDonors = upsertBuilder.Build(2).ToList();
+        var unchangedDonor = upsertBuilder.Build();
+
+        // Each mapped donor has its record id as its hash, so a stored donor is unchanged when its hash is its code.
+        donorUpdateMapper.Configure().MapToDatabaseDonor(default, default).ReturnsForAnyArgs(call =>
+        {
+            var update = call.Arg<DonorUpdate>();
+            return new Donor { ExternalDonorCode = update.RecordId, Hash = update.RecordId };
+        });
+        var storedDonors = changedDonors
+            .Select(d => new Donor { ExternalDonorCode = d.RecordId, AtlasId = fixture.Create<int>(), Hash = fixture.Create<string>() })
+            .Append(new Donor { ExternalDonorCode = unchangedDonor.RecordId, AtlasId = fixture.Create<int>(), Hash = unchangedDonor.RecordId })
+            .ToDictionary(d => d.ExternalDonorCode);
+        donorInspectionRepository.GetDonorsByExternalDonorCodes(default).ReturnsForAnyArgs(storedDonors);
+
+        List<string> codesOfIdRead = null;
+        donorInspectionRepository
+            .GetDonorIdsByExternalDonorCodes(Arg.Do<ICollection<string>>(codes => codesOfIdRead = codes.ToList()))
+            .Returns(call => call.Arg<ICollection<string>>().ToDictionary(code => code, _ => fixture.Create<int>()));
+        List<string> codesOfUpdatedDonors = null;
+        donorImportRepository
+            .UpdateDonorBatch(
+                Arg.Do<List<Donor>>(donors => codesOfUpdatedDonors = donors.Select(d => d.ExternalDonorCode).ToList()),
+                Arg.Any<DateTime>())
+            .Returns(Task.CompletedTask);
+
+        await donorOperationApplier.ApplyDonorRecordChangeBatch(newDonors.Concat(changedDonors).Append(unchangedDonor).ToList(), defaultFile, 0);
+
+        await donorInspectionRepository.Received(1).GetDonorsByExternalDonorCodes(Arg.Any<ICollection<string>>());
+        await donorInspectionRepository.Received(1).GetDonorIdsByExternalDonorCodes(Arg.Any<ICollection<string>>());
+        Received.InOrder(() =>
+        {
+            donorInspectionRepository.GetDonorsByExternalDonorCodes(Arg.Any<ICollection<string>>());
+            donorImportRepository.UpdateDonorBatch(Arg.Any<List<Donor>>(), Arg.Any<DateTime>());
+            donorImportRepository.InsertDonorBatch(Arg.Any<IEnumerable<Donor>>());
+            donorInspectionRepository.GetDonorIdsByExternalDonorCodes(Arg.Any<ICollection<string>>());
+        });
+        codesOfIdRead.Should().BeEquivalentTo(newDonors.Select(d => d.RecordId));
+        codesOfUpdatedDonors.Should().BeEquivalentTo(changedDonors.Select(d => d.RecordId));
     }
 
     [Test]

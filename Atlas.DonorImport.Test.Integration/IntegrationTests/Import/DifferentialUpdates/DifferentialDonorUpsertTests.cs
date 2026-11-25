@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Test.SharedTestHelpers;
+using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Models;
 using Atlas.DonorImport.FileSchema.Models;
@@ -13,7 +14,9 @@ using Atlas.Common.Test.SharedTestHelpers.Builders;
 using AutoFixture.Dsl;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
 using NUnit.Framework;
+using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 using Donor = Atlas.DonorImport.Data.Models.Donor;
 
 namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.DifferentialUpdates;
@@ -24,6 +27,7 @@ public class DifferentialDonorUpsertTests
     private IDonorInspectionRepository donorRepository;
     private IPublishableDonorUpdatesInspectionRepository updatesInspectionRepository;
     private IDonorFileImporter fileImporter;
+    private IDonorReadRepository donorReadRepositorySpy;
     private readonly IPostprocessComposer<DonorImportFile> fileBuilder = DonorImportFileBuilder.NewWithoutContents;
 
     private const string DonorCodePrefix = "external-donor-code-";
@@ -47,6 +51,14 @@ public class DifferentialDonorUpsertTests
     {
         TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
         {
+            // A substitute that records its calls, and passes each call on to a real DonorReadRepository.
+            // It is scoped, so the fixture and the importer get the same instance from the fixture's scope.
+            var services = DependencyInjection.ServiceConfiguration.BuildServiceCollection();
+            services.AddScoped(sp => Substitute.ForTypeForwardingTo<IDonorReadRepository, DonorReadRepository>(
+                ConnectionStringReader(DependencyInjection.ServiceConfiguration.DonorStoreSqlConnectionString)(sp)));
+            DependencyInjection.DependencyInjection.BackingProvider = services.BuildServiceProvider();
+
+            donorReadRepositorySpy = DependencyInjection.DependencyInjection.Provider.GetService<IDonorReadRepository>();
             updatesInspectionRepository = DependencyInjection.DependencyInjection.Provider.GetService<IPublishableDonorUpdatesInspectionRepository>();
             donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
             fileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
@@ -241,4 +253,80 @@ public class DifferentialDonorUpsertTests
         var updatesCountAfterImport = await updatesInspectionRepository.Count();
         updatesCountAfterImport.Should().Be(updatesCountBeforeImport + additionCount + modifiedCount);
     }
+
+    [Test]
+    public async Task ImportDonors_ForUpsert_WithNewChangedAndUnchangedDonors_CreatesAndUpdatesDonors_AndSavesUpdatesForNewAndChangedDonorsOnly()
+    {
+        var upsertFile = BuildUpsertFileWithNewChangedAndUnchangedDonors();
+        var updatesCountBeforeImport = await updatesInspectionRepository.Count();
+
+        // ACT
+        await fileImporter.ImportDonorFile(upsertFile.File);
+
+        donorRepository.StreamAllDonors().Should().HaveCount(InitialDonorsCount + upsertFile.NewDonors.Count);
+
+        foreach (var newDonor in upsertFile.NewDonors)
+        {
+            var dbDonor = await donorRepository.GetDonor(newDonor.RecordId);
+            dbDonor.Should().BeEquivalentTo(new { A_1 = Hla1 });
+        }
+
+        foreach (var changedStoredDonor in upsertFile.ChangedStoredDonors)
+        {
+            var dbDonor = await donorRepository.GetDonor(changedStoredDonor.ExternalDonorCode);
+            dbDonor.Should().BeEquivalentTo(new { changedStoredDonor.AtlasId, A_1 = Hla3 });
+        }
+
+        var unchangedDbDonor = await donorRepository.GetDonor(upsertFile.UnchangedStoredDonor.ExternalDonorCode);
+        unchangedDbDonor.Should().BeEquivalentTo(upsertFile.UnchangedStoredDonor);
+
+        var updatesCountAfterImport = await updatesInspectionRepository.Count();
+        updatesCountAfterImport.Should().Be(updatesCountBeforeImport + upsertFile.NewDonors.Count + upsertFile.ChangedStoredDonors.Count);
+    }
+
+    [Test]
+    public async Task ImportDonors_ForUpsert_ReadsStoredDonorsOnce_AndIdsOfNewDonorsOnly()
+    {
+        var upsertFile = BuildUpsertFileWithNewChangedAndUnchangedDonors();
+        var newDonorCodes = upsertFile.NewDonors.Select(d => d.RecordId).ToHashSet();
+        donorReadRepositorySpy.ClearReceivedCalls();
+
+        // ACT
+        await fileImporter.ImportDonorFile(upsertFile.File);
+
+        await donorReadRepositorySpy.DidNotReceiveWithAnyArgs().GetExistingExternalDonorCodes(default);
+        await donorReadRepositorySpy.Received(1).GetDonorsByExternalDonorCodes(Arg.Any<ICollection<string>>());
+        await donorReadRepositorySpy.Received(1).GetDonorIdsByExternalDonorCodes(Arg.Any<ICollection<string>>());
+        await donorReadRepositorySpy.Received(1)
+            .GetDonorIdsByExternalDonorCodes(Arg.Is<ICollection<string>>(codes => codes.ToHashSet().SetEquals(newDonorCodes)));
+    }
+
+    /// <summary>
+    /// An upsert file for the initial donors: two new donors, two stored donors with changed HLA, and one stored donor with its stored data.
+    /// </summary>
+    private UpsertFile BuildUpsertFileWithNewChangedAndUnchangedDonors()
+    {
+        var unchangedStoredDonor = InitialDonors.First(d => d.A_1 == Hla1);
+        var changedStoredDonors = InitialDonors.Where(d => d.AtlasId != unchangedStoredDonor.AtlasId).Take(2).ToList();
+
+        var newDonors = DonorBuilder.With(du => du.Hla, hlaObject1).Build(2).ToList();
+        var changedDonors = DonorBuilder
+            .WithSequence(du => du.RecordId, changedStoredDonors.Select(d => d.ExternalDonorCode))
+            .With(du => du.Hla, hlaObject3)
+            .Build(changedStoredDonors.Count)
+            .ToList();
+        var unchangedDonor = DonorBuilder
+            .With(du => du.RecordId, unchangedStoredDonor.ExternalDonorCode)
+            .With(du => du.Hla, hlaObject1)
+            .Build();
+
+        var file = fileBuilder.WithDonors(newDonors.Concat(changedDonors).Append(unchangedDonor).ToArray()).Build();
+        return new UpsertFile(file, newDonors, changedStoredDonors, unchangedStoredDonor);
+    }
+
+    private record UpsertFile(
+        DonorImportFile File,
+        IReadOnlyCollection<DonorUpdate> NewDonors,
+        IReadOnlyCollection<Donor> ChangedStoredDonors,
+        Donor UnchangedStoredDonor);
 }

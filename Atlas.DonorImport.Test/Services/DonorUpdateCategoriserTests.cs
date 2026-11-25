@@ -8,6 +8,7 @@ using Atlas.DonorImport.FileSchema.Models;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
+using AutoFixture;
 using AwesomeAssertions;
 using NSubstitute;
 using NUnit.Framework;
@@ -21,11 +22,12 @@ namespace Atlas.DonorImport.Test.Services
         private IAtlasLogger logger;
         private IDonorReadRepository donorReadRepository;
         private IDonorImportFailureRepository donorImportFailureRepository;
-
+        private Fixture fixture;
 
         [SetUp]
         public void SetUp()
         {
+            fixture = new Fixture();
             logger = Substitute.For<IAtlasLogger>();
             donorReadRepository = Substitute.For<IDonorReadRepository>();
             donorImportFailureRepository = Substitute.For<IDonorImportFailureRepository>();
@@ -64,11 +66,52 @@ namespace Atlas.DonorImport.Test.Services
         [Test]
         public async Task Categorise_ReadsExternalDonorCodesToCreateValidatorContext()
         {
-            var donorUpdate = DonorUpdateBuilder.New.Build();
+            var donorUpdate = DonorUpdateBuilder.New.With(d => d.ChangeType, ImportDonorChangeType.Edit).Build();
 
             await categoriser.Categorise(new [] { donorUpdate }, string.Empty);
 
             await donorReadRepository.Received().GetExistingExternalDonorCodes(Arg.Is<IEnumerable<string>>(l => l.Contains(donorUpdate.RecordId)));
+        }
+
+        [Test]
+        public async Task Categorise_WhenNoUpdateIsCheckedAgainstDonorStore_DoesNotReadDonorStore()
+        {
+            var upserts = DonorUpdateBuilder.New.With(d => d.ChangeType, ImportDonorChangeType.Upsert).Build(2);
+            var deletions = DonorUpdateBuilder.New.With(d => d.ChangeType, ImportDonorChangeType.Delete).Build(2);
+
+            await categoriser.Categorise(upserts.Concat(deletions).ToList(), fixture.Create<string>());
+
+            await donorReadRepository.DidNotReceiveWithAnyArgs().GetExistingExternalDonorCodes(default);
+        }
+
+        [Test]
+        public async Task Categorise_ReadsCodesOfEditsAndDifferentialCreationsOnly()
+        {
+            var creation = DonorUpdateBuilder.New.With(d => d.ChangeType, ImportDonorChangeType.Create).Build();
+            var edit = DonorUpdateBuilder.New.With(d => d.ChangeType, ImportDonorChangeType.Edit).Build();
+            var upsert = DonorUpdateBuilder.New.With(d => d.ChangeType, ImportDonorChangeType.Upsert).Build();
+            var deletion = DonorUpdateBuilder.New.With(d => d.ChangeType, ImportDonorChangeType.Delete).Build();
+            List<string> readCodes = null;
+            donorReadRepository
+                .GetExistingExternalDonorCodes(Arg.Do<IEnumerable<string>>(codes => readCodes = codes.ToList()))
+                .Returns(new List<string>());
+
+            await categoriser.Categorise(new[] { creation, edit, upsert, deletion }, fixture.Create<string>());
+
+            readCodes.Should().BeEquivalentTo(creation.RecordId, edit.RecordId);
+        }
+
+        [Test]
+        public async Task Categorise_ValidatesEditsAgainstStoredDonorCodes()
+        {
+            var editOfStoredDonor = DonorUpdateBuilder.New.With(d => d.ChangeType, ImportDonorChangeType.Edit).Build();
+            var editOfUnknownDonor = DonorUpdateBuilder.New.With(d => d.ChangeType, ImportDonorChangeType.Edit).Build();
+            donorReadRepository.GetExistingExternalDonorCodes(default).ReturnsForAnyArgs(new List<string> { editOfStoredDonor.RecordId });
+
+            var result = await categoriser.Categorise(new[] { editOfStoredDonor, editOfUnknownDonor }, fixture.Create<string>());
+
+            result.ValidDonors.Should().ContainSingle().Which.RecordId.Should().Be(editOfStoredDonor.RecordId);
+            result.InvalidDonors.Should().ContainSingle().Which.DonorUpdate.RecordId.Should().Be(editOfUnknownDonor.RecordId);
         }
 
 
