@@ -1,4 +1,6 @@
-﻿using Atlas.Common.ApplicationInsights;
+﻿using System.Net.Http;
+using Atlas.Common.ApplicationInsights;
+using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,5 +26,19 @@ public class HlaMetadataDictionaryRegistrationTests
         });
 
         buildProvider.Should().NotThrow();
+    }
+
+    [Test]
+    public void RegisterHlaMetadataDictionary_GivesWmdaFileClientTheDownloadTimeout()
+    {
+        var services = new ServiceCollection();
+        services.RegisterFileBasedHlaMetadataDictionaryForTesting(
+            _ => new ApplicationInsightsSettings { LogLevel = "Info" },
+            _ => new MacDictionarySettings());
+        using var provider = services.BuildServiceProvider();
+
+        var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient(WmdaFileDownloader.HttpClientName);
+
+        client.Timeout.Should().Be(WmdaFileDownloader.DownloadTimeout);
     }
 }

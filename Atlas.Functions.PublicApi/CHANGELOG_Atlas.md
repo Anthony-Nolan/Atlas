@@ -127,6 +127,11 @@ Feature flags permit greater control over the release of new features (see this 
 #### Donor Import
 * E: Donor import reads less from the donor store for each batch, with the same results. The upserts (`NU`) of a batch read the stored donors once, not three times: one read gives both the split into new and existing donors and the rows that the changes are compared with. After the insert, the import reads the Atlas ids of the new donors only, not of all the upserts. The check that an edit (`U`) exists and that a differential create (`N`) does not exist reads only the codes of these records, and looks each code up in a set, not a list. So a batch of only upserts and deletions makes no read for this check.
 
+#### HLA Metadata Dictionary
+* E: The dictionary now downloads the WMDA nomenclature files with an `HttpClient` from `IHttpClientFactory`, not with the obsolete `WebClient`. The files that it reads and their content do not change. A download that fails, for example a missing file, a timeout or a connection failure, now throws an `HttpRequestException` whose message has the file address. Before, it threw a `WebException` whose message had no address.
+  * Each download now has a time limit of 5 minutes in total, the content included. Before, each read of the content had a limit of 5 minutes, and a download had no limit in total.
+  * The check for a new nomenclature version now downloads all of `Allelelist_history.txt` (29 MB on 20 Nov 2026), not only its first lines, so that the time limit also covers the content.
+
 ### 4.1.0
 
 #### Debug

@@ -78,6 +78,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
         private static void RegisterTypesRelatedToDictionaryRecreation(this IServiceCollection services)
         {
             services.AddScoped<IWmdaDataRepository, WmdaDataRepository>();
+            services.AddHttpClient(WmdaFileDownloader.HttpClientName, client => client.Timeout = WmdaFileDownloader.DownloadTimeout);
             services.AddScoped<IWmdaFileReader, WmdaFileDownloader>();
             services.AddScoped<IWmdaHlaNomenclatureVersionAccessor, WmdaHlaNomenclatureVersionAccessor>();
 
