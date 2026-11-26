@@ -8,6 +8,7 @@ using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Atlas.RepeatSearch.Data.Models;
 using Atlas.RepeatSearch.Data.Repositories;
 using Atlas.RepeatSearch.Data.Settings;
 using Atlas.RepeatSearch.Services.ResultSetTracking;
@@ -196,38 +197,44 @@ namespace Atlas.RepeatSearch.Test.Services.ResultSetTracking
         }
 
         [Test]
-        public async Task ApplySearchResultDiff_DeletesAllRemovedDonorsFromSet()
+        public async Task ApplySearchResultDiff_AddsNewDonorsAndRemovesRemovedDonorsWithHistoryRecordInOneCall()
         {
-            var diff = SearchResultDifferentialBuilder.New.WithRemovedResults("removed-1", "removed-2").Build();
+            var historyRecord = fixture.Create<RepeatSearchHistoryRecord>();
+            var newDonorCodes = fixture.CreateMany<string>(2).ToArray();
+            var removedDonorCodes = fixture.CreateMany<string>(2).ToArray();
+            var diff = SearchResultDifferentialBuilder.New.WithNewResults(newDonorCodes).WithRemovedResults(removedDonorCodes).Build();
 
-            await originalSearchResultSetTracker.ApplySearchResultDiff(searchRequestId, diff);
+            await originalSearchResultSetTracker.ApplySearchResultDiff(historyRecord, diff);
 
-            await canonicalResultSetRepository.Received().RemoveResultsFromSet(searchRequestId, diff.RemovedResults);
+            await canonicalResultSetRepository.Received(1).ApplyDiffAndRecordRepeatSearch(
+                historyRecord,
+                Arg.Is<IReadOnlyCollection<string>>(added => added.SequenceEqual(newDonorCodes)),
+                Arg.Is<IReadOnlyCollection<string>>(removed => removed.SequenceEqual(removedDonorCodes)));
         }
 
         [Test]
-        public async Task ApplySearchResultDiff_AddsAllNewDonorsToSet()
+        public async Task ApplySearchResultDiff_WithUpdatedDonors_NeitherAddsNorRemovesThem()
         {
-            var diff = SearchResultDifferentialBuilder.New.WithNewResults("removed-1", "removed-2").Build();
+            var diff = SearchResultDifferentialBuilder.New.WithUpdatedResults(fixture.CreateMany<string>(2).ToArray()).Build();
 
-            await originalSearchResultSetTracker.ApplySearchResultDiff(searchRequestId, diff);
+            await originalSearchResultSetTracker.ApplySearchResultDiff(fixture.Create<RepeatSearchHistoryRecord>(), diff);
 
-            await canonicalResultSetRepository.Received()
-                .AddResultsToSet(
-                    searchRequestId,
-                    Arg.Is<IReadOnlyCollection<string>>(added => added.SequenceEqual(diff.NewResults.Select(d => d.ExternalDonorCode).ToList()))
-                );
+            await canonicalResultSetRepository.Received(1).ApplyDiffAndRecordRepeatSearch(
+                Arg.Any<RepeatSearchHistoryRecord>(),
+                Arg.Is<IReadOnlyCollection<string>>(added => added.Count == 0),
+                Arg.Is<IReadOnlyCollection<string>>(removed => removed.Count == 0));
         }
 
-        [Test]
-        public async Task ApplySearchResultDiff_WithUpdatedDonors_NeitherRemovesNorAddsToSet()
+        [TestCase(true)]
+        [TestCase(false)]
+        public async Task ApplySearchResultDiff_ReturnsWhetherRepositoryAppliedDiff(bool applied)
         {
-            var diff = SearchResultDifferentialBuilder.New.WithUpdatedResults("removed-1", "removed-2").Build();
+            canonicalResultSetRepository.ApplyDiffAndRecordRepeatSearch(default, default, default).ReturnsForAnyArgs(applied);
 
-            await originalSearchResultSetTracker.ApplySearchResultDiff(searchRequestId, diff);
+            var result = await originalSearchResultSetTracker.ApplySearchResultDiff(
+                fixture.Create<RepeatSearchHistoryRecord>(), SearchResultDifferentialBuilder.New.Build());
 
-            await canonicalResultSetRepository.DidNotReceiveWithAnyArgs().AddResultsToSet(default, default);
-            await canonicalResultSetRepository.DidNotReceiveWithAnyArgs().RemoveResultsFromSet(default, default);
+            result.Should().Be(applied);
         }
 
         private void SetUpResultsFile(IEnumerable<string> donorCodes)

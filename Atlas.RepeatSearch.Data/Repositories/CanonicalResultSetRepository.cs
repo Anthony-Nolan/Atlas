@@ -48,14 +48,23 @@ namespace Atlas.RepeatSearch.Data.Repositories
 
         Task<ICollection<SearchResult>> GetCanonicalResults(string searchRequestId);
 
-        Task RemoveResultsFromSet(string searchRequestId, IReadOnlyCollection<string> donorCodesToRemove);
-
-        Task AddResultsToSet(string searchRequestId, IReadOnlyCollection<string> donorCodesToAdd);
+        /// <summary>
+        /// In one transaction: adds and removes donor codes in the canonical result set of the original search, and writes the history record
+        /// of the repeat search. If the repeat search already has a history record, nothing is changed, so a repeat search changes the set once.
+        /// </summary>
+        /// <returns>False if the repeat search already had a history record, so nothing was changed.</returns>
+        Task<bool> ApplyDiffAndRecordRepeatSearch(
+            RepeatSearchHistoryRecord historyRecord,
+            IReadOnlyCollection<string> donorCodesToAdd,
+            IReadOnlyCollection<string> donorCodesToRemove);
     }
 
     public class CanonicalResultSetRepository : ICanonicalResultSetRepository
     {
         private const int DeleteBatchSize = 10000;
+
+        // Dapper sends each donor code as one parameter, and SQL Server takes at most 2100 parameters in one command.
+        private const int RemoveBatchSize = 2000;
 
         private readonly string connectionString;
         private readonly int sqlBulkCopyBatchSize;
@@ -183,34 +192,70 @@ namespace Atlas.RepeatSearch.Data.Repositories
             }
         }
 
-        public async Task RemoveResultsFromSet(string searchRequestId, IReadOnlyCollection<string> donorCodesToRemove)
+        public async Task<bool> ApplyDiffAndRecordRepeatSearch(
+            RepeatSearchHistoryRecord historyRecord,
+            IReadOnlyCollection<string> donorCodesToAdd,
+            IReadOnlyCollection<string> donorCodesToRemove)
         {
-            var sql = @$"
-                DELETE sr FROM {SearchResult.QualifiedTableName} sr
-                JOIN {CanonicalResultSet.QualifiedTableName} crs on crs.{nameof(CanonicalResultSet.Id)} = sr.{nameof(SearchResult.CanonicalResultSetId)}
-                WHERE crs.{nameof(CanonicalResultSet.OriginalSearchRequestId)} = @{nameof(searchRequestId)}
-                AND sr.{nameof(SearchResult.ExternalDonorCode)} IN @Ids
-                ";
+            // UPDLOCK and HOLDLOCK keep the key range of this repeat search id locked until the end of the transaction: another delivery of the
+            // same repeat search waits here, and then finds the record of this one.
+            var recordCountSql = @$"
+                SELECT COUNT(*) FROM {RepeatSearchHistoryRecord.QualifiedTableName} WITH (UPDLOCK, HOLDLOCK)
+                WHERE {nameof(RepeatSearchHistoryRecord.RepeatSearchRequestId)} = @{nameof(RepeatSearchHistoryRecord.RepeatSearchRequestId)}";
 
-            await using (var connection = new SqlConnection(connectionString))
+            var setIdSql = @$"
+                SELECT {nameof(CanonicalResultSet.Id)} FROM {CanonicalResultSet.QualifiedTableName}
+                WHERE {nameof(CanonicalResultSet.OriginalSearchRequestId)} = @{nameof(RepeatSearchHistoryRecord.OriginalSearchRequestId)}";
+
+            var removeSql = @$"
+                DELETE FROM {SearchResult.QualifiedTableName}
+                WHERE {nameof(SearchResult.CanonicalResultSetId)} = @setId
+                AND {nameof(SearchResult.ExternalDonorCode)} IN @donorCodes";
+
+            var insertHistorySql = @$"
+                INSERT INTO {RepeatSearchHistoryRecord.QualifiedTableName}
+                ({nameof(RepeatSearchHistoryRecord.OriginalSearchRequestId)}, {nameof(RepeatSearchHistoryRecord.RepeatSearchRequestId)},
+                {nameof(RepeatSearchHistoryRecord.SearchCutoffDate)}, {nameof(RepeatSearchHistoryRecord.DateCreated)},
+                {nameof(RepeatSearchHistoryRecord.AddedResultCount)}, {nameof(RepeatSearchHistoryRecord.UpdatedResultCount)},
+                {nameof(RepeatSearchHistoryRecord.RemovedResultCount)})
+                VALUES
+                (@{nameof(RepeatSearchHistoryRecord.OriginalSearchRequestId)}, @{nameof(RepeatSearchHistoryRecord.RepeatSearchRequestId)},
+                @{nameof(RepeatSearchHistoryRecord.SearchCutoffDate)}, @{nameof(RepeatSearchHistoryRecord.DateCreated)},
+                @{nameof(RepeatSearchHistoryRecord.AddedResultCount)}, @{nameof(RepeatSearchHistoryRecord.UpdatedResultCount)},
+                @{nameof(RepeatSearchHistoryRecord.RemovedResultCount)})";
+
+            await using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+            // A transaction that is not committed is rolled back when it is disposed.
+            await using var transaction = (SqlTransaction)await connection.BeginTransactionAsync();
+
+            var recordCount = await connection.ExecuteScalarAsync<int>(
+                recordCountSql, new { historyRecord.RepeatSearchRequestId }, transaction);
+            if (recordCount > 0)
             {
-                foreach (var donorCodeBatch in donorCodesToRemove.Batch(2000))
-                {
-                    await connection.ExecuteAsync(sql, new {searchRequestId, Ids = donorCodeBatch.ToList()});
-                }
+                return false;
             }
+
+            var setId = await connection.QuerySingleAsync<int>(setIdSql, new { historyRecord.OriginalSearchRequestId }, transaction);
+
+            if (donorCodesToAdd.Count > 0)
+            {
+                using var sqlBulk = BuildResultsBulkCopy(connection, transaction);
+                await sqlBulk.WriteToServerAsync(BuildResultsInsertDataTable(setId, donorCodesToAdd));
+            }
+
+            foreach (var donorCodeBatch in donorCodesToRemove.Batch(RemoveBatchSize))
+            {
+                await connection.ExecuteAsync(removeSql, new { setId, donorCodes = donorCodeBatch.ToList() }, transaction);
+            }
+
+            await connection.ExecuteAsync(insertHistorySql, historyRecord, transaction);
+
+            await transaction.CommitAsync();
+            return true;
         }
 
-        public async Task AddResultsToSet(string searchRequestId, IReadOnlyCollection<string> donorCodesToAdd)
-        {
-            var setId = (await GetCanonicalResultSetSummary(searchRequestId)).Id;
-            await AddResultsToSet(donorCodesToAdd, setId);
-        }
-
-        private async Task AddResultsToSet(
-            IReadOnlyCollection<string> externalDonorCodes,
-            int resultSetId,
-            SqlBulkCopyOptions options = SqlBulkCopyOptions.Default)
+        private async Task AddResultsToSet(IReadOnlyCollection<string> externalDonorCodes, int resultSetId, SqlBulkCopyOptions options)
         {
             var resultEntryDataTable = BuildResultsInsertDataTable(resultSetId, externalDonorCodes);
             using (var sqlBulk = BuildResultsBulkCopy(options))
@@ -263,9 +308,16 @@ namespace Atlas.RepeatSearch.Data.Repositories
             }
         }
 
-        private SqlBulkCopy BuildResultsBulkCopy(SqlBulkCopyOptions options)
+        private SqlBulkCopy BuildResultsBulkCopy(SqlBulkCopyOptions options) =>
+            ConfigureResultsBulkCopy(new SqlBulkCopy(connectionString, options));
+
+        private SqlBulkCopy BuildResultsBulkCopy(SqlConnection connection, SqlTransaction transaction) =>
+            ConfigureResultsBulkCopy(new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, transaction));
+
+        private SqlBulkCopy ConfigureResultsBulkCopy(SqlBulkCopy sqlBulk)
         {
-            var sqlBulk = new SqlBulkCopy(connectionString, options) {BatchSize = sqlBulkCopyBatchSize, DestinationTableName = SearchResult.QualifiedTableName};
+            sqlBulk.BatchSize = sqlBulkCopyBatchSize;
+            sqlBulk.DestinationTableName = SearchResult.QualifiedTableName;
             sqlBulk.BulkCopyTimeout = sqlBulkCopyBatchTimeout;
             sqlBulk.ColumnMappings.Add(nameof(SearchResult.Id), nameof(SearchResult.Id));
             sqlBulk.ColumnMappings.Add(nameof(SearchResult.ExternalDonorCode), nameof(SearchResult.ExternalDonorCode));

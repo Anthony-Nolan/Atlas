@@ -107,6 +107,8 @@ namespace Atlas.RepeatSearch.Services.Search
             SearchResultDifferential diff = null;
             // Set when a results notification (success or failure) is published, the same as in SearchRunner; null if none is.
             DateTime? resultsSentTime = null;
+            // Set when the success notification of this attempt is published: after that, the consumer has the results.
+            var resultsNotificationPublished = false;
             int? numberOfResults = null;
             MatchingAlgorithmFailureInfo matchingAlgorithmFailureInfo = null;
 
@@ -116,6 +118,13 @@ namespace Atlas.RepeatSearch.Services.Search
             matchingAlgorithmSearchTrackingContext.SearchIdentifier = new Guid(repeatSearchId);
             matchingAlgorithmSearchTrackingContext.OriginalSearchIdentifier = new Guid(originalSearchRequestId);
             matchingAlgorithmSearchTrackingContext.AttemptNumber = (byte)attemptNumber;
+
+            // Must run before the wait and the search tracking initiation event: an earlier delivery completed the repeat search.
+            if (await StopIfRepeatSearchIsRecorded(identifiedRepeatSearchRequest,
+                    "an earlier delivery sent its results and changed the canonical result set."))
+            {
+                return;
+            }
 
             // Must run before the search tracking initiation event: a wait is not an attempt of the repeat search.
             if (await WaitForOriginalSearchResultSetIfNotStored(identifiedRepeatSearchRequest, enqueuedTimeUtc))
@@ -142,9 +151,20 @@ namespace Atlas.RepeatSearch.Services.Search
                     .ToList();
                 numberOfResults = results.Count;
 
-                diff = await CalculateAndStoreResultsDiff(originalSearchRequestId, results, searchCutoffDate);
+                // The canonical result set is changed only after the results notification is published. So a delivery that fails before
+                // that leaves the set as it was, and the retry calculates the same diff.
+                diff = await CalculateResultsDiff(originalSearchRequestId, results, searchCutoffDate);
 
-                await RecordRepeatSearch(identifiedRepeatSearchRequest, diff);
+                // Another delivery of this message can run at the same time: when the host shuts down, the function stops waiting for this
+                // run and the message is delivered again, but this run goes on. If that delivery committed before this diff read the set, this
+                // diff used the changed set, so its lists are wrong. The record commits with the set change, so this check finds it.
+                if (await StopIfRepeatSearchIsRecorded(identifiedRepeatSearchRequest,
+                        "another delivery changed the canonical result set while this delivery ran, so the diff of this delivery can be wrong."))
+                {
+                    // This delivery sends no results, so search tracking gets no counts of its diff.
+                    diff = null;
+                    return;
+                }
 
                 stopwatch.Stop();
 
@@ -185,6 +205,9 @@ namespace Atlas.RepeatSearch.Services.Search
                 };
                 await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);
                 resultsSentTime = DateTime.UtcNow;
+                resultsNotificationPublished = true;
+
+                await ApplyResultsDiffAndRecordRepeatSearch(identifiedRepeatSearchRequest, searchCutoffDate, diff);
             }
 
             #region Expected Exceptions
@@ -221,12 +244,24 @@ namespace Atlas.RepeatSearch.Services.Search
             // "Unexpected" exceptions will be re-thrown to ensure that the request will be retried or dead-lettered, as appropriate.
             catch (Exception e)
             {
-                repeatSearchLogger.SendTrace(
-                    $"Failed to run search with repeat search id: {repeatSearchId} (search id: {originalSearchRequestId}). Exception: {e}",
-                    LogLevel.Error);
-                await repeatSearchMatchingFailureNotificationSender.SendFailureNotification(identifiedRepeatSearchRequest, attemptNumber,
-                    searchRequestMaxRetryCount - attemptNumber);
-                resultsSentTime = DateTime.UtcNow;
+                if (resultsNotificationPublished)
+                {
+                    // The consumer has the results, and the set was not changed, so a retry sends the same results again. A failure
+                    // notification between the two would tell the consumer that the repeat search failed.
+                    repeatSearchLogger.SendTrace(
+                        $"Results were sent for repeat search id: {repeatSearchId} (search id: {originalSearchRequestId}), but the canonical " +
+                        $"result set was not changed. A retry sends the same results again. Exception: {e}",
+                        LogLevel.Error);
+                }
+                else
+                {
+                    repeatSearchLogger.SendTrace(
+                        $"Failed to run search with repeat search id: {repeatSearchId} (search id: {originalSearchRequestId}). Exception: {e}",
+                        LogLevel.Error);
+                    await repeatSearchMatchingFailureNotificationSender.SendFailureNotification(identifiedRepeatSearchRequest, attemptNumber,
+                        searchRequestMaxRetryCount - attemptNumber);
+                    resultsSentTime = DateTime.UtcNow;
+                }
 
                 matchingAlgorithmFailureInfo = new MatchingAlgorithmFailureInfo
                 {
@@ -310,15 +345,46 @@ namespace Atlas.RepeatSearch.Services.Search
             return true;
         }
 
-        private async Task<SearchResultDifferential> CalculateAndStoreResultsDiff(
+        /// <summary>
+        /// A repeat search has a history record only after its results notification was published and its diff was applied to the canonical
+        /// result set. A delivery of its request after that must not send results: its diff would use the changed set, so new donors would be
+        /// counted as updated and the removed donors would be missing from the results. Such a delivery comes, for example, when the search
+        /// tracking event in <c>finally</c> or the completion of the message fails, when two deliveries of the message run at the same time,
+        /// or when support reruns a repeat search whose match prediction failed (see README_Support).
+        /// </summary>
+        /// <param name="identifiedRepeatSearchRequest">The request of this delivery.</param>
+        /// <param name="reason">Why the record can exist at this point, for the trace.</param>
+        /// <returns>True if the repeat search is already recorded, so this delivery must stop.</returns>
+        private async Task<bool> StopIfRepeatSearchIsRecorded(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest, string reason)
+        {
+            var repeatSearchId = identifiedRepeatSearchRequest.RepeatSearchId;
+            if (!await repeatSearchHistoryRepository.IsRepeatSearchRecorded(repeatSearchId))
+            {
+                return false;
+            }
+
+            var originalSearchId = identifiedRepeatSearchRequest.OriginalSearchId;
+            repeatSearchLogger.SendTrace(
+                $"Repeat search id: {repeatSearchId} (search id: {originalSearchId}) is already recorded: {reason} " +
+                "This delivery sends no results.",
+                LogLevel.Warn,
+                new Dictionary<string, string>
+                {
+                    { "OriginalSearchId", originalSearchId },
+                    { "RepeatSearchId", repeatSearchId }
+                });
+
+            return true;
+        }
+
+        private async Task<SearchResultDifferential> CalculateResultsDiff(
             string searchRequestId,
             List<MatchingAlgorithmResult> results,
             DateTimeOffset searchCutoffDate)
         {
-            using (repeatSearchLogger.RunTimed("Calculate and apply result diff to canonical result set"))
+            using (repeatSearchLogger.RunTimed("Calculate result diff"))
             {
                 var diff = await repeatSearchDifferentialCalculator.CalculateDifferential(searchRequestId, results, searchCutoffDate);
-                await originalSearchResultSetTracker.ApplySearchResultDiff(searchRequestId, diff);
 
                 repeatSearchLogger.SendTrace(
                     $"Donor Result Diff Calculated. {diff.NewResults.Count} new results. {diff.UpdatedResults.Count} updated results. {diff.RemovedResults.Count} removed results."
@@ -328,23 +394,32 @@ namespace Atlas.RepeatSearch.Services.Search
             }
         }
 
-        private async Task RecordRepeatSearch(
+        private async Task ApplyResultsDiffAndRecordRepeatSearch(
             IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest,
+            DateTimeOffset searchCutoffDate,
             SearchResultDifferential searchResultDifferential)
         {
-            var historyRecord = new RepeatSearchHistoryRecord
+            using (repeatSearchLogger.RunTimed("Apply result diff to canonical result set and record repeat search"))
             {
-                DateCreated = DateTimeOffset.UtcNow,
-                // ReSharper disable once PossibleInvalidOperationException - validation should have caught nulls by now
-                SearchCutoffDate = identifiedRepeatSearchRequest.RepeatSearchRequest.SearchCutoffDate.Value,
-                OriginalSearchRequestId = identifiedRepeatSearchRequest.OriginalSearchId,
-                RepeatSearchRequestId = identifiedRepeatSearchRequest.RepeatSearchId,
-                AddedResultCount = searchResultDifferential.NewResults.Count,
-                UpdatedResultCount = searchResultDifferential.UpdatedResults.Count,
-                RemovedResultCount = searchResultDifferential.RemovedResults.Count,
-            };
+                var historyRecord = new RepeatSearchHistoryRecord
+                {
+                    DateCreated = DateTimeOffset.UtcNow,
+                    SearchCutoffDate = searchCutoffDate,
+                    OriginalSearchRequestId = identifiedRepeatSearchRequest.OriginalSearchId,
+                    RepeatSearchRequestId = identifiedRepeatSearchRequest.RepeatSearchId,
+                    AddedResultCount = searchResultDifferential.NewResults.Count,
+                    UpdatedResultCount = searchResultDifferential.UpdatedResults.Count,
+                    RemovedResultCount = searchResultDifferential.RemovedResults.Count,
+                };
 
-            await repeatSearchHistoryRepository.RecordRepeatSearchRequest(historyRecord);
+                if (!await originalSearchResultSetTracker.ApplySearchResultDiff(historyRecord, searchResultDifferential))
+                {
+                    repeatSearchLogger.SendTrace(
+                        $"Repeat search id: {historyRecord.RepeatSearchRequestId} (search id: {historyRecord.OriginalSearchRequestId}) was " +
+                        "recorded by another delivery. The canonical result set is not changed again.",
+                        LogLevel.Warn);
+                }
+            }
         }
     }
 }

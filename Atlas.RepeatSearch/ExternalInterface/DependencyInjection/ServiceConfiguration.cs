@@ -11,7 +11,6 @@ using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.RepeatSearch.Clients;
-using Atlas.RepeatSearch.Data.Context;
 using Atlas.RepeatSearch.Data.Repositories;
 using Atlas.RepeatSearch.Services.ResultSetTracking;
 using Atlas.RepeatSearch.Services.Search;
@@ -56,7 +55,7 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
                 fetchStoreOriginalSearchResultsBulkCopySettings,
                 fetchRepeatSearchSettings);
 
-            services.RegisterServices(fetchRepeatSqlConnectionString, fetchAzureStorageSettings);
+            services.RegisterServices(fetchAzureStorageSettings);
 
             services.RegisterSearch(
                 fetchApplicationInsightsSettings,
@@ -103,7 +102,6 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
 
         private static void RegisterServices(
             this IServiceCollection services,
-            Func<IServiceProvider, string> fetchRepeatSqlConnectionString,
             Func<IServiceProvider, Settings.Azure.AzureStorageSettings> fetchAzureStorageSettings)
         {
             services.AddScoped<IOriginalSearchResultSetTracker, OriginalSearchResultSetTracker>();
@@ -115,7 +113,6 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
                 return new BlobDownloader(storageSettings.ConnectionString, logger);
             });
 
-            services.AddScoped(sp => new ContextFactory().Create(fetchRepeatSqlConnectionString(sp)));
             services.AddScoped<ICanonicalResultSetRepository, CanonicalResultSetRepository>();
             services.AddScoped<IRepeatSearchHistoryRepository, RepeatSearchHistoryRepository>();
 

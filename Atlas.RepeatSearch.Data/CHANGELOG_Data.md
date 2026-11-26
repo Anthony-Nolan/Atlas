@@ -42,6 +42,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     ```sql
     ALTER INDEX [IX_SearchResults_CanonicalResultSetId_ExternalDonorCode] ON [RepeatSearch].[SearchResults] RESUME;
     ```
+* A repeat search now changes `SearchResults` (adds its new donors, deletes its removed donors) and writes its row of `RepeatSearchHistoryRecords` in one transaction,
+  after its results notification is published. If the repeat search already has a row in `RepeatSearchHistoryRecords`, the transaction changes nothing, so a repeat search
+  changes the set once. Before, the set was changed in two commits and the history row was written in a third, before the results were sent.
+* Added the index `IX_RepeatSearchHistoryRecords_RepeatSearchRequestId` on `RepeatSearchHistoryRecords` (`RepeatSearchRequestId`), built online (`ONLINE = ON`).
+  Each delivery of a repeat search request looks up its history row by this column, and the transaction above checks for it with `UPDLOCK, HOLDLOCK`.
+  The index is not unique: older versions wrote a second row when a repeat search was retried after its history step, so the table can have duplicate repeat search ids.
+  From this version, a repeat search writes one row.
 
 ## 3.0.0
 * Updated .NET version from 6.0 to 8.0

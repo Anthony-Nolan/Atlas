@@ -85,6 +85,9 @@ namespace Atlas.RepeatSearch.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("RepeatSearchRequestId")
+                        .HasAnnotation("SqlServer:Online", true);
+
                     b.ToTable("RepeatSearchHistoryRecords", "RepeatSearch");
                 });
 

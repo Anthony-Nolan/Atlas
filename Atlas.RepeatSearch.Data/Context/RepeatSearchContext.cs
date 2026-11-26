@@ -17,6 +17,7 @@ namespace Atlas.RepeatSearch.Data.Context
             modelBuilder.HasDefaultSchema(Schema);
             modelBuilder.Entity<CanonicalResultSet>().SetUpResultSetModel();
             modelBuilder.Entity<SearchResult>().SetUpSearchResultModel();
+            modelBuilder.Entity<RepeatSearchHistoryRecord>().SetUpRepeatSearchHistoryRecordModel();
             base.OnModelCreating(modelBuilder);
         }
         
