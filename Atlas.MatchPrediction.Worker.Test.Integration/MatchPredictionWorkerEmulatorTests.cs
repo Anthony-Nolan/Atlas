@@ -132,7 +132,7 @@ internal class MatchPredictionWorkerEmulatorTests
         var results = new List<ParallelMatchPredictionBatchResult>();
         ServiceBusReceivedMessage deadLetteredRequest;
 
-        var worker = BuildWorker(blobDownloader, SuccessfulAlgorithm(), MaxDeliveryCount, out var processor);
+        var worker = BuildWorker(blobDownloader, SuccessfulAlgorithm(), MaxDeliveryCount);
         await worker.StartAsync(CancellationToken.None);
         try
         {
@@ -145,8 +145,8 @@ internal class MatchPredictionWorkerEmulatorTests
         }
         finally
         {
+            // Waits for every running delivery. The processor is closed with the client in TearDown: see BuildWorker.
             await worker.StopAsync(CancellationToken.None);
-            await processor.DisposeAsync();
         }
 
         // Every delivery has been processed now, so any extra result would already be on the subscription.
@@ -216,7 +216,7 @@ internal class MatchPredictionWorkerEmulatorTests
         ServiceBusReceivedMessage deadLetteredRequest;
 
         var worker = BuildWorker(
-            blobDownloader, algorithm, maxDeliveryCount, out var processor, maxConcurrentCalls: 2, lockRenewal: TimeSpan.Zero);
+            blobDownloader, algorithm, maxDeliveryCount, maxConcurrentCalls: 2, lockRenewal: TimeSpan.Zero);
         await worker.StartAsync(CancellationToken.None);
         try
         {
@@ -232,8 +232,8 @@ internal class MatchPredictionWorkerEmulatorTests
         finally
         {
             finishFirstDelivery.TrySetResult();
+            // Waits for every running delivery. The processor is closed with the client in TearDown: see BuildWorker.
             await worker.StopAsync(CancellationToken.None);
-            await processor.DisposeAsync();
         }
 
         downloads.Should().Be(maxDeliveryCount, "the batch should be delivered again when the first lock runs out");
@@ -269,12 +269,17 @@ internal class MatchPredictionWorkerEmulatorTests
     /// <summary>
     /// The worker as Startup builds it, with the real processor options and result publisher; only the batch work is faked.
     /// </summary>
+    /// <remarks>
+    /// The test does not dispose the processor: disposing the client in TearDown closes the connection and the
+    /// processor link with it. Disposing the processor itself first drains that link, because the link keeps credit
+    /// for the receive that stopping cancelled, and the emulator sometimes never answers the drain. The test then
+    /// failed after a minute with "did not complete within the allocated time 00:01:00 for object drain".
+    /// </remarks>
     /// <param name="lockRenewal">How long the processor renews a message lock; the Startup setting when <c>null</c>.</param>
     private MatchPredictionWorker BuildWorker(
         IBlobDownloader blobDownloader,
         IParallelMatchPredictionAlgorithm algorithm,
         int maxDeliveryCount,
-        out ServiceBusProcessor processor,
         int maxConcurrentCalls = 1,
         TimeSpan? lockRenewal = null)
     {
@@ -302,7 +307,7 @@ internal class MatchPredictionWorkerEmulatorTests
         services.AddScoped<IParallelMatchPredictionBatchRunner, ParallelMatchPredictionBatchRunner>();
         var serviceProvider = services.BuildServiceProvider();
 
-        processor = client.CreateProcessor(requestsTopic, RequestsSubscription, new ServiceBusProcessorOptions
+        var processor = client.CreateProcessor(requestsTopic, RequestsSubscription, new ServiceBusProcessorOptions
         {
             AutoCompleteMessages = false,
             MaxConcurrentCalls = workerSettings.MaxConcurrentCalls,
