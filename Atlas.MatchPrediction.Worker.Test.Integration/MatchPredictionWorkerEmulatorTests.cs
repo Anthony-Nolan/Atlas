@@ -47,8 +47,6 @@ internal class MatchPredictionWorkerEmulatorTests
     private static readonly TimeSpan ShortLockDuration = TimeSpan.FromSeconds(5);
     // Long enough for every delivery of one batch on the emulator.
     private static readonly TimeSpan ResultWait = TimeSpan.FromMinutes(1);
-    // The results are already on the subscription by then, so a short wait is enough to see that no more come.
-    private static readonly TimeSpan NoMoreResultsWait = TimeSpan.FromSeconds(3);
 
     private ServiceBusAdministrationClient admin;
     private ServiceBusClient client;
@@ -149,13 +147,14 @@ internal class MatchPredictionWorkerEmulatorTests
             await worker.StopAsync(CancellationToken.None);
         }
 
-        // Every delivery has been processed now, so any extra result would already be on the subscription.
-        results.AddRange(await ReceiveResultsUntil(resultsReceiver, _ => false, NoMoreResultsWait));
-
         downloads.Should().Be(expectedDeliveries, "Service Bus should deliver the batch until it works or no retries are left");
         results.Should().ContainSingle("the search must get one notification for the batch")
             .Which.Should().Match<ParallelMatchPredictionBatchResult>(r =>
                 r.IsSuccessful == batchSucceeds && r.BatchId == request.BatchId && r.ParallelRunId == request.ParallelRunId);
+        // Every delivery has been processed now, so an extra result would already be on the subscription.
+        // A peek, not a receive: see ReceiveResultsUntil. The body, so that a failure shows the extra result.
+        var extraResult = await resultsReceiver.PeekMessageAsync();
+        (extraResult?.Body.ToString()).Should().BeNull("the search must get one notification for the batch");
 
         if (batchSucceeds)
         {
@@ -325,6 +324,11 @@ internal class MatchPredictionWorkerEmulatorTests
     /// <summary>
     /// Receives and completes results until one matches <paramref name="isLast"/> or <paramref name="wait"/> runs out.
     /// </summary>
+    /// <remarks>
+    /// Only for results the test waits for. A receive that times out leaves credit on the receiver link, and disposing the
+    /// receiver then drains the link, which the emulator sometimes never answers (see BuildWorker). So a check that
+    /// nothing more came peeks instead: a peek uses no link credit.
+    /// </remarks>
     /// <returns>Every result received, including the one that matched.</returns>
     private static async Task<List<ParallelMatchPredictionBatchResult>> ReceiveResultsUntil(
         ServiceBusReceiver receiver,
