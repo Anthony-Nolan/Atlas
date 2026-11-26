@@ -70,6 +70,7 @@ Feature flags permit greater control over the release of new features (see this 
   * `match-prediction-requests` and `match-prediction-results`: `MatchPredictionRequestId` and `SearchRequestId`.
   * `parallel-match-prediction-requests`: `SearchRequestId`.
   * `parallel-match-prediction-results`: `SearchIdentifier`.
+* BF: When parallel match prediction fails while it finalises a run (for example, the batch result blobs cannot be read), the caller now learns that the search ended. Atlas sends a failed search-results-ready message (`StageReached` = `MatchPredictionCompletion`), Search Tracking gets a failed match prediction completion (`UnexpectedError`), and a High-priority alert is raised. Before, nothing was sent, and the run was not finalised again. The run is still `FailedDuringCompletion` and is still not finalised again. If the search's result message was already sent before the failure, only the alert is raised.
 
 #### Search Tracking
 * BF: When a repeat search fails validation (for example, there is no record of the original search), its `MatchingAlgorithmCompleted` search tracking event is no longer retried until dead-lettered. The matching algorithm attempt is now tracked before the request is validated, so the attempt is stored with the validation error. The same order is used for original searches, and for unexpected errors during validation.

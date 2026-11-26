@@ -18,7 +18,9 @@ using Atlas.SearchTracking.Common.Dispatchers;
 using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
 using AutoFixture;
+using AwesomeAssertions;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 using Microsoft.Extensions.Options;
 
@@ -331,6 +333,153 @@ namespace Atlas.Functions.Test.Services
 
             // A failed run raises a High-priority alert, never a success notification.
             await notificationSender.DidNotReceiveWithAnyArgs().SendNotification(default, default, default);
+        }
+
+        [Test]
+        public async Task FinaliseRun_WhenSuccessPipelineThrowsBeforeResultsMessage_MarksFailedDuringCompletionAndRethrows()
+        {
+            var runId = fixture.Create<int>();
+            repository.GetRunWithResults(runId).Returns(RunResults(ParallelMatchPredictionRunStatus.Running, failedBatch: false));
+            StubSuccessfulCompletionPipeline();
+            StubBatchResultDownloadThrows();
+
+            var act = async () => await completionService.FinaliseRun(runId);
+
+            await act.Should().ThrowAsync<InvalidOperationException>();
+            await repository.Received(1).MarkRunFailedDuringCompletion(runId, Arg.Any<DateTime>());
+            await repository.DidNotReceiveWithAnyArgs().MarkRunFinalised(default, default);
+        }
+
+        [Test]
+        public async Task FinaliseRun_WhenSuccessPipelineThrowsBeforeResultsMessage_PublishesFailureMessage()
+        {
+            var runId = fixture.Create<int>();
+            var runResults = RunResults(ParallelMatchPredictionRunStatus.Running, failedBatch: false);
+            repository.GetRunWithResults(runId).Returns(runResults);
+            StubSuccessfulCompletionPipeline();
+            StubBatchResultDownloadThrows();
+
+            await SwallowFinaliseRunException(runId);
+
+            await searchCompletionMessageSender.Received(1).PublishFailureMessage(
+                Arg.Is<SendFailureNotificationParameters>(p =>
+                    p.SearchRequestId == runResults.Run.SearchIdentifier.ToString()
+                    && p.RepeatSearchRequestId == null
+                    && p.StageReached == "MatchPredictionCompletion"
+                    && !string.IsNullOrEmpty(p.FailureDetail))
+            );
+            await searchCompletionMessageSender.DidNotReceiveWithAnyArgs().PublishResultsMessage<SearchResultSet>(default, default, default);
+        }
+
+        [Test]
+        public async Task FinaliseRun_WhenSuccessPipelineThrowsBeforeResultsMessage_EmitsFailedProcessCompletedTrackingEvent()
+        {
+            var runId = fixture.Create<int>();
+            var runResults = RunResults(ParallelMatchPredictionRunStatus.Running, failedBatch: false);
+            repository.GetRunWithResults(runId).Returns(runResults);
+            StubSuccessfulCompletionPipeline();
+            StubBatchResultDownloadThrows();
+
+            await SwallowFinaliseRunException(runId);
+
+            await trackingDispatcher.Received(1).ProcessCompleted(
+                Arg.Is<(Guid SearchIdentifier, Guid? OriginalSearchIdentifier, bool IsSuccessful, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches)>(
+                    e => e.SearchIdentifier == runResults.Run.SearchIdentifier
+                      && e.IsSuccessful == false
+                      && e.FailureInfo.Type == MatchPredictionFailureType.UnexpectedError
+                      && !string.IsNullOrEmpty(e.FailureInfo.ExceptionStacktrace)
+                      && e.TotalNumberOfBatches == runResults.Run.TotalBatchCount)
+            );
+        }
+
+        [Test]
+        public async Task FinaliseRun_WhenSuccessPipelineThrows_RaisesHighPriorityAlert()
+        {
+            var runId = fixture.Create<int>();
+            repository.GetRunWithResults(runId).Returns(RunResults(ParallelMatchPredictionRunStatus.Running, failedBatch: false));
+            StubSuccessfulCompletionPipeline();
+            StubBatchResultDownloadThrows();
+
+            await SwallowFinaliseRunException(runId);
+
+            await notificationSender.Received(1).SendAlert(
+                Arg.Any<string>(),
+                Arg.Any<string>(),
+                Priority.High,
+                ParallelMatchPredictionNotificationSource
+            );
+        }
+
+        [Test]
+        public async Task FinaliseRun_WhenThrowsAfterResultsMessagePublished_OnlyRaisesAlert()
+        {
+            var runId = fixture.Create<int>();
+            repository.GetRunWithResults(runId).Returns(RunResults(ParallelMatchPredictionRunStatus.Running, failedBatch: false));
+            StubSuccessfulCompletionPipeline();
+            repository.MarkRunFinalised(runId, Arg.Any<DateTime>()).ThrowsAsync(new InvalidOperationException());
+
+            await SwallowFinaliseRunException(runId);
+
+            // The caller already has its result: no contradicting failure message or failed tracking completion.
+            await searchCompletionMessageSender.Received(1).PublishResultsMessage(
+                Arg.Any<SearchResultSet>(), Arg.Any<DateTime>(), Arg.Any<string>()
+            );
+            await searchCompletionMessageSender.DidNotReceiveWithAnyArgs().PublishFailureMessage(default);
+            await trackingDispatcher.DidNotReceive().ProcessCompleted(
+                Arg.Is<(Guid SearchIdentifier, Guid? OriginalSearchIdentifier, bool IsSuccessful, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches)>(
+                    e => !e.IsSuccessful)
+            );
+            await notificationSender.Received(1).SendAlert(
+                Arg.Any<string>(), Arg.Any<string>(), Priority.High, ParallelMatchPredictionNotificationSource
+            );
+        }
+
+        [Test]
+        public async Task FinaliseRun_WhenFailedRunThrowsAfterFailureMessagePublished_DoesNotPublishSecondFailureMessage()
+        {
+            var runId = fixture.Create<int>();
+            repository.GetRunWithResults(runId).Returns(RunResults(ParallelMatchPredictionRunStatus.Running, failedBatch: true));
+            repository.MarkRunFailed(runId, Arg.Any<DateTime>()).ThrowsAsync(new InvalidOperationException());
+
+            await SwallowFinaliseRunException(runId);
+
+            await searchCompletionMessageSender.Received(1).PublishFailureMessage(Arg.Any<SendFailureNotificationParameters>());
+            await repository.Received(1).MarkRunFailedDuringCompletion(runId, Arg.Any<DateTime>());
+        }
+
+        [Test]
+        public async Task FinaliseRun_WhenFailureMessageCannotBeSent_StillRaisesAlertAndRethrowsOriginalException()
+        {
+            var runId = fixture.Create<int>();
+            repository.GetRunWithResults(runId).Returns(RunResults(ParallelMatchPredictionRunStatus.Running, failedBatch: false));
+            StubSuccessfulCompletionPipeline();
+            StubBatchResultDownloadThrows();
+            searchCompletionMessageSender.PublishFailureMessage(default).ReturnsForAnyArgs(Task.FromException(new TimeoutException()));
+
+            var act = async () => await completionService.FinaliseRun(runId);
+
+            await act.Should().ThrowAsync<InvalidOperationException>();
+            await notificationSender.Received(1).SendAlert(
+                Arg.Any<string>(), Arg.Any<string>(), Priority.High, ParallelMatchPredictionNotificationSource
+            );
+        }
+
+        private void StubBatchResultDownloadThrows()
+        {
+            resultsCombiner.DownloadBatchedMatchPredictionResults(Arg.Any<IReadOnlyCollection<string>>())
+                .ThrowsAsync(new InvalidOperationException("Cannot read the batch result blobs."));
+        }
+
+        private async Task SwallowFinaliseRunException(int runId)
+        {
+            try
+            {
+                await completionService.FinaliseRun(runId);
+            }
+            catch (InvalidOperationException)
+            {
+                // Expected: FinaliseRun rethrows the completion failure after reporting it.
+            }
         }
 
         private ParallelMatchPredictionRunResults RunResults(
