@@ -47,15 +47,12 @@ namespace Atlas.Functions.PublicApi.Test.Functions
                 .Returns(new ValidationResult());
         }
 
-        private SearchFunctions BuildFunctions(bool defaultParallelMatchPrediction, int requestPercentage = 100)
+        private SearchFunctions BuildFunctions(bool defaultParallelMatchPrediction, Func<int, int>? nextRandom = null)
         {
-            var settings = new SearchFunctionSettings
-            {
-                DefaultParallelMatchPrediction = defaultParallelMatchPrediction,
-                ParallelMatchPredictionRequestPercentage = requestPercentage
-            };
+            var settings = Options.Create(new SearchFunctionSettings { DefaultParallelMatchPrediction = defaultParallelMatchPrediction });
 
-            return new SearchFunctions(searchDispatcher, repeatSearchDispatcher, matchPredictionValidator, Options.Create(settings), logger);
+            return new SearchFunctions(
+                searchDispatcher, repeatSearchDispatcher, matchPredictionValidator, settings, logger, nextRandom ?? Random.Shared.Next);
         }
 
         private SearchFunctions BuildPrecomputeFunctions(bool defaultUsePrecomputedGenotypeSets, int requestPercentage, int? randomNumber = null)
@@ -76,8 +73,8 @@ namespace Atlas.Functions.PublicApi.Test.Functions
         [Test]
         public async Task Search_WhenParallelMatchPredictionExplicitlyTrue_TakesParallelPath_EvenWhenServerSwitchOff()
         {
-            // Server-side controls would otherwise resolve to false (master switch off, 0% canary).
-            var functions = BuildFunctions(defaultParallelMatchPrediction: false, requestPercentage: 0);
+            // The switch would otherwise resolve the value to false.
+            var functions = BuildFunctions(defaultParallelMatchPrediction: false);
 
             await functions.Search(RequestBuilders.ValidSearchRequest(parallelMatchPrediction: true).ToHttpRequest());
 
@@ -87,8 +84,8 @@ namespace Atlas.Functions.PublicApi.Test.Functions
         [Test]
         public async Task Search_WhenParallelMatchPredictionExplicitlyFalse_TakesLegacyPath_EvenWhenServerSwitchOn()
         {
-            // Server-side controls would otherwise resolve to true (master switch on, 100% canary).
-            var functions = BuildFunctions(defaultParallelMatchPrediction: true, requestPercentage: 100);
+            // The switch would otherwise resolve the value to true.
+            var functions = BuildFunctions(defaultParallelMatchPrediction: true);
 
             await functions.Search(RequestBuilders.ValidSearchRequest(parallelMatchPrediction: false).ToHttpRequest());
 
@@ -97,12 +94,12 @@ namespace Atlas.Functions.PublicApi.Test.Functions
 
         #endregion
 
-        #region Search - null falls back to canary logic
+        #region Search - null takes the switch
 
         [Test]
         public async Task Search_WhenParallelMatchPredictionNull_AndServerSwitchOff_ResolvesToFalse()
         {
-            var functions = BuildFunctions(defaultParallelMatchPrediction: false, requestPercentage: 100);
+            var functions = BuildFunctions(defaultParallelMatchPrediction: false);
 
             await functions.Search(RequestBuilders.ValidSearchRequest(parallelMatchPrediction: null).ToHttpRequest());
 
@@ -110,23 +107,33 @@ namespace Atlas.Functions.PublicApi.Test.Functions
         }
 
         [Test]
-        public async Task Search_WhenParallelMatchPredictionNull_AndServerSwitchOnWithFullPercentage_ResolvesToTrue()
+        public async Task Search_WhenParallelMatchPredictionNull_AndServerSwitchOn_ResolvesToTrue()
         {
-            var functions = BuildFunctions(defaultParallelMatchPrediction: true, requestPercentage: 100);
+            var functions = BuildFunctions(defaultParallelMatchPrediction: true);
 
             await functions.Search(RequestBuilders.ValidSearchRequest(parallelMatchPrediction: null).ToHttpRequest());
 
             await searchDispatcher.Received(1).DispatchSearch(Arg.Is<SearchRequest>(r => r.ParallelMatchPrediction == true));
         }
 
-        [Test]
-        public async Task Search_WhenParallelMatchPredictionNull_AndServerSwitchOnWithZeroPercentage_ResolvesToFalse()
+        [TestCase(true)]
+        [TestCase(false)]
+        public async Task Search_WhenParallelMatchPredictionNull_ChoosesThePathWithoutARandomNumber(bool defaultParallelMatchPrediction)
         {
-            var functions = BuildFunctions(defaultParallelMatchPrediction: true, requestPercentage: 0);
+            var randomNumbersDrawn = 0;
+            var functions = BuildFunctions(defaultParallelMatchPrediction, _ =>
+            {
+                randomNumbersDrawn++;
+                return 0;
+            });
+            // The precomputed genotype sets value is set, so that choice draws no number.
+            var request = RequestBuilders.ValidSearchRequest(parallelMatchPrediction: null, usePrecomputedGenotypeSets: false);
 
-            await functions.Search(RequestBuilders.ValidSearchRequest(parallelMatchPrediction: null).ToHttpRequest());
+            await functions.Search(request.ToHttpRequest());
 
-            await searchDispatcher.Received(1).DispatchSearch(Arg.Is<SearchRequest>(r => r.ParallelMatchPrediction == false));
+            await searchDispatcher.Received(1)
+                .DispatchSearch(Arg.Is<SearchRequest>(r => r.ParallelMatchPrediction == defaultParallelMatchPrediction));
+            randomNumbersDrawn.Should().Be(0);
         }
 
         #endregion
@@ -136,7 +143,7 @@ namespace Atlas.Functions.PublicApi.Test.Functions
         [Test]
         public async Task RepeatSearch_WhenParallelMatchPredictionExplicitlyTrue_TakesParallelPath_EvenWhenServerSwitchOff()
         {
-            var functions = BuildFunctions(defaultParallelMatchPrediction: false, requestPercentage: 0);
+            var functions = BuildFunctions(defaultParallelMatchPrediction: false);
 
             await functions.RepeatSearch(RequestBuilders.ValidRepeatSearchRequest(parallelMatchPrediction: true).ToHttpRequest());
 
@@ -147,7 +154,7 @@ namespace Atlas.Functions.PublicApi.Test.Functions
         [Test]
         public async Task RepeatSearch_WhenParallelMatchPredictionExplicitlyFalse_TakesLegacyPath_EvenWhenServerSwitchOn()
         {
-            var functions = BuildFunctions(defaultParallelMatchPrediction: true, requestPercentage: 100);
+            var functions = BuildFunctions(defaultParallelMatchPrediction: true);
 
             await functions.RepeatSearch(RequestBuilders.ValidRepeatSearchRequest(parallelMatchPrediction: false).ToHttpRequest());
 
@@ -157,12 +164,12 @@ namespace Atlas.Functions.PublicApi.Test.Functions
 
         #endregion
 
-        #region RepeatSearch - null falls back to canary logic
+        #region RepeatSearch - null takes the switch
 
         [Test]
         public async Task RepeatSearch_WhenParallelMatchPredictionNull_AndServerSwitchOff_ResolvesToFalse()
         {
-            var functions = BuildFunctions(defaultParallelMatchPrediction: false, requestPercentage: 100);
+            var functions = BuildFunctions(defaultParallelMatchPrediction: false);
 
             await functions.RepeatSearch(RequestBuilders.ValidRepeatSearchRequest(parallelMatchPrediction: null).ToHttpRequest());
 
@@ -171,9 +178,9 @@ namespace Atlas.Functions.PublicApi.Test.Functions
         }
 
         [Test]
-        public async Task RepeatSearch_WhenParallelMatchPredictionNull_AndServerSwitchOnWithFullPercentage_ResolvesToTrue()
+        public async Task RepeatSearch_WhenParallelMatchPredictionNull_AndServerSwitchOn_ResolvesToTrue()
         {
-            var functions = BuildFunctions(defaultParallelMatchPrediction: true, requestPercentage: 100);
+            var functions = BuildFunctions(defaultParallelMatchPrediction: true);
 
             await functions.RepeatSearch(RequestBuilders.ValidRepeatSearchRequest(parallelMatchPrediction: null).ToHttpRequest());
 
@@ -181,15 +188,24 @@ namespace Atlas.Functions.PublicApi.Test.Functions
                 .DispatchSearch(Arg.Is<RepeatSearchRequest>(r => r.SearchRequest.ParallelMatchPrediction == true));
         }
 
-        [Test]
-        public async Task RepeatSearch_WhenParallelMatchPredictionNull_AndServerSwitchOnWithZeroPercentage_ResolvesToFalse()
+        [TestCase(true)]
+        [TestCase(false)]
+        public async Task RepeatSearch_WhenParallelMatchPredictionNull_ChoosesThePathWithoutARandomNumber(bool defaultParallelMatchPrediction)
         {
-            var functions = BuildFunctions(defaultParallelMatchPrediction: true, requestPercentage: 0);
+            var randomNumbersDrawn = 0;
+            var functions = BuildFunctions(defaultParallelMatchPrediction, _ =>
+            {
+                randomNumbersDrawn++;
+                return 0;
+            });
+            // The precomputed genotype sets value is set, so that choice draws no number.
+            var request = RequestBuilders.ValidRepeatSearchRequest(parallelMatchPrediction: null, usePrecomputedGenotypeSets: false);
 
-            await functions.RepeatSearch(RequestBuilders.ValidRepeatSearchRequest(parallelMatchPrediction: null).ToHttpRequest());
+            await functions.RepeatSearch(request.ToHttpRequest());
 
             await repeatSearchDispatcher.Received(1)
-                .DispatchSearch(Arg.Is<RepeatSearchRequest>(r => r.SearchRequest.ParallelMatchPrediction == false));
+                .DispatchSearch(Arg.Is<RepeatSearchRequest>(r => r.SearchRequest.ParallelMatchPrediction == defaultParallelMatchPrediction));
+            randomNumbersDrawn.Should().Be(0);
         }
 
         #endregion

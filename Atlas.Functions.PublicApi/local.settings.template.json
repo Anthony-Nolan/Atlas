@@ -10,7 +10,6 @@
     "MatchingAlgorithmFunction:ApiKey": "override-this",
 
     "AtlasFunction:Search:DefaultParallelMatchPrediction": false,
-    "AtlasFunction:Search:ParallelMatchPredictionRequestPercentage": 100,
     "AtlasFunction:Search:DefaultUsePrecomputedGenotypeSets": false,
     "AtlasFunction:Search:UsePrecomputedGenotypeSetsRequestPercentage": 0,
 

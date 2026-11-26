@@ -30,7 +30,6 @@ namespace Atlas.Functions.PublicApi.Functions
         private readonly IRepeatSearchDispatcher repeatSearchDispatcher;
         private readonly IMatchPredictionValidator matchPredictionValidator;
         private readonly bool defaultParallelMatchPrediction;
-        private readonly int parallelMatchPredictionRequestPercentage;
         private readonly bool defaultUsePrecomputedGenotypeSets;
         private readonly int usePrecomputedGenotypeSetsRequestPercentage;
         private readonly IAtlasLogger logger;
@@ -62,7 +61,6 @@ namespace Atlas.Functions.PublicApi.Functions
             this.repeatSearchDispatcher = repeatSearchDispatcher;
             this.matchPredictionValidator = matchPredictionValidator;
             defaultParallelMatchPrediction = searchFunctionSettings.Value.DefaultParallelMatchPrediction;
-            parallelMatchPredictionRequestPercentage = Math.Clamp(searchFunctionSettings.Value.ParallelMatchPredictionRequestPercentage, 0, 100);
             defaultUsePrecomputedGenotypeSets = searchFunctionSettings.Value.DefaultUsePrecomputedGenotypeSets;
             usePrecomputedGenotypeSetsRequestPercentage = Math.Clamp(searchFunctionSettings.Value.UsePrecomputedGenotypeSetsRequestPercentage, 0, 100);
             this.logger = logger;
@@ -138,22 +136,14 @@ namespace Atlas.Functions.PublicApi.Functions
         }
 
         /// <summary>
-        /// Resolves <see cref="SearchRequest.ParallelMatchPrediction"/> for the request. An explicit value supplied on
-        /// the request is honoured as-is: <c>true</c> always takes the parallel ACA Worker ("Containers") path and
-        /// <c>false</c> always takes the legacy sequential Durable path, regardless of the server-side controls.
-        /// <para>
-        /// Only when the request leaves the value <c>null</c> is it derived from the two server-side controls:
-        /// <see cref="SearchFunctionSettings.DefaultParallelMatchPrediction"/> is the master switch — when <c>false</c>,
-        /// the request takes the legacy sequential path, regardless of the percentage; when <c>true</c>,
-        /// <see cref="SearchFunctionSettings.ParallelMatchPredictionRequestPercentage"/> percent of requests take the
-        /// parallel path and the remainder fall back to the sequential path.
-        /// </para>
+        /// Resolves <see cref="SearchRequest.ParallelMatchPrediction"/> for the request. A value set on the request is
+        /// kept: <c>true</c> takes the parallel ACA Worker ("Containers") path, and <c>false</c> takes the legacy
+        /// sequential Durable path, whatever the switch is. An empty value takes the switch,
+        /// <see cref="SearchFunctionSettings.DefaultParallelMatchPrediction"/>.
         /// </summary>
         private void ResolveParallelMatchPrediction(SearchRequest searchRequest)
         {
-            searchRequest.ParallelMatchPrediction ??=
-                defaultParallelMatchPrediction
-                && nextRandom(100) < parallelMatchPredictionRequestPercentage;
+            searchRequest.ParallelMatchPrediction ??= defaultParallelMatchPrediction;
         }
 
         /// <summary>

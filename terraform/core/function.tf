@@ -213,7 +213,6 @@ resource "azurerm_windows_function_app" "atlas_public_api_function" {
 
     "AutoMapper:LicenseKey"                                            = local.automapper_license_key_kv_ref
     "AtlasFunction:Search:DefaultParallelMatchPrediction"              = var.DEFAULT_PARALLEL_MATCH_PREDICTION
-    "AtlasFunction:Search:ParallelMatchPredictionRequestPercentage"    = var.PARALLEL_MATCH_PREDICTION_REQUEST_PERCENTAGE
     "AtlasFunction:Search:DefaultUsePrecomputedGenotypeSets"           = var.DEFAULT_USE_PRECOMPUTED_GENOTYPE_SETS
     "AtlasFunction:Search:UsePrecomputedGenotypeSetsRequestPercentage" = var.USE_PRECOMPUTED_GENOTYPE_SETS_REQUEST_PERCENTAGE
 

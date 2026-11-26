@@ -742,13 +742,7 @@ variable "SHOULD_BATCH_RESULTS" {
 variable "DEFAULT_PARALLEL_MATCH_PREDICTION" {
   type        = bool
   default     = false
-  description = "Master switch for the parallel ACA Worker path. When false, all searches take the legacy sequential Durable orchestrator path regardless of PARALLEL_MATCH_PREDICTION_REQUEST_PERCENTAGE; when true, that percentage of searches take the parallel path. The value on the request itself is not used."
-}
-
-variable "PARALLEL_MATCH_PREDICTION_REQUEST_PERCENTAGE" {
-  type        = number
-  default     = 0
-  description = "Canary throttle (0-100) applied only when DEFAULT_PARALLEL_MATCH_PREDICTION is true: this percentage of searches take the parallel ACA Worker path and the rest fall back to the legacy sequential Durable orchestrator path. No effect when the master switch is false. Defaults to 0 (no searches take the parallel path)."
+  description = "The switch for the parallel ACA Worker match prediction path, read by the Atlas Public API when it accepts a search or a repeat search. When true, a search that leaves ParallelMatchPrediction empty takes the parallel path. When false, it takes the legacy sequential Durable orchestrator path. A search request that sets ParallelMatchPrediction keeps its value."
 }
 
 variable "DEFAULT_USE_PRECOMPUTED_GENOTYPE_SETS" {
