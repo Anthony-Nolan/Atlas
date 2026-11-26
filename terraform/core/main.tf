@@ -5,12 +5,13 @@ terraform {
 }
 
 locals {
-  repository_name     = "Atlas"
-  environment         = var.ENVIRONMENT
-  location            = var.LOCATION
-  min_tls_version     = "1.2"
-  resource_group_name = "${local.environment}-ATLAS-RESOURCE-GROUP"
-  subscription_id     = var.AZURE_SUBSCRIPTION_ID
+  repository_name        = "Atlas"
+  environment            = var.ENVIRONMENT
+  location               = var.LOCATION
+  min_tls_version        = "1.2"
+  resource_group_name    = "${local.environment}-ATLAS-RESOURCE-GROUP"
+  subscription_id        = var.AZURE_SUBSCRIPTION_ID
+  shared_subscription_id = var.SHARED_SUBSCRIPTION_ID
   common_tags = {
     controlled_by_terraform = true
     repository_name         = local.repository_name
@@ -26,7 +27,14 @@ provider "azurerm" {
   // so will trigger 403s for most devs. Accordingly, we disable the "register everything" behaviour, and
   // initial registrations will need to be organised as a one-off.
   // Currently, the only resource provider needed is this AzureRM provider.
-  skip_provider_registration = false
+  resource_provider_registrations = "core"
+  features {}
+}
+
+provider "azurerm" {
+  alias                           = "shared"
+  subscription_id                 = local.shared_subscription_id
+  resource_provider_registrations = "none"
   features {}
 }
 
@@ -45,15 +53,11 @@ module "donor_import" {
   app_service_plan        = azurerm_service_plan.atlas-elastic-plan
   application_insights    = azurerm_application_insights.atlas
   azure_storage           = azurerm_storage_account.azure_storage
+  key_vault               = local.key_vault_module_handoff
   servicebus_namespace    = azurerm_servicebus_namespace.general
   shared_function_storage = azurerm_storage_account.function_storage
   sql_database            = azurerm_mssql_database.atlas-database-shared
   sql_server              = azurerm_mssql_server.atlas_sql_server
-
-  servicebus_namespace_authorization_rules = {
-    write-only = azurerm_servicebus_namespace_authorization_rule.write-only
-    read-write = azurerm_servicebus_namespace_authorization_rule.read-write
-  }
 
   servicebus_topics = {
     alerts        = module.support.general.alerts_servicebus_topic
@@ -81,6 +85,17 @@ module "donor_import" {
   FAILURE_LOGS_CRONTAB                          = var.DONOR_IMPORT_FAILURE_LOGS_CRONTAB
   FAILURE_LOGS_EXPIRY_IN_DAYS                   = var.DONOR_IMPORT_FAILURE_LOGS_EXPIRY_IN_DAYS
   ALLOW_FULL_MODE_IMPORT                        = var.DONOR_IMPORT_ALLOW_FULL_MODE_IMPORT
+
+  // External SQL variables
+  USE_EXTERNAL_SQL         = var.USE_EXTERNAL_SQL
+  EXTERNAL_SQL_SERVER_NAME = var.EXTERNAL_SQL_SERVER_NAME
+  EXTERNAL_SQL_DB_SHARED   = var.EXTERNAL_SQL_DB_SHARED
+
+  // See the equivalent comment on module.matching_algorithm.
+  depends_on = [
+    azurerm_role_assignment.function_apps_identity_kv_secrets_user,
+    time_sleep.wait_for_key_vault_rbac,
+  ]
 }
 
 module "matching_algorithm" {
@@ -96,24 +111,24 @@ module "matching_algorithm" {
   default_servicebus_settings = local.service-bus
 
   // DI variables
-  application_insights           = azurerm_application_insights.atlas
-  application_insights_workspace = azurerm_log_analytics_workspace.ai_workspace
-  azure_app_configuration        = azurerm_app_configuration.atlas_app_configuration
-  azure_storage                  = azurerm_storage_account.azure_storage
-  donor_import_sql_database      = azurerm_mssql_database.atlas-database-shared
-  elastic_app_service_plan       = azurerm_service_plan.atlas-elastic-plan
-  mac_import_table               = module.multiple_allele_code_lookup.storage_table
-  resource_group                 = azurerm_resource_group.atlas_resource_group
-  servicebus_namespace           = azurerm_servicebus_namespace.general
-  shared_function_storage        = azurerm_storage_account.function_storage
-  sql_database_shared            = azurerm_mssql_database.atlas-database-shared
-  sql_server                     = azurerm_mssql_server.atlas_sql_server
+  application_insights          = azurerm_application_insights.atlas
+  azure_app_configuration       = azurerm_app_configuration.atlas_app_configuration
+  azure_storage                 = azurerm_storage_account.azure_storage
+  donor_import_sql_database     = azurerm_mssql_database.atlas-database-shared
+  elastic_app_service_plan      = azurerm_service_plan.atlas-elastic-plan
+  key_vault                     = local.key_vault_module_handoff
+  mac_import_table              = module.multiple_allele_code_lookup.storage_table
+  match_prediction_sql_database = module.match_prediction.sql_database
+  resource_group                = azurerm_resource_group.atlas_resource_group
+  servicebus_namespace          = azurerm_servicebus_namespace.general
+  shared_function_storage       = azurerm_storage_account.function_storage
+  sql_database_shared           = azurerm_mssql_database.atlas-database-shared
+  sql_server                    = azurerm_mssql_server.atlas_sql_server
 
-  servicebus_namespace_authorization_rules = {
-    read-write = azurerm_servicebus_namespace_authorization_rule.read-write
-    read-only  = azurerm_servicebus_namespace_authorization_rule.read-only
-    write-only = azurerm_servicebus_namespace_authorization_rule.write-only
-  }
+  // Container Apps DI Variables
+  container_app_environment = azurerm_container_app_environment.atlas
+  acr                       = data.azurerm_container_registry.shared
+  aca_identity              = azurerm_user_assigned_identity.aca_identity
 
   servicebus_topics = {
     updated-searchable-donors = module.donor_import.service_bus.updated_searchable_donors_topic
@@ -124,8 +139,8 @@ module "matching_algorithm" {
 
   // Release variables
   APPLICATION_INSIGHTS_LOG_LEVEL                           = var.APPLICATION_INSIGHTS_LOG_LEVEL
+  AUTOMAPPER_LICENSE_KEY                                   = var.AUTOMAPPER_LICENSE_KEY
   AZURE_CLIENT_ID                                          = var.AZURE_CLIENT_ID
-  AZURE_CLIENT_SECRET                                      = var.AZURE_CLIENT_SECRET
   AZURE_OAUTH_BASEURL                                      = var.AZURE_OAUTH_BASEURL
   AZURE_TENANT_ID                                          = var.AZURE_TENANT_ID
   DATA_REFRESH_AUTO_RUN                                    = var.MATCHING_DATA_REFRESH_AUTO_RUN
@@ -134,12 +149,23 @@ module "matching_algorithm" {
   DATA_REFRESH_DB_SIZE_ACTIVE                              = var.MATCHING_DATA_REFRESH_DB_SIZE_ACTIVE
   DATA_REFRESH_DB_SIZE_DORMANT                             = var.MATCHING_DATA_REFRESH_DB_SIZE_DORMANT
   DATA_REFRESH_DB_SIZE_REFRESH                             = var.MATCHING_DATA_REFRESH_DB_SIZE_REFRESH
+  DATA_REFRESH_LEASE_DURATION_MINUTES                      = var.MATCHING_DATA_REFRESH_LEASE_DURATION_MINUTES
+  DATA_REFRESH_LEASE_RENEWAL_INTERVAL_SECONDS              = var.MATCHING_DATA_REFRESH_LEASE_RENEWAL_INTERVAL_SECONDS
+  DATA_REFRESH_PRECOMPUTE_MAX_FAILED_DONOR_FRACTION        = var.MATCHING_DATA_REFRESH_PRECOMPUTE_MAX_FAILED_DONOR_FRACTION
   DATA_REFRESH_CRONTAB                                     = var.MATCHING_DATA_REFRESH_CRONTAB
+  DATA_REFRESH_WATCHDOG_CRON_SCHEDULE                      = var.MATCHING_DATA_REFRESH_WATCHDOG_CRON_SCHEDULE
+  DATA_REFRESH_WATCHDOG_GRACE_DURATION_MINUTES             = var.MATCHING_DATA_REFRESH_WATCHDOG_GRACE_DURATION_MINUTES
+  DATA_REFRESH_PRECOMPUTE_ABANDON_BATCHES_CRON_SCHEDULE    = var.MATCHING_DATA_REFRESH_PRECOMPUTE_ABANDON_BATCHES_CRON_SCHEDULE
+  DATA_REFRESH_PRECOMPUTE_FINALISE_RUNS_CRON_SCHEDULE      = var.MATCHING_DATA_REFRESH_PRECOMPUTE_FINALISE_RUNS_CRON_SCHEDULE
+  DATA_REFRESH_PRECOMPUTE_MAX_BATCH_RETRIES                = var.MATCHING_DATA_REFRESH_PRECOMPUTE_MAX_BATCH_RETRIES
+  DATA_REFRESH_PRECOMPUTE_REQUEUE_BATCHES_CRON_SCHEDULE    = var.MATCHING_DATA_REFRESH_PRECOMPUTE_REQUEUE_BATCHES_CRON_SCHEDULE
   DATABASE_MAX_SIZE_GB                                     = var.MATCHING_DATABASE_MAX_SIZE_GB
   DATABASE_OPERATION_POLLING_INTERVAL_MILLISECONDS         = var.MATCHING_DATABASE_OPERATION_POLLING_INTERVAL_MILLISECONDS
   DATABASE_PASSWORD                                        = var.MATCHING_DATABASE_PASSWORD
   DATABASE_TRANSIENT_TIMEOUT                               = var.MATCHING_DATABASE_TRANSIENT_TIMEOUT
   DATABASE_USERNAME                                        = var.MATCHING_DATABASE_USERNAME
+  DEBUG_ALLOW_PRECOMPUTE_WRITES                            = var.MATCHING_DEBUG_ALLOW_PRECOMPUTE_WRITES
+  DONOR_GENOTYPE_PRECOMPUTATION_ENABLED                    = var.MATCHING_DONOR_GENOTYPE_PRECOMPUTATION_ENABLED
   DONOR_IMPORT_DATABASE_PASSWORD                           = var.MATCHING_PASSWORD_FOR_DONOR_IMPORT_DATABASE
   DONOR_IMPORT_DATABASE_USERNAME                           = var.MATCHING_USERNAME_FOR_DONOR_IMPORT_DATABASE
   DONOR_WRITE_TRANSACTIONALITY__DATA_REFRESH               = var.MATCHING_DONOR_WRITE_TRANSACTIONALITY__DATA_REFRESH
@@ -147,6 +173,10 @@ module "matching_algorithm" {
   IP_RESTRICTION_SETTINGS                                  = var.IP_RESTRICTION_SETTINGS
   MAINTENANCE_GCCOLLECT_DISABLED                           = var.MATCHING_MAINTENANCE_GCCOLLECT_DISABLED
   MAINTENANCE_GCCOLLECT_CRON_SCHEDULE                      = var.MATCHING_MAINTENANCE_GCCOLLECT_CRON_SCHEDULE
+  MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES      = var.MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES
+  MATCH_PREDICTION_MAX_CACHED_FREQUENCY_SETS               = var.MATCH_PREDICTION_MAX_CACHED_FREQUENCY_SETS
+  MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT        = var.MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT
+  MATCH_PREDICTION_SET_CACHE_EXPIRY_MINUTES                = var.MATCH_PREDICTION_SET_CACHE_EXPIRY_MINUTES
   MATCHING_BATCH_SIZE                                      = var.MATCHING_BATCH_SIZE
   MAX_CONCURRENT_SERVICEBUS_FUNCTIONS                      = var.MATCHING_MAX_CONCURRENT_PROCESSES_PER_INSTANCE
   MAX_SCALE_OUT                                            = var.MATCHING_MAX_SCALE_OUT
@@ -158,6 +188,37 @@ module "matching_algorithm" {
   WEBSITE_RUN_FROM_PACKAGE                                 = var.WEBSITE_RUN_FROM_PACKAGE
   WMDA_FILE_URL                                            = var.WMDA_FILE_URL
   SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC = var.MATCHING_ALGORITHM_SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC
+
+  // Precompute worker Container App variables
+  PRECOMPUTE_WORKER_CONTAINER_IMAGE_TAG                           = var.MATCHING_PRECOMPUTE_WORKER_CONTAINER_IMAGE_TAG
+  PRECOMPUTE_WORKER_CONTAINER_CPU                                 = var.MATCHING_PRECOMPUTE_WORKER_CONTAINER_CPU
+  PRECOMPUTE_WORKER_CONTAINER_MEMORY                              = var.MATCHING_PRECOMPUTE_WORKER_CONTAINER_MEMORY
+  PRECOMPUTE_WORKER_CONTAINER_MAX_REPLICAS                        = var.MATCHING_PRECOMPUTE_WORKER_CONTAINER_MAX_REPLICAS
+  PRECOMPUTE_WORKER_CONTAINER_SCALE_RULE_MESSAGE_COUNT            = var.MATCHING_PRECOMPUTE_WORKER_CONTAINER_SCALE_RULE_MESSAGE_COUNT
+  PRECOMPUTE_WORKER_CONTAINER_SCALE_RULE_POLLING_INTERVAL_SECONDS = var.MATCHING_PRECOMPUTE_WORKER_CONTAINER_SCALE_RULE_POLLING_INTERVAL_SECONDS
+  PRECOMPUTE_WORKER_MAX_CONCURRENT_CALLS                          = var.MATCHING_PRECOMPUTE_WORKER_MAX_CONCURRENT_CALLS
+  PRECOMPUTE_WORKER_PREFETCH_COUNT                                = var.MATCHING_PRECOMPUTE_WORKER_PREFETCH_COUNT
+  PRECOMPUTE_WORKER_MAX_AUTO_LOCK_RENEWAL_MINUTES                 = var.MATCHING_PRECOMPUTE_WORKER_MAX_AUTO_LOCK_RENEWAL_MINUTES
+  PRECOMPUTE_WORKER_BATCH_LEASE_MINUTES                           = var.MATCHING_PRECOMPUTE_WORKER_BATCH_LEASE_MINUTES
+  PRECOMPUTE_WORKER_MAX_GROUP_FAILURES_PER_BATCH                  = var.MATCHING_PRECOMPUTE_WORKER_MAX_GROUP_FAILURES_PER_BATCH
+
+  // External SQL variables
+  USE_EXTERNAL_SQL             = var.USE_EXTERNAL_SQL
+  EXTERNAL_SQL_SERVER_NAME     = var.EXTERNAL_SQL_SERVER_NAME
+  EXTERNAL_SQL_DB_SHARED       = var.EXTERNAL_SQL_DB_SHARED
+  EXTERNAL_SQL_DB_MATCHING_A   = var.EXTERNAL_SQL_DB_MATCHING_A
+  EXTERNAL_SQL_DB_MATCHING_B   = var.EXTERNAL_SQL_DB_MATCHING_B
+  EXTERNAL_SQL_RESOURCE_GROUP  = var.EXTERNAL_SQL_RESOURCE_GROUP
+  EXTERNAL_SQL_SUBSCRIPTION_ID = var.EXTERNAL_SQL_SUBSCRIPTION_ID
+
+  // The role assignment that lets the shared identity read the vault, and the RBAC propagation wait, both live here in
+  // the root module - resources inside a child module cannot depend on them directly. This gates the whole module,
+  // which is coarser than needed but is the only mechanism available. It would become a cycle if any key-vault-side
+  // resource here ever consumed an output of this module.
+  depends_on = [
+    azurerm_role_assignment.function_apps_identity_kv_secrets_user,
+    time_sleep.wait_for_key_vault_rbac,
+  ]
 }
 
 module "match_prediction" {
@@ -174,34 +235,66 @@ module "match_prediction" {
   application_insights    = azurerm_application_insights.atlas
   app_service_plan        = azurerm_service_plan.atlas-elastic-plan
   azure_storage           = azurerm_storage_account.azure_storage
+  key_vault               = local.key_vault_module_handoff
   servicebus_namespace    = azurerm_servicebus_namespace.general
   shared_function_storage = azurerm_storage_account.function_storage
   sql_server              = azurerm_mssql_server.atlas_sql_server
   sql_database            = azurerm_mssql_database.atlas-database-shared
   mac_import_table        = module.multiple_allele_code_lookup.storage_table
 
-  servicebus_namespace_authorization_rules = {
-    manage     = azurerm_servicebus_namespace_authorization_rule.manage
-    read-write = azurerm_servicebus_namespace_authorization_rule.read-write
-    read-only  = azurerm_servicebus_namespace_authorization_rule.read-only
-    write-only = azurerm_servicebus_namespace_authorization_rule.write-only
-  }
+  matching_sql_database_secret_ids = module.matching_algorithm.sql_database_secret_ids
 
   servicebus_topics = {
-    alerts        = module.support.general.alerts_servicebus_topic
-    notifications = module.support.general.notifications_servicebus_topic
+    alerts          = module.support.general.alerts_servicebus_topic
+    notifications   = module.support.general.notifications_servicebus_topic
+    search_tracking = module.search_tracking.service_bus.search_tracking_topic
   }
+
+  // Container Apps DI Variables
+  container_app_environment = azurerm_container_app_environment.atlas
+  acr                       = data.azurerm_container_registry.shared
+  aca_identity              = azurerm_user_assigned_identity.aca_identity
 
   // Release variables
   APPLICATION_INSIGHTS_LOG_LEVEL                           = var.APPLICATION_INSIGHTS_LOG_LEVEL
+  ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES                       = var.MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES
+  MAX_CACHED_FREQUENCY_SETS                                = var.MATCH_PREDICTION_MAX_CACHED_FREQUENCY_SETS
+  SET_CACHE_EXPIRY_MINUTES                                 = var.MATCH_PREDICTION_SET_CACHE_EXPIRY_MINUTES
   DATABASE_PASSWORD                                        = var.MATCH_PREDICTION_DATABASE_PASSWORD
   DATABASE_USERNAME                                        = var.MATCH_PREDICTION_DATABASE_USERNAME
   IP_RESTRICTION_SETTINGS                                  = var.IP_RESTRICTION_SETTINGS
   MAC_SOURCE                                               = var.MAC_SOURCE
+  MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM                = var.MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM
+  MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT        = var.MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT
+  MATCH_PREDICTION_RECORD_GENOTYPE_SET_READS               = var.MATCH_PREDICTION_RECORD_GENOTYPE_SET_READS
+  MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS             = var.MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS
+  MATCH_PREDICTION_WORKER_MAX_CACHED_FREQUENCY_SETS        = var.MATCH_PREDICTION_WORKER_MAX_CACHED_FREQUENCY_SETS
+  MATCH_PREDICTION_WORKER_SET_CACHE_EXPIRY_MINUTES         = var.MATCH_PREDICTION_WORKER_SET_CACHE_EXPIRY_MINUTES
+  MATCH_PREDICTION_WORKER_PREFETCH_COUNT                   = var.MATCH_PREDICTION_WORKER_PREFETCH_COUNT
+  MATCH_PREDICTION_WORKER_MAX_AUTO_LOCK_RENEWAL_MINUTES    = var.MATCH_PREDICTION_WORKER_MAX_AUTO_LOCK_RENEWAL_MINUTES
   SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS                  = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
   SERVICE_BUS_SEND_RETRY_COUNT                             = var.SERVICE_BUS_SEND_RETRY_COUNT
   WEBSITE_RUN_FROM_PACKAGE                                 = var.WEBSITE_RUN_FROM_PACKAGE
   SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC = var.MATCH_PREDICTION_SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC
+  CONTAINER_IMAGE_TAG                                      = var.MATCH_PREDICTION_CONTAINER_IMAGE_TAG
+  CONTAINER_CPU                                            = var.MATCH_PREDICTION_CONTAINER_CPU
+  CONTAINER_MEMORY                                         = var.MATCH_PREDICTION_CONTAINER_MEMORY
+  CONTAINER_MIN_REPLICAS                                   = var.MATCH_PREDICTION_CONTAINER_MIN_REPLICAS
+  CONTAINER_MAX_REPLICAS                                   = var.MATCH_PREDICTION_CONTAINER_MAX_REPLICAS
+  CONTAINER_SCALE_RULE_MESSAGE_COUNT                       = var.MATCH_PREDICTION_CONTAINER_ACA_SCALE_RULE_MESSAGE_COUNT
+  CONTAINER_SCALE_RULE_POLLING_INTERVAL_SECONDS            = var.MATCH_PREDICTION_CONTAINER_SCALE_RULE_POLLING_INTERVAL_SECONDS
+  CONTAINER_REQUESTS_MAX_PARALLELISM                       = var.MATCH_PREDICTION_CONTAINER_REQUESTS_MAX_PARALLELISM
+
+  // External SQL variables
+  USE_EXTERNAL_SQL         = var.USE_EXTERNAL_SQL
+  EXTERNAL_SQL_SERVER_NAME = var.EXTERNAL_SQL_SERVER_NAME
+  EXTERNAL_SQL_DB_SHARED   = var.EXTERNAL_SQL_DB_SHARED
+
+  // See the equivalent comment on module.matching_algorithm.
+  depends_on = [
+    azurerm_role_assignment.function_apps_identity_kv_secrets_user,
+    time_sleep.wait_for_key_vault_rbac,
+  ]
 }
 
 module "multiple_allele_code_lookup" {
@@ -221,22 +314,18 @@ module "repeat_search" {
   default_servicebus_settings = local.service-bus
 
   // DI Variables
-  application_insights                            = azurerm_application_insights.atlas
-  app_service_plan                                = azurerm_service_plan.atlas-elastic-plan
-  azure_app_configuration                         = azurerm_app_configuration.atlas_app_configuration
-  azure_storage                                   = azurerm_storage_account.azure_storage
-  donor_database_connection_string                = module.donor_import.sql_database.connection_string
-  mac_import_table                                = module.multiple_allele_code_lookup.storage_table
-  matching_persistent_database_connection_string  = module.matching_algorithm.sql_database.persistent_database_connection_string
-  matching_transient_a_database_connection_string = module.matching_algorithm.sql_database.transient_a_database_connection_string
-  matching_transient_b_database_connection_string = module.matching_algorithm.sql_database.transient_b_database_connection_string
-  original-search-matching-results-topic          = module.matching_algorithm.service_bus.matching_results_topic
-  servicebus_namespace                            = azurerm_servicebus_namespace.general
-  servicebus_namespace_authorization_rules = {
-    read-write = azurerm_servicebus_namespace_authorization_rule.read-write
-    read-only  = azurerm_servicebus_namespace_authorization_rule.read-only
-    write-only = azurerm_servicebus_namespace_authorization_rule.write-only
-  }
+  application_insights                   = azurerm_application_insights.atlas
+  app_service_plan                       = azurerm_service_plan.atlas-elastic-plan
+  azure_app_configuration                = azurerm_app_configuration.atlas_app_configuration
+  azure_storage                          = azurerm_storage_account.azure_storage
+  donor_database_kv_ref                  = module.donor_import.sql_database.connection_string_kv_ref
+  key_vault                              = local.key_vault_module_handoff
+  mac_import_table                       = module.multiple_allele_code_lookup.storage_table
+  matching_persistent_database_kv_ref    = module.matching_algorithm.sql_database.persistent_database_kv_ref
+  matching_transient_a_database_kv_ref   = module.matching_algorithm.sql_database.transient_a_database_kv_ref
+  matching_transient_b_database_kv_ref   = module.matching_algorithm.sql_database.transient_b_database_kv_ref
+  original-search-matching-results-topic = module.matching_algorithm.service_bus.matching_results_topic
+  servicebus_namespace                   = azurerm_servicebus_namespace.general
   servicebus_topics = {
     alerts          = module.support.general.alerts_servicebus_topic
     notifications   = module.support.general.notifications_servicebus_topic
@@ -262,6 +351,18 @@ module "repeat_search" {
   SERVICE_BUS_SEND_RETRY_COUNT                             = var.SERVICE_BUS_SEND_RETRY_COUNT
   STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_BATCHSIZE         = var.STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_BATCHSIZE
   STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_TIMEOUT           = var.STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_TIMEOUT
+
+  // External SQL variables
+  USE_EXTERNAL_SQL         = var.USE_EXTERNAL_SQL
+  EXTERNAL_SQL_SERVER_NAME = var.EXTERNAL_SQL_SERVER_NAME
+  EXTERNAL_SQL_DB_SHARED   = var.EXTERNAL_SQL_DB_SHARED
+
+  // See the equivalent comment on module.matching_algorithm. Needed here because this app resolves that module's
+  // Key Vault references.
+  depends_on = [
+    azurerm_role_assignment.function_apps_identity_kv_secrets_user,
+    time_sleep.wait_for_key_vault_rbac,
+  ]
 }
 
 module "search_tracking" {
@@ -275,28 +376,42 @@ module "search_tracking" {
   default_servicebus_settings = local.service-bus
 
   // DI Variables
-  application_insights                            = azurerm_application_insights.atlas
-  app_service_plan                                = azurerm_service_plan.atlas-elastic-plan
-  azure_app_configuration                         = azurerm_app_configuration.atlas_app_configuration
-  servicebus_namespace                            = azurerm_servicebus_namespace.general
-  servicebus_namespace_authorization_rules = {
-    read-write = azurerm_servicebus_namespace_authorization_rule.read-write
-    read-only  = azurerm_servicebus_namespace_authorization_rule.read-only
-    write-only = azurerm_servicebus_namespace_authorization_rule.write-only
-  }
+  application_insights    = azurerm_application_insights.atlas
+  app_service_plan        = azurerm_service_plan.atlas-elastic-plan
+  azure_app_configuration = azurerm_app_configuration.atlas_app_configuration
+  key_vault               = local.key_vault_module_handoff
+  servicebus_namespace    = azurerm_servicebus_namespace.general
   shared_function_storage = azurerm_storage_account.function_storage
   sql_database            = azurerm_mssql_database.atlas-database-shared
   sql_server              = azurerm_mssql_server.atlas_sql_server
 
   // Release variables
-  APPLICATION_INSIGHTS_LOG_LEVEL                 = var.APPLICATION_INSIGHTS_LOG_LEVEL
-  DATABASE_PASSWORD                              = var.SEARCH_TRACKING_DATABASE_PASSWORD
-  DATABASE_USERNAME                              = var.SEARCH_TRACKING_DATABASE_USERNAME
-  IP_RESTRICTION_SETTINGS                        = var.IP_RESTRICTION_SETTINGS
+  APPLICATION_INSIGHTS_LOG_LEVEL = var.APPLICATION_INSIGHTS_LOG_LEVEL
+  AUTOMAPPER_LICENSE_KEY         = var.AUTOMAPPER_LICENSE_KEY
+  DATABASE_PASSWORD              = var.SEARCH_TRACKING_DATABASE_PASSWORD
+  DATABASE_USERNAME              = var.SEARCH_TRACKING_DATABASE_USERNAME
+  IP_RESTRICTION_SETTINGS        = var.IP_RESTRICTION_SETTINGS
+
+  // External SQL variables
+  USE_EXTERNAL_SQL         = var.USE_EXTERNAL_SQL
+  EXTERNAL_SQL_SERVER_NAME = var.EXTERNAL_SQL_SERVER_NAME
+  EXTERNAL_SQL_DB_SHARED   = var.EXTERNAL_SQL_DB_SHARED
+
+  // See the equivalent comment on module.matching_algorithm.
+  depends_on = [
+    azurerm_role_assignment.function_apps_identity_kv_secrets_user,
+    time_sleep.wait_for_key_vault_rbac,
+  ]
 }
 
 module "support" {
   source = "./modules/support"
+
+  general = {
+    environment = local.environment
+    location    = local.location
+    common_tags = local.common_tags
+  }
 
   default_servicebus_settings = local.service-bus
 
@@ -309,6 +424,21 @@ module "support" {
     }
   }
 
+  // With external SQL, the apps do not use the Terraform-managed transient databases, so there is nothing to alert on.
+  matching_transient_databases = {
+    for key, database in {
+      transient-a = {
+        id   = module.matching_algorithm.sql_database.transient_a_database_id
+        name = module.matching_algorithm.sql_database.transient_a_database_name
+      }
+      transient-b = {
+        id   = module.matching_algorithm.sql_database.transient_b_database_id
+        name = module.matching_algorithm.sql_database.transient_b_database_name
+      }
+    } : key => database if !var.USE_EXTERNAL_SQL
+  }
+
   // Release variables
-  SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID = var.SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID
+  MATCHING_DATABASE_STORAGE_ALERT_THRESHOLD_PERCENT = var.MATCHING_DATABASE_STORAGE_ALERT_THRESHOLD_PERCENT
+  SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID         = var.SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID
 }

@@ -280,7 +280,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                         await donorImportRepository.RemoveAllDonorInformation();
                     }
 
-                    await donorImporter.ImportDonors(refreshRecord.ShouldMarkAllDonorsAsUpdated);
+                    // ATL-605: the ShouldMarkAllDonorsAsUpdated column is gone from the DEV database (dropped by ATL-490),
+                    // so the flag is no longer read from the refresh record. The requester always set it to true.
+                    await donorImporter.ImportDonors(shouldMarkDonorsAsUpdated: true);
                     break;
                 case DataRefreshStage.DonorHlaProcessing:
                     var isContinuation = (executionMode == DataRefreshStageExecutionMode.Continuation);

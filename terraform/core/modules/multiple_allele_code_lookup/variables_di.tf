@@ -2,7 +2,7 @@
 
 variable "azure_storage" {
   type = object({
-    name                      = string
+    id                        = string
     primary_connection_string = string
   })
 }

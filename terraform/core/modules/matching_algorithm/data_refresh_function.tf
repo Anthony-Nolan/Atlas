@@ -1,0 +1,170 @@
+locals {
+  # USE_EXTERNAL_SQL-aware Azure-management targets, so scale-up/scale-down
+  # calls hit the same server/database the SqlA/SqlB connection strings do.
+  data_refresh_database_a_name  = var.USE_EXTERNAL_SQL ? var.EXTERNAL_SQL_DB_MATCHING_A : azurerm_mssql_database.atlas-matching-transient-a.name
+  data_refresh_database_b_name  = var.USE_EXTERNAL_SQL ? var.EXTERNAL_SQL_DB_MATCHING_B : azurerm_mssql_database.atlas-matching-transient-b.name
+  data_refresh_sql_server_name  = var.USE_EXTERNAL_SQL ? var.EXTERNAL_SQL_SERVER_NAME : var.sql_server.name
+  data_refresh_sql_rg_name      = var.USE_EXTERNAL_SQL ? var.EXTERNAL_SQL_RESOURCE_GROUP : var.resource_group.name
+  data_refresh_sql_subscription = var.USE_EXTERNAL_SQL && var.EXTERNAL_SQL_SUBSCRIPTION_ID != "" ? var.EXTERNAL_SQL_SUBSCRIPTION_ID : var.general.subscription_id
+
+  data_refresh_func_app_settings = {
+    "ApplicationInsights:LogLevel" = var.APPLICATION_INSIGHTS_LOG_LEVEL
+
+    "AutoMapper:LicenseKey" = var.AUTOMAPPER_LICENSE_KEY
+
+    "AzureManagement:Authentication:ClientId"     = var.AZURE_CLIENT_ID
+    "AzureManagement:Authentication:ClientSecret" = var.key_vault.secret_refs["azure-client-secret"]
+    "AzureManagement:Authentication:OAuthBaseUrl" = var.AZURE_OAUTH_BASEURL
+    "AzureManagement:Authentication:TenantId"     = var.AZURE_TENANT_ID
+
+    "AzureManagement:Database:ServerName"                       = local.data_refresh_sql_server_name
+    "AzureManagement:Database:PollingRetryIntervalMilliseconds" = var.DATABASE_OPERATION_POLLING_INTERVAL_MILLISECONDS
+    "AzureManagement:Database:ResourceGroupName"                = local.data_refresh_sql_rg_name
+    "AzureManagement:Database:SubscriptionId"                   = local.data_refresh_sql_subscription
+
+    "AzureStorage:ConnectionString" = var.key_vault.secret_refs["azure-storage-connection-string"]
+
+    "DataRefresh:ActiveDatabaseAutoPauseTimeout"                                            = var.DATA_REFRESH_DB_AUTO_PAUSE_ACTIVE
+    "DataRefresh:ActiveDatabaseSize"                                                        = var.DATA_REFRESH_DB_SIZE_ACTIVE
+    "DataRefresh:AutoRunDataRefresh"                                                        = var.DATA_REFRESH_AUTO_RUN
+    "DataRefresh:RequestsTopic"                                                             = azurerm_servicebus_topic.data-refresh-requests.name
+    "DataRefresh:RequestsTopicSubscription"                                                 = azurerm_servicebus_subscription.data-refresh-data-refresh-requests.name
+    "DataRefresh:CompletionTopic"                                                           = azurerm_servicebus_topic.completed-data-refresh-jobs.name
+    "DataRefresh:CronTab"                                                                   = var.DATA_REFRESH_CRONTAB
+    "DataRefresh:DatabaseAName"                                                             = local.data_refresh_database_a_name
+    "DataRefresh:DatabaseBName"                                                             = local.data_refresh_database_b_name
+    "DataRefresh:DataRefreshDonorUpdatesShouldBeFullyTransactional"                         = var.DONOR_WRITE_TRANSACTIONALITY__DATA_REFRESH
+    "DataRefresh:DonorManagement:BatchSize"                                                 = var.MESSAGING_BUS_DONOR_BATCH_SIZE
+    "DataRefresh:DonorManagement:CronSchedule"                                              = "NotActuallyUsedInThisFunction"
+    "DataRefresh:DonorManagement:OngoingDifferentialDonorUpdatesShouldBeFullyTransactional" = var.DONOR_WRITE_TRANSACTIONALITY__DONOR_UPDATES
+    "DataRefresh:DonorManagement:SubscriptionForDbA"                                        = azurerm_servicebus_subscription.matching_transient_a.name
+    "DataRefresh:DonorManagement:SubscriptionForDbB"                                        = azurerm_servicebus_subscription.matching_transient_b.name
+    "DataRefresh:DonorManagement:Topic"                                                     = var.servicebus_topics.updated-searchable-donors.name
+    "DataRefresh:DormantDatabaseAutoPauseTimeout"                                           = var.DATA_REFRESH_DB_AUTO_PAUSE_DORMANT
+    "DataRefresh:DormantDatabaseSize"                                                       = var.DATA_REFRESH_DB_SIZE_DORMANT
+    "DataRefresh:LeaseDurationMinutes"                                                      = var.DATA_REFRESH_LEASE_DURATION_MINUTES
+    "DataRefresh:LeaseRenewalIntervalSeconds"                                               = var.DATA_REFRESH_LEASE_RENEWAL_INTERVAL_SECONDS
+    "DataRefresh:Precompute:AbandonBatchesCronSchedule"                                     = var.DATA_REFRESH_PRECOMPUTE_ABANDON_BATCHES_CRON_SCHEDULE
+    "DataRefresh:Precompute:FinaliseRunsCronSchedule"                                       = var.DATA_REFRESH_PRECOMPUTE_FINALISE_RUNS_CRON_SCHEDULE
+    "DataRefresh:Precompute:MaxBatchRetries"                                                = var.DATA_REFRESH_PRECOMPUTE_MAX_BATCH_RETRIES
+    "DataRefresh:Precompute:MaxFailedDonorFraction"                                         = var.DATA_REFRESH_PRECOMPUTE_MAX_FAILED_DONOR_FRACTION
+    "DataRefresh:Precompute:RequestsSubscription"                                           = azurerm_servicebus_subscription.precomputation-worker.name
+    "DataRefresh:Precompute:RequestsTopic"                                                  = azurerm_servicebus_topic.donor-genotype-precomputation-requests.name
+    "DataRefresh:Precompute:RequeueBatchesCronSchedule"                                     = var.DATA_REFRESH_PRECOMPUTE_REQUEUE_BATCHES_CRON_SCHEDULE
+    "DataRefresh:RefreshDatabaseSize"                                                       = var.DATA_REFRESH_DB_SIZE_REFRESH
+    "DataRefresh:SendRetryCount"                                                            = var.SERVICE_BUS_SEND_RETRY_COUNT
+    "DataRefresh:SendRetryCooldownSeconds"                                                  = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
+    "DataRefresh:WatchdogCronSchedule"                                                      = var.DATA_REFRESH_WATCHDOG_CRON_SCHEDULE
+    "DataRefresh:WatchdogGraceDurationMinutes"                                              = var.DATA_REFRESH_WATCHDOG_GRACE_DURATION_MINUTES
+
+    "Debug:AllowPrecomputeWrites" = var.DEBUG_ALLOW_PRECOMPUTE_WRITES
+
+    "DonorGenotypePrecomputation:Enabled" = var.DONOR_GENOTYPE_PRECOMPUTATION_ENABLED
+
+    "HlaMetadataDictionary:AzureStorageConnectionString"                          = var.key_vault.secret_refs["azure-storage-connection-string"]
+    "HlaMetadataDictionary:HlaNomenclatureSourceUrl"                              = var.WMDA_FILE_URL
+    "HlaMetadataDictionary:SearchRelatedMetadata:CacheSlidingExpirationInSeconds" = var.SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC
+
+    "MacDictionary:AzureStorageConnectionString" = var.key_vault.secret_refs["azure-storage-connection-string"]
+    "MacDictionary:TableName"                    = var.mac_import_table.name
+
+    "MessagingServiceBus:ConnectionString"         = var.key_vault.secret_refs["servicebus-read-write-connection-string"]
+    "MessagingServiceBus:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
+    "MessagingServiceBus:SendRetryCooldownSeconds" = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
+
+    "NotificationsServiceBus:ConnectionString"         = var.key_vault.secret_refs["servicebus-write-only-connection-string"]
+    "NotificationsServiceBus:AlertsTopic"              = var.servicebus_topics.alerts.name
+    "NotificationsServiceBus:NotificationsTopic"       = var.servicebus_topics.notifications.name
+    "NotificationsServiceBus:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
+    "NotificationsServiceBus:SendRetryCooldownSeconds" = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
+
+    "WEBSITE_RUN_FROM_PACKAGE" = var.WEBSITE_RUN_FROM_PACKAGE
+  }
+
+  data_refresh_function_app_name = "${var.general.environment}-DATA-REFRESH-FUNCTION"
+}
+
+resource "azurerm_windows_function_app" "atlas_matching_algorithm_data_refresh_function" {
+  name                        = local.data_refresh_function_app_name
+  resource_group_name         = var.elastic_app_service_plan.resource_group_name
+  location                    = var.general.location
+  service_plan_id             = var.elastic_app_service_plan.id
+  client_certificate_mode     = "Required"
+  https_only                  = true
+  functions_extension_version = "~4"
+  storage_account_access_key  = var.shared_function_storage.primary_access_key
+  storage_account_name        = var.shared_function_storage.name
+
+  // Used to resolve the @Microsoft.KeyVault app settings and connection strings below. The role assignment that lets
+  // this identity read the vault lives in the root module, so it is ordered by the depends_on on the module block.
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [var.key_vault.function_apps_identity_id]
+  }
+
+  key_vault_reference_identity_id = var.key_vault.function_apps_identity_id
+
+  site_config {
+    application_insights_key = var.application_insights.instrumentation_key
+    application_stack {
+      dotnet_version              = "v10.0"
+      use_dotnet_isolated_runtime = true
+    }
+    cors {
+      support_credentials = false
+    }
+    dynamic "ip_restriction" {
+      for_each = var.IP_RESTRICTION_SETTINGS
+      content {
+        ip_address = ip_restriction
+      }
+    }
+
+    health_check_path                 = "/api/HealthCheck"
+    health_check_eviction_time_in_min = 10
+
+    pre_warmed_instance_count = 1
+    app_scale_limit           = 1
+
+    use_32_bit_worker       = false
+    ftps_state              = "AllAllowed"
+    scm_minimum_tls_version = "1.2"
+  }
+
+  tags = var.general.common_tags
+
+  app_settings = merge(local.data_refresh_func_app_settings, local.match_prediction_func_app_settings)
+
+  connection_string {
+    name  = "SqlA"
+    type  = "SQLAzure"
+    value = local.sql_kv_ref["matching-transient-a-sql-connection-string"]
+  }
+  connection_string {
+    name  = "SqlB"
+    type  = "SQLAzure"
+    value = local.sql_kv_ref["matching-transient-b-sql-connection-string"]
+  }
+  connection_string {
+    name  = "PersistentSql"
+    type  = "SQLAzure"
+    value = local.sql_kv_ref["matching-persistent-sql-connection-string"]
+  }
+  connection_string {
+    name  = "DonorSql"
+    type  = "SQLAzure"
+    value = local.sql_kv_ref["matching-donor-sql-connection-string"]
+  }
+  connection_string {
+    name  = "MatchPredictionSql"
+    type  = "SQLAzure"
+    value = var.match_prediction_sql_database.connection_string_kv_ref
+  }
+
+  lifecycle {
+    ignore_changes = [
+      site_config[0].cors,
+      tags["hidden-link: /app-insights-resource-id"],
+    ]
+  }
+}

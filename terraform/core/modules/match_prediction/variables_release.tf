@@ -21,6 +21,50 @@ variable "MAC_SOURCE" {
   type = string
 }
 
+variable "ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES" {
+  type = number
+}
+
+variable "MAX_CACHED_FREQUENCY_SETS" {
+  type = number
+}
+
+variable "SET_CACHE_EXPIRY_MINUTES" {
+  type = number
+}
+
+variable "MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM" {
+  type = number
+}
+
+variable "MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT" {
+  type = number
+}
+
+variable "MATCH_PREDICTION_RECORD_GENOTYPE_SET_READS" {
+  type = bool
+}
+
+variable "MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS" {
+  type = number
+}
+
+variable "MATCH_PREDICTION_WORKER_MAX_CACHED_FREQUENCY_SETS" {
+  type = number
+}
+
+variable "MATCH_PREDICTION_WORKER_SET_CACHE_EXPIRY_MINUTES" {
+  type = number
+}
+
+variable "MATCH_PREDICTION_WORKER_PREFETCH_COUNT" {
+  type = number
+}
+
+variable "MATCH_PREDICTION_WORKER_MAX_AUTO_LOCK_RENEWAL_MINUTES" {
+  type = number
+}
+
 variable "SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS" {
   type = number
 }
@@ -36,4 +80,62 @@ variable "WEBSITE_RUN_FROM_PACKAGE" {
 variable "SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC" {
   type     = number
   nullable = true
+}
+
+// Container App release variables
+
+variable "CONTAINER_IMAGE_TAG" {
+  type    = string
+  default = "latest"
+}
+
+variable "CONTAINER_CPU" {
+  type    = number
+  default = 2.0
+}
+
+variable "CONTAINER_MEMORY" {
+  type    = string
+  default = "4Gi"
+}
+
+variable "CONTAINER_MIN_REPLICAS" {
+  type    = number
+  default = 0
+}
+
+variable "CONTAINER_MAX_REPLICAS" {
+  type    = number
+  default = 10
+}
+
+variable "CONTAINER_SCALE_RULE_MESSAGE_COUNT" {
+  type    = number
+  default = 5
+}
+
+variable "CONTAINER_SCALE_RULE_POLLING_INTERVAL_SECONDS" {
+  type    = number
+  default = 30
+}
+
+variable "CONTAINER_REQUESTS_MAX_PARALLELISM" {
+  type    = number
+  default = 2
+}
+
+// External SQL variables
+variable "USE_EXTERNAL_SQL" {
+  type    = bool
+  default = false
+}
+
+variable "EXTERNAL_SQL_SERVER_NAME" {
+  type    = string
+  default = ""
+}
+
+variable "EXTERNAL_SQL_DB_SHARED" {
+  type    = string
+  default = ""
 }

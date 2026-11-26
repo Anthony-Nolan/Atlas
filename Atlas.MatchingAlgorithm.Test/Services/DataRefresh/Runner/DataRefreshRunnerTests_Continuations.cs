@@ -126,7 +126,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             await dataRefreshRunner.RefreshData(default);
 
             await azureDatabaseManager.Received(1).UpdateDatabaseSize(default, AzureDatabaseSize.P15, Arg.Any<int?>());
-            await donorImporter.Received(1).ImportDonors();
+            await donorImporter.Received(1).ImportDonors(true);
         }
 
         [Test]
@@ -138,7 +138,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             await dataRefreshRunner.RefreshData(default);
 
-            await donorImporter.DidNotReceive().ImportDonors();
+            await donorImporter.DidNotReceiveWithAnyArgs().ImportDonors(default);
             await donorImportRepository.DidNotReceive().RemoveAllDonorInformation();
             await donorImportRepository.DidNotReceive().RemoveAllProcessedDonorHla();
             await hlaProcessor.Received().UpdateDonorHla(Arg.Any<string>(), Arg.Any<Func<int, Task>>(), Arg.Any<int?>(), true);

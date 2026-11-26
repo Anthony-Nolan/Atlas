@@ -25,4 +25,5 @@ resource "azurerm_servicebus_subscription" "search-tracking" {
   lock_duration                        = var.default_servicebus_settings.default-read-lock
   max_delivery_count                   = var.default_servicebus_settings.default-message-retries
   dead_lettering_on_message_expiration = false
+  requires_session                     = true
 }

@@ -9,5 +9,5 @@ resource "azurerm_eventgrid_event_subscription" "haplotype-frequency-file-upload
     subject_begins_with = "/blobServices/default/containers/${azurerm_storage_container.haplotype_frequency_set_blob_container.name}"
   }
 
-  service_bus_topic_endpoint_id = azurerm_servicebus_topic.haplotype-frequency-file-uploads.id
+  service_bus_topic_id = azurerm_servicebus_topic.haplotype-frequency-file-uploads.id
 }

@@ -15,9 +15,8 @@ variable "application_insights" {
 
 variable "azure_storage" {
   type = object({
-    id                        = string
-    name                      = string
-    primary_connection_string = string
+    id   = string
+    name = string
   })
 }
 
@@ -32,17 +31,6 @@ variable "servicebus_namespace" {
   type = object({
     id   = string
     name = string
-  })
-}
-
-variable "servicebus_namespace_authorization_rules" {
-  type = object({
-    write-only = object({
-      primary_connection_string = string
-    })
-    read-write = object({
-      primary_connection_string = string
-    })
   })
 }
 

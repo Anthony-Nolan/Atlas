@@ -2,23 +2,26 @@ locals {
   matching_func_app_settings = {
     "ApplicationInsights:LogLevel" = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
+    "AutoMapper:LicenseKey" = var.AUTOMAPPER_LICENSE_KEY
+
     "AzureFunctionsJobHost__extensions__serviceBus__messageHandlerOptions__maxConcurrentCalls" = var.MAX_CONCURRENT_SERVICEBUS_FUNCTIONS
-
-    "AzureManagement:Authentication:ClientId"     = var.AZURE_CLIENT_ID
-    "AzureManagement:Authentication:ClientSecret" = var.AZURE_CLIENT_SECRET
-    "AzureManagement:Authentication:OAuthBaseUrl" = var.AZURE_OAUTH_BASEURL
-    "AzureManagement:Authentication:TenantId"     = var.AZURE_TENANT_ID
-
-    "AzureManagement:Database:ServerName"                       = var.sql_server.name
-    "AzureManagement:Database:PollingRetryIntervalMilliseconds" = var.DATABASE_OPERATION_POLLING_INTERVAL_MILLISECONDS
-    "AzureManagement:Database:ResourceGroupName"                = var.resource_group.name
-    "AzureManagement:Database:SubscriptionId"                   = var.general.subscription_id
-
-    "AzureManagement:Monitoring:WorkspaceId" = var.application_insights_workspace.workspace_id
 
     "AzureAppConfiguration:ConnectionString" = var.azure_app_configuration.primary_read_key[0].connection_string
 
-    "AzureStorage:ConnectionString"           = var.azure_storage.primary_connection_string
+    // ATL-605: in 3.4 the data refresh functions live in this app, not in the separate data refresh app, so it reads these
+    // settings at start-up. Values match the data refresh app. The data refresh is never run on this branch:
+    // AutoRunDataRefresh is off, and the data refresh app is stopped by hand after the deployment.
+    "AzureManagement:Authentication:ClientId"     = var.AZURE_CLIENT_ID
+    "AzureManagement:Authentication:ClientSecret" = var.key_vault.secret_refs["azure-client-secret"]
+    "AzureManagement:Authentication:OAuthBaseUrl" = var.AZURE_OAUTH_BASEURL
+    "AzureManagement:Authentication:TenantId"     = var.AZURE_TENANT_ID
+
+    "AzureManagement:Database:ServerName"                       = local.data_refresh_sql_server_name
+    "AzureManagement:Database:PollingRetryIntervalMilliseconds" = var.DATABASE_OPERATION_POLLING_INTERVAL_MILLISECONDS
+    "AzureManagement:Database:ResourceGroupName"                = local.data_refresh_sql_rg_name
+    "AzureManagement:Database:SubscriptionId"                   = local.data_refresh_sql_subscription
+
+    "AzureStorage:ConnectionString"           = var.key_vault.secret_refs["azure-storage-connection-string"]
     "AzureStorage:SearchResultsBlobContainer" = azurerm_storage_container.search_matching_results_blob_container.name
     "AzureStorage:SearchResultsBatchSize"     = var.RESULTS_BATCH_SIZE
 
@@ -26,13 +29,13 @@ locals {
 
     "DataRefresh:ActiveDatabaseAutoPauseTimeout"                                            = var.DATA_REFRESH_DB_AUTO_PAUSE_ACTIVE
     "DataRefresh:ActiveDatabaseSize"                                                        = var.DATA_REFRESH_DB_SIZE_ACTIVE
-    "DataRefresh:AutoRunDataRefresh"                                                        = var.DATA_REFRESH_AUTO_RUN
+    "DataRefresh:AutoRunDataRefresh"                                                        = false
     "DataRefresh:RequestsTopic"                                                             = azurerm_servicebus_topic.data-refresh-requests.name
-    "DataRefresh:RequestsTopicSubscription"                                                 = azurerm_servicebus_subscription.matching-algorithm-data-refresh-requests.name
+    "DataRefresh:RequestsTopicSubscription"                                                 = azurerm_servicebus_subscription.data-refresh-data-refresh-requests.name
     "DataRefresh:CompletionTopic"                                                           = azurerm_servicebus_topic.completed-data-refresh-jobs.name
     "DataRefresh:CronTab"                                                                   = var.DATA_REFRESH_CRONTAB
-    "DataRefresh:DatabaseAName"                                                             = azurerm_mssql_database.atlas-matching-transient-a.name
-    "DataRefresh:DatabaseBName"                                                             = azurerm_mssql_database.atlas-matching-transient-b.name
+    "DataRefresh:DatabaseAName"                                                             = local.data_refresh_database_a_name
+    "DataRefresh:DatabaseBName"                                                             = local.data_refresh_database_b_name
     "DataRefresh:DataRefreshDonorUpdatesShouldBeFullyTransactional"                         = var.DONOR_WRITE_TRANSACTIONALITY__DATA_REFRESH
     "DataRefresh:DonorManagement:BatchSize"                                                 = var.MESSAGING_BUS_DONOR_BATCH_SIZE
     "DataRefresh:DonorManagement:CronSchedule"                                              = "NotActuallyUsedInThisFunction"
@@ -46,40 +49,39 @@ locals {
     "DataRefresh:SendRetryCount"                                                            = var.SERVICE_BUS_SEND_RETRY_COUNT
     "DataRefresh:SendRetryCooldownSeconds"                                                  = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
-    "HlaMetadataDictionary:AzureStorageConnectionString"                          = var.azure_storage.primary_connection_string,
+    "HlaMetadataDictionary:AzureStorageConnectionString"                          = var.key_vault.secret_refs["azure-storage-connection-string"],
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl"                              = var.WMDA_FILE_URL,
     "HlaMetadataDictionary:SearchRelatedMetadata:CacheSlidingExpirationInSeconds" = var.SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC
 
-    "MacDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string
+    "MacDictionary:AzureStorageConnectionString" = var.key_vault.secret_refs["azure-storage-connection-string"]
     "MacDictionary:TableName"                    = var.mac_import_table.name,
 
     "Maintenance:GCCollect:CronSchedule" = var.MAINTENANCE_GCCOLLECT_CRON_SCHEDULE
 
     "MatchingConfiguration:MatchingBatchSize" = var.MATCHING_BATCH_SIZE,
 
-    "MessagingServiceBus:ConnectionString"               = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
+    "MessagingServiceBus:ConnectionString"               = var.key_vault.secret_refs["servicebus-read-write-connection-string"]
     "MessagingServiceBus:SearchRequestsMaxDeliveryCount" = azurerm_servicebus_subscription.matching-requests-matching-algorithm.max_delivery_count
     "MessagingServiceBus:SearchRequestsSubscription"     = azurerm_servicebus_subscription.matching-requests-matching-algorithm.name
     "MessagingServiceBus:SearchRequestsTopic"            = azurerm_servicebus_topic.matching-requests.name
     "MessagingServiceBus:SearchResultsTopic"             = azurerm_servicebus_topic.matching-results-ready.name
-    "MessagingServiceBus:SearchResultsDebugSubscription" = azurerm_servicebus_subscription.debug-matching-results-ready.name
     "MessagingServiceBus:SendRetryCount"                 = var.SERVICE_BUS_SEND_RETRY_COUNT
     "MessagingServiceBus:SendRetryCooldownSeconds"       = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
-    "NotificationsServiceBus:ConnectionString"           = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
-    "NotificationsServiceBus:AlertsTopic"                = var.servicebus_topics.alerts.name
-    "NotificationsServiceBus:NotificationsTopic"         = var.servicebus_topics.notifications.name
-    "NotificationsServiceBus:SendRetryCount"             = var.SERVICE_BUS_SEND_RETRY_COUNT
-    "NotificationsServiceBus:SendRetryCooldownSeconds"   = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
+    "NotificationsServiceBus:ConnectionString"         = var.key_vault.secret_refs["servicebus-write-only-connection-string"]
+    "NotificationsServiceBus:AlertsTopic"              = var.servicebus_topics.alerts.name
+    "NotificationsServiceBus:NotificationsTopic"       = var.servicebus_topics.notifications.name
+    "NotificationsServiceBus:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
+    "NotificationsServiceBus:SendRetryCooldownSeconds" = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
-    "SearchTrackingServiceBus:ConnectionString"          = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
-    "SearchTrackingServiceBus:SearchTrackingTopic"       = var.servicebus_topics.search_tracking.name
-    "SearchTrackingServiceBus:SendRetryCount"            = var.SERVICE_BUS_SEND_RETRY_COUNT
-    "SearchTrackingServiceBus:SendRetryCooldownSeconds"  = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
+    "SearchTrackingServiceBus:ConnectionString"         = var.key_vault.secret_refs["servicebus-write-only-connection-string"]
+    "SearchTrackingServiceBus:SearchTrackingTopic"      = var.servicebus_topics.search_tracking.name
+    "SearchTrackingServiceBus:SendRetryCount"           = var.SERVICE_BUS_SEND_RETRY_COUNT
+    "SearchTrackingServiceBus:SendRetryCooldownSeconds" = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
 
     "Wmda:WmdaFileUri" = var.WMDA_FILE_URL
 
-    "WEBSITE_RUN_FROM_PACKAGE"                           = var.WEBSITE_RUN_FROM_PACKAGE
+    "WEBSITE_RUN_FROM_PACKAGE" = var.WEBSITE_RUN_FROM_PACKAGE
 
     "WEBSITE_PROACTIVE_AUTOHEAL_ENABLED" = false
   }
@@ -97,10 +99,19 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_function" {
   storage_account_access_key  = azurerm_storage_account.matching_function_storage.primary_access_key
   storage_account_name        = azurerm_storage_account.matching_function_storage.name
 
+  // Used to resolve the @Microsoft.KeyVault app settings and connection strings below. The role assignment that lets
+  // this identity read the vault lives in the root module, so it is ordered by the depends_on on the module block.
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [var.key_vault.function_apps_identity_id]
+  }
+
+  key_vault_reference_identity_id = var.key_vault.function_apps_identity_id
+
   site_config {
     application_insights_key = var.application_insights.instrumentation_key
     application_stack {
-      dotnet_version              = "v8.0"
+      dotnet_version              = "v8.0" // ATL-605: the 3.4 code targets net8.0
       use_dotnet_isolated_runtime = true
     }
     cors {
@@ -131,23 +142,30 @@ resource "azurerm_windows_function_app" "atlas_matching_algorithm_function" {
   connection_string {
     name  = "SqlA"
     type  = "SQLAzure"
-    value = local.matching_transient_database_a_connection_string
+    value = local.sql_kv_ref["matching-transient-a-sql-connection-string"]
   }
   connection_string {
     name  = "SqlB"
     type  = "SQLAzure"
-    value = local.matching_transient_database_b_connection_string
+    value = local.sql_kv_ref["matching-transient-b-sql-connection-string"]
   }
   connection_string {
     name  = "PersistentSql"
     type  = "SQLAzure"
-    value = local.matching_persistent_database_connection_string
+    value = local.sql_kv_ref["matching-persistent-sql-connection-string"]
   }
 
   connection_string {
     name  = "DonorSql"
     type  = "SQLAzure"
-    value = "Server=tcp:${var.sql_server.fully_qualified_domain_name},1433;Initial Catalog=${var.donor_import_sql_database.name};Persist Security Info=False;User ID=${var.DONOR_IMPORT_DATABASE_USERNAME};Password=${var.DONOR_IMPORT_DATABASE_PASSWORD};MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=False;Connection Timeout=1800;"
+    value = local.sql_kv_ref["matching-donor-sql-connection-string"]
+  }
+
+  lifecycle {
+    ignore_changes = [
+      site_config[0].cors,
+      tags["hidden-link: /app-insights-resource-id"],
+    ]
   }
 }
 

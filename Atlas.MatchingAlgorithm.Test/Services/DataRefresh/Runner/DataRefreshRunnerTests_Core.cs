@@ -91,7 +91,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         {
             await dataRefreshRunner.RefreshData(default);
 
-            await donorImporter.Received().ImportDonors();
+            await donorImporter.Received().ImportDonors(true);
         }
 
         [Test]

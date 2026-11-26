@@ -1,3 +1,7 @@
 variable "SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID" {
   type = string
 }
+
+variable "MATCHING_DATABASE_STORAGE_ALERT_THRESHOLD_PERCENT" {
+  type = number
+}

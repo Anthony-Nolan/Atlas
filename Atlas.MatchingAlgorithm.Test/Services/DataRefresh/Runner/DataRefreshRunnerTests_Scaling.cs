@@ -70,7 +70,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             Received.InOrder(() =>
             {
                 azureDatabaseManager.UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.P15, Arg.Any<int?>());
-                donorImporter.ImportDonors();
+                donorImporter.ImportDonors(true);
             });
         }
 
@@ -86,7 +86,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             Received.InOrder(() =>
             {
-                donorImporter.ImportDonors();
+                donorImporter.ImportDonors(true);
                 azureDatabaseManager.UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.S4, Arg.Any<int?>());
             });
         }
@@ -139,7 +139,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
                 .Build();
             dataRefreshRunner = BuildDataRefreshRunner(settings);
             activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseA);
-            donorImporter.ImportDonors().Throws(new Exception());
+            donorImporter.ImportDonors(true).Throws(new Exception());
 
             try
             {

@@ -4,13 +4,29 @@ variable "APPLICATION_INSIGHTS_LOG_LEVEL" {
   description = "Corresponds to the severity levels defined by application insights. Allowed values: Verbose, Info (maps to Information), Warn (maps to Warning), Error, Critical."
 }
 
+variable "APPLICATION_INSIGHTS_DAILY_DATA_CAP_IN_GB" {
+  type        = number
+  default     = 100
+  description = "Daily data cap in GB for Application Insights. Use TF_VAR_APPLICATION_INSIGHTS_DAILY_DATA_CAP_IN_GB environment variable to override for specific environments."
+}
+
+variable "AUTOMAPPER_LICENSE_KEY" {
+  type        = string
+  sensitive   = true
+  description = "AutoMapper commercial license key. Required from AutoMapper 15+. Supplied by the deployment pipeline."
+}
+
 variable "AZURE_CLIENT_ID" {
   type        = string
   description = "Client ID used for authenticating to manage Azure resources from code."
 }
 
+// No longer consumed by any resource: the apps read this value from the hand-seeded "azure-client-secret" Key Vault
+// secret instead. Kept declared because every environment's tfvars still sets it, and it is the source the secret is
+// seeded from - see "Key Vault bootstrap" in README_Deployment.md.
 variable "AZURE_CLIENT_SECRET" {
   type        = string
+  sensitive   = true
   description = "Client secret used for authenticating to manage Azure resources from code."
 }
 
@@ -200,6 +216,30 @@ variable "IP_RESTRICTION_SETTINGS" {
   description = "List of IP addresses that are whitelisted for functions app access. If none are provided the resources will publicly available. Note that if using this feature, Azure Devops build agents will need to be whitelisted for setting up webhooks - follow the Azure documentation on how to find said IP ranges. Warning that they change weekly - as such a lot of maintenance would be necessary to use whitelisted function apps, and as such using this feature is not recommended."
 }
 
+variable "KEY_VAULT_SECRETS_OFFICER_OBJECTIDS" {
+  type        = list(string)
+  default     = []
+  description = "Object IDs granted 'Key Vault Secrets Officer' on the Atlas Key Vault, so that secrets which are deliberately not managed by Terraform can be seeded and rotated by hand - typically an ops AD group, plus anyone who needs to run a plan that reads existing secrets. The principal running Terraform is granted the role separately and does not need listing here. Leave empty to grant nobody."
+}
+
+variable "KEY_VAULT_SECRETS_USER_OBJECTIDS" {
+  type        = list(string)
+  default     = []
+  description = "Object IDs granted 'Key Vault Secrets User' (read only) on the Atlas Key Vault - typically the 'Atlas Key Vault Readers - <ENV>' AD group, whose members are the SPNs of the release pipeline's service connections, so that a Key Vault-linked ADO variable group can read the hand-seeded secrets. Leave empty to grant nobody."
+}
+
+variable "KEY_VAULT_PURGE_PROTECTION_ENABLED" {
+  type        = bool
+  default     = false
+  description = "Whether purge protection is enabled on the Atlas Key Vault. Note that this cannot be turned off again once enabled, so it is left off until the vault has been proven in live."
+}
+
+variable "KEY_VAULT_SOFT_DELETE_RETENTION_DAYS" {
+  type        = number
+  default     = 7
+  description = "Number of days a deleted Key Vault secret remains recoverable. The minimum of 7 keeps vault and secret names re-usable in lower environments."
+}
+
 variable "LOCATION" {
   type        = string
   default     = "uksouth"
@@ -239,10 +279,76 @@ variable "MATCH_PREDICTION_DATABASE_USERNAME" {
   default = "match_prediction"
 }
 
+variable "MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES" {
+  type        = number
+  default     = 5
+  description = "Absolute cache TTL, in minutes, for the active HaplotypeFrequencySets lookup used by the match prediction service."
+}
+
+variable "MATCH_PREDICTION_MAX_CACHED_FREQUENCY_SETS" {
+  type        = number
+  default     = 10
+  description = "Maximum number of distinct haplotype frequency sets allowed to stay resident at once in the match prediction service's per-set cache, evicting least-recently-used sets beyond this limit."
+}
+
+variable "MATCH_PREDICTION_SET_CACHE_EXPIRY_MINUTES" {
+  type        = number
+  default     = 60
+  description = "Absolute cache TTL, in minutes, for a cached haplotype frequency set's full per-haplotype frequency collection used by the match prediction service."
+}
+
 variable "MATCH_PREDICTION_DOWNLOAD_BATCH_SIZE" {
   type        = number
   default     = 10
   description = "Batch size for downloading match prediction results"
+}
+
+variable "MATCH_PREDICTION_REQUESTS_MAX_PARALLELISM" {
+  type        = number
+  default     = 8
+  description = "Maximum number of match prediction requests processed in parallel per function instance. Keep this aligned with worker batch sizing."
+}
+
+variable "MATCH_PREDICTION_MAX_EXPANDED_GENOTYPES_PER_INPUT" {
+  type        = number
+  default     = 2000
+  description = "Genotype-truncation limit: the maximum number of expanded genotypes retained per patient/donor before match calculation. Must be identical across every host that runs imputation; increasing it beyond 2000 trades performance/memory for accuracy."
+}
+
+variable "MATCH_PREDICTION_RECORD_GENOTYPE_SET_READS" {
+  type        = bool
+  default     = false
+  description = "When true, search batches record which donor inputs they would read precomputed genotype sets for, to blob storage, for the ATL-347 cache hit-rate measurement (ATL-571). A temporary measurement: switch it on only for the measurement window."
+}
+
+variable "MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS" {
+  type        = number
+  default     = 4
+  description = "Maximum number of service bus messages (batches) the match prediction worker's ServiceBusProcessor handles concurrently per replica. Keep equal to MATCH_PREDICTION_CONTAINER_ACA_SCALE_RULE_MESSAGE_COUNT."
+}
+
+variable "MATCH_PREDICTION_WORKER_MAX_CACHED_FREQUENCY_SETS" {
+  type        = number
+  default     = 30
+  description = "Maximum number of haplotype frequency sets the match prediction worker keeps in memory at once (least recently used evicted). Larger than MATCH_PREDICTION_MAX_CACHED_FREQUENCY_SETS because a search load touches many sets, and with 10 each replica loaded the same sets again and again (ATL-476). Check the memory of the match prediction container app (WorkingSetBytes) when changing it."
+}
+
+variable "MATCH_PREDICTION_WORKER_SET_CACHE_EXPIRY_MINUTES" {
+  type        = number
+  default     = 1440
+  description = "Absolute cache TTL, in minutes, for a haplotype frequency set in the match prediction worker. A day: sets change only on import, and the active set lookup (MATCH_PREDICTION_ACTIVE_HF_SET_CACHE_EXPIRY_MINUTES) picks up a new set. The other hosts, including the precompute worker, use MATCH_PREDICTION_SET_CACHE_EXPIRY_MINUTES."
+}
+
+variable "MATCH_PREDICTION_WORKER_PREFETCH_COUNT" {
+  type        = number
+  default     = 0
+  description = "Number of service bus messages the match prediction worker prefetches in advance of processing. Set to 0 to disable prefetch."
+}
+
+variable "MATCH_PREDICTION_WORKER_MAX_AUTO_LOCK_RENEWAL_MINUTES" {
+  type        = number
+  default     = 5
+  description = "Maximum total duration (in minutes) for which the match prediction worker's ServiceBusProcessor auto-renews a message lock while it is being processed."
 }
 
 variable "MATCHING_PREDICTION_PROCESSING_BATCH_SIZE" {
@@ -310,18 +416,56 @@ variable "MATCHING_DATA_REFRESH_DB_SIZE_ACTIVE" {
   type        = string
   default     = "S4"
   description = "Size of Azure Database used for active matching database. Allowed values according to the Azure DTU/GeneralPurpose Serverless model service tiers."
+
+  validation {
+    condition     = contains(keys(local.matching_database_tier_max_size_gb), var.MATCHING_DATA_REFRESH_DB_SIZE_ACTIVE)
+    error_message = "MATCHING_DATA_REFRESH_DB_SIZE_ACTIVE must be one of the tiers the data refresh can scale to: ${join(", ", keys(local.matching_database_tier_max_size_gb))}."
+  }
 }
 
 variable "MATCHING_DATA_REFRESH_DB_SIZE_DORMANT" {
   type        = string
   default     = "S0"
   description = "Size of Azure Database used for dormant matching database. Allowed values according to the Azure DTU/GeneralPurpose Serverless model service tiers."
+
+  validation {
+    condition     = contains(keys(local.matching_database_tier_max_size_gb), var.MATCHING_DATA_REFRESH_DB_SIZE_DORMANT)
+    error_message = "MATCHING_DATA_REFRESH_DB_SIZE_DORMANT must be one of the tiers the data refresh can scale to: ${join(", ", keys(local.matching_database_tier_max_size_gb))}."
+  }
 }
 
 variable "MATCHING_DATA_REFRESH_DB_SIZE_REFRESH" {
   type        = string
   default     = "P1"
   description = "Size to temporarily scale the dormant Azure Database to, whilst refreshing the matching database. Allowed values according to the Azure DTU model service tiers. Premium tier is recommended due to a large IO throughput."
+
+  validation {
+    condition     = contains(keys(local.matching_database_tier_max_size_gb), var.MATCHING_DATA_REFRESH_DB_SIZE_REFRESH)
+    error_message = "MATCHING_DATA_REFRESH_DB_SIZE_REFRESH must be one of the tiers the data refresh can scale to: ${join(", ", keys(local.matching_database_tier_max_size_gb))}."
+  }
+}
+
+variable "MATCHING_DATA_REFRESH_LEASE_DURATION_MINUTES" {
+  type        = number
+  default     = 30
+  description = "How long the data refresh holds its run-level lease on a refresh record without renewing it. Long enough that ordinary GC or CPU contention cannot displace a healthy run; short enough that a run which has genuinely died does not block the next one for long."
+}
+
+variable "MATCHING_DATA_REFRESH_LEASE_RENEWAL_INTERVAL_SECONDS" {
+  type        = number
+  default     = 60
+  description = "How often a running data refresh renews its lease. The lease must last at least two renewal intervals; at the defaults it lasts thirty, so a run survives 29 consecutive failed renewals."
+}
+
+variable "MATCHING_DATA_REFRESH_PRECOMPUTE_MAX_FAILED_DONOR_FRACTION" {
+  type        = number
+  default     = 0.001
+  description = "The largest fraction of donors, from 0 to 1, that can fail in the donor genotype precomputation stage before the data refresh pauses for a manual decision. 0 pauses at any failure; 1 never pauses. See README_Support.md, the paused data refresh."
+
+  validation {
+    condition     = var.MATCHING_DATA_REFRESH_PRECOMPUTE_MAX_FAILED_DONOR_FRACTION >= 0 && var.MATCHING_DATA_REFRESH_PRECOMPUTE_MAX_FAILED_DONOR_FRACTION <= 1
+    error_message = "MATCHING_DATA_REFRESH_PRECOMPUTE_MAX_FAILED_DONOR_FRACTION must be from 0 to 1."
+  }
 }
 
 variable "MATCHING_DATA_REFRESH_CRONTAB" {
@@ -330,10 +474,59 @@ variable "MATCHING_DATA_REFRESH_CRONTAB" {
   description = "A crontab determining when the matching data refresh will be auto-attempted. It will only run to completion if new HLA nomenclature is detected."
 }
 
+variable "MATCHING_DATA_REFRESH_WATCHDOG_CRON_SCHEDULE" {
+  type        = string
+  default     = "0 */15 * * * *"
+  description = "CRON schedule (six-field NCrontab) for the sweep that re-requests stalled data refreshes. Must be set: without it the watchdog function fails to index and never fires, while the rest of the Data Refresh app starts normally - so the gap is silent."
+}
+
+variable "MATCHING_DATA_REFRESH_WATCHDOG_GRACE_DURATION_MINUTES" {
+  type        = number
+  default     = 60
+  description = "How long a refresh record must show no sign of life before the watchdog re-requests it. Must exceed MATCHING_DATA_REFRESH_LEASE_DURATION_MINUTES, so that a run between lease renewals is never mistaken for a stalled one."
+}
+
+variable "MATCHING_DATA_REFRESH_PRECOMPUTE_ABANDON_BATCHES_CRON_SCHEDULE" {
+  type        = string
+  default     = "0 */15 * * * *"
+  description = "CRON schedule (six-field NCrontab) for the sweep that marks donor genotype precomputation batches abandoned once their lease has expired. Must be set: without it the function fails to index and the precomputation stage can wait forever."
+}
+
+variable "MATCHING_DATA_REFRESH_PRECOMPUTE_FINALISE_RUNS_CRON_SCHEDULE" {
+  type        = string
+  default     = "0 */5 * * * *"
+  description = "CRON schedule (six-field NCrontab) for the sweep that finalises donor genotype precomputation runs whose batches have all finished. Must be set: without it the function fails to index and the precomputation stage can wait forever."
+}
+
+variable "MATCHING_DATA_REFRESH_PRECOMPUTE_MAX_BATCH_RETRIES" {
+  type        = number
+  default     = 3
+  description = "How many times a failed or abandoned donor genotype precomputation batch is requeued before it is marked permanently failed."
+}
+
+variable "MATCHING_DATA_REFRESH_PRECOMPUTE_REQUEUE_BATCHES_CRON_SCHEDULE" {
+  type        = string
+  default     = "0 */5 * * * *"
+  description = "CRON schedule (six-field NCrontab) for the sweep that requeues failed and abandoned donor genotype precomputation batches. Must be set: without it the function fails to index and the precomputation stage can wait forever."
+}
+
 variable "MATCHING_DATABASE_MAX_SIZE_GB" {
   type        = string
   default     = "250"
-  description = "Maximum size in gigabytes, refer to Azure documentation for supported sizes"
+  description = "Maximum size in gigabytes of each transient matching database, refer to Azure documentation for supported sizes. It must allow for the matching data plus the stored donor genotype sets of the data refresh, and be no more than the limit of any of the active, dormant and refresh tiers: the data refresh changes the tier, not the max size."
+
+  validation {
+    condition     = can(tonumber(var.MATCHING_DATABASE_MAX_SIZE_GB)) && try(tonumber(var.MATCHING_DATABASE_MAX_SIZE_GB) > 0 && floor(tonumber(var.MATCHING_DATABASE_MAX_SIZE_GB)) == tonumber(var.MATCHING_DATABASE_MAX_SIZE_GB), false)
+    error_message = "MATCHING_DATABASE_MAX_SIZE_GB must be a whole number of gigabytes."
+  }
+
+  validation {
+    condition = !can(tonumber(var.MATCHING_DATABASE_MAX_SIZE_GB)) || alltrue([
+      for tier in values(local.matching_data_refresh_db_sizes) :
+      tonumber(var.MATCHING_DATABASE_MAX_SIZE_GB) <= lookup(local.matching_database_tier_max_size_gb, tier, tonumber(var.MATCHING_DATABASE_MAX_SIZE_GB))
+    ])
+    error_message = "MATCHING_DATABASE_MAX_SIZE_GB (${var.MATCHING_DATABASE_MAX_SIZE_GB}) is more than a matching database tier allows, so the data refresh could not scale the database to it: ${join(", ", [for name, tier in local.matching_data_refresh_db_sizes : "${name} ${tier} allows ${local.matching_database_tier_max_size_gb[tier]}" if contains(keys(local.matching_database_tier_max_size_gb), tier) && try(tonumber(var.MATCHING_DATABASE_MAX_SIZE_GB) > local.matching_database_tier_max_size_gb[tier], false)])}. Raise the tier or lower the max size."
+  }
 }
 
 variable "MATCHING_DATABASE_OPERATION_POLLING_INTERVAL_MILLISECONDS" {
@@ -346,9 +539,37 @@ variable "MATCHING_DATABASE_PASSWORD" {
   type = string
 }
 
+variable "MATCHING_DATABASE_STORAGE_ALERT_THRESHOLD_PERCENT" {
+  type        = number
+  default     = 85
+  description = "Percentage of MATCHING_DATABASE_MAX_SIZE_GB used in a transient matching database above which the Atlas team is alerted, so the max size can be raised before the data refresh or search fills the database. No alert is created when USE_EXTERNAL_SQL is true."
+
+  validation {
+    condition     = var.MATCHING_DATABASE_STORAGE_ALERT_THRESHOLD_PERCENT > 0 && var.MATCHING_DATABASE_STORAGE_ALERT_THRESHOLD_PERCENT < 100
+    error_message = "MATCHING_DATABASE_STORAGE_ALERT_THRESHOLD_PERCENT must be between 0 and 100."
+  }
+}
+
 variable "MATCHING_DATABASE_USERNAME" {
   type    = string
   default = "matching"
+}
+
+variable "MATCHING_DEBUG_ALLOW_PRECOMPUTE_WRITES" {
+  type        = bool
+  default     = false
+  description = "When set, the genotype set compute debug endpoint of the Data Refresh functions app can save genotype sets to the active matching database, where search reads them. Set it in test environments (DEV, UAT) only."
+}
+
+variable "MATCHING_DONOR_GENOTYPE_PRECOMPUTATION_ENABLED" {
+  type        = bool
+  default     = true
+  description = "Turns donor genotype set precomputation on or off for the installation: Data Refresh stage 65 and the precomputation of imported donors. Set it to false in an installation that does not use match prediction. Where it is false, searches must not use precomputed sets: DEFAULT_USE_PRECOMPUTED_GENOTYPE_SETS must be false, or USE_PRECOMPUTED_GENOTYPE_SETS_REQUEST_PERCENTAGE must be 0. A change does not delete stored sets; the next data refresh removes them."
+
+  validation {
+    condition     = var.MATCHING_DONOR_GENOTYPE_PRECOMPUTATION_ENABLED || !var.DEFAULT_USE_PRECOMPUTED_GENOTYPE_SETS || var.USE_PRECOMPUTED_GENOTYPE_SETS_REQUEST_PERCENTAGE <= 0
+    error_message = "When MATCHING_DONOR_GENOTYPE_PRECOMPUTATION_ENABLED is false, DEFAULT_USE_PRECOMPUTED_GENOTYPE_SETS must be false or USE_PRECOMPUTED_GENOTYPE_SETS_REQUEST_PERCENTAGE must be 0."
+  }
 }
 
 variable "MATCHING_DONOR_WRITE_TRANSACTIONALITY__DATA_REFRESH" {
@@ -395,6 +616,42 @@ variable "ORCHESTRATION_MATCH_PREDICTION_BATCH_SIZE" {
   default = 10
 }
 
+variable "ORCHESTRATION_PARALLEL_ABANDON_BATCH_AFTER_MINUTES" {
+  type        = number
+  default     = 360
+  description = "Minutes after a parallel match-prediction run is initiated before a run with un-returned batches is abandoned (its lost batches and the run are marked Abandoned and a failure notification is sent)."
+}
+
+variable "ORCHESTRATION_PARALLEL_ABANDONMENT_CRON_SCHEDULE" {
+  type        = string
+  default     = "0 */5 * * * *"
+  description = "CRON schedule (six-field NCrontab) for the timer that abandons parallel match-prediction runs whose batches never returned."
+}
+
+variable "ORCHESTRATION_PARALLEL_BATCH_CLEANUP_CRON_SCHEDULE" {
+  type        = string
+  default     = "0 0 3 * * *"
+  description = "CRON schedule (six-field NCrontab) for the timer that purges per-batch rows of finalised parallel match-prediction runs."
+}
+
+variable "ORCHESTRATION_PARALLEL_BATCH_RETENTION_DAYS" {
+  type        = number
+  default     = 90
+  description = "Number of days to retain per-batch rows after a parallel match-prediction run finalises. Parent run rows are always retained."
+}
+
+variable "ORCHESTRATION_PARALLEL_FINALISATION_CRON_SCHEDULE" {
+  type        = string
+  default     = "*/10 * * * * *"
+  description = "CRON schedule (six-field NCrontab) for the timer that finalises completed parallel match-prediction runs."
+}
+
+variable "ORCHESTRATION_PARALLEL_MATCH_PREDICTION_BATCH_SIZE" {
+  type        = number
+  default     = 100
+  description = "Donor batch size used when preparing blobs for the parallel ACA Worker match-prediction path."
+}
+
 variable "REPEAT_SEARCH_DATABASE_PASSWORD" {
   type = string
 }
@@ -438,21 +695,50 @@ variable "SEARCH_TRACKING_DATABASE_USERNAME" {
 }
 
 variable "SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS" {
-	type        = number
-	default     = 20
-	description = "When sending a service bus message, time to wait before retrying a failed message"
+  type        = number
+  default     = 20
+  description = "When sending a service bus message, time to wait before retrying a failed message"
 }
 
 variable "SERVICE_BUS_SEND_RETRY_COUNT" {
-	type        = number
-	default     = 5
-	description = "When sending a service bus message, the total number of retries to attempt"
+  type        = number
+  default     = 5
+  description = "When sending a service bus message, the total number of retries to attempt"
 }
 
 variable "SHOULD_BATCH_RESULTS" {
   type        = bool
   default     = false
   description = "Indicates whether final search/repeat search results should be batched or not"
+}
+
+variable "DEFAULT_PARALLEL_MATCH_PREDICTION" {
+  type        = bool
+  default     = false
+  description = "Master switch for the parallel ACA Worker path. When false, all searches take the legacy sequential Durable orchestrator path regardless of PARALLEL_MATCH_PREDICTION_REQUEST_PERCENTAGE; when true, that percentage of searches take the parallel path. The value on the request itself is not used."
+}
+
+variable "PARALLEL_MATCH_PREDICTION_REQUEST_PERCENTAGE" {
+  type        = number
+  default     = 0
+  description = "Canary throttle (0-100) applied only when DEFAULT_PARALLEL_MATCH_PREDICTION is true: this percentage of searches take the parallel ACA Worker path and the rest fall back to the legacy sequential Durable orchestrator path. No effect when the master switch is false. Defaults to 0 (no searches take the parallel path)."
+}
+
+variable "DEFAULT_USE_PRECOMPUTED_GENOTYPE_SETS" {
+  type        = bool
+  default     = false
+  description = "The switch for precomputed donor genotype sets in match prediction, read by the Atlas Public API when it accepts a search. When false, every search is computed live. When true, USE_PRECOMPUTED_GENOTYPE_SETS_REQUEST_PERCENTAGE of searches use the stored sets. A change affects new searches only. A search request that sets UsePrecomputedGenotypeSets (QA only) keeps its value."
+}
+
+variable "USE_PRECOMPUTED_GENOTYPE_SETS_REQUEST_PERCENTAGE" {
+  type        = number
+  default     = 0
+  description = "The share (0-100) of searches that use precomputed donor genotype sets while DEFAULT_USE_PRECOMPUTED_GENOTYPE_SETS is true. The rest are computed live. No effect when the switch is false. Defaults to 0, which is also off."
+
+  validation {
+    condition     = var.USE_PRECOMPUTED_GENOTYPE_SETS_REQUEST_PERCENTAGE >= 0 && var.USE_PRECOMPUTED_GENOTYPE_SETS_REQUEST_PERCENTAGE <= 100
+    error_message = "USE_PRECOMPUTED_GENOTYPE_SETS_REQUEST_PERCENTAGE must be between 0 and 100."
+  }
 }
 
 variable "STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_BATCHSIZE" {
@@ -521,4 +807,199 @@ variable "SUPPORT_DEADLETTER_ALERTS_ACTION_GROUP_ID" {
   type        = string
   default     = null
   description = "The ID of the action group to be used for deadletter alerts."
+}
+
+// Container Apps / ACR
+
+variable "ACR_NAME" {
+  type        = string
+  default     = "ancontainerregistry"
+  description = "Name of the shared Azure Container Registry."
+}
+
+variable "ACR_RESOURCE_GROUP_NAME" {
+  type        = string
+  default     = "AN-RESOURCE-GROUP"
+  description = "Resource group of the shared Azure Container Registry."
+}
+
+variable "SHARED_SUBSCRIPTION_ID" {
+  type        = string
+  default     = "f37d6d06-4bc8-4146-add7-fe2911b47e11"
+  description = "Subscription ID where shared organization-level resources reside (e.g., Container Registry)."
+}
+
+variable "MATCH_PREDICTION_CONTAINER_IMAGE_TAG" {
+  type        = string
+  default     = "latest"
+  description = "Docker image tag for the match prediction container app."
+}
+
+variable "MATCH_PREDICTION_CONTAINER_CPU" {
+  type        = number
+  default     = 2.0
+  description = "CPU cores allocated to the match prediction container app."
+}
+
+variable "MATCH_PREDICTION_CONTAINER_MEMORY" {
+  type        = string
+  default     = "4Gi"
+  description = "Memory allocated to the match prediction container app."
+}
+
+variable "MATCH_PREDICTION_CONTAINER_MIN_REPLICAS" {
+  type        = number
+  default     = 0
+  description = "Minimum replica count for the match prediction container app."
+}
+
+variable "MATCH_PREDICTION_CONTAINER_MAX_REPLICAS" {
+  type        = number
+  default     = 50
+  description = "Maximum replica count for the match prediction container app."
+}
+
+variable "MATCH_PREDICTION_CONTAINER_ACA_SCALE_RULE_MESSAGE_COUNT" {
+  type        = number
+  default     = 4
+  description = "Message threshold for the match prediction container ACA Service Bus custom scale rule. Keep equal to MATCH_PREDICTION_WORKER_MAX_CONCURRENT_CALLS (batches per replica). Override via TF_VAR_MATCH_PREDICTION_CONTAINER_ACA_SCALE_RULE_MESSAGE_COUNT."
+}
+
+variable "MATCH_PREDICTION_CONTAINER_SCALE_RULE_POLLING_INTERVAL_SECONDS" {
+  type        = number
+  default     = 10
+  description = "The interval in seconds used by the match prediction container app for polling KEDA scale rules."
+}
+
+variable "MATCH_PREDICTION_CONTAINER_REQUESTS_MAX_PARALLELISM" {
+  type        = number
+  default     = 3
+  description = "Maximum number of match prediction requests (threads) processed in parallel within one batch on a Container App replica. Override via TF_VAR_MATCH_PREDICTION_CONTAINER_REQUESTS_MAX_PARALLELISM."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_CONTAINER_IMAGE_TAG" {
+  type        = string
+  default     = "latest"
+  description = "Docker image tag for the donor genotype precompute worker container app."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_CONTAINER_CPU" {
+  type        = number
+  default     = 2.0
+  description = "CPU cores allocated to the donor genotype precompute worker container app."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_CONTAINER_MEMORY" {
+  type        = string
+  default     = "4Gi"
+  description = "Memory allocated to the donor genotype precompute worker container app."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_CONTAINER_MAX_REPLICAS" {
+  type        = number
+  default     = 20
+  description = "Maximum replica count for the donor genotype precompute worker container app. The minimum is always 0. Keep MATCHING_PRECOMPUTE_WORKER_MAX_CONCURRENT_CALLS times this within the worker and session limits of the transient database being refreshed."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_CONTAINER_SCALE_RULE_MESSAGE_COUNT" {
+  type        = number
+  default     = 1
+  description = "Message threshold for the donor genotype precompute worker's Service Bus scale rule. Each message is a whole batch, so the default adds a replica per waiting batch, up to the maximum."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_CONTAINER_SCALE_RULE_POLLING_INTERVAL_SECONDS" {
+  type        = number
+  default     = 30
+  description = "The interval in seconds used by the donor genotype precompute worker container app for polling KEDA scale rules."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_MAX_CONCURRENT_CALLS" {
+  type        = number
+  default     = 4
+  description = "Maximum number of batches each donor genotype precompute worker replica processes concurrently. A batch spends most of its time waiting on the database, so one batch per replica leaves most of the replica's CPU idle. The limit is the transient database at the refresh size: raise this only while its CPU and log write stay below about 80%."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_PREFETCH_COUNT" {
+  type        = number
+  default     = 0
+  description = "Number of messages the donor genotype precompute worker prefetches. Keep at 0, so that waiting batches stay available to other replicas."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_MAX_AUTO_LOCK_RENEWAL_MINUTES" {
+  type        = number
+  default     = 60
+  description = "Maximum total duration (in minutes) for which the donor genotype precompute worker auto-renews a message lock. A batch must finish within this and MATCHING_PRECOMPUTE_WORKER_BATCH_LEASE_MINUTES, or it is computed twice."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_BATCH_LEASE_MINUTES" {
+  type        = number
+  default     = 60
+  description = "How long a donor genotype precompute worker holds a batch before the abandon sweep may take it back. Keep no greater than MATCHING_PRECOMPUTE_WORKER_MAX_AUTO_LOCK_RENEWAL_MINUTES."
+}
+
+variable "MATCHING_PRECOMPUTE_WORKER_MAX_GROUP_FAILURES_PER_BATCH" {
+  type        = number
+  default     = 100
+  description = "The permanent group failures (such as bad typings) that one donor genotype precomputation batch can have and still succeed. More than this fails the batch, which is then retried. Keep it well below the groups per batch of a run."
+}
+
+# --- External SQL variables (for retargeting function app connection strings) ---
+
+variable "USE_EXTERNAL_SQL" {
+  description = "When true, function app connection strings target an external SQL server instead of the Terraform-managed one."
+  type        = bool
+  default     = false
+
+  validation {
+    condition = !var.USE_EXTERNAL_SQL || (
+      var.EXTERNAL_SQL_SERVER_NAME != "" &&
+      var.EXTERNAL_SQL_DB_SHARED != "" &&
+      var.EXTERNAL_SQL_DB_MATCHING_A != "" &&
+      var.EXTERNAL_SQL_DB_MATCHING_B != "" &&
+      var.EXTERNAL_SQL_RESOURCE_GROUP != ""
+    )
+    error_message = "USE_EXTERNAL_SQL is true but one of EXTERNAL_SQL_SERVER_NAME, EXTERNAL_SQL_DB_SHARED, EXTERNAL_SQL_DB_MATCHING_A, EXTERNAL_SQL_DB_MATCHING_B or EXTERNAL_SQL_RESOURCE_GROUP is empty. All must be set when targeting an external SQL server."
+  }
+}
+
+variable "EXTERNAL_SQL_SERVER_NAME" {
+  description = "Short name of the external Azure SQL server (without .database.windows.net suffix). Consumed via TF_VAR_EXTERNAL_SQL_SERVER_NAME."
+  type        = string
+  default     = ""
+}
+
+variable "EXTERNAL_SQL_DB_SHARED" {
+  description = "Name of the external shared (atlas) database. Consumed via TF_VAR_EXTERNAL_SQL_DB_SHARED."
+  type        = string
+  default     = ""
+}
+
+variable "EXTERNAL_SQL_DB_MATCHING_A" {
+  description = "Name of the external matching-a database. Consumed via TF_VAR_EXTERNAL_SQL_DB_MATCHING_A."
+  type        = string
+  default     = ""
+}
+
+variable "EXTERNAL_SQL_DB_MATCHING_B" {
+  description = "Name of the external matching-b database. Consumed via TF_VAR_EXTERNAL_SQL_DB_MATCHING_B."
+  type        = string
+  default     = ""
+}
+
+variable "EXTERNAL_SQL_SERVER_ADMIN_LOGIN" {
+  description = "Admin login for the external SQL server. Consumed via TF_VAR_EXTERNAL_SQL_SERVER_ADMIN_LOGIN."
+  type        = string
+  default     = ""
+}
+
+variable "EXTERNAL_SQL_RESOURCE_GROUP" {
+  description = "Resource group of the external Azure SQL server. Consumed via TF_VAR_EXTERNAL_SQL_RESOURCE_GROUP."
+  type        = string
+  default     = ""
+}
+
+variable "EXTERNAL_SQL_SUBSCRIPTION_ID" {
+  description = "Subscription ID of the external Azure SQL server. Falls back to the main subscription when empty. Consumed via TF_VAR_EXTERNAL_SQL_SUBSCRIPTION_ID."
+  type        = string
+  default     = ""
 }
