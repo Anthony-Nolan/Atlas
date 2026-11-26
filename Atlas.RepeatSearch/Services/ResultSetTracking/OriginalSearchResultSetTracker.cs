@@ -31,7 +31,7 @@ namespace Atlas.RepeatSearch.Services.ResultSetTracking
     internal class OriginalSearchResultSetTracker : IOriginalSearchResultSetTracker
     {
         /// <summary>
-        /// Kept out of sampling by <see cref="OriginalSearchResultsStoredTelemetryInitializer"/>.
+        /// Kept out of sampling by <see cref="RepeatSearchEventsTelemetryInitializer"/>.
         /// </summary>
         internal const string StoredEventName = "Original search results stored";
 

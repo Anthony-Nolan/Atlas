@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Atlas.RepeatSearch.Data.Context;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Atlas.RepeatSearch.Data.Models
@@ -42,6 +43,13 @@ namespace Atlas.RepeatSearch.Data.Models
         public Guid? StoreAttemptId { get; set; }
 
         /// <summary>
+        /// When the set was last used: when its results were stored, or when a repeat search of it last started.
+        /// A set that is not used for the retention period is deleted (see <see cref="CanonicalResultSetStatus.Deleting"/>).
+        /// A set that is <see cref="CanonicalResultSetStatus.Deleting"/> keeps this value, because repeat searches do not use it.
+        /// </summary>
+        public DateTimeOffset LastUsedAt { get; set; }
+
+        /// <summary>
         /// Donors in the canonical result set.
         /// </summary>
         public ICollection<SearchResult> SearchResults { get; set; }
@@ -52,6 +60,12 @@ namespace Atlas.RepeatSearch.Data.Models
         public static void SetUpResultSetModel(this EntityTypeBuilder<CanonicalResultSet> resultSet)
         {
             resultSet.HasIndex(s => s.OriginalSearchRequestId).IsUnique();
+
+            // A row inserted without a value counts as used now, so a missing value can never make a set expire.
+            resultSet.Property(s => s.LastUsedAt).HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
+            // The retention job takes the oldest set first.
+            resultSet.HasIndex(s => s.LastUsedAt);
         }
     }
 }

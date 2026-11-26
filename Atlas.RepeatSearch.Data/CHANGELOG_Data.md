@@ -42,6 +42,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     ```sql
     ALTER INDEX [IX_SearchResults_CanonicalResultSetId_ExternalDonorCode] ON [RepeatSearch].[SearchResults] RESUME;
     ```
+* Added the column `LastUsedAt` (`datetimeoffset`, not null, default `SYSDATETIMEOFFSET()`) to `CanonicalResultSets`, with the index
+  `IX_CanonicalResultSets_LastUsedAt`: when the set was last used, which is when its results were stored or when a repeat search of it last started.
+  The retention job of the repeat search functions app deletes the sets that have not been used for `RepeatSearch:ResultsRetentionDays`, oldest first.
+  * The migration fills `LastUsedAt` for the existing sets: the later of the date of the original search (`SearchTracking.SearchRequests.RequestTimeUtc`)
+    and the date of the last repeat search (`RepeatSearchHistoryRecords.DateCreated`).
+    A set with no search tracking row that was stored after search tracking started (for example after a lost tracking event) gets the latest
+    request time of the tracked sets with a lower `Id` as the date of its original search: set ids grow with time, so this estimates when the set was stored.
+    On a copy of WMDA LIVE, this applies to 73 of 280,445 sets, 47 of them stored in 2026.
+    If no date is known, for a set stored before search tracking started, the set gets the date of the first search request in `SearchTracking.SearchRequests`,
+    so that it counts as old. If there is no search tracking date at all, the set keeps the time of the migration.
+  * The default is a runtime constant, so adding the column does not write the existing rows. The update that fills the column then writes each row of
+    `CanonicalResultSets` once (about 253,000 rows on WMDA LIVE), and reads `SearchTracking.SearchRequests`. The index is created after the update.
+* Added the status `2` = `Deleting` to `CanonicalResultSets.Status`: the retention job is deleting the rows of the set, in batches, and then the set row.
+  Repeat searches do not use a set that is `Deleting`. The job sets this status in the same statement that checks `LastUsedAt`, and a repeat search sets
+  `LastUsedAt` only on a `Complete` set, so a repeat search never reads a set that is partly deleted.
+  * The job deletes the rows of `SearchResults` in batches of `RepeatSearch:ResultsDeleteBatchSize` (default 4,000), each in its own transaction.
+    `RepeatSearchHistoryRecords` are kept. The database uses the freed space again, so no shrink is needed.
 
 ## 3.0.0
 * Updated .NET version from 6.0 to 8.0

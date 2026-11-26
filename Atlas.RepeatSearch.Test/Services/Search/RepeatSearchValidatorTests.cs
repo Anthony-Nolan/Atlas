@@ -29,7 +29,8 @@ namespace Atlas.RepeatSearch.Test.Services.Search
 
             canonicalResultSetRepository.GetCanonicalResultSetSummary(default)
                 .ReturnsForAnyArgs(new CanonicalResultSet { Status = CanonicalResultSetStatus.Complete });
-            
+            canonicalResultSetRepository.MarkResultSetUsed(default).ReturnsForAnyArgs(true);
+
             repeatSearchValidator = new RepeatSearchValidator(canonicalResultSetRepository);
         }
 
@@ -70,11 +71,36 @@ namespace Atlas.RepeatSearch.Test.Services.Search
                 SearchCutoffDate = DateTimeOffset.Now
             };
 
-            canonicalResultSetRepository.GetCanonicalResultSetSummary(searchId).Returns(null as CanonicalResultSet);
+            // The repository cannot mark a set that is not stored: there is no complete set with this search id.
+            canonicalResultSetRepository.MarkResultSetUsed(searchId).Returns(false);
 
             await repeatSearchValidator
                 .Invoking(v => v.ValidateRepeatSearchAndThrow(repeatSearch))
                 .Should().ThrowAsync<ValidationException>();
+        }
+
+        [Test]
+        public async Task ValidateRepeatSearchRequest_ForValidRequest_MarksOriginalResultSetUsed()
+        {
+            var repeatSearch = new RepeatSearchRequest
+            {
+                SearchRequest = new SearchRequestBuilder().Build(),
+                OriginalSearchId = fixture.Create<string>(),
+                SearchCutoffDate = fixture.Create<DateTimeOffset>()
+            };
+
+            await repeatSearchValidator.ValidateRepeatSearchAndThrow(repeatSearch);
+
+            await canonicalResultSetRepository.Received(1).MarkResultSetUsed(repeatSearch.OriginalSearchId);
+        }
+
+        [Test]
+        public async Task ValidateRepeatSearchRequest_WhenRequiredDataMissing_DoesNotMarkResultSetUsed()
+        {
+            var act = () => repeatSearchValidator.ValidateRepeatSearchAndThrow(new RepeatSearchRequest());
+
+            await act.Should().ThrowAsync<ValidationException>();
+            await canonicalResultSetRepository.DidNotReceiveWithAnyArgs().MarkResultSetUsed(default);
         }
 
         [Test]
@@ -96,12 +122,13 @@ namespace Atlas.RepeatSearch.Test.Services.Search
             isStored.Should().BeFalse();
         }
 
-        [Test]
-        public async Task IsOriginalSearchResultSetStored_WhenResultSetIsInProgress_ReturnsFalse()
+        [TestCase(CanonicalResultSetStatus.InProgress)]
+        [TestCase(CanonicalResultSetStatus.Deleting)]
+        public async Task IsOriginalSearchResultSetStored_WhenResultSetIsNotComplete_ReturnsFalse(CanonicalResultSetStatus status)
         {
             var searchId = fixture.Create<string>();
             canonicalResultSetRepository.GetCanonicalResultSetSummary(searchId)
-                .Returns(new CanonicalResultSet { Status = CanonicalResultSetStatus.InProgress });
+                .Returns(new CanonicalResultSet { Status = status });
 
             var isStored = await repeatSearchValidator.IsOriginalSearchResultSetStored(searchId);
 
@@ -109,8 +136,9 @@ namespace Atlas.RepeatSearch.Test.Services.Search
         }
 
         [Test]
-        public async Task ValidateRepeatSearchRequest_WhenOriginalResultSetIsInProgress_ThrowsException()
+        public async Task ValidateRepeatSearchRequest_WhenOriginalResultSetCannotBeMarkedUsed_ThrowsException()
         {
+            // For example a set in progress or being deleted: the repository marks only a complete set.
             var searchId = fixture.Create<string>();
 
             var repeatSearch = new RepeatSearchRequest
@@ -120,8 +148,7 @@ namespace Atlas.RepeatSearch.Test.Services.Search
                 SearchCutoffDate = DateTimeOffset.Now
             };
 
-            canonicalResultSetRepository.GetCanonicalResultSetSummary(searchId)
-                .Returns(new CanonicalResultSet { Status = CanonicalResultSetStatus.InProgress });
+            canonicalResultSetRepository.MarkResultSetUsed(searchId).Returns(false);
 
             var act = () => repeatSearchValidator.ValidateRepeatSearchAndThrow(repeatSearch);
 

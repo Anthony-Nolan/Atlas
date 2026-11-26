@@ -47,6 +47,22 @@ variable "RESULTS_BATCH_SIZE" {
   type = number
 }
 
+variable "RESULTS_DELETE_BATCH_SIZE" {
+  type = number
+}
+
+variable "RESULTS_DELETE_CRON_SCHEDULE" {
+  type = string
+}
+
+variable "RESULTS_DELETE_MAX_RUN_MINUTES" {
+  type = number
+}
+
+variable "RESULTS_RETENTION_DAYS" {
+  type = number
+}
+
 variable "SEARCH_RELATED_HLA_METADATA_CACHE_SLIDING_EXPIRATION_SEC" {
   type     = number
   nullable = true

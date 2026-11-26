@@ -31,6 +31,11 @@ namespace Atlas.RepeatSearch.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTimeOffset>("LastUsedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset")
+                        .HasDefaultValueSql("SYSDATETIMEOFFSET()");
+
                     b.Property<string>("OriginalSearchRequestId")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -43,6 +48,8 @@ namespace Atlas.RepeatSearch.Data.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("LastUsedAt");
 
                     b.HasIndex("OriginalSearchRequestId")
                         .IsUnique();

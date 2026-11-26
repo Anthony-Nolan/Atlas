@@ -26,6 +26,8 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Atlas.RepeatSearch.Data\Atlas.RepeatSearch.Data.csproj" />
+      <!-- The SearchTracking tables are in the same database as the RepeatSearch tables, and a RepeatSearch migration reads them. -->
+      <ProjectReference Include="..\Atlas.SearchTracking.Data\Atlas.SearchTracking.Data.csproj" />
     </ItemGroup>
 
 </Project>

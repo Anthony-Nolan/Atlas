@@ -180,6 +180,8 @@ Slightly more human-readable documentation of the rules is as follows:
 - `OriginalSearchId` must be provided, and must match a search request ID previously run through the initial search process
   - If the search request id is not recognised, a failure notification will be sent asynchronously via the atlas repeat results topic.
     It is sent only after the repeat search waits for the original search results to be stored, up to the maximum wait: 24 hours by default (`RepeatSearch:MaxWaitForOriginalResultsMinutes`).
+  - If the installation sets a retention (`RepeatSearch:ResultsRetentionDays`, off by default), the stored results of a search that is not stored or
+    repeated for that number of days are deleted. After that, a repeat search of it is treated as a search request id that is not recognised.
 - `SearchCutoffDate` must be provided
 
 ### Receiving search results

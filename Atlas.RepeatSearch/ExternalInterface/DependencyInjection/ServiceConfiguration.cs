@@ -107,7 +107,9 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             Func<IServiceProvider, Settings.Azure.AzureStorageSettings> fetchAzureStorageSettings)
         {
             services.AddScoped<IOriginalSearchResultSetTracker, OriginalSearchResultSetTracker>();
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<ITelemetryInitializer, OriginalSearchResultsStoredTelemetryInitializer>());
+            services.AddScoped<IExpiredResultSetCleaner, ExpiredResultSetCleaner>();
+            services.TryAddSingleton(TimeProvider.System);
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<ITelemetryInitializer, RepeatSearchEventsTelemetryInitializer>());
             services.AddScoped<IBlobDownloader>(sp =>
             {
                 var storageSettings = sp.GetService<RepeatSearch.Settings.Azure.AzureStorageSettings>();

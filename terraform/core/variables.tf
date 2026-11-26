@@ -699,6 +699,30 @@ variable "REPEAT_SEARCH_ORIGINAL_RESULTS_WAIT_INTERVAL_SECONDS" {
   description = "While a repeat search waits for the results of its original search to be stored, how often it checks again, in seconds."
 }
 
+variable "REPEAT_SEARCH_RESULTS_DELETE_BATCH_SIZE" {
+  type        = number
+  default     = 4000
+  description = "Number of donor codes that the repeat search retention job deletes in one statement. Keep it below 5,000: at 5,000 locks in one statement, SQL Server tries to lock the whole SearchResults table, which would stop the stores and repeat searches that write to it."
+}
+
+variable "REPEAT_SEARCH_RESULTS_DELETE_CRON_SCHEDULE" {
+  type        = string
+  default     = "0 0 3 * * *"
+  description = "When the repeat search retention job runs (NCRONTAB, UTC). The default, 03:00 every day, keeps it away from the nightly WMDA repeat searches at about 01:00."
+}
+
+variable "REPEAT_SEARCH_RESULTS_DELETE_MAX_RUN_MINUTES" {
+  type        = number
+  default     = 180
+  description = "The repeat search retention job stops after this number of minutes, at the end of a batch. The next run continues the set that it was deleting."
+}
+
+variable "REPEAT_SEARCH_RESULTS_RETENTION_DAYS" {
+  type        = number
+  default     = 0
+  description = "The repeat search retention job deletes the stored result sets of original searches that have not been used (stored or repeated) for this number of days. A repeat search of a deleted set fails with a validation error. 0 turns the job off, which is the default: a delete cannot be undone, so set it only when the retention is agreed for the installation."
+}
+
 variable "RESULTS_BATCH_SIZE" {
   type        = number
   default     = 0
@@ -771,7 +795,7 @@ variable "STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_BATCHSIZE" {
 variable "STORE_ORIGINAL_SEARCH_RESULTS_BULKCOPY_TIMEOUT" {
   type        = number
   default     = 300
-  description = "Timeout for bulk copying repeat search results to the database, in seconds. It applies to the bulk copy of each chunk of an original search result set (see STORE_ORIGINAL_SEARCH_RESULTS_CHUNK_SIZE), to the batched delete of the rows of a set that a new delivery takes over, and to the inserts of a repeat search. On a large SearchResults table, a chunk of 10,000 rows can take more than 30 seconds, because each new row is written to a random page of the unique index on (ExternalDonorCode, CanonicalResultSetId)."
+  description = "Timeout for bulk copying repeat search results to the database, in seconds. It applies to the bulk copy of each chunk of an original search result set (see STORE_ORIGINAL_SEARCH_RESULTS_CHUNK_SIZE), to the batched delete of the rows of a set that a new delivery takes over, to each delete batch of the retention job (see REPEAT_SEARCH_RESULTS_DELETE_BATCH_SIZE), and to the inserts of a repeat search. On a large SearchResults table, a chunk of 10,000 rows can take more than 30 seconds, because each new row is written to a random page of the unique index on (ExternalDonorCode, CanonicalResultSetId)."
 }
 
 variable "STORE_ORIGINAL_SEARCH_RESULTS_CHUNK_SIZE" {

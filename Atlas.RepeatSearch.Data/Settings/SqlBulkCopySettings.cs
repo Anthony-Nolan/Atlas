@@ -8,7 +8,8 @@
         public int BatchSize { get; set; }
 
         /// <summary>
-        /// Timeout in seconds of the SqlBulkCopy of each chunk of an original search result set.
+        /// Timeout in seconds of the SqlBulkCopy of each chunk of an original search result set,
+        /// and of each batch when the donor codes of a set are deleted.
         /// </summary>
         public int Timeout { get; set; }
 
