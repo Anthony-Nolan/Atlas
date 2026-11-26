@@ -55,6 +55,7 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
                 sp => new FailureLogsSettings { ExpiryInDays = 60 },
                 ConnectionStringReader(DonorStoreSqlConnectionString)
             );
+            services.RegisterDonorReader(ConnectionStringReader(DonorStoreSqlConnectionString));
             RegisterIntegrationTestServices(services);
             SetUpMockServices(services);
 

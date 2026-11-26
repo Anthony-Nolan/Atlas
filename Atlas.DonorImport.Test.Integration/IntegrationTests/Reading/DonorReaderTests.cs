@@ -29,7 +29,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Reading
             {
                 donorFileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
                 donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
-                donorReader = new DonorReader(donorRepository);
+                donorReader = DependencyInjection.DependencyInjection.Provider.GetService<IDonorReader>();
             });
         }
 
