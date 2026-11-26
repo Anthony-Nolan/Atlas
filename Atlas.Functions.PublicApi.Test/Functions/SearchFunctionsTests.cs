@@ -51,9 +51,8 @@ namespace Atlas.Functions.PublicApi.Test.Functions
         {
             var settings = Options.Create(new SearchFunctionSettings { DefaultParallelMatchPrediction = defaultParallelMatchPrediction });
 
-            return nextRandom == null
-                ? new SearchFunctions(searchDispatcher, repeatSearchDispatcher, matchPredictionValidator, settings, logger)
-                : new SearchFunctions(searchDispatcher, repeatSearchDispatcher, matchPredictionValidator, settings, logger, nextRandom);
+            return new SearchFunctions(
+                searchDispatcher, repeatSearchDispatcher, matchPredictionValidator, settings, logger, nextRandom ?? Random.Shared.Next);
         }
 
         private SearchFunctions BuildPrecomputeFunctions(bool defaultUsePrecomputedGenotypeSets, int requestPercentage, int? randomNumber = null)
@@ -122,10 +121,10 @@ namespace Atlas.Functions.PublicApi.Test.Functions
         public async Task Search_WhenParallelMatchPredictionNull_ChoosesThePathWithoutARandomNumber(bool defaultParallelMatchPrediction)
         {
             var randomNumbersDrawn = 0;
-            var functions = BuildFunctions(defaultParallelMatchPrediction, max =>
+            var functions = BuildFunctions(defaultParallelMatchPrediction, _ =>
             {
                 randomNumbersDrawn++;
-                return Random.Shared.Next(max);
+                return 0;
             });
             // The precomputed genotype sets value is set, so that choice draws no number.
             var request = RequestBuilders.ValidSearchRequest(parallelMatchPrediction: null, usePrecomputedGenotypeSets: false);
@@ -194,10 +193,10 @@ namespace Atlas.Functions.PublicApi.Test.Functions
         public async Task RepeatSearch_WhenParallelMatchPredictionNull_ChoosesThePathWithoutARandomNumber(bool defaultParallelMatchPrediction)
         {
             var randomNumbersDrawn = 0;
-            var functions = BuildFunctions(defaultParallelMatchPrediction, max =>
+            var functions = BuildFunctions(defaultParallelMatchPrediction, _ =>
             {
                 randomNumbersDrawn++;
-                return Random.Shared.Next(max);
+                return 0;
             });
             // The precomputed genotype sets value is set, so that choice draws no number.
             var request = RequestBuilders.ValidRepeatSearchRequest(parallelMatchPrediction: null, usePrecomputedGenotypeSets: false);
