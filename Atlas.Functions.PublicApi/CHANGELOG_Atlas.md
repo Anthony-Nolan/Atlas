@@ -126,6 +126,7 @@ Feature flags permit greater control over the release of new features (see this 
 
 #### Donor Import
 * E: Donor import reads less from the donor store for each batch, with the same results. The upserts (`NU`) of a batch read the stored donors once, not three times: one read gives both the split into new and existing donors and the rows that the changes are compared with. After the insert, the import reads the Atlas ids of the new donors only, not of all the upserts. The check that an edit (`U`) exists and that a differential create (`N`) does not exist reads only the codes of these records, and looks each code up in a set, not a list. So a batch of only upserts and deletions makes no read for this check.
+* BF: A donor that a newer file has already updated is now the only donor skipped in its batch. Before, the first such donor stopped the import of the rest of its batch (up to 10,000 records): the later donors of the batch were dropped with no donor import failure, and the file still reported success. Now these donors are imported.
 
 #### HLA Metadata Dictionary
 * E: The dictionary now downloads the WMDA nomenclature files with an `HttpClient` from `IHttpClientFactory`, not with the obsolete `WebClient`. The files that it reads and their content do not change. A download that fails, for example a missing file, a timeout or a connection failure, now throws an `HttpRequestException` whose message has the file address. Before, it threw a `WebException` whose message had no address.

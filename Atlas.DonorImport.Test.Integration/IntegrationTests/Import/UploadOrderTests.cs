@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
@@ -429,6 +430,39 @@ public class UploadOrderTests
         await donorFileImporter.ImportDonorFile(editFile);
         var result2 = await donorRepository.GetDonor(donorExternalCode);
         result2.UpdateFile.Should().Be(file2Name);
+    }
+
+    [Test]
+    public async Task DonorImportOrder_UpdateThenUpdateOutOfOrderForFirstDonorOfFile_RejectsOnlyThatDonorAndUpdatesTheOthers()
+    {
+        var outOfDateDonorCode = "1";
+        var otherDonorCodes = new[] { "2", "3" };
+        var allDonorCodes = otherDonorCodes.Prepend(outOfDateDonorCode).ToList();
+
+        // File 0 - donors are already created.
+        var existingDonors = CreateDonorImportFile(createUpdateBuilder, allDonorCodes, "not-applicable", 0);
+        await donorFileImporter.ImportDonorFile(existingDonors);
+
+        // File 1 = Edit of all donors; the out-of-date donor is the first donor of the file.
+        var file1Name = "file-1";
+        var editFile = CreateDonorImportFile(editUpdateBuilder, allDonorCodes, file1Name, 1);
+
+        // File 2 = Edit of the first donor only
+        var file2Name = "file-2";
+        var editFile2 = CreateDonorImportFile(editUpdateBuilder, outOfDateDonorCode, file2Name, 2);
+
+        // import File 2, first donor gets updated
+        await donorFileImporter.ImportDonorFile(editFile2);
+
+        // import File 1, first donor does not update, the other donors do
+        await donorFileImporter.ImportDonorFile(editFile);
+        var outOfDateDonor = await donorRepository.GetDonor(outOfDateDonorCode);
+        outOfDateDonor.UpdateFile.Should().Be(file2Name);
+        foreach (var donorCode in otherDonorCodes)
+        {
+            var donor = await donorRepository.GetDonor(donorCode);
+            donor.UpdateFile.Should().Be(file1Name);
+        }
     }
 
     [Test]
@@ -1091,16 +1125,19 @@ public class UploadOrderTests
         
     private DonorImportFile CreateDonorImportFile(IPostprocessComposer<DonorUpdate> builder, string externalCode, string fileName, int order)
     {
+        return CreateDonorImportFile(builder, new[] { externalCode }, fileName, order);
+    }
+
+    private DonorImportFile CreateDonorImportFile(IPostprocessComposer<DonorUpdate> builder, IEnumerable<string> externalCodes, string fileName, int order)
+    {
         // We want to ensure each donor import is unique so we use order to determine HLA - order should be unique within each test.
-        var donor1 = builder
-            .With(d => d.RecordId, externalCode)
-            .WithHomozygousHlaAt(Locus.A, $"*01:{order}").Build();
-        var edit = new[]
-        {
-            donor1
-        };
-            
-        return fileBuilder.WithDonors(edit)
+        var donors = externalCodes
+            .Select(externalCode => builder
+                .With(d => d.RecordId, externalCode)
+                .WithHomozygousHlaAt(Locus.A, $"*01:{order}").Build())
+            .ToArray();
+
+        return fileBuilder.WithDonors(donors)
             .With(f => f.FileLocation, fileName)
             .With(f => f.UploadTime, DateTime.UtcNow.AddDays(order - 10))
             .Build();

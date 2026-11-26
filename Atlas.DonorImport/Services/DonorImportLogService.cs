@@ -43,12 +43,10 @@ namespace Atlas.DonorImport.Services
                         throw new DuplicateDonorException($"Attempted to create a donor that already existed. External Donor Code: {externalDonorCode}");
                     }
 
-                    if (updateDates.TryGetValue(externalDonorCode, out var lastUpdateTime))
+                    // Skip only this donor: a newer file has already updated it. The other donors of the batch must still be imported.
+                    if (updateDates.TryGetValue(externalDonorCode, out var lastUpdateTime) && lastUpdateTime >= uploadTime)
                     {
-                        if (lastUpdateTime >= uploadTime)
-                        {
-                            yield break;
-                        }
+                        continue;
                     }
 
                     yield return update;
