@@ -43,7 +43,7 @@ public class DonorImportLogServiceTests
     }
 
     [Test]
-    public async Task FilterDonorUpdatesBasedOnUpdateTime_WhenDonorsHaveNewerUpdates_ReturnsOtherDonorsInOrder()
+    public async Task FilterDonorUpdatesBasedOnUpdateTime_WhenDonorsHaveSameOrNewerUpdates_ReturnsOtherDonorsInOrder()
     {
         var updates = DonorUpdateBuilder.New
             .With(u => u.ChangeType, ImportDonorChangeType.Edit)
