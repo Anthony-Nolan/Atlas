@@ -37,9 +37,10 @@ public interface IParallelMatchPredictionCompletionService
     /// <see cref="ParallelMatchPredictionRunStatus.FailedDuringBatchProcessing"/>
     /// (<see cref="ParallelMatchPredictionRun.IsSuccessful"/> = <c>false</c>), with performance metrics, failure
     /// notification, search log and tracking event still emitted. Any pipeline step throwing →
-    /// <see cref="ParallelMatchPredictionRunStatus.FailedDuringCompletion"/>, then a failed search-results-ready
-    /// message, a failed match-prediction completion tracking event and a High-priority alert are sent (only the alert
-    /// if the run's result message was already published), and the exception is rethrown. See
+    /// <see cref="ParallelMatchPredictionRunStatus.FailedDuringCompletion"/> (if that mark also fails, the run keeps
+    /// its status and lease), then a failed search-results-ready message, a failed match-prediction completion tracking
+    /// event and a High-priority alert are sent (each message only if the run did not already send one of its kind),
+    /// and the original exception is rethrown. See
     /// <see cref="ParallelMatchPredictionRunStatus"/> for how the finaliser then handles each terminal state.
     /// </remarks>
     Task FinaliseRun(int runId);
@@ -136,16 +137,42 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
         }
         catch (Exception ex)
         {
-            await repository.MarkRunFailedDuringCompletion(runId, DateTime.UtcNow);
-            await ReportCompletionFailure(runId, run, trackingSearchIdentifier, originalSearchIdentifier, progress, ex);
+            // The mark is tried on its own: if it fails too (for example, the original failure was the database), the
+            // run keeps its finalisation lease and its old status. The sweep, abandonment and cleanup all skip a leased
+            // run, so it is never picked up again either way, and the report below is still the last chance to tell
+            // the caller. The original exception is rethrown, not the exception of the mark.
+            var markedFailedDuringCompletion = await TryMarkRunFailedDuringCompletion(runId, run);
+            await ReportCompletionFailure(
+                runId, run, trackingSearchIdentifier, originalSearchIdentifier, progress, ex, markedFailedDuringCompletion
+            );
             throw;
         }
     }
 
+    private async Task<bool> TryMarkRunFailedDuringCompletion(int runId, ParallelMatchPredictionRun run)
+    {
+        try
+        {
+            await repository.MarkRunFailedDuringCompletion(runId, DateTime.UtcNow);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            logger.SendTrace(
+                $"Failed to mark parallel match prediction run {runId} (search {run.SearchIdentifier}) as "
+              + $"FailedDuringCompletion: {ex.Message}",
+                LogLevel.Error
+            );
+            return false;
+        }
+    }
+
     /// <summary>
-    /// <see cref="ParallelMatchPredictionRunStatus.FailedDuringCompletion"/> is terminal, so this is the last chance to
-    /// tell the caller, Search Tracking and support that the search ended. Each send is tried on its own, so one failed
-    /// send does not stop the others; the caller still rethrows the original exception.
+    /// A run that failed during completion is never finalised again, so this is the last chance to tell the caller,
+    /// Search Tracking and support that the search ended. The caller gets a short failure detail without the exception
+    /// text, which can hold storage URIs or server names; the full text goes to Search Tracking and the alert. Each
+    /// Service Bus send is tried on its own, so one failed send does not stop the others; the caller still rethrows
+    /// the original exception.
     /// </summary>
     private async Task ReportCompletionFailure(
         int runId,
@@ -153,16 +180,19 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
         Guid trackingSearchIdentifier,
         Guid? originalSearchIdentifier,
         FinalisationProgress progress,
-        Exception exception)
+        Exception exception,
+        bool markedFailedDuringCompletion)
     {
+        var callerFailureDetail = $"Parallel match prediction run {runId} failed during completion.";
         var failureMessage =
             $"Parallel match prediction run {runId} (search {run.SearchIdentifier}) failed during completion: {exception.Message}";
 
         logger.SendTrace(failureMessage, LogLevel.Error);
 
-        // If the result message (success or failure) was already published, the caller already has a result for the
-        // search: do not send a second message that contradicts it. Only support needs to know.
-        if (!progress.ResultMessagePublished)
+        // No failed completion event if one was already sent (success, or a batch failure with its real cause): Search
+        // Tracking overwrites the failure info on each completion, so a second one could replace it. Nor if the caller
+        // already has its result message: Search Tracking must not record a failure for a search the caller got.
+        if (!progress.TrackingCompletionSent && !progress.ResultMessagePublished)
         {
             await TrySend("match-prediction completion tracking event", run, () =>
                 matchPredictionSearchTrackingDispatcher.ProcessCompleted(
@@ -181,39 +211,51 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
                     )
                 )
             );
+        }
 
-            await TrySend("failed search-results-ready message", run, () =>
+        // If the result message (success or failure) was already published, the caller already has a result for the
+        // search: do not send a second message that contradicts it.
+        var failureMessageSent = false;
+        if (!progress.ResultMessagePublished)
+        {
+            failureMessageSent = await TrySend("failed search-results-ready message", run, () =>
                 searchCompletionMessageSender.PublishFailureMessage(new SendFailureNotificationParameters
                     {
                         SearchRequestId = run.SearchIdentifier.ToString(),
                         RepeatSearchRequestId = run.RepeatSearchIdentifier?.ToString(),
                         StageReached = CompletionFailureStage,
-                        FailureDetail = failureMessage,
+                        FailureDetail = callerFailureDetail,
                     }
                 )
             );
         }
 
+        var runOutcome = markedFailedDuringCompletion
+            ? "The run is now FailedDuringCompletion and will not be finalised again."
+            : "The run could not be marked FailedDuringCompletion either: it keeps its old status and its finalisation "
+            + "lease, so it will not be finalised again.";
         var callerOutcome = progress.ResultMessagePublished
             ? "The search result message had already been sent, so the caller has a result."
-            : "A failed search-results-ready message was sent to the caller.";
+            : failureMessageSent
+                ? "A failed search-results-ready message was sent to the caller."
+                : "The failed search-results-ready message could not be sent either: the caller has no result for this search.";
 
-        await TrySend("alert", run, () =>
-            notificationSender.SendAlert(
-                $"Parallel match prediction failed during completion for search {run.SearchIdentifier}",
-                $"{failureMessage} (parallel run id: {runId}). The run is now FailedDuringCompletion and will not be "
-              + $"finalised again. {callerOutcome} Full exception detail is available in Application Insights.",
-                Priority.High,
-                ParallelMatchPredictionNotificationSource
-            )
+        // NotificationSender does not leak exceptions, so the alert is not wrapped.
+        await notificationSender.SendAlert(
+            $"Parallel match prediction failed during completion for search {run.SearchIdentifier}",
+            $"{failureMessage} (parallel run id: {runId}). {runOutcome} {callerOutcome} "
+          + "Full exception detail is available in Application Insights.",
+            Priority.High,
+            ParallelMatchPredictionNotificationSource
         );
     }
 
-    private async Task TrySend(string description, ParallelMatchPredictionRun run, Func<Task> send)
+    private async Task<bool> TrySend(string description, ParallelMatchPredictionRun run, Func<Task> send)
     {
         try
         {
             await send();
+            return true;
         }
         catch (Exception ex)
         {
@@ -221,6 +263,7 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
                 $"Failed to send the {description} for search {run.SearchIdentifier} after a completion failure: {ex.Message}",
                 LogLevel.Error
             );
+            return false;
         }
     }
 
@@ -354,6 +397,7 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
                 TotalNumberOfBatches: run.TotalBatchCount
             )
         );
+        progress.TrackingCompletionSent = true;
 
         var batchFailureReasons = runResults.FailedBatches
             .Select(b => b.FailureMessage)
@@ -495,6 +539,7 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
                 TotalNumberOfBatches: run.TotalBatchCount
             )
         );
+        progress.TrackingCompletionSent = true;
 
         await notificationSender.SendNotification(
             $"Parallel match prediction completed for search {run.SearchIdentifier}",
@@ -551,5 +596,11 @@ public class ParallelMatchPredictionCompletionService : IParallelMatchPrediction
     {
         /// <summary>True once the search's result message (success or failure) has been published to the caller.</summary>
         public bool ResultMessagePublished { get; set; }
+
+        /// <summary>
+        /// True once the match-prediction completion tracking event (success or failure) has been sent. Search Tracking
+        /// overwrites the failure info on each completion, so a second one could replace the real cause.
+        /// </summary>
+        public bool TrackingCompletionSent { get; set; }
     }
 }

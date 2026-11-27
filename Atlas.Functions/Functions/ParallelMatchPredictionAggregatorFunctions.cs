@@ -150,10 +150,10 @@ public class ParallelMatchPredictionAggregatorFunctions
             }
             catch (Exception ex)
             {
-                // Run is already marked FailedDuringCompletion by the completion service, which has also sent the
-                // failure message, tracking event and alert — log and continue so a single failure does not block
-                // finalising the remaining runs in this tick.
-                logger.LogError(ex, "Parallel match prediction run {RunId} failed during completion and has been marked as FailedDuringCompletion.",
+                // The completion service has already tried to mark the run FailedDuringCompletion and to send the
+                // failure message, tracking event and alert (see FinaliseRun) — log and continue so a single failure
+                // does not block finalising the remaining runs in this tick.
+                logger.LogError(ex, "Parallel match prediction run {RunId} failed during completion.",
                     runId
                 );
                 failures.Add(new InvalidOperationException($"Failed to finalise parallel match prediction run {runId}.", ex));
