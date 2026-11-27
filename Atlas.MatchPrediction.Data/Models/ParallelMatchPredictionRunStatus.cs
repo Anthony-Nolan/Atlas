@@ -43,7 +43,10 @@ public enum ParallelMatchPredictionRunStatus
 
     /// <summary>
     /// The persistence pipeline threw while finalising this run. Terminal — the finaliser will not re-pick it;
-    /// per-batch rows remain in place for audit/debugging.
+    /// per-batch rows remain in place for audit/debugging. Unless the search's result message was already sent, a
+    /// failed search-results-ready message is sent, so the caller learns that the search ended, and Search Tracking
+    /// gets a failed completion unless it already has one. A High-priority alert is always raised, also when the run
+    /// could not be marked with this status (it then keeps its old status and its finalisation lease).
     /// </summary>
     FailedDuringCompletion,
 

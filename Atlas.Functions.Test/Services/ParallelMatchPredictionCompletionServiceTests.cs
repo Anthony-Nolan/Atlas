@@ -18,7 +18,9 @@ using Atlas.SearchTracking.Common.Dispatchers;
 using Atlas.SearchTracking.Common.Enums;
 using Atlas.SearchTracking.Common.Models;
 using AutoFixture;
+using AwesomeAssertions;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 using Microsoft.Extensions.Options;
 
@@ -34,6 +36,12 @@ namespace Atlas.Functions.Test.Services
         // The notification source the parallel match-prediction path stamps on alerts/notifications. Mirrors the private
         // const in ParallelMatchPredictionCompletionService; asserted as a literal for the same contract reason.
         private const string ParallelMatchPredictionNotificationSource = "Atlas.Functions.ParallelMatchPrediction";
+
+        // The stage the parallel path reports when finalising a run fails (ATL-609). Asserted as a literal for the same
+        // contract reason.
+        private const string MatchPredictionCompletionStage = "MatchPredictionCompletion";
+
+        private const string BatchResultDownloadFailure = "Cannot read the batch result blobs.";
 
         private IParallelMatchPredictionRepository repository;
         private ISearchCompletionMessageSender searchCompletionMessageSender;
@@ -333,16 +341,260 @@ namespace Atlas.Functions.Test.Services
             await notificationSender.DidNotReceiveWithAnyArgs().SendNotification(default, default, default);
         }
 
+        [Test]
+        public async Task FinaliseRun_WhenSuccessPipelineThrowsBeforeResultsMessage_MarksFailedDuringCompletionAndRethrows()
+        {
+            var runId = fixture.Create<int>();
+            repository.GetRunWithResults(runId).Returns(RunResults(ParallelMatchPredictionRunStatus.Running, failedBatch: false));
+            StubSuccessfulCompletionPipeline();
+            StubBatchResultDownloadThrows();
+
+            var act = () => completionService.FinaliseRun(runId);
+
+            await act.Should().ThrowAsync<InvalidOperationException>().WithMessage(BatchResultDownloadFailure);
+            await repository.Received(1).MarkRunFailedDuringCompletion(runId, Arg.Any<DateTime>());
+            await repository.DidNotReceiveWithAnyArgs().MarkRunFinalised(default, default);
+        }
+
+        [Test]
+        public async Task FinaliseRun_WhenSuccessPipelineThrowsBeforeResultsMessage_PublishesFailureMessageWithoutExceptionText()
+        {
+            var runId = fixture.Create<int>();
+            var runResults = RunResults(ParallelMatchPredictionRunStatus.Running, failedBatch: false);
+            repository.GetRunWithResults(runId).Returns(runResults);
+            StubSuccessfulCompletionPipeline();
+            StubBatchResultDownloadThrows();
+
+            var act = () => completionService.FinaliseRun(runId);
+
+            await act.Should().ThrowAsync<InvalidOperationException>();
+            await searchCompletionMessageSender.Received(1).PublishFailureMessage(
+                Arg.Is<SendFailureNotificationParameters>(p =>
+                    p.SearchRequestId == runResults.Run.SearchIdentifier.ToString()
+                    && p.RepeatSearchRequestId == null
+                    && p.StageReached == MatchPredictionCompletionStage
+                    && !string.IsNullOrEmpty(p.FailureDetail)
+                    && !p.FailureDetail.Contains(BatchResultDownloadFailure))
+            );
+            await searchCompletionMessageSender.DidNotReceiveWithAnyArgs().PublishResultsMessage<SearchResultSet>(default, default, default);
+        }
+
+        [Test]
+        public async Task FinaliseRun_WhenSuccessPipelineThrowsBeforeResultsMessage_EmitsFailedProcessCompletedTrackingEvent()
+        {
+            var runId = fixture.Create<int>();
+            var runResults = RunResults(ParallelMatchPredictionRunStatus.Running, failedBatch: false);
+            repository.GetRunWithResults(runId).Returns(runResults);
+            StubSuccessfulCompletionPipeline();
+            StubBatchResultDownloadThrows();
+
+            var act = () => completionService.FinaliseRun(runId);
+
+            await act.Should().ThrowAsync<InvalidOperationException>();
+            await trackingDispatcher.Received(1).ProcessCompleted(
+                Arg.Is<(Guid SearchIdentifier, Guid? OriginalSearchIdentifier, bool IsSuccessful, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches)>(
+                    e => e.SearchIdentifier == runResults.Run.SearchIdentifier
+                      && e.OriginalSearchIdentifier == null
+                      && e.IsSuccessful == false
+                      && e.FailureInfo.Type == MatchPredictionFailureType.UnexpectedError
+                      && e.FailureInfo.Message.Contains(BatchResultDownloadFailure)
+                      && !string.IsNullOrEmpty(e.FailureInfo.ExceptionStacktrace)
+                      && e.TotalNumberOfBatches == runResults.Run.TotalBatchCount)
+            );
+        }
+
+        [Test]
+        public async Task FinaliseRun_RepeatSearch_WhenSuccessPipelineThrows_UsesRepeatSearchIdentifiers()
+        {
+            var runId = fixture.Create<int>();
+            var runResults = RunResults(ParallelMatchPredictionRunStatus.Running, failedBatch: false, isRepeatSearch: true);
+            repository.GetRunWithResults(runId).Returns(runResults);
+            StubSuccessfulCompletionPipeline();
+            StubBatchResultDownloadThrows();
+
+            var act = () => completionService.FinaliseRun(runId);
+
+            await act.Should().ThrowAsync<InvalidOperationException>();
+            await trackingDispatcher.Received(1).ProcessCompleted(
+                Arg.Is<(Guid SearchIdentifier, Guid? OriginalSearchIdentifier, bool IsSuccessful, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches)>(
+                    e => e.SearchIdentifier == runResults.Run.RepeatSearchIdentifier
+                      && e.OriginalSearchIdentifier == runResults.Run.SearchIdentifier
+                      && e.IsSuccessful == false)
+            );
+            await searchCompletionMessageSender.Received(1).PublishFailureMessage(
+                Arg.Is<SendFailureNotificationParameters>(p =>
+                    p.SearchRequestId == runResults.Run.SearchIdentifier.ToString()
+                    && p.RepeatSearchRequestId == runResults.Run.RepeatSearchIdentifier.ToString())
+            );
+        }
+
+        [Test]
+        public async Task FinaliseRun_WhenSuccessPipelineThrows_RaisesHighPriorityAlert()
+        {
+            var runId = fixture.Create<int>();
+            repository.GetRunWithResults(runId).Returns(RunResults(ParallelMatchPredictionRunStatus.Running, failedBatch: false));
+            StubSuccessfulCompletionPipeline();
+            StubBatchResultDownloadThrows();
+
+            var act = () => completionService.FinaliseRun(runId);
+
+            await act.Should().ThrowAsync<InvalidOperationException>();
+            await notificationSender.Received(1).SendAlert(
+                Arg.Any<string>(),
+                Arg.Is<string>(d => d.Contains("is now FailedDuringCompletion")),
+                Priority.High,
+                ParallelMatchPredictionNotificationSource
+            );
+        }
+
+        [Test]
+        public async Task FinaliseRun_WhenThrowsAfterResultsMessagePublished_OnlyRaisesAlert()
+        {
+            var runId = fixture.Create<int>();
+            repository.GetRunWithResults(runId).Returns(RunResults(ParallelMatchPredictionRunStatus.Running, failedBatch: false));
+            StubSuccessfulCompletionPipeline();
+            repository.MarkRunFinalised(runId, Arg.Any<DateTime>()).ThrowsAsync(new InvalidOperationException());
+
+            var act = () => completionService.FinaliseRun(runId);
+
+            await act.Should().ThrowAsync<InvalidOperationException>();
+            // The caller already has its result: no contradicting failure message or failed tracking completion.
+            await searchCompletionMessageSender.Received(1).PublishResultsMessage(
+                Arg.Any<SearchResultSet>(), Arg.Any<DateTime>(), Arg.Any<string>()
+            );
+            await searchCompletionMessageSender.DidNotReceiveWithAnyArgs().PublishFailureMessage(default);
+            await trackingDispatcher.DidNotReceive().ProcessCompleted(
+                Arg.Is<(Guid SearchIdentifier, Guid? OriginalSearchIdentifier, bool IsSuccessful, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches)>(e => !e.IsSuccessful)
+            );
+            await notificationSender.Received(1).SendAlert(
+                Arg.Any<string>(), Arg.Any<string>(), Priority.High, ParallelMatchPredictionNotificationSource
+            );
+        }
+
+        [Test]
+        public async Task FinaliseRun_WhenFailedRunThrowsAfterFailureMessagePublished_DoesNotPublishSecondFailureMessage()
+        {
+            var runId = fixture.Create<int>();
+            repository.GetRunWithResults(runId).Returns(RunResults(ParallelMatchPredictionRunStatus.Running, failedBatch: true));
+            repository.MarkRunFailed(runId, Arg.Any<DateTime>()).ThrowsAsync(new InvalidOperationException());
+
+            var act = () => completionService.FinaliseRun(runId);
+
+            await act.Should().ThrowAsync<InvalidOperationException>();
+            await searchCompletionMessageSender.Received(1).PublishFailureMessage(Arg.Any<SendFailureNotificationParameters>());
+            await repository.Received(1).MarkRunFailedDuringCompletion(runId, Arg.Any<DateTime>());
+        }
+
+        [Test]
+        public async Task FinaliseRun_WhenFailedRunCannotPublishFailureMessage_KeepsBatchFailureAsOnlyTrackingCompletion()
+        {
+            var runId = fixture.Create<int>();
+            repository.GetRunWithResults(runId).Returns(RunResults(ParallelMatchPredictionRunStatus.Running, failedBatch: true));
+            searchCompletionMessageSender.PublishFailureMessage(default).ReturnsForAnyArgs(Task.FromException(new TimeoutException()));
+
+            var act = () => completionService.FinaliseRun(runId);
+
+            await act.Should().ThrowAsync<TimeoutException>();
+            // Search Tracking overwrites the failure info on each completion: the batch failure (the real cause) must
+            // stay the only one.
+            await trackingDispatcher.Received(1).ProcessCompleted(Arg.Any<(Guid SearchIdentifier, Guid? OriginalSearchIdentifier, bool IsSuccessful, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches)>());
+            await trackingDispatcher.Received(1).ProcessCompleted(
+                Arg.Is<(Guid SearchIdentifier, Guid? OriginalSearchIdentifier, bool IsSuccessful, MatchPredictionFailureInfo FailureInfo, int? DonorsPerBatch, int? TotalNumberOfBatches)>(e => e.FailureInfo.Type == MatchPredictionFailureType.BatchWorkerFailure)
+            );
+        }
+
+        [Test]
+        public async Task FinaliseRun_WhenFailureMessageCannotBeSent_StillRaisesAlertAndRethrowsOriginalException()
+        {
+            var runId = fixture.Create<int>();
+            repository.GetRunWithResults(runId).Returns(RunResults(ParallelMatchPredictionRunStatus.Running, failedBatch: false));
+            StubSuccessfulCompletionPipeline();
+            StubBatchResultDownloadThrows();
+            searchCompletionMessageSender.PublishFailureMessage(default).ReturnsForAnyArgs(Task.FromException(new TimeoutException()));
+
+            var act = () => completionService.FinaliseRun(runId);
+
+            await act.Should().ThrowAsync<InvalidOperationException>().WithMessage(BatchResultDownloadFailure);
+            await notificationSender.Received(1).SendAlert(
+                Arg.Any<string>(),
+                Arg.Is<string>(d => d.Contains("could not be sent")),
+                Priority.High,
+                ParallelMatchPredictionNotificationSource
+            );
+        }
+
+        [Test]
+        public async Task FinaliseRun_WhenTrackingEventCannotBeSent_StillPublishesFailureMessageAndRaisesAlert()
+        {
+            var runId = fixture.Create<int>();
+            repository.GetRunWithResults(runId).Returns(RunResults(ParallelMatchPredictionRunStatus.Running, failedBatch: false));
+            StubSuccessfulCompletionPipeline();
+            StubBatchResultDownloadThrows();
+            trackingDispatcher.ProcessCompleted(default).ReturnsForAnyArgs(Task.FromException(new TimeoutException()));
+
+            var act = () => completionService.FinaliseRun(runId);
+
+            await act.Should().ThrowAsync<InvalidOperationException>().WithMessage(BatchResultDownloadFailure);
+            await searchCompletionMessageSender.Received(1).PublishFailureMessage(Arg.Any<SendFailureNotificationParameters>());
+            await notificationSender.Received(1).SendAlert(
+                Arg.Any<string>(), Arg.Any<string>(), Priority.High, ParallelMatchPredictionNotificationSource
+            );
+        }
+
+        [Test]
+        public async Task FinaliseRun_WhenMarkFinalisedAndMarkFailedDuringCompletionBothThrow_RaisesAlertAndRethrowsOriginalException()
+        {
+            var runId = fixture.Create<int>();
+            repository.GetRunWithResults(runId).Returns(RunResults(ParallelMatchPredictionRunStatus.Running, failedBatch: false));
+            StubSuccessfulCompletionPipeline();
+            const string markFinalisedFailure = "Cannot mark the run finalised.";
+            repository.MarkRunFinalised(runId, Arg.Any<DateTime>()).ThrowsAsync(new InvalidOperationException(markFinalisedFailure));
+            repository.MarkRunFailedDuringCompletion(runId, Arg.Any<DateTime>()).ThrowsAsync(new TimeoutException());
+
+            var act = () => completionService.FinaliseRun(runId);
+
+            await act.Should().ThrowAsync<InvalidOperationException>().WithMessage(markFinalisedFailure);
+            await notificationSender.Received(1).SendAlert(
+                Arg.Any<string>(),
+                Arg.Is<string>(d => d.Contains("could not be marked FailedDuringCompletion")
+                                 && !d.Contains("is now FailedDuringCompletion")),
+                Priority.High,
+                ParallelMatchPredictionNotificationSource
+            );
+        }
+
+        [Test]
+        public async Task FinaliseRun_WhenPipelineAndMarkFailedDuringCompletionBothThrow_StillPublishesFailureMessage()
+        {
+            var runId = fixture.Create<int>();
+            repository.GetRunWithResults(runId).Returns(RunResults(ParallelMatchPredictionRunStatus.Running, failedBatch: false));
+            StubSuccessfulCompletionPipeline();
+            StubBatchResultDownloadThrows();
+            repository.MarkRunFailedDuringCompletion(runId, Arg.Any<DateTime>()).ThrowsAsync(new TimeoutException());
+
+            var act = () => completionService.FinaliseRun(runId);
+
+            // The run keeps its finalisation lease, so it is never picked up again: this is still the caller's only result.
+            await act.Should().ThrowAsync<InvalidOperationException>().WithMessage(BatchResultDownloadFailure);
+            await searchCompletionMessageSender.Received(1).PublishFailureMessage(Arg.Any<SendFailureNotificationParameters>());
+        }
+
+        private void StubBatchResultDownloadThrows()
+        {
+            resultsCombiner.DownloadBatchedMatchPredictionResults(Arg.Any<IReadOnlyCollection<string>>())
+                .ThrowsAsync(new InvalidOperationException(BatchResultDownloadFailure));
+        }
+
         private ParallelMatchPredictionRunResults RunResults(
-            ParallelMatchPredictionRunStatus status, bool failedBatch, string batchFailureMessage = null)
+            ParallelMatchPredictionRunStatus status, bool failedBatch, string batchFailureMessage = null, bool isRepeatSearch = false)
         {
             return new ParallelMatchPredictionRunResults
             {
                 Run = new ParallelMatchPredictionRun
                 {
                     SearchIdentifier = fixture.Create<Guid>(),
-                    IsRepeatSearch = false,
-                    RepeatSearchIdentifier = null,
+                    IsRepeatSearch = isRepeatSearch,
+                    RepeatSearchIdentifier = isRepeatSearch ? fixture.Create<Guid>() : null,
                     TotalBatchCount = fixture.Create<int>(),
                     Status = status,
                     SearchInitiatedTimeUtc = fixture.Create<DateTime>(),
