@@ -216,6 +216,9 @@ The files in the batched results folder are numbered: `000001.json`, `000002.jso
 > Another notification can still follow it in two cases:
 > (c) The run was abandoned, and the batch returned later: a success notification, or a second failure notification with the real cause.
 > (d) Support replayed a dead-lettered batch by hand.
+>
+> A repeat search can also send its success notification twice:
+> (e) The repeat search sent its results, and then failed to store its changes to the result set of the original search. It is retried, and sends its results again. It sends no failure notification between the two. The retry compares with the same stored result set, so it reports the same changes, unless donors changed between the two attempts, or another repeat search of the same original search changed the stored result set in that time. If the last retry also fails to store its changes, the consumer gets a failure notification after the success notification.
 
 
 #### Receiving matching results early

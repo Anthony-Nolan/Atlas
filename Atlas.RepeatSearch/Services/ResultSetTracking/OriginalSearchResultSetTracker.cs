@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
+using Atlas.RepeatSearch.Data.Models;
 using Atlas.RepeatSearch.Data.Repositories;
 using Atlas.RepeatSearch.Data.Settings;
 using Atlas.RepeatSearch.Services.Search;
@@ -16,7 +17,13 @@ namespace Atlas.RepeatSearch.Services.ResultSetTracking
     public interface IOriginalSearchResultSetTracker
     {
         Task StoreOriginalSearchResults(MatchingResultsNotification notification);
-        Task ApplySearchResultDiff(string searchRequestId, SearchResultDifferential searchResultDifferential);
+
+        /// <summary>
+        /// In one transaction: applies the diff of a repeat search to the canonical result set of its original search, and writes the
+        /// history record of the repeat search. Changes nothing if the repeat search already has a history record.
+        /// </summary>
+        /// <returns>False if the repeat search already had a history record, so nothing was changed.</returns>
+        Task<bool> ApplySearchResultDiff(RepeatSearchHistoryRecord historyRecord, SearchResultDifferential searchResultDifferential);
     }
 
     /// <summary>
@@ -147,19 +154,12 @@ namespace Atlas.RepeatSearch.Services.ResultSetTracking
                 });
         }
 
-        public async Task ApplySearchResultDiff(string searchRequestId, SearchResultDifferential searchResultDifferential)
+        public async Task<bool> ApplySearchResultDiff(RepeatSearchHistoryRecord historyRecord, SearchResultDifferential searchResultDifferential)
         {
             var donorCodesToAdd = searchResultDifferential.NewResults.Select(d => d.ExternalDonorCode).ToList();
 
-            if (donorCodesToAdd.Any())
-            {
-                await canonicalResultSetRepository.AddResultsToSet(searchRequestId, donorCodesToAdd);
-            }
-
-            if (searchResultDifferential.RemovedResults.Any())
-            {
-                await canonicalResultSetRepository.RemoveResultsFromSet(searchRequestId, searchResultDifferential.RemovedResults);
-            }
+            return await canonicalResultSetRepository.ApplyDiffAndRecordRepeatSearch(
+                historyRecord, donorCodesToAdd, searchResultDifferential.RemovedResults);
         }
 
         /// <summary>

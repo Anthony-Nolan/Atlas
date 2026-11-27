@@ -161,6 +161,141 @@ public class CanonicalResultSetRepositoryTests
         (await repository.StartStoringResultSet(searchRequestId)).Should().BeNull();
     }
 
+    [Test]
+    public async Task ApplyDiffAndRecordRepeatSearch_AddsAndRemovesDonorsAndWritesHistory()
+    {
+        var keptDonorCode = fixture.Create<string>();
+        var removedDonorCodes = fixture.CreateMany<string>(2).ToList();
+        var newDonorCodes = fixture.CreateMany<string>(2).ToList();
+        await StoreCompleteSet(removedDonorCodes.Append(keptDonorCode).ToList());
+        var historyRecord = BuildHistoryRecord();
+
+        var applied = await repository.ApplyDiffAndRecordRepeatSearch(historyRecord, newDonorCodes, removedDonorCodes);
+
+        applied.Should().BeTrue();
+        (await GetStoredDonorCodes()).Should().BeEquivalentTo(newDonorCodes.Append(keptDonorCode));
+        (await GetHistoryRecords(historyRecord.RepeatSearchRequestId)).Should().ContainSingle()
+            .Which.Should().BeEquivalentTo(historyRecord, options => options.Excluding(r => r.Id));
+    }
+
+    [Test]
+    public async Task ApplyDiffAndRecordRepeatSearch_ForRecordedRepeatSearch_ReturnsFalseAndChangesNothing()
+    {
+        var newDonorCode = fixture.Create<string>();
+        await StoreCompleteSet(new List<string>());
+        var historyRecord = BuildHistoryRecord();
+        await repository.ApplyDiffAndRecordRepeatSearch(historyRecord, new[] { newDonorCode }, Array.Empty<string>());
+
+        var appliedAgain = await repository.ApplyDiffAndRecordRepeatSearch(
+            historyRecord, new[] { fixture.Create<string>() }, new[] { newDonorCode });
+
+        appliedAgain.Should().BeFalse();
+        (await GetStoredDonorCodes()).Should().BeEquivalentTo(new[] { newDonorCode });
+        (await GetHistoryRecords(historyRecord.RepeatSearchRequestId)).Should().ContainSingle();
+    }
+
+    [Test]
+    public async Task ApplyDiffAndRecordRepeatSearch_ForConcurrentDeliveries_ChangesSetOnce()
+    {
+        var newDonorCode = fixture.Create<string>();
+        await StoreCompleteSet(new List<string>());
+        var historyRecord = BuildHistoryRecord();
+
+        var results = await Task.WhenAll(
+            repository.ApplyDiffAndRecordRepeatSearch(historyRecord, new[] { newDonorCode }, Array.Empty<string>()),
+            repository.ApplyDiffAndRecordRepeatSearch(historyRecord, new[] { newDonorCode }, Array.Empty<string>()));
+
+        results.Should().BeEquivalentTo(new[] { true, false });
+        (await GetStoredDonorCodes()).Should().BeEquivalentTo(new[] { newDonorCode });
+        (await GetHistoryRecords(historyRecord.RepeatSearchRequestId)).Should().ContainSingle();
+    }
+
+    [Test]
+    public async Task ApplyDiffAndRecordRepeatSearch_WithDonorCodesAlreadyInSet_AddsOnlyMissingCodes()
+    {
+        // More than one batch of 2,000. The code in the set is in the second batch.
+        var newDonorCodes = fixture.CreateMany<string>(2001).ToList();
+        await StoreCompleteSet(new List<string> { newDonorCodes.Last() });
+        var historyRecord = BuildHistoryRecord();
+
+        var applied = await repository.ApplyDiffAndRecordRepeatSearch(historyRecord, newDonorCodes, Array.Empty<string>());
+
+        applied.Should().BeTrue();
+        // Sorted, because BeEquivalentTo compares the items in pairs, which is slow for 2,001 items.
+        (await GetStoredDonorCodes()).Order(StringComparer.Ordinal).Should().Equal(newDonorCodes.Order(StringComparer.Ordinal));
+        (await GetHistoryRecords(historyRecord.RepeatSearchRequestId)).Should().ContainSingle();
+    }
+
+    [Test]
+    public async Task ApplyDiffAndRecordRepeatSearch_ForConcurrentRepeatSearchesThatAddSameDonor_AddsDonorOnceAndWritesBothHistories()
+    {
+        var newDonorCode = fixture.Create<string>();
+        await StoreCompleteSet(new List<string>());
+        var firstHistoryRecord = BuildHistoryRecord();
+        var secondHistoryRecord = BuildHistoryRecord();
+
+        var results = await Task.WhenAll(
+            repository.ApplyDiffAndRecordRepeatSearch(firstHistoryRecord, new[] { newDonorCode }, Array.Empty<string>()),
+            repository.ApplyDiffAndRecordRepeatSearch(secondHistoryRecord, new[] { newDonorCode }, Array.Empty<string>()));
+
+        results.Should().AllBeEquivalentTo(true);
+        (await GetStoredDonorCodes()).Should().BeEquivalentTo(new[] { newDonorCode });
+        (await GetHistoryRecords(firstHistoryRecord.RepeatSearchRequestId)).Should().ContainSingle();
+        (await GetHistoryRecords(secondHistoryRecord.RepeatSearchRequestId)).Should().ContainSingle();
+    }
+
+    [Test]
+    public async Task ApplyDiffAndRecordRepeatSearch_WhenSetChangeFails_DoesNotWriteHistoryOrChangeSet()
+    {
+        var removedDonorCode = fixture.Create<string>();
+        await StoreCompleteSet(new List<string> { removedDonorCode });
+        var historyRecord = BuildHistoryRecord();
+        // The first donor code again, in the second batch of 2,000: the first batch is inserted, then the unique index of SearchResults stops
+        // the second batch.
+        var newDonorCodes = fixture.CreateMany<string>(2000).ToList();
+        newDonorCodes.Add(newDonorCodes.First());
+
+        var act = () => repository.ApplyDiffAndRecordRepeatSearch(historyRecord, newDonorCodes, new[] { removedDonorCode });
+
+        await act.Should().ThrowAsync<SqlException>().Where(e => e.Number == 2601);
+        (await GetStoredDonorCodes()).Should().BeEquivalentTo(new[] { removedDonorCode });
+        (await GetHistoryRecords(historyRecord.RepeatSearchRequestId)).Should().BeEmpty();
+    }
+
+    [Test]
+    public async Task ApplyDiffAndRecordRepeatSearch_WhenHistoryInsertFails_DoesNotChangeSet()
+    {
+        var removedDonorCode = fixture.Create<string>();
+        var newDonorCode = fixture.Create<string>();
+        await StoreCompleteSet(new List<string> { removedDonorCode });
+        // RepeatSearchRequestId is required, so the insert of the history record fails after the donors are added and removed.
+        var historyRecord = BuildHistoryRecord();
+        historyRecord.RepeatSearchRequestId = null;
+
+        var act = () => repository.ApplyDiffAndRecordRepeatSearch(historyRecord, new[] { newDonorCode }, new[] { removedDonorCode });
+
+        await act.Should().ThrowAsync<SqlException>().Where(e => e.Number == 515);
+        (await GetStoredDonorCodes()).Should().BeEquivalentTo(new[] { removedDonorCode });
+    }
+
+    private async Task StoreCompleteSet(IReadOnlyCollection<string> donorCodes)
+    {
+        var claim = await repository.StartStoringResultSet(searchRequestId);
+        await repository.AddResultsChunk(claim, donorCodes);
+        await repository.CompleteResultSet(claim);
+    }
+
+    private RepeatSearchHistoryRecord BuildHistoryRecord() =>
+        fixture.Build<RepeatSearchHistoryRecord>().With(r => r.OriginalSearchRequestId, searchRequestId).Create();
+
+    private static async Task<IReadOnlyCollection<RepeatSearchHistoryRecord>> GetHistoryRecords(string repeatSearchRequestId)
+    {
+        await using var connection = new SqlConnection(IntegrationTestSetUp.ConnectionString);
+        return (await connection.QueryAsync<RepeatSearchHistoryRecord>(
+            "SELECT * FROM RepeatSearch.RepeatSearchHistoryRecords WHERE RepeatSearchRequestId = @repeatSearchRequestId",
+            new { repeatSearchRequestId })).ToList();
+    }
+
     private async Task<IReadOnlyCollection<string>> GetStoredDonorCodes()
     {
         return (await repository.GetCanonicalResults(searchRequestId)).Select(r => r.ExternalDonorCode).ToList();

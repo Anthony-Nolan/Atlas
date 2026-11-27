@@ -1,29 +1,43 @@
 ﻿using System.Threading.Tasks;
-using Atlas.RepeatSearch.Data.Context;
 using Atlas.RepeatSearch.Data.Models;
-using Microsoft.EntityFrameworkCore;
+using Atlas.RepeatSearch.Data.Settings;
+using Dapper;
+using Microsoft.Data.SqlClient;
 
-namespace Atlas.RepeatSearch.Data.Repositories
+namespace Atlas.RepeatSearch.Data.Repositories;
+
+public interface IRepeatSearchHistoryRepository
 {
-    public interface IRepeatSearchHistoryRepository
+    /// <returns>
+    /// True if the repeat search has a history record: it changed the canonical result set, after its results notification was published.
+    /// </returns>
+    Task<bool> IsRepeatSearchRecorded(string repeatSearchRequestId);
+}
+
+/// <remarks>
+/// The history record is written by <see cref="ICanonicalResultSetRepository.ApplyDiffAndRecordRepeatSearch"/>, in the transaction that
+/// changes the canonical result set.
+/// </remarks>
+public class RepeatSearchHistoryRepository : IRepeatSearchHistoryRepository
+{
+    private readonly string connectionString;
+
+    public RepeatSearchHistoryRepository(ConnectionStrings connectionStrings)
     {
-        Task RecordRepeatSearchRequest(RepeatSearchHistoryRecord repeatSearchHistoryRecord);
+        connectionString = connectionStrings.RepeatSearchSqlConnectionString;
     }
 
-    public class RepeatSearchHistoryRepository : IRepeatSearchHistoryRepository
+    public async Task<bool> IsRepeatSearchRecorded(string repeatSearchRequestId)
     {
-        private readonly RepeatSearchContext context;
-        private DbSet<RepeatSearchHistoryRecord> Entities => context.RepeatSearchHistoryRecords;
+        var sql = @$"
+            SELECT CASE WHEN EXISTS (
+                SELECT 1 FROM {RepeatSearchHistoryRecord.QualifiedTableName}
+                WHERE {nameof(RepeatSearchHistoryRecord.RepeatSearchRequestId)} = @{nameof(repeatSearchRequestId)}
+            ) THEN 1 ELSE 0 END";
 
-        public RepeatSearchHistoryRepository(RepeatSearchContext context)
+        await using (var connection = new SqlConnection(connectionString))
         {
-            this.context = context;
-        }
-
-        public async Task RecordRepeatSearchRequest(RepeatSearchHistoryRecord repeatSearchHistoryRecord)
-        {
-            await Entities.AddAsync(repeatSearchHistoryRecord);
-            await context.SaveChangesAsync();
+            return await connection.ExecuteScalarAsync<bool>(sql, new { repeatSearchRequestId });
         }
     }
 }

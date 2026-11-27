@@ -705,6 +705,31 @@ alone. To see the method of a search, read `IsPrecomputedMatchPrediction` in `[S
 (`NULL` for searches from before 4.1), or the `Precomputed genotype sets method chosen` event in Application Insights.
 See [the Match Prediction README](README_MatchPredictionAlgorithm.md#switching-it-on-and-off).
 
+### Rerunning a repeat search that failed after matching
+
+When the matching of a repeat search is complete, the repeat search sends its matching results notification. Then, in one
+transaction, it changes the stored result set of the original search and writes its row in
+`[RepeatSearch].[RepeatSearchHistoryRecords]`. If match prediction fails after that, the consumer gets a failure for the
+repeat search, but the stored set has already changed.
+
+A delivery of a repeat search request whose repeat search id has a history row sends no results. It logs the warning
+"Repeat search id: ... is already recorded ...". Running the repeat search again would compare with the changed set, so
+the removed donors would be missing from its results. This also applies to `Atlas.Utilities.RerunFailedSearches`: the
+utility sends the request again with the same repeat search id and prints "re-submitting repeat ...", but the repeat
+search sends no results. The `--only-parallel-failures` option selects exactly these repeat searches.
+
+To rerun only the match prediction of such a repeat search, on the results that its matching already uploaded:
+1. Check that the repeat search has a history row:
+   ```sql
+   SELECT * FROM [RepeatSearch].[RepeatSearchHistoryRecords] WHERE RepeatSearchRequestId = '<repeat search id>';
+   ```
+2. In the `audit` subscription of the `repeat-search-matching-results-ready` topic, find the matching results
+   notification of the repeat search: the message with the application properties `RepeatSearchRequestId` = the repeat
+   search id and `WasSuccessful` = `true`. The `audit` subscription keeps messages for a limited time only.
+3. Send a copy of the message to the `repeat-search-matching-results-ready` topic, for example with Service Bus Explorer.
+   Match prediction runs again with the first results, and the consumer gets the results after the earlier failure
+   notification.
+
 ### Search logs
 
 [Log files](/Atlas.Client.Models/Search/Results/SearchLogs.cs) named `{search-request-id}-log.json` are uploaded to `matching-algorithm-results` and `atlas-search-results` containers. 
