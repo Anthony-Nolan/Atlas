@@ -51,6 +51,8 @@ namespace Atlas.RepeatSearch.Data.Repositories
         /// <summary>
         /// In one transaction: adds and removes donor codes in the canonical result set of the original search, and writes the history record
         /// of the repeat search. If the repeat search already has a history record, nothing is changed, so a repeat search changes the set once.
+        /// The transactions of repeat searches of the same original search run one after the other, and a donor code that is already in the set
+        /// is not added again.
         /// </summary>
         /// <returns>False if the repeat search already had a history record, so nothing was changed.</returns>
         Task<bool> ApplyDiffAndRecordRepeatSearch(
@@ -63,8 +65,11 @@ namespace Atlas.RepeatSearch.Data.Repositories
     {
         private const int DeleteBatchSize = 10000;
 
-        // Dapper sends each donor code as one parameter, and SQL Server takes at most 2100 parameters in one command.
-        private const int RemoveBatchSize = 2000;
+        // The maximum number of donor codes in one statement of the transaction that applies the diff of a repeat search:
+        // - Dapper sends each donor code as one parameter, and SQL Server takes at most 2100 parameters in one command.
+        // - When one statement gets 5,000 locks on one index, SQL Server can change them into one lock on the whole table. The transaction
+        //   then holds that lock until it commits, so all other writes to SearchResults wait.
+        private const int DiffBatchSize = 2000;
 
         private readonly string connectionString;
         private readonly int sqlBulkCopyBatchSize;
@@ -203,9 +208,16 @@ namespace Atlas.RepeatSearch.Data.Repositories
                 SELECT COUNT(*) FROM {RepeatSearchHistoryRecord.QualifiedTableName} WITH (UPDLOCK, HOLDLOCK)
                 WHERE {nameof(RepeatSearchHistoryRecord.RepeatSearchRequestId)} = @{nameof(RepeatSearchHistoryRecord.RepeatSearchRequestId)}";
 
+            // UPDLOCK keeps the row of the set locked until the end of the transaction, so the diffs of two repeat searches of the same original
+            // search are applied one after the other. The second one then reads the donor codes that the first one added.
             var setIdSql = @$"
-                SELECT {nameof(CanonicalResultSet.Id)} FROM {CanonicalResultSet.QualifiedTableName}
+                SELECT {nameof(CanonicalResultSet.Id)} FROM {CanonicalResultSet.QualifiedTableName} WITH (UPDLOCK)
                 WHERE {nameof(CanonicalResultSet.OriginalSearchRequestId)} = @{nameof(RepeatSearchHistoryRecord.OriginalSearchRequestId)}";
+
+            var storedCodesSql = @$"
+                SELECT {nameof(SearchResult.ExternalDonorCode)} FROM {SearchResult.QualifiedTableName}
+                WHERE {nameof(SearchResult.CanonicalResultSetId)} = @setId
+                AND {nameof(SearchResult.ExternalDonorCode)} IN @donorCodes";
 
             var removeSql = @$"
                 DELETE FROM {SearchResult.QualifiedTableName}
@@ -238,13 +250,23 @@ namespace Atlas.RepeatSearch.Data.Repositories
 
             var setId = await connection.QuerySingleAsync<int>(setIdSql, new { historyRecord.OriginalSearchRequestId }, transaction);
 
-            if (donorCodesToAdd.Count > 0)
+            // Another repeat search of the same original search can add a donor of this diff after this diff was calculated.
+            // The unique index of SearchResults does not allow that donor code again.
+            var donorCodesNotInSet = new List<string>();
+            foreach (var donorCodeBatch in donorCodesToAdd.Batch(DiffBatchSize))
             {
-                using var sqlBulk = BuildResultsBulkCopy(connection, transaction);
-                await sqlBulk.WriteToServerAsync(BuildResultsInsertDataTable(setId, donorCodesToAdd));
+                var donorCodes = donorCodeBatch.ToList();
+                var storedDonorCodes = (await connection.QueryAsync<string>(storedCodesSql, new { setId, donorCodes }, transaction)).ToHashSet();
+                donorCodesNotInSet.AddRange(donorCodes.Where(code => !storedDonorCodes.Contains(code)));
             }
 
-            foreach (var donorCodeBatch in donorCodesToRemove.Batch(RemoveBatchSize))
+            if (donorCodesNotInSet.Count > 0)
+            {
+                using var sqlBulk = BuildResultsBulkCopy(connection, transaction);
+                await sqlBulk.WriteToServerAsync(BuildResultsInsertDataTable(setId, donorCodesNotInSet));
+            }
+
+            foreach (var donorCodeBatch in donorCodesToRemove.Batch(DiffBatchSize))
             {
                 await connection.ExecuteAsync(removeSql, new { setId, donorCodes = donorCodeBatch.ToList() }, transaction);
             }
@@ -311,8 +333,13 @@ namespace Atlas.RepeatSearch.Data.Repositories
         private SqlBulkCopy BuildResultsBulkCopy(SqlBulkCopyOptions options) =>
             ConfigureResultsBulkCopy(new SqlBulkCopy(connectionString, options));
 
-        private SqlBulkCopy BuildResultsBulkCopy(SqlConnection connection, SqlTransaction transaction) =>
-            ConfigureResultsBulkCopy(new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, transaction));
+        private SqlBulkCopy BuildResultsBulkCopy(SqlConnection connection, SqlTransaction transaction)
+        {
+            var sqlBulk = ConfigureResultsBulkCopy(new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, transaction));
+            // Each batch is sent as one statement.
+            sqlBulk.BatchSize = DiffBatchSize;
+            return sqlBulk;
+        }
 
         private SqlBulkCopy ConfigureResultsBulkCopy(SqlBulkCopy sqlBulk)
         {

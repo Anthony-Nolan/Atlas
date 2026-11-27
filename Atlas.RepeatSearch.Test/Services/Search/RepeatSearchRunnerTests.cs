@@ -389,10 +389,8 @@ namespace Atlas.RepeatSearch.Test.Services.Search
             await serviceBusClient.DidNotReceiveWithAnyArgs().PublishToResultsNotificationTopic(default);
             await resultSetTracker.DidNotReceiveWithAnyArgs().ApplySearchResultDiff(default, default);
             await failureNotificationSender.DidNotReceiveWithAnyArgs().SendFailureNotification(default, default, default);
-            // No results were sent, and the diff of this delivery is not reported.
-            await searchTrackingEventPublisher.Received(1).ProcessCompleted(
-                Arg.Is<(string, DateTime?, int?, MatchingAlgorithmFailureInfo, MatchingAlgorithmRepeatSearchResultsDetails, int?)>(e =>
-                    e.Item4 == null && e.Item2 == null && e.Item5.AddedResultCount == null));
+            // The completed event of the delivery that sent the results stays on the search tracking row.
+            await searchTrackingEventPublisher.DidNotReceiveWithAnyArgs().ProcessCompleted(default);
         }
 
         [Test]

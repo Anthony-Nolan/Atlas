@@ -109,6 +109,8 @@ namespace Atlas.RepeatSearch.Services.Search
             DateTime? resultsSentTime = null;
             // Set when the success notification of this attempt is published: after that, the consumer has the results.
             var resultsNotificationPublished = false;
+            // Set when this delivery stops after the diff because another delivery recorded the repeat search.
+            var stoppedForAnotherDelivery = false;
             int? numberOfResults = null;
             MatchingAlgorithmFailureInfo matchingAlgorithmFailureInfo = null;
 
@@ -161,8 +163,7 @@ namespace Atlas.RepeatSearch.Services.Search
                 if (await StopIfRepeatSearchIsRecorded(identifiedRepeatSearchRequest,
                         "another delivery changed the canonical result set while this delivery ran, so the diff of this delivery can be wrong."))
                 {
-                    // This delivery sends no results, so search tracking gets no counts of its diff.
-                    diff = null;
+                    stoppedForAnotherDelivery = true;
                     return;
                 }
 
@@ -274,19 +275,25 @@ namespace Atlas.RepeatSearch.Services.Search
             }
             finally
             {
-                await searchTrackingEventPublisher.ProcessCompleted((
-                    HlaNomenclatureVersion: hlaNomenclatureVersion,
-                    ResultsSentTimeUtc: resultsSentTime,
-                    NumberOfResults: numberOfResults,
-                    FailureInfo: matchingAlgorithmFailureInfo,
-                    RepeatSearchResultsDetails: new MatchingAlgorithmRepeatSearchResultsDetails
-                    {
-                        AddedResultCount = diff?.NewResults.Count,
-                        RemovedResultCount = diff?.RemovedResults.Count,
-                        UpdatedResultCount = diff?.UpdatedResults.Count
-                    },
-                    NumberOfMatching: numberOfResults
-                ));
+                // Search tracking writes the completed event onto the row of the repeat search. A delivery that stopped for another delivery
+                // sent no results, so its event could be processed after the event of the delivery that sent the results, and clear the results
+                // sent time and the counts of the diff. So it sends no event, and its attempt row stays without a completion.
+                if (!stoppedForAnotherDelivery)
+                {
+                    await searchTrackingEventPublisher.ProcessCompleted((
+                        HlaNomenclatureVersion: hlaNomenclatureVersion,
+                        ResultsSentTimeUtc: resultsSentTime,
+                        NumberOfResults: numberOfResults,
+                        FailureInfo: matchingAlgorithmFailureInfo,
+                        RepeatSearchResultsDetails: new MatchingAlgorithmRepeatSearchResultsDetails
+                        {
+                            AddedResultCount = diff?.NewResults.Count,
+                            RemovedResultCount = diff?.RemovedResults.Count,
+                            UpdatedResultCount = diff?.UpdatedResults.Count
+                        },
+                        NumberOfMatching: numberOfResults
+                    ));
+                }
             }
 
             async Task HandleValidationExceptionWithoutRethrow(Exception ex)

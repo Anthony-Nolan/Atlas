@@ -211,18 +211,54 @@ public class CanonicalResultSetRepositoryTests
     }
 
     [Test]
-    public async Task ApplyDiffAndRecordRepeatSearch_WhenSetChangeFails_DoesNotWriteHistoryOrChangeSet()
+    public async Task ApplyDiffAndRecordRepeatSearch_WithDonorCodesAlreadyInSet_AddsOnlyMissingCodes()
     {
-        var donorCodeInSet = fixture.Create<string>();
-        var removedDonorCode = fixture.Create<string>();
-        await StoreCompleteSet(new List<string> { donorCodeInSet, removedDonorCode });
+        // More than one batch of 2,000. The code in the set is in the second batch.
+        var newDonorCodes = fixture.CreateMany<string>(2001).ToList();
+        await StoreCompleteSet(new List<string> { newDonorCodes.Last() });
         var historyRecord = BuildHistoryRecord();
 
-        // A donor code that is already in the set breaks the unique index of SearchResults.
-        var act = () => repository.ApplyDiffAndRecordRepeatSearch(historyRecord, new[] { donorCodeInSet }, new[] { removedDonorCode });
+        var applied = await repository.ApplyDiffAndRecordRepeatSearch(historyRecord, newDonorCodes, Array.Empty<string>());
+
+        applied.Should().BeTrue();
+        // Sorted, because BeEquivalentTo compares the items in pairs, which is slow for 2,001 items.
+        (await GetStoredDonorCodes()).Order(StringComparer.Ordinal).Should().Equal(newDonorCodes.Order(StringComparer.Ordinal));
+        (await GetHistoryRecords(historyRecord.RepeatSearchRequestId)).Should().ContainSingle();
+    }
+
+    [Test]
+    public async Task ApplyDiffAndRecordRepeatSearch_ForConcurrentRepeatSearchesThatAddSameDonor_AddsDonorOnceAndWritesBothHistories()
+    {
+        var newDonorCode = fixture.Create<string>();
+        await StoreCompleteSet(new List<string>());
+        var firstHistoryRecord = BuildHistoryRecord();
+        var secondHistoryRecord = BuildHistoryRecord();
+
+        var results = await Task.WhenAll(
+            repository.ApplyDiffAndRecordRepeatSearch(firstHistoryRecord, new[] { newDonorCode }, Array.Empty<string>()),
+            repository.ApplyDiffAndRecordRepeatSearch(secondHistoryRecord, new[] { newDonorCode }, Array.Empty<string>()));
+
+        results.Should().AllBeEquivalentTo(true);
+        (await GetStoredDonorCodes()).Should().BeEquivalentTo(new[] { newDonorCode });
+        (await GetHistoryRecords(firstHistoryRecord.RepeatSearchRequestId)).Should().ContainSingle();
+        (await GetHistoryRecords(secondHistoryRecord.RepeatSearchRequestId)).Should().ContainSingle();
+    }
+
+    [Test]
+    public async Task ApplyDiffAndRecordRepeatSearch_WhenSetChangeFails_DoesNotWriteHistoryOrChangeSet()
+    {
+        var removedDonorCode = fixture.Create<string>();
+        await StoreCompleteSet(new List<string> { removedDonorCode });
+        var historyRecord = BuildHistoryRecord();
+        // The first donor code again, in the second batch of 2,000: the first batch is inserted, then the unique index of SearchResults stops
+        // the second batch.
+        var newDonorCodes = fixture.CreateMany<string>(2000).ToList();
+        newDonorCodes.Add(newDonorCodes.First());
+
+        var act = () => repository.ApplyDiffAndRecordRepeatSearch(historyRecord, newDonorCodes, new[] { removedDonorCode });
 
         await act.Should().ThrowAsync<SqlException>().Where(e => e.Number == 2601);
-        (await GetStoredDonorCodes()).Should().BeEquivalentTo(new[] { donorCodeInSet, removedDonorCode });
+        (await GetStoredDonorCodes()).Should().BeEquivalentTo(new[] { removedDonorCode });
         (await GetHistoryRecords(historyRecord.RepeatSearchRequestId)).Should().BeEmpty();
     }
 
