@@ -30,7 +30,7 @@ jobs:
     if: github.event.deleted != true
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           # Otherwise checkout saves GITHUB_TOKEN in the git config, and git
