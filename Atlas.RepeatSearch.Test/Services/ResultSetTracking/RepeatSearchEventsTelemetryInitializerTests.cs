@@ -8,20 +8,21 @@ using NUnit.Framework;
 namespace Atlas.RepeatSearch.Test.Services.ResultSetTracking;
 
 [TestFixture]
-public class OriginalSearchResultsStoredTelemetryInitializerTests
+public class RepeatSearchEventsTelemetryInitializerTests
 {
-    private OriginalSearchResultsStoredTelemetryInitializer initializer;
+    private RepeatSearchEventsTelemetryInitializer initializer;
 
     [SetUp]
     public void SetUp()
     {
-        initializer = new OriginalSearchResultsStoredTelemetryInitializer();
+        initializer = new RepeatSearchEventsTelemetryInitializer();
     }
 
-    [Test]
-    public void Initialize_StoredEvent_SetsSamplingPercentageTo100()
+    [TestCase(OriginalSearchResultSetTracker.StoredEventName)]
+    [TestCase(ExpiredResultSetCleaner.DeletedEventName)]
+    public void Initialize_RepeatSearchEvent_SetsSamplingPercentageTo100(string eventName)
     {
-        var telemetry = new EventTelemetry(OriginalSearchResultSetTracker.StoredEventName);
+        var telemetry = new EventTelemetry(eventName);
 
         initializer.Initialize(telemetry);
 

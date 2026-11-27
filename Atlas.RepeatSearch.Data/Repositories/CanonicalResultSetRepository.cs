@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Atlas.RepeatSearch.Data.Models;
 using Atlas.RepeatSearch.Data.Settings;
@@ -26,7 +27,10 @@ namespace Atlas.RepeatSearch.Data.Repositories
         /// Creates the set as <see cref="CanonicalResultSetStatus.InProgress"/>, or takes over a set that is still in progress from an
         /// earlier delivery and deletes its rows.
         /// </summary>
-        /// <returns>The claim to add chunks with, or null if the set is already complete.</returns>
+        /// <returns>
+        /// The claim to add chunks with, or null if the set is already complete, or the retention job is deleting it
+        /// (<see cref="CanonicalResultSetStatus.Deleting"/>).
+        /// </returns>
         Task<CanonicalResultSetStoreClaim> StartStoringResultSet(string searchRequestId);
 
         /// <summary>
@@ -51,6 +55,35 @@ namespace Atlas.RepeatSearch.Data.Repositories
         Task RemoveResultsFromSet(string searchRequestId, IReadOnlyCollection<string> donorCodesToRemove);
 
         Task AddResultsToSet(string searchRequestId, IReadOnlyCollection<string> donorCodesToAdd);
+
+        /// <summary>
+        /// Sets <see cref="CanonicalResultSet.LastUsedAt"/> of the set to now, if the set is <see cref="CanonicalResultSetStatus.Complete"/>.
+        /// A repeat search calls this before it reads the set. The check and the update are one statement, so the retention job cannot start
+        /// to delete the set after the check (see <see cref="StartDeletingExpiredResultSet"/>).
+        /// </summary>
+        /// <returns>True if the set is complete and is now marked as used; false if it is not stored, in progress, or being deleted.</returns>
+        Task<bool> MarkResultSetUsed(string searchRequestId);
+
+        /// <summary>
+        /// Marks the set with the oldest <see cref="CanonicalResultSet.LastUsedAt"/> before <paramref name="cutOff"/> as
+        /// <see cref="CanonicalResultSetStatus.Deleting"/>, in any status. The check of the date and the update are one statement, so a repeat
+        /// search that marks the set as used first keeps it. A set that an earlier run left in <see cref="CanonicalResultSetStatus.Deleting"/>
+        /// keeps its date, so it is still the oldest set, and it is continued first. This needs the same or a shorter retention: a longer
+        /// retention gives an earlier cut-off, and the set is taken again only when its date is before that cut-off.
+        /// </summary>
+        /// <returns>The id of the set, or null if no set was last used before the cut-off.</returns>
+        Task<int?> StartDeletingExpiredResultSet(DateTimeOffset cutOff, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Deletes up to <paramref name="batchSize"/> donor codes of a set, in a transaction of its own.
+        /// </summary>
+        /// <returns>The number of deleted rows. For a set that is being deleted, fewer than the batch size means that no row is left.</returns>
+        Task<int> DeleteResultsBatch(int setId, int batchSize, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Deletes the row of a set that is <see cref="CanonicalResultSetStatus.Deleting"/>, after all of its donor codes are deleted.
+        /// </summary>
+        Task DeleteResultSet(int setId, CancellationToken cancellationToken);
     }
 
     public class CanonicalResultSetRepository : ICanonicalResultSetRepository
@@ -77,8 +110,9 @@ namespace Atlas.RepeatSearch.Data.Repositories
             var sql = @$"
                 BEGIN TRY
                     INSERT INTO {CanonicalResultSet.QualifiedTableName}
-                    ({nameof(CanonicalResultSet.OriginalSearchRequestId)}, {nameof(CanonicalResultSet.Status)}, {nameof(CanonicalResultSet.StoreAttemptId)})
-                    VALUES (@{nameof(searchRequestId)}, @InProgress, @{nameof(storeAttemptId)});
+                    ({nameof(CanonicalResultSet.OriginalSearchRequestId)}, {nameof(CanonicalResultSet.Status)}, {nameof(CanonicalResultSet.StoreAttemptId)},
+                     {nameof(CanonicalResultSet.LastUsedAt)})
+                    VALUES (@{nameof(searchRequestId)}, @InProgress, @{nameof(storeAttemptId)}, SYSDATETIMEOFFSET());
 
                     SELECT CAST(SCOPE_IDENTITY() AS int) AS SetId, CAST(0 AS bit) AS TookOver;
                 END TRY
@@ -87,7 +121,8 @@ namespace Atlas.RepeatSearch.Data.Repositories
                         THROW;
 
                     UPDATE {CanonicalResultSet.QualifiedTableName}
-                    SET {nameof(CanonicalResultSet.StoreAttemptId)} = @{nameof(storeAttemptId)}
+                    SET {nameof(CanonicalResultSet.StoreAttemptId)} = @{nameof(storeAttemptId)},
+                        {nameof(CanonicalResultSet.LastUsedAt)} = SYSDATETIMEOFFSET()
                     OUTPUT inserted.{nameof(CanonicalResultSet.Id)} AS SetId, CAST(1 AS bit) AS TookOver
                     WHERE {nameof(CanonicalResultSet.OriginalSearchRequestId)} = @{nameof(searchRequestId)}
                     AND {nameof(CanonicalResultSet.Status)} = @InProgress;
@@ -104,7 +139,7 @@ namespace Atlas.RepeatSearch.Data.Repositories
                 });
             }
 
-            // No row: the set exists and is complete.
+            // No row: the set exists, and it is complete or the retention job is deleting it.
             if (started == null)
             {
                 return null;
@@ -207,6 +242,69 @@ namespace Atlas.RepeatSearch.Data.Repositories
             await AddResultsToSet(donorCodesToAdd, setId);
         }
 
+        public async Task<bool> MarkResultSetUsed(string searchRequestId)
+        {
+            var sql = @$"
+                UPDATE {CanonicalResultSet.QualifiedTableName}
+                SET {nameof(CanonicalResultSet.LastUsedAt)} = SYSDATETIMEOFFSET()
+                WHERE {nameof(CanonicalResultSet.OriginalSearchRequestId)} = @{nameof(searchRequestId)}
+                AND {nameof(CanonicalResultSet.Status)} = @Complete";
+
+            await using (var conn = new SqlConnection(connectionString))
+            {
+                var updatedRows = await conn.ExecuteAsync(sql, new {searchRequestId, Complete = (int)CanonicalResultSetStatus.Complete});
+                return updatedRows > 0;
+            }
+        }
+
+        public async Task<int?> StartDeletingExpiredResultSet(DateTimeOffset cutOff, CancellationToken cancellationToken)
+        {
+            // An UPDATE reads the row that it changes with the latest committed values, also under read committed snapshot, and waits for
+            // a concurrent update of that row. So the date check sees the result of a MarkResultSetUsed that runs at the same time.
+            var sql = @$"
+                WITH oldestSet AS (
+                    SELECT TOP (1) {nameof(CanonicalResultSet.Id)}, {nameof(CanonicalResultSet.Status)}
+                    FROM {CanonicalResultSet.QualifiedTableName}
+                    WHERE {nameof(CanonicalResultSet.LastUsedAt)} < @{nameof(cutOff)}
+                    ORDER BY {nameof(CanonicalResultSet.LastUsedAt)}, {nameof(CanonicalResultSet.Id)}
+                )
+                UPDATE oldestSet
+                SET {nameof(CanonicalResultSet.Status)} = @Deleting
+                OUTPUT inserted.{nameof(CanonicalResultSet.Id)}";
+
+            await using (var conn = new SqlConnection(connectionString))
+            {
+                return await conn.QuerySingleOrDefaultAsync<int?>(new CommandDefinition(
+                    sql,
+                    new {cutOff, Deleting = (int)CanonicalResultSetStatus.Deleting},
+                    cancellationToken: cancellationToken));
+            }
+        }
+
+        public async Task<int> DeleteResultsBatch(int setId, int batchSize, CancellationToken cancellationToken)
+        {
+            await using (var conn = new SqlConnection(connectionString))
+            {
+                return await DeleteResultsBatch(conn, setId, batchSize, cancellationToken);
+            }
+        }
+
+        public async Task DeleteResultSet(int setId, CancellationToken cancellationToken)
+        {
+            var sql = @$"
+                DELETE FROM {CanonicalResultSet.QualifiedTableName}
+                WHERE {nameof(CanonicalResultSet.Id)} = @{nameof(setId)}
+                AND {nameof(CanonicalResultSet.Status)} = @Deleting";
+
+            await using (var conn = new SqlConnection(connectionString))
+            {
+                await conn.ExecuteAsync(new CommandDefinition(
+                    sql,
+                    new {setId, Deleting = (int)CanonicalResultSetStatus.Deleting},
+                    cancellationToken: cancellationToken));
+            }
+        }
+
         private async Task AddResultsToSet(
             IReadOnlyCollection<string> externalDonorCodes,
             int resultSetId,
@@ -249,18 +347,27 @@ namespace Atlas.RepeatSearch.Data.Repositories
         /// </summary>
         private async Task DeleteAllResultsFromSet(int resultSetId)
         {
-            var sql = @$"
-                DELETE TOP ({DeleteBatchSize}) FROM {SearchResult.QualifiedTableName}
-                WHERE {nameof(SearchResult.CanonicalResultSetId)} = @{nameof(resultSetId)}";
-
             await using (var conn = new SqlConnection(connectionString))
             {
                 int deletedRows;
                 do
                 {
-                    deletedRows = await conn.ExecuteAsync(sql, new {resultSetId}, commandTimeout: sqlBulkCopyBatchTimeout);
+                    deletedRows = await DeleteResultsBatch(conn, resultSetId, DeleteBatchSize, CancellationToken.None);
                 } while (deletedRows == DeleteBatchSize);
             }
+        }
+
+        private async Task<int> DeleteResultsBatch(SqlConnection conn, int resultSetId, int batchSize, CancellationToken cancellationToken)
+        {
+            var sql = @$"
+                DELETE TOP (@{nameof(batchSize)}) FROM {SearchResult.QualifiedTableName}
+                WHERE {nameof(SearchResult.CanonicalResultSetId)} = @{nameof(resultSetId)}";
+
+            return await conn.ExecuteAsync(new CommandDefinition(
+                sql,
+                new {resultSetId, batchSize},
+                commandTimeout: sqlBulkCopyBatchTimeout,
+                cancellationToken: cancellationToken));
         }
 
         private SqlBulkCopy BuildResultsBulkCopy(SqlBulkCopyOptions options)

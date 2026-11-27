@@ -59,6 +59,10 @@ resource "azurerm_windows_function_app" "atlas_repeat_search_function" {
     "NotificationsServiceBus:SendRetryCooldownSeconds"         = var.SERVICE_BUS_SEND_RETRY_COOLDOWN_SECONDS
     "RepeatSearch:MaxWaitForOriginalResultsMinutes"            = var.MAX_WAIT_FOR_ORIGINAL_RESULTS_MINUTES
     "RepeatSearch:OriginalResultsWaitIntervalSeconds"          = var.ORIGINAL_RESULTS_WAIT_INTERVAL_SECONDS
+    "RepeatSearch:ResultsDeleteBatchSize"                      = var.RESULTS_DELETE_BATCH_SIZE
+    "RepeatSearch:ResultsDeleteCronSchedule"                   = var.RESULTS_DELETE_CRON_SCHEDULE
+    "RepeatSearch:ResultsDeleteMaxRunMinutes"                  = var.RESULTS_DELETE_MAX_RUN_MINUTES
+    "RepeatSearch:ResultsRetentionDays"                        = var.RESULTS_RETENTION_DAYS
     "SearchTrackingServiceBus:ConnectionString"                = var.key_vault.secret_refs["servicebus-write-only-connection-string"]
     "SearchTrackingServiceBus:SearchTrackingTopic"             = var.servicebus_topics.search_tracking.name
     "SearchTrackingServiceBus:SendRetryCount"                  = var.SERVICE_BUS_SEND_RETRY_COUNT

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Atlas.RepeatSearch.Data.Models;
 using Atlas.RepeatSearch.Data.Repositories;
@@ -16,6 +17,18 @@ namespace Atlas.RepeatSearch.Test.Integration.Repositories;
 [TestFixture]
 public class CanonicalResultSetRepositoryTests
 {
+    /// <summary>
+    /// The retention tests make their old sets older than this cut-off. All other sets are last used now.
+    /// </summary>
+    private static readonly DateTimeOffset ExpiryCutOff = new(2000, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
+    /// <summary>
+    /// The retention tests give their sets dates before this time only.
+    /// </summary>
+    private static readonly DateTimeOffset RetentionTestDatesBefore = ExpiryCutOff.AddDays(1);
+
+    private static readonly TimeSpan ClockTolerance = TimeSpan.FromMinutes(1);
+
     private Fixture fixture;
     private ICanonicalResultSetRepository repository;
 
@@ -23,7 +36,7 @@ public class CanonicalResultSetRepositoryTests
     private string searchRequestId;
 
     [SetUp]
-    public void SetUp()
+    public async Task SetUp()
     {
         repository = new CanonicalResultSetRepository(
             new ConnectionStrings { RepeatSearchSqlConnectionString = IntegrationTestSetUp.ConnectionString },
@@ -31,6 +44,12 @@ public class CanonicalResultSetRepositoryTests
 
         fixture = new Fixture();
         searchRequestId = fixture.Create<string>();
+
+        // The retention job takes the oldest set in the whole database, so the sets that earlier retention tests left are deleted first.
+        await using var connection = new SqlConnection(IntegrationTestSetUp.ConnectionString);
+        await connection.ExecuteAsync(
+            "DELETE FROM RepeatSearch.CanonicalResultSets WHERE LastUsedAt < @RetentionTestDatesBefore",
+            new { RetentionTestDatesBefore });
     }
 
     [Test]
@@ -161,8 +180,248 @@ public class CanonicalResultSetRepositoryTests
         (await repository.StartStoringResultSet(searchRequestId)).Should().BeNull();
     }
 
-    private async Task<IReadOnlyCollection<string>> GetStoredDonorCodes()
+    [Test]
+    public async Task CanonicalResultSet_InsertedWithoutLastUsedAt_IsLastUsedNow()
     {
-        return (await repository.GetCanonicalResults(searchRequestId)).Select(r => r.ExternalDonorCode).ToList();
+        // The column default: a row inserted without a value can never be expired at once.
+        await using (var connection = new SqlConnection(IntegrationTestSetUp.ConnectionString))
+        {
+            await connection.ExecuteAsync(
+                "INSERT INTO RepeatSearch.CanonicalResultSets (OriginalSearchRequestId) VALUES (@searchRequestId)",
+                new { searchRequestId });
+        }
+
+        (await repository.GetCanonicalResultSetSummary(searchRequestId)).LastUsedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, ClockTolerance);
+    }
+
+    [Test]
+    public async Task StartStoringResultSet_ForNewSearch_SetsLastUsedAtToNow()
+    {
+        await repository.StartStoringResultSet(searchRequestId);
+
+        (await repository.GetCanonicalResultSetSummary(searchRequestId)).LastUsedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, ClockTolerance);
+    }
+
+    [Test]
+    public async Task StartStoringResultSet_WhenTakingOver_SetsLastUsedAtToNow()
+    {
+        var firstClaim = await repository.StartStoringResultSet(searchRequestId);
+        await SetLastUsedAt(firstClaim.SetId, ExpiryCutOff.AddDays(-1));
+
+        await repository.StartStoringResultSet(searchRequestId);
+
+        (await repository.GetCanonicalResultSetSummary(searchRequestId)).LastUsedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, ClockTolerance);
+    }
+
+    [Test]
+    public async Task MarkResultSetUsed_ForCompleteSet_ReturnsTrueAndSetsLastUsedAtToNow()
+    {
+        var claim = await StoreCompleteSet(searchRequestId, fixture.CreateMany<string>().ToList());
+        await SetLastUsedAt(claim.SetId, ExpiryCutOff.AddDays(-1));
+
+        var isMarked = await repository.MarkResultSetUsed(searchRequestId);
+
+        isMarked.Should().BeTrue();
+        (await repository.GetCanonicalResultSetSummary(searchRequestId)).LastUsedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, ClockTolerance);
+    }
+
+    [Test]
+    public async Task MarkResultSetUsed_ForSetInProgress_ReturnsFalseAndKeepsLastUsedAt()
+    {
+        var oldDate = ExpiryCutOff.AddDays(-1);
+        var claim = await repository.StartStoringResultSet(searchRequestId);
+        await SetLastUsedAt(claim.SetId, oldDate);
+
+        var isMarked = await repository.MarkResultSetUsed(searchRequestId);
+
+        isMarked.Should().BeFalse();
+        (await repository.GetCanonicalResultSetSummary(searchRequestId)).LastUsedAt.Should().Be(oldDate);
+    }
+
+    [Test]
+    public async Task MarkResultSetUsed_ForUnknownSearch_ReturnsFalse()
+    {
+        var isMarked = await repository.MarkResultSetUsed(searchRequestId);
+
+        isMarked.Should().BeFalse();
+    }
+
+    [Test]
+    public async Task StartDeletingExpiredResultSet_WithSetsOnBothSidesOfCutOff_MarksOnlyTheOldSetDeleting()
+    {
+        var oldClaim = await StoreCompleteSet(searchRequestId, fixture.CreateMany<string>().ToList());
+        await SetLastUsedAt(oldClaim.SetId, ExpiryCutOff.AddMinutes(-1));
+        var recentSearchRequestId = fixture.Create<string>();
+        var recentDonorCodes = fixture.CreateMany<string>().ToList();
+        var recentClaim = await StoreCompleteSet(recentSearchRequestId, recentDonorCodes);
+        await SetLastUsedAt(recentClaim.SetId, ExpiryCutOff.AddMinutes(1));
+
+        var setId = await repository.StartDeletingExpiredResultSet(ExpiryCutOff, CancellationToken.None);
+
+        setId.Should().Be(oldClaim.SetId);
+        (await repository.GetCanonicalResultSetSummary(searchRequestId)).Status.Should().Be(CanonicalResultSetStatus.Deleting);
+        (await repository.GetCanonicalResultSetSummary(recentSearchRequestId)).Status.Should().Be(CanonicalResultSetStatus.Complete);
+        (await repository.MarkResultSetUsed(recentSearchRequestId)).Should().BeTrue();
+        (await GetStoredDonorCodes(recentSearchRequestId)).Should().BeEquivalentTo(recentDonorCodes);
+    }
+
+    [Test]
+    public async Task StartDeletingExpiredResultSet_ForSetLeftDeletingByEarlierRun_ReturnsItAgain()
+    {
+        var claim = await StoreCompleteSet(searchRequestId, fixture.CreateMany<string>().ToList());
+        await SetLastUsedAt(claim.SetId, ExpiryCutOff.AddDays(-1));
+        await repository.StartDeletingExpiredResultSet(ExpiryCutOff, CancellationToken.None);
+
+        var setId = await repository.StartDeletingExpiredResultSet(ExpiryCutOff, CancellationToken.None);
+
+        setId.Should().Be(claim.SetId);
+    }
+
+    [Test]
+    public async Task StartDeletingExpiredResultSet_ForSetInProgressOlderThanCutOff_MarksItDeleting()
+    {
+        // An abandoned store: its delivery can no longer add chunks after the set is taken.
+        var claim = await repository.StartStoringResultSet(searchRequestId);
+        await SetLastUsedAt(claim.SetId, ExpiryCutOff.AddDays(-1));
+
+        var setId = await repository.StartDeletingExpiredResultSet(ExpiryCutOff, CancellationToken.None);
+
+        setId.Should().Be(claim.SetId);
+        (await repository.GetCanonicalResultSetSummary(searchRequestId)).Status.Should().Be(CanonicalResultSetStatus.Deleting);
+        var act = () => repository.AddResultsChunk(claim, fixture.CreateMany<string>().ToList());
+        await act.Should().ThrowAsync<CanonicalResultSetClaimLostException>();
+    }
+
+    [Test]
+    public async Task StartDeletingExpiredResultSet_WithTwoExpiredSets_TakesOldestFirst()
+    {
+        var newerClaim = await StoreCompleteSet(searchRequestId, fixture.CreateMany<string>().ToList());
+        await SetLastUsedAt(newerClaim.SetId, ExpiryCutOff.AddDays(-1));
+        var olderClaim = await StoreCompleteSet(fixture.Create<string>(), fixture.CreateMany<string>().ToList());
+        await SetLastUsedAt(olderClaim.SetId, ExpiryCutOff.AddDays(-2));
+
+        var firstSetId = await repository.StartDeletingExpiredResultSet(ExpiryCutOff, CancellationToken.None);
+        await repository.DeleteResultsBatch(olderClaim.SetId, 10, CancellationToken.None);
+        await repository.DeleteResultSet(olderClaim.SetId, CancellationToken.None);
+        var secondSetId = await repository.StartDeletingExpiredResultSet(ExpiryCutOff, CancellationToken.None);
+
+        firstSetId.Should().Be(olderClaim.SetId);
+        secondSetId.Should().Be(newerClaim.SetId);
+    }
+
+    [Test]
+    public async Task StartDeletingExpiredResultSet_WhenNoSetIsOlderThanCutOff_ReturnsNull()
+    {
+        await StoreCompleteSet(searchRequestId, fixture.CreateMany<string>().ToList());
+
+        var setId = await repository.StartDeletingExpiredResultSet(ExpiryCutOff, CancellationToken.None);
+
+        setId.Should().BeNull();
+    }
+
+    [Test]
+    public async Task StartDeletingExpiredResultSet_AfterRepeatSearchMarkedOldSetUsed_DoesNotTakeIt()
+    {
+        var claim = await StoreCompleteSet(searchRequestId, fixture.CreateMany<string>().ToList());
+        await SetLastUsedAt(claim.SetId, ExpiryCutOff.AddDays(-1));
+        await repository.MarkResultSetUsed(searchRequestId);
+
+        var setId = await repository.StartDeletingExpiredResultSet(ExpiryCutOff, CancellationToken.None);
+
+        setId.Should().BeNull();
+        (await repository.GetCanonicalResultSetSummary(searchRequestId)).Status.Should().Be(CanonicalResultSetStatus.Complete);
+    }
+
+    [Test]
+    public async Task MarkResultSetUsed_AfterSetIsMarkedDeleting_ReturnsFalse()
+    {
+        var oldDate = ExpiryCutOff.AddDays(-1);
+        var claim = await StoreCompleteSet(searchRequestId, fixture.CreateMany<string>().ToList());
+        await SetLastUsedAt(claim.SetId, oldDate);
+        await repository.StartDeletingExpiredResultSet(ExpiryCutOff, CancellationToken.None);
+
+        var isMarked = await repository.MarkResultSetUsed(searchRequestId);
+
+        isMarked.Should().BeFalse();
+        (await repository.GetCanonicalResultSetSummary(searchRequestId)).LastUsedAt.Should().Be(oldDate);
+    }
+
+    [Test]
+    public async Task StartStoringResultSet_WhenSetIsBeingDeleted_ReturnsNullAndKeepsSetDeleting()
+    {
+        // For example, a replay of a dead-lettered store message for a set that the retention job has started to delete.
+        var claim = await StoreCompleteSet(searchRequestId, fixture.CreateMany<string>().ToList());
+        await SetLastUsedAt(claim.SetId, ExpiryCutOff.AddDays(-1));
+        await repository.StartDeletingExpiredResultSet(ExpiryCutOff, CancellationToken.None);
+
+        var replayClaim = await repository.StartStoringResultSet(searchRequestId);
+
+        replayClaim.Should().BeNull();
+        (await repository.GetCanonicalResultSetSummary(searchRequestId)).Status.Should().Be(CanonicalResultSetStatus.Deleting);
+    }
+
+    [Test]
+    public async Task DeleteResultsBatch_DeletesAtMostBatchSizeRows_OnlyFromThatSet()
+    {
+        var claim = await StoreCompleteSet(searchRequestId, fixture.CreateMany<string>(5).ToList());
+        var otherSearchRequestId = fixture.Create<string>();
+        var otherDonorCodes = fixture.CreateMany<string>(3).ToList();
+        await StoreCompleteSet(otherSearchRequestId, otherDonorCodes);
+
+        var firstBatch = await repository.DeleteResultsBatch(claim.SetId, 2, CancellationToken.None);
+        var secondBatch = await repository.DeleteResultsBatch(claim.SetId, 4, CancellationToken.None);
+
+        firstBatch.Should().Be(2);
+        secondBatch.Should().Be(3);
+        (await GetStoredDonorCodes()).Should().BeEmpty();
+        (await GetStoredDonorCodes(otherSearchRequestId)).Should().BeEquivalentTo(otherDonorCodes);
+    }
+
+    [Test]
+    public async Task DeleteResultSet_ForSetBeingDeleted_DeletesSetRow()
+    {
+        var claim = await StoreCompleteSet(searchRequestId, fixture.CreateMany<string>().ToList());
+        await SetLastUsedAt(claim.SetId, ExpiryCutOff.AddDays(-1));
+        await repository.StartDeletingExpiredResultSet(ExpiryCutOff, CancellationToken.None);
+        await repository.DeleteResultsBatch(claim.SetId, 10, CancellationToken.None);
+
+        await repository.DeleteResultSet(claim.SetId, CancellationToken.None);
+
+        (await repository.GetCanonicalResultSetSummary(searchRequestId)).Should().BeNull();
+    }
+
+    [Test]
+    public async Task DeleteResultSet_ForCompleteSet_KeepsSet()
+    {
+        var donorCodes = fixture.CreateMany<string>().ToList();
+        var claim = await StoreCompleteSet(searchRequestId, donorCodes);
+
+        await repository.DeleteResultSet(claim.SetId, CancellationToken.None);
+
+        (await repository.GetCanonicalResultSetSummary(searchRequestId)).Status.Should().Be(CanonicalResultSetStatus.Complete);
+        (await GetStoredDonorCodes()).Should().BeEquivalentTo(donorCodes);
+    }
+
+    private async Task<CanonicalResultSetStoreClaim> StoreCompleteSet(string id, IReadOnlyCollection<string> donorCodes)
+    {
+        var claim = await repository.StartStoringResultSet(id);
+        await repository.AddResultsChunk(claim, donorCodes);
+        await repository.CompleteResultSet(claim);
+        return claim;
+    }
+
+    private static async Task SetLastUsedAt(int setId, DateTimeOffset lastUsedAt)
+    {
+        await using var connection = new SqlConnection(IntegrationTestSetUp.ConnectionString);
+        await connection.ExecuteAsync(
+            "UPDATE RepeatSearch.CanonicalResultSets SET LastUsedAt = @lastUsedAt WHERE Id = @setId",
+            new { setId, lastUsedAt });
+    }
+
+    private Task<IReadOnlyCollection<string>> GetStoredDonorCodes() => GetStoredDonorCodes(searchRequestId);
+
+    private async Task<IReadOnlyCollection<string>> GetStoredDonorCodes(string id)
+    {
+        return (await repository.GetCanonicalResults(id)).Select(r => r.ExternalDonorCode).ToList();
     }
 }
