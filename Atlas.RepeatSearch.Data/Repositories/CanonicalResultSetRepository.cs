@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Atlas.RepeatSearch.Data.Models;
 using Atlas.RepeatSearch.Data.Settings;
@@ -26,7 +27,10 @@ namespace Atlas.RepeatSearch.Data.Repositories
         /// Creates the set as <see cref="CanonicalResultSetStatus.InProgress"/>, or takes over a set that is still in progress from an
         /// earlier delivery and deletes its rows.
         /// </summary>
-        /// <returns>The claim to add chunks with, or null if the set is already complete.</returns>
+        /// <returns>
+        /// The claim to add chunks with, or null if the set is already complete, or the retention job is deleting it
+        /// (<see cref="CanonicalResultSetStatus.Deleting"/>).
+        /// </returns>
         Task<CanonicalResultSetStoreClaim> StartStoringResultSet(string searchRequestId);
 
         /// <summary>
@@ -68,18 +72,18 @@ namespace Atlas.RepeatSearch.Data.Repositories
         /// retention gives an earlier cut-off, and the set is taken again only when its date is before that cut-off.
         /// </summary>
         /// <returns>The id of the set, or null if no set was last used before the cut-off.</returns>
-        Task<int?> StartDeletingExpiredResultSet(DateTimeOffset cutOff);
+        Task<int?> StartDeletingExpiredResultSet(DateTimeOffset cutOff, CancellationToken cancellationToken);
 
         /// <summary>
         /// Deletes up to <paramref name="batchSize"/> donor codes of a set, in a transaction of its own.
         /// </summary>
         /// <returns>The number of deleted rows. For a set that is being deleted, fewer than the batch size means that no row is left.</returns>
-        Task<int> DeleteResultsBatch(int setId, int batchSize);
+        Task<int> DeleteResultsBatch(int setId, int batchSize, CancellationToken cancellationToken);
 
         /// <summary>
         /// Deletes the row of a set that is <see cref="CanonicalResultSetStatus.Deleting"/>, after all of its donor codes are deleted.
         /// </summary>
-        Task DeleteResultSet(int setId);
+        Task DeleteResultSet(int setId, CancellationToken cancellationToken);
     }
 
     public class CanonicalResultSetRepository : ICanonicalResultSetRepository
@@ -135,7 +139,7 @@ namespace Atlas.RepeatSearch.Data.Repositories
                 });
             }
 
-            // No row: the set exists and is complete.
+            // No row: the set exists, and it is complete or the retention job is deleting it.
             if (started == null)
             {
                 return null;
@@ -253,7 +257,7 @@ namespace Atlas.RepeatSearch.Data.Repositories
             }
         }
 
-        public async Task<int?> StartDeletingExpiredResultSet(DateTimeOffset cutOff)
+        public async Task<int?> StartDeletingExpiredResultSet(DateTimeOffset cutOff, CancellationToken cancellationToken)
         {
             // An UPDATE reads the row that it changes with the latest committed values, also under read committed snapshot, and waits for
             // a concurrent update of that row. So the date check sees the result of a MarkResultSetUsed that runs at the same time.
@@ -270,19 +274,22 @@ namespace Atlas.RepeatSearch.Data.Repositories
 
             await using (var conn = new SqlConnection(connectionString))
             {
-                return await conn.QuerySingleOrDefaultAsync<int?>(sql, new {cutOff, Deleting = (int)CanonicalResultSetStatus.Deleting});
+                return await conn.QuerySingleOrDefaultAsync<int?>(new CommandDefinition(
+                    sql,
+                    new {cutOff, Deleting = (int)CanonicalResultSetStatus.Deleting},
+                    cancellationToken: cancellationToken));
             }
         }
 
-        public async Task<int> DeleteResultsBatch(int setId, int batchSize)
+        public async Task<int> DeleteResultsBatch(int setId, int batchSize, CancellationToken cancellationToken)
         {
             await using (var conn = new SqlConnection(connectionString))
             {
-                return await DeleteResultsBatch(conn, setId, batchSize);
+                return await DeleteResultsBatch(conn, setId, batchSize, cancellationToken);
             }
         }
 
-        public async Task DeleteResultSet(int setId)
+        public async Task DeleteResultSet(int setId, CancellationToken cancellationToken)
         {
             var sql = @$"
                 DELETE FROM {CanonicalResultSet.QualifiedTableName}
@@ -291,7 +298,10 @@ namespace Atlas.RepeatSearch.Data.Repositories
 
             await using (var conn = new SqlConnection(connectionString))
             {
-                await conn.ExecuteAsync(sql, new {setId, Deleting = (int)CanonicalResultSetStatus.Deleting});
+                await conn.ExecuteAsync(new CommandDefinition(
+                    sql,
+                    new {setId, Deleting = (int)CanonicalResultSetStatus.Deleting},
+                    cancellationToken: cancellationToken));
             }
         }
 
@@ -342,18 +352,22 @@ namespace Atlas.RepeatSearch.Data.Repositories
                 int deletedRows;
                 do
                 {
-                    deletedRows = await DeleteResultsBatch(conn, resultSetId, DeleteBatchSize);
+                    deletedRows = await DeleteResultsBatch(conn, resultSetId, DeleteBatchSize, CancellationToken.None);
                 } while (deletedRows == DeleteBatchSize);
             }
         }
 
-        private async Task<int> DeleteResultsBatch(SqlConnection conn, int resultSetId, int batchSize)
+        private async Task<int> DeleteResultsBatch(SqlConnection conn, int resultSetId, int batchSize, CancellationToken cancellationToken)
         {
             var sql = @$"
                 DELETE TOP (@{nameof(batchSize)}) FROM {SearchResult.QualifiedTableName}
                 WHERE {nameof(SearchResult.CanonicalResultSetId)} = @{nameof(resultSetId)}";
 
-            return await conn.ExecuteAsync(sql, new {resultSetId, batchSize}, commandTimeout: sqlBulkCopyBatchTimeout);
+            return await conn.ExecuteAsync(new CommandDefinition(
+                sql,
+                new {resultSetId, batchSize},
+                commandTimeout: sqlBulkCopyBatchTimeout,
+                cancellationToken: cancellationToken));
         }
 
         private SqlBulkCopy BuildResultsBulkCopy(SqlBulkCopyOptions options)

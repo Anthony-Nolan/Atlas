@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
+using Atlas.RepeatSearch.Data.Models;
 using Atlas.RepeatSearch.Data.Repositories;
 using Atlas.RepeatSearch.Data.Settings;
 using Atlas.RepeatSearch.Services.Search;
@@ -88,6 +89,8 @@ namespace Atlas.RepeatSearch.Services.ResultSetTracking
             var claim = await canonicalResultSetRepository.StartStoringResultSet(searchRequestId);
             if (claim == null)
             {
+                await ThrowIfRetentionJobIsDeletingSet(searchRequestId);
+
                 // A repeat delivery of the message, after the set was stored.
                 logger.SendTrace($"Original search results of search {searchRequestId} are already stored.");
                 return;
@@ -145,6 +148,27 @@ namespace Atlas.RepeatSearch.Services.ResultSetTracking
                     {"ChunkCount", chunkCount},
                     {"ElapsedMs", stopwatch.ElapsedMilliseconds}
                 });
+        }
+
+        /// <summary>
+        /// The store also gets no claim when the retention job is deleting the set, for example on a replay of a dead-lettered store
+        /// message, and the job then deletes the set. So the store fails, and the message is not completed: Service Bus delivers it
+        /// again, and a delivery after the delete stores the set again. If the delete takes longer than all the deliveries, the message
+        /// goes to the dead-letter queue again, and can be replayed after the delete.
+        /// </summary>
+        private async Task ThrowIfRetentionJobIsDeletingSet(string searchRequestId)
+        {
+            var status = (await canonicalResultSetRepository.GetCanonicalResultSetSummary(searchRequestId))?.Status;
+            if (status == CanonicalResultSetStatus.Complete)
+            {
+                return;
+            }
+
+            // Deleting, or no set if the job deleted it after the claim.
+            throw new InvalidOperationException(
+                $"The retention job is deleting the result set of search {searchRequestId} (status: {status?.ToString() ?? "deleted"}), " +
+                "so its results are not stored now. The message fails, so that it is delivered again: a delivery after the delete stores " +
+                "the results. If the message goes to the dead-letter queue, replay it after the job has deleted the set.");
         }
 
         public async Task ApplySearchResultDiff(string searchRequestId, SearchResultDifferential searchResultDifferential)

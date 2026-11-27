@@ -56,6 +56,16 @@ internal class ExpiredResultSetCleaner : IExpiredResultSetCleaner
             return;
         }
 
+        // Checked before a set is claimed: with no rows in a batch, the job would never finish the set, and each run would take it again.
+        if (batchSize < 1)
+        {
+            logger.SendTrace(
+                $"The retention job of repeat search result sets does not run: {nameof(RepeatSearchSettings.ResultsDeleteBatchSize)} is " +
+                $"{batchSize}, and it must be 1 or more.",
+                LogLevel.Warn);
+            return;
+        }
+
         var startTime = timeProvider.GetUtcNow();
         var cutOff = startTime.AddDays(-retentionDays);
         var deadline = startTime + maxRunTime;
@@ -71,11 +81,7 @@ internal class ExpiredResultSetCleaner : IExpiredResultSetCleaner
             // One batch in each pass, so that the time limit is checked before each batch.
             while (true)
             {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    result = RunResult.Cancelled;
-                    cancellationToken.ThrowIfCancellationRequested();
-                }
+                cancellationToken.ThrowIfCancellationRequested();
 
                 if (timeProvider.GetUtcNow() >= deadline)
                 {
@@ -83,24 +89,31 @@ internal class ExpiredResultSetCleaner : IExpiredResultSetCleaner
                     break;
                 }
 
-                setId ??= await canonicalResultSetRepository.StartDeletingExpiredResultSet(cutOff);
+                setId ??= await canonicalResultSetRepository.StartDeletingExpiredResultSet(cutOff, cancellationToken);
                 if (setId == null)
                 {
                     result = RunResult.Completed;
                     break;
                 }
 
-                var deletedRows = await canonicalResultSetRepository.DeleteResultsBatch(setId.Value, batchSize);
+                var deletedRows = await canonicalResultSetRepository.DeleteResultsBatch(setId.Value, batchSize, cancellationToken);
                 rowCount += deletedRows;
 
                 // Nothing adds rows to a set that is being deleted, so a short batch was the last one.
                 if (deletedRows < batchSize)
                 {
-                    await canonicalResultSetRepository.DeleteResultSet(setId.Value);
+                    await canonicalResultSetRepository.DeleteResultSet(setId.Value, cancellationToken);
                     setCount++;
                     setId = null;
                 }
             }
+        }
+        // The type of the exception of a cancelled SQL call depends on when the cancel comes, so the token tells why the run stopped.
+        // Each SQL call is one statement, which commits or rolls back as a whole, so the next run continues the set.
+        catch (Exception) when (cancellationToken.IsCancellationRequested)
+        {
+            result = RunResult.Cancelled;
+            throw;
         }
         finally
         {

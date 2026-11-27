@@ -25,6 +25,7 @@ public class RepeatSearchSettings
     /// <summary>
     /// Number of donor codes that the retention job deletes in one statement. Keep it below 5,000: at 5,000 locks in one statement,
     /// SQL Server tries to lock the whole table, which would stop the stores and repeat searches that write to it.
+    /// It must be 1 or more: with 0 or less, the job does not run, and logs a warning.
     /// </summary>
     public int ResultsDeleteBatchSize { get; set; }
 

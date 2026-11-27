@@ -702,7 +702,12 @@ variable "REPEAT_SEARCH_ORIGINAL_RESULTS_WAIT_INTERVAL_SECONDS" {
 variable "REPEAT_SEARCH_RESULTS_DELETE_BATCH_SIZE" {
   type        = number
   default     = 4000
-  description = "Number of donor codes that the repeat search retention job deletes in one statement. Keep it below 5,000: at 5,000 locks in one statement, SQL Server tries to lock the whole SearchResults table, which would stop the stores and repeat searches that write to it."
+  description = "Number of donor codes that the repeat search retention job deletes in one statement. It must be 1 or more. Keep it below 5,000: at 5,000 locks in one statement, SQL Server tries to lock the whole SearchResults table, which would stop the stores and repeat searches that write to it."
+
+  validation {
+    condition     = var.REPEAT_SEARCH_RESULTS_DELETE_BATCH_SIZE >= 1
+    error_message = "REPEAT_SEARCH_RESULTS_DELETE_BATCH_SIZE must be 1 or more. To turn the retention job off, set REPEAT_SEARCH_RESULTS_RETENTION_DAYS to 0."
+  }
 }
 
 variable "REPEAT_SEARCH_RESULTS_DELETE_CRON_SCHEDULE" {

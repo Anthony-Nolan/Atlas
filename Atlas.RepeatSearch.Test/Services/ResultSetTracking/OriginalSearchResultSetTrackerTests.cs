@@ -8,6 +8,7 @@ using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Atlas.RepeatSearch.Data.Models;
 using Atlas.RepeatSearch.Data.Repositories;
 using Atlas.RepeatSearch.Data.Settings;
 using Atlas.RepeatSearch.Services.ResultSetTracking;
@@ -107,12 +108,34 @@ namespace Atlas.RepeatSearch.Test.Services.ResultSetTracking
         public async Task StoreOriginalSearchResults_WhenSetIsAlreadyComplete_DoesNotReadOrInsert()
         {
             canonicalResultSetRepository.StartStoringResultSet(default).ReturnsForAnyArgs((CanonicalResultSetStoreClaim)null);
+            canonicalResultSetRepository.GetCanonicalResultSetSummary(searchRequestId)
+                .Returns(new CanonicalResultSet { Status = CanonicalResultSetStatus.Complete });
 
             await originalSearchResultSetTracker.StoreOriginalSearchResults(BuildNotification(3, batched: false));
 
             await blobDownloader.DidNotReceiveWithAnyArgs().OpenRead(default, default);
             await canonicalResultSetRepository.DidNotReceiveWithAnyArgs().AddResultsChunk(default, default);
             await canonicalResultSetRepository.DidNotReceiveWithAnyArgs().CompleteResultSet(default);
+        }
+
+        [TestCase(CanonicalResultSetStatus.Deleting)]
+        [TestCase(null)]
+        public async Task StoreOriginalSearchResults_WhenRetentionJobIsDeletingSet_ThrowsSoThatMessageIsDeliveredAgain(
+            CanonicalResultSetStatus? status)
+        {
+            canonicalResultSetRepository.StartStoringResultSet(default).ReturnsForAnyArgs((CanonicalResultSetStoreClaim)null);
+            canonicalResultSetRepository.GetCanonicalResultSetSummary(searchRequestId)
+                .Returns(status == null ? null : new CanonicalResultSet { Status = status.Value });
+
+            var act = () => originalSearchResultSetTracker.StoreOriginalSearchResults(BuildNotification(3, batched: false));
+
+            (await act.Should().ThrowAsync<InvalidOperationException>()).Which.Message.Should().Contain(searchRequestId);
+            await canonicalResultSetRepository.DidNotReceiveWithAnyArgs().AddResultsChunk(default, default);
+            await canonicalResultSetRepository.DidNotReceiveWithAnyArgs().CompleteResultSet(default);
+            logger.Received(1).SendException(
+                Arg.Any<InvalidOperationException>(),
+                LogLevel.Error,
+                Arg.Is<Dictionary<string, string>>(p => p["SearchRequestId"] == searchRequestId));
         }
 
         [Test]

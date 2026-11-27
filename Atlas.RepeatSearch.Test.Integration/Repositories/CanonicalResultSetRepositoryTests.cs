@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Atlas.RepeatSearch.Data.Models;
 using Atlas.RepeatSearch.Data.Repositories;
@@ -255,7 +256,7 @@ public class CanonicalResultSetRepositoryTests
         var recentClaim = await StoreCompleteSet(recentSearchRequestId, recentDonorCodes);
         await SetLastUsedAt(recentClaim.SetId, ExpiryCutOff.AddMinutes(1));
 
-        var setId = await repository.StartDeletingExpiredResultSet(ExpiryCutOff);
+        var setId = await repository.StartDeletingExpiredResultSet(ExpiryCutOff, CancellationToken.None);
 
         setId.Should().Be(oldClaim.SetId);
         (await repository.GetCanonicalResultSetSummary(searchRequestId)).Status.Should().Be(CanonicalResultSetStatus.Deleting);
@@ -269,9 +270,9 @@ public class CanonicalResultSetRepositoryTests
     {
         var claim = await StoreCompleteSet(searchRequestId, fixture.CreateMany<string>().ToList());
         await SetLastUsedAt(claim.SetId, ExpiryCutOff.AddDays(-1));
-        await repository.StartDeletingExpiredResultSet(ExpiryCutOff);
+        await repository.StartDeletingExpiredResultSet(ExpiryCutOff, CancellationToken.None);
 
-        var setId = await repository.StartDeletingExpiredResultSet(ExpiryCutOff);
+        var setId = await repository.StartDeletingExpiredResultSet(ExpiryCutOff, CancellationToken.None);
 
         setId.Should().Be(claim.SetId);
     }
@@ -283,7 +284,7 @@ public class CanonicalResultSetRepositoryTests
         var claim = await repository.StartStoringResultSet(searchRequestId);
         await SetLastUsedAt(claim.SetId, ExpiryCutOff.AddDays(-1));
 
-        var setId = await repository.StartDeletingExpiredResultSet(ExpiryCutOff);
+        var setId = await repository.StartDeletingExpiredResultSet(ExpiryCutOff, CancellationToken.None);
 
         setId.Should().Be(claim.SetId);
         (await repository.GetCanonicalResultSetSummary(searchRequestId)).Status.Should().Be(CanonicalResultSetStatus.Deleting);
@@ -299,10 +300,10 @@ public class CanonicalResultSetRepositoryTests
         var olderClaim = await StoreCompleteSet(fixture.Create<string>(), fixture.CreateMany<string>().ToList());
         await SetLastUsedAt(olderClaim.SetId, ExpiryCutOff.AddDays(-2));
 
-        var firstSetId = await repository.StartDeletingExpiredResultSet(ExpiryCutOff);
-        await repository.DeleteResultsBatch(olderClaim.SetId, 10);
-        await repository.DeleteResultSet(olderClaim.SetId);
-        var secondSetId = await repository.StartDeletingExpiredResultSet(ExpiryCutOff);
+        var firstSetId = await repository.StartDeletingExpiredResultSet(ExpiryCutOff, CancellationToken.None);
+        await repository.DeleteResultsBatch(olderClaim.SetId, 10, CancellationToken.None);
+        await repository.DeleteResultSet(olderClaim.SetId, CancellationToken.None);
+        var secondSetId = await repository.StartDeletingExpiredResultSet(ExpiryCutOff, CancellationToken.None);
 
         firstSetId.Should().Be(olderClaim.SetId);
         secondSetId.Should().Be(newerClaim.SetId);
@@ -313,7 +314,7 @@ public class CanonicalResultSetRepositoryTests
     {
         await StoreCompleteSet(searchRequestId, fixture.CreateMany<string>().ToList());
 
-        var setId = await repository.StartDeletingExpiredResultSet(ExpiryCutOff);
+        var setId = await repository.StartDeletingExpiredResultSet(ExpiryCutOff, CancellationToken.None);
 
         setId.Should().BeNull();
     }
@@ -325,7 +326,7 @@ public class CanonicalResultSetRepositoryTests
         await SetLastUsedAt(claim.SetId, ExpiryCutOff.AddDays(-1));
         await repository.MarkResultSetUsed(searchRequestId);
 
-        var setId = await repository.StartDeletingExpiredResultSet(ExpiryCutOff);
+        var setId = await repository.StartDeletingExpiredResultSet(ExpiryCutOff, CancellationToken.None);
 
         setId.Should().BeNull();
         (await repository.GetCanonicalResultSetSummary(searchRequestId)).Status.Should().Be(CanonicalResultSetStatus.Complete);
@@ -337,12 +338,26 @@ public class CanonicalResultSetRepositoryTests
         var oldDate = ExpiryCutOff.AddDays(-1);
         var claim = await StoreCompleteSet(searchRequestId, fixture.CreateMany<string>().ToList());
         await SetLastUsedAt(claim.SetId, oldDate);
-        await repository.StartDeletingExpiredResultSet(ExpiryCutOff);
+        await repository.StartDeletingExpiredResultSet(ExpiryCutOff, CancellationToken.None);
 
         var isMarked = await repository.MarkResultSetUsed(searchRequestId);
 
         isMarked.Should().BeFalse();
         (await repository.GetCanonicalResultSetSummary(searchRequestId)).LastUsedAt.Should().Be(oldDate);
+    }
+
+    [Test]
+    public async Task StartStoringResultSet_WhenSetIsBeingDeleted_ReturnsNullAndKeepsSetDeleting()
+    {
+        // For example, a replay of a dead-lettered store message for a set that the retention job has started to delete.
+        var claim = await StoreCompleteSet(searchRequestId, fixture.CreateMany<string>().ToList());
+        await SetLastUsedAt(claim.SetId, ExpiryCutOff.AddDays(-1));
+        await repository.StartDeletingExpiredResultSet(ExpiryCutOff, CancellationToken.None);
+
+        var replayClaim = await repository.StartStoringResultSet(searchRequestId);
+
+        replayClaim.Should().BeNull();
+        (await repository.GetCanonicalResultSetSummary(searchRequestId)).Status.Should().Be(CanonicalResultSetStatus.Deleting);
     }
 
     [Test]
@@ -353,8 +368,8 @@ public class CanonicalResultSetRepositoryTests
         var otherDonorCodes = fixture.CreateMany<string>(3).ToList();
         await StoreCompleteSet(otherSearchRequestId, otherDonorCodes);
 
-        var firstBatch = await repository.DeleteResultsBatch(claim.SetId, 2);
-        var secondBatch = await repository.DeleteResultsBatch(claim.SetId, 4);
+        var firstBatch = await repository.DeleteResultsBatch(claim.SetId, 2, CancellationToken.None);
+        var secondBatch = await repository.DeleteResultsBatch(claim.SetId, 4, CancellationToken.None);
 
         firstBatch.Should().Be(2);
         secondBatch.Should().Be(3);
@@ -367,10 +382,10 @@ public class CanonicalResultSetRepositoryTests
     {
         var claim = await StoreCompleteSet(searchRequestId, fixture.CreateMany<string>().ToList());
         await SetLastUsedAt(claim.SetId, ExpiryCutOff.AddDays(-1));
-        await repository.StartDeletingExpiredResultSet(ExpiryCutOff);
-        await repository.DeleteResultsBatch(claim.SetId, 10);
+        await repository.StartDeletingExpiredResultSet(ExpiryCutOff, CancellationToken.None);
+        await repository.DeleteResultsBatch(claim.SetId, 10, CancellationToken.None);
 
-        await repository.DeleteResultSet(claim.SetId);
+        await repository.DeleteResultSet(claim.SetId, CancellationToken.None);
 
         (await repository.GetCanonicalResultSetSummary(searchRequestId)).Should().BeNull();
     }
@@ -381,7 +396,7 @@ public class CanonicalResultSetRepositoryTests
         var donorCodes = fixture.CreateMany<string>().ToList();
         var claim = await StoreCompleteSet(searchRequestId, donorCodes);
 
-        await repository.DeleteResultSet(claim.SetId);
+        await repository.DeleteResultSet(claim.SetId, CancellationToken.None);
 
         (await repository.GetCanonicalResultSetSummary(searchRequestId)).Status.Should().Be(CanonicalResultSetStatus.Complete);
         (await GetStoredDonorCodes()).Should().BeEquivalentTo(donorCodes);
