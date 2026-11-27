@@ -33,7 +33,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # By default, will checkout the pushed branch. We want to bump the version on *master*
           ref: 'master'
@@ -42,9 +42,9 @@ jobs:
           # only the release-cascade-bot app past that rule (as for the cascade merges, see cascade_merge_release_branches.yml).
           persist-credentials: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '24'
 
       - run: npm install -g dotnet-bump
 
