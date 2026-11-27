@@ -101,6 +101,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjecti
         {
             services.AddScoped<IMacFetcher, MacFetcher>();
             services.AddScoped<IMacParser, MacLineParser>();
+            services.AddHttpClient(MacCodeDownloader.HttpClientName, client => client.Timeout = MacCodeDownloader.DownloadTimeout);
             services.AddScoped<IMacCodeDownloader, MacCodeDownloader>();
         }
 
